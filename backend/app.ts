@@ -8,7 +8,8 @@ import fs from "fs";
 import transferRouter from "./src/features/Transfer/routes/transfer-route";
 import digitalFileListRouter from "./src/features/Transfer/routes/digitalFileList-route";
 import digitalFileRouter from "./src/features/Transfer/routes/digitalFile-route";
-import { datsComponents } from "./swagger-components"; // Import your components
+import { swaggerDefinition } from "./swagger-definition";
+import { datsComponents } from "./swagger-components";
 
 dotenv.config(); // Load environment variables from .env
 // Connect to MongoDB
@@ -28,33 +29,6 @@ mongoose
     process.exit();
   });
 // Express configuration
-const swaggerJSDoc = require("swagger-jsdoc");
-const swaggerUi = require("swagger-ui-express");
-
-const swaggerDefinition = {
-  openapi: "3.0.0",
-  info: {
-    title:
-      "Express API for documentation for the Digital Archive Transfer Service (DATS)",
-    version: "1.0.0",
-    description:
-      "This is a MERN stack web application. It retrieves data from the Digital Archive Transfer Service (DATS).",
-    license: {
-      name: "Licensed Under MIT",
-      url: "https://spdx.org/licenses/MIT.html",
-    },
-    contact: {
-      name: "Government Archives - Digital Records",
-      url: "https://www2.gov.bc.ca/gov/content/governments/services-for-government/information-management-technology/records-management/government-archives",
-    },
-  },
-  servers: [
-    {
-      url: "http://localhost:5000/api",
-      description: "Development server",
-    },
-  ],
-};
 
 const options = {
   swaggerDefinition,
@@ -66,6 +40,9 @@ const options = {
   // },
   apis: ["src/features/*/controller/*-controller.ts"],
 };
+
+const swaggerJSDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 
 const swaggerSpec = swaggerJSDoc(options);
 

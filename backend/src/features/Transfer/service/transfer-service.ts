@@ -1,5 +1,4 @@
 import { TransferRepository } from "../repository/transfer-repository";
-// import { TransferRepository } from "@repository/transfer-repository";
 import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
 
 export class TransferService {
@@ -38,7 +37,7 @@ export class TransferService {
     );
   }
 
-  async createTransfer(transfer): Promise<ITransfer | null> {
+  async createTransfer(transfer: ITransfer): Promise<ITransfer | null> {
     return await this.transferRepository.createTransfer(transfer);
   }
 
@@ -56,7 +55,7 @@ export class TransferService {
     }
   }
 
-  async deleteTransfer(transferId) {
+  async deleteTransfer(transferId: any) {
     return await this.transferRepository.deleteTransfer(transferId);
   }
 }
