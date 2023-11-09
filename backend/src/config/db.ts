@@ -4,7 +4,7 @@ require("dotenv").config();
 let database: Mongoose.Connection;
 
 export const connect = () => {
-  const url = process.env.MONGO_URI!; //'mongodb://localhost:27017/mydb';
+  const url = process.env.MONGO_URI!;
   console.log("from connect: process.env.MONGO_CONNECTION_STRING :::", url);
 
   if (database) {
