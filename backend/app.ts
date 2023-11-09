@@ -1,25 +1,15 @@
 import express from "express";
 import cors from "cors";
 import { Response, Request, NextFunction } from "express";
-// import session from "express-session";
-// import mongo from "connect-mongo";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import multer from "multer";
 import fs from "fs";
-// import { IDigitalObject } from "dats_shared/Types/interfaces/IDigitalObject";
 import transferRouter from "./src/features/Transfer/routes/transfer-route";
 import digitalFileListRouter from "./src/features/Transfer/routes/digitalFileList-route";
 import digitalFileRouter from "./src/features/Transfer/routes/digitalFile-route";
 import { datsComponents } from "./swagger-components"; // Import your components
 
-// API keys and Passport configuration
-// import "./config/passport-consumer";
-// import avatar from "./routes/avatar";
-// import notification from "./routes/notification";
-// import thread from "./routes/thread";
-// import version from "./routes/version";
-// import { CORS_WHITELIST } from "../client/core/src/models/HostUrl";
 dotenv.config(); // Load environment variables from .env
 // Connect to MongoDB
 const mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/mydb";
