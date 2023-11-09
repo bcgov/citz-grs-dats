@@ -1,0 +1,24 @@
+// backend/tsconfig.json
+{
+    "compilerOptions": {
+      "target": "es6",
+      "module": "commonjs",
+      "jsx": "react",
+      "outDir": "./dist",
+      "rootDir": "src",
+      "strict": true,
+      "esModuleInterop": true,
+      "noImplicitAny": false,
+      "baseUrl": "./",
+      "paths": {
+        "@controller/*": ["src/controller/*"],
+        "@config/*": ["src/config/*"],
+        "@service/*": ["src/service/*"],
+        "@model/*": ["./src/model/*"],
+        "@route/*": ["src/route/*"],
+        "@repository/*": ["./src/repository/*"]
+      },
+    } ,   
+    "include": ["src/**/*"]
+  }
+  
