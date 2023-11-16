@@ -1,20 +1,13 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
-
-import { Provider } from "react-redux";
-import store from "./store";
-import "@coreui/coreui/dist/css/coreui.min.css";
-// import "./index.css";
+import ReactDOM from "react-dom";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
-const root = ReactDOM.createRoot(
-  document.getElementById("root") as HTMLElement
-);
-root.render(
-  <Provider store={store}>
+ReactDOM.render(
+  <React.StrictMode>
     <App />
-  </Provider>
+  </React.StrictMode>,
+  document.getElementById("root")
 );
 
 // If you want to start measuring performance in your app, pass a function

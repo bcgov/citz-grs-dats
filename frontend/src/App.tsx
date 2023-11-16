@@ -1,18 +1,49 @@
 import React from "react";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import { createTheme } from "@mui/material/styles";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { routes as appRoutes } from "./routes";
+import Layout from "./components/layout/MainLayout";
 
-import AdminLayout from "./components/layout/AdminLayout";
-import "./scss/style.scss";
-const App: React.FC = () => {
+function App() {
+  // define theme
+  // const theme = createTheme({
+  //   palette: {
+  //     primary: {
+  //       light: "#63b8ff",
+  //       main: "#0989e3",
+  //       dark: "#005db0",
+  //       contrastText: "#000",
+  //     },
+  //     secondary: {
+  //       main: "#4db6ac",
+  //       light: "#82e9de",
+  //       dark: "#00867d",
+  //       contrastText: "#000",
+  //     },
+  //   },
+  // });
+  // TODO remove, this demo shouldn't need to reset the theme.
+  const defaultTheme = createTheme();
+
   return (
-    <div className="App">
+    <ThemeProvider theme={defaultTheme}>
+      <CssBaseline />
       <Router>
-        <Routes>
-          <Route path="*" element={<AdminLayout />} />
-        </Routes>
+        <Layout>
+          <Routes>
+            {appRoutes.map((route) => (
+              <Route
+                key={route.key}
+                path={route.path}
+                element={<route.component />}
+              />
+            ))}
+          </Routes>
+        </Layout>
       </Router>
-    </div>
+    </ThemeProvider>
   );
-};
+}
 
 export default App;

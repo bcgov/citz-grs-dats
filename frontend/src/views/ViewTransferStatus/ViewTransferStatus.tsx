@@ -1,7 +1,7 @@
 import React, { ReactElement, FC } from "react";
 import { Box, Typography } from "@mui/material";
 
-const Transfers: FC<any> = (): ReactElement => {
+const ViewTransferStatus: FC<any> = (): ReactElement => {
   return (
     <Box
       sx={{
@@ -12,9 +12,9 @@ const Transfers: FC<any> = (): ReactElement => {
         alignItems: "center",
       }}
     >
-      <Typography variant="h3">Transfers</Typography>
+      <Typography variant="h3">View Transfer Status</Typography>
     </Box>
   );
 };
 
-export default Transfers;
+export default ViewTransferStatus;

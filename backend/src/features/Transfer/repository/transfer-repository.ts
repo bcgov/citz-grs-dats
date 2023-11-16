@@ -1,3 +1,4 @@
+import { FilterQuery } from "mongoose";
 import { TransferModel } from "../model/transfer-model";
 // import { TransferModel } from "@model/transfer-model";
 import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
@@ -27,7 +28,9 @@ export class TransferRepository {
     return transfer;
   }
 
-  async getSearchTransfers(transferFilters): Promise<ITransfer[] | null> {
+  async getSearchTransfers(
+    transferFilters: FilterQuery<ITransfer>
+  ): Promise<ITransfer[] | null> {
     const transfers = await TransferModel.find(transferFilters);
     console.log("transfer:::", transfers);
     return transfers;
@@ -46,7 +49,7 @@ export class TransferRepository {
       throw error;
     }
   }
-  async createTransfer(transferInput): Promise<ITransfer | null> {
+  async createTransfer(transferInput: ITransfer): Promise<ITransfer | null> {
     try {
       const newTransfer = await TransferModel.create(transferInput);
       return newTransfer;
@@ -58,7 +61,7 @@ export class TransferRepository {
 
   async updateTransfer(
     transferId: string,
-    updatedData: any
+    updatedData: ITransfer
   ): Promise<ITransfer | null> {
     try {
       const updatedTransfer = await TransferModel.findByIdAndUpdate(

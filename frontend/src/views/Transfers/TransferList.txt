@@ -1,0 +1,134 @@
+// import React, { useEffect, useState } from "react";
+// import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
+// import { TransferService } from "../../services/transferService"; // Adjust the path
+// import CreateTransferModal from "./TransferCreateModal";
+// import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
+// import ITransferFormData from "../../types/Interfaces/ITransferFormData";
+// import { Link } from "react-router-dom"; // Import Link component
+// import {
+//   CCard,
+//   CCardBody,
+//   CCardHeader,
+//   CCol,
+//   CRow,
+//   CTable,
+// } from "@coreui/react";
+
+// // const handleSaveTransfer = (transfer: ITransfer) => {
+// //   // Handle saving the transfer data (e.g., send it to an API)
+// //   console.log("Saving transfer data:", transfer);
+// // };
+
+// const TransfersList = () => {
+//   const [transfers, setTransfers] = useState<ITransfer[]>([]);
+//   const transferService = new TransferService();
+
+//   useEffect(() => {
+//     const fetchTransfers = async () => {
+//       try {
+//         const transfers = await transferService.getTransfers();
+//         console.log(transfers);
+//         setTransfers(transfers);
+//       } catch (error) {
+//         console.error("Error:", error);
+//       }
+//     };
+
+//     fetchTransfers();
+
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, []);
+
+//   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+//   const [isCreatetModalOpen, setIsCreateModalOpen] = useState(false);
+//   const [selectedTransfer, setSelectedTransfer] = useState<ITransfer | null>(
+//     null
+//   );
+
+//   const handleDeleteClick = (transfer: ITransfer) => {
+//     setSelectedTransfer(transfer);
+//     setIsDeleteModalOpen(true);
+//   };
+
+//   const handleDeleteConfirmation = async () => {
+//     if (selectedTransfer) {
+//       // Perform the delete operation here, e.g., call an API
+//       await transferService.deleteTransfer(selectedTransfer._id);
+//       console.log("Deleting transfer:", selectedTransfer);
+
+//       // Close the modal and clear the selected transfer
+//       setIsDeleteModalOpen(false);
+//       setSelectedTransfer(null);
+//     }
+//   };
+
+//   return (
+//     <CRow>
+//       <CreateTransferModal
+//         isOpen={isCreatetModalOpen}
+//         onRequestClose={() => setIsCreateModalOpen(false)}
+//       />
+//       <CCol xs={12}>
+//         <CCard className="mb-4">
+//           <CCardHeader>
+//             <strong>Digital Transfer List</strong> <small>example</small>
+//           </CCardHeader>
+//           <CCardBody>
+//             <CTable hover>
+//               <thead>
+//                 <tr>
+//                   <th>Application Number</th>
+//                   <th>Accession Number</th>
+//                   <th>Description</th>
+//                   <th>Ministry</th>
+//                   <th>Branch</th>
+//                   <th>Status</th>
+//                   <th></th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {transfers.map((transfer) => (
+//                   <tr>
+//                     <td>{transfer.applicationNumber}</td>
+//                     <td>{transfer.accessionNumber}</td>
+//                     <td>{transfer.description}</td>
+//                     <td>{transfer.producerMinistry}</td>
+//                     <td>{transfer.producerBranch}</td>
+//                     <td>{transfer.status}</td>
+//                     <td>
+//                       <div>
+//                         <Link
+//                           className="btn btn-light"
+//                           to={`/transfer/${transfer._id}`}
+//                         >
+//                           View
+//                         </Link>
+//                       </div>
+//                     </td>
+//                     <td>
+//                       <div>
+//                         <button
+//                           className="btn btn-light"
+//                           onClick={() => handleDeleteClick(transfer)}
+//                         >
+//                           Delete
+//                         </button>
+//                       </div>
+//                     </td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </CTable>
+//           </CCardBody>
+//         </CCard>
+//       </CCol>
+//       <DeleteConfirmationModal
+//         visible={isDeleteModalOpen}
+//         onClose={() => setIsDeleteModalOpen(false)}
+//         onConfirm={handleDeleteConfirmation}
+//       />
+//     </CRow>
+//   );
+// };
+
+// export default TransfersList;

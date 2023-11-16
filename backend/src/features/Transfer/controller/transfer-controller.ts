@@ -110,8 +110,7 @@ export default class TransferController {
    */
   async getTransferById(req: Request, res: Response) {
     try {
-      const transferId = req.params.transferId; // Assuming the parameter is named 'transferId' in the route
-      console.log(transferId);
+      const transferId = req.params.transferId;
       const transfer = await this.transferService.getTransferById(transferId);
       if (!transfer) {
         return res.status(404).json({ error: "Transfer not found" });

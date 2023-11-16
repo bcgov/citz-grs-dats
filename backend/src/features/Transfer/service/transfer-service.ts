@@ -1,3 +1,4 @@
+import { FilterQuery } from "mongoose";
 import { TransferRepository } from "../repository/transfer-repository";
 import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
 
@@ -24,7 +25,9 @@ export class TransferService {
     );
   }
 
-  async getSearchTransfers(transferFilters): Promise<ITransfer[] | null> {
+  async getSearchTransfers(
+    transferFilters: FilterQuery<ITransfer>
+  ): Promise<ITransfer[] | null> {
     return await this.transferRepository.getSearchTransfers(transferFilters);
   }
   async getTransferByKeysNumbers(
@@ -43,7 +46,7 @@ export class TransferService {
 
   async updateTransfer(
     transferId: string,
-    updatedData: any
+    updatedData: ITransfer
   ): Promise<ITransfer | null> {
     try {
       return await this.transferRepository.updateTransfer(

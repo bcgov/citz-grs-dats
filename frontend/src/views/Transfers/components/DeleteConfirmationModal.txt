@@ -1,0 +1,40 @@
+// import React from "react";
+// import {
+//   CModal,
+//   CModalBody,
+//   CModalFooter,
+//   CModalHeader,
+//   CModalTitle,
+//   CButton,
+// } from "@coreui/react";
+
+// interface DeleteConfirmationModalProps {
+//   visible: boolean;
+//   onClose: () => void;
+//   onConfirm: () => void;
+// }
+
+// const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
+//   visible,
+//   onClose,
+//   onConfirm,
+// }) => {
+//   return (
+//     <CModal visible={visible} onClose={onClose}>
+//       <CModalHeader closeButton>
+//         <CModalTitle>Confirm Deletion</CModalTitle>
+//       </CModalHeader>
+//       <CModalBody>Are you sure you want to delete this transfer?</CModalBody>
+//       <CModalFooter>
+//         <CButton color="secondary" onClick={onClose}>
+//           Cancel
+//         </CButton>
+//         <CButton color="danger" onClick={onConfirm}>
+//           Delete
+//         </CButton>
+//       </CModalFooter>
+//     </CModal>
+//   );
+// };
+
+// export default DeleteConfirmationModal;

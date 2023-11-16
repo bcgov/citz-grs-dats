@@ -1,7 +1,7 @@
 import React, { ReactElement, FC } from "react";
 import { Box, Typography } from "@mui/material";
 
-const Transfers: FC<any> = (): ReactElement => {
+const CreateDigitalFileList: FC<any> = (): ReactElement => {
   return (
     <Box
       sx={{
@@ -12,9 +12,9 @@ const Transfers: FC<any> = (): ReactElement => {
         alignItems: "center",
       }}
     >
-      <Typography variant="h3">Transfers</Typography>
+      <Typography variant="h3">Create Digital File List</Typography>
     </Box>
   );
 };
 
-export default Transfers;
+export default CreateDigitalFileList;

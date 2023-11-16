@@ -1,37 +1,87 @@
-import React from "react";
-import { ReactElement } from "react";
-import ITransferFormData from "./types/Interfaces/ITransferFormData";
+// import React from "react";
+// import { ReactElement } from "react";
+// import ITransferFormData from "./types/Interfaces/ITransferFormData";
 
-const Dashboard = React.lazy(() => import("./views/Dashboard/Dashboard"));
-// const Transfers = React.lazy(() => import("./views/transfers/Transfers"));
-const Transfers = React.lazy(() => import("./views/Transfers/TransferList"));
-const Transfer = React.lazy(() => import("./views/Transfers/TransferEdit"));
-const UploadeDigitalFileListForm = React.lazy(
-  () => import("./views/UploadeDigitalFileList/UploadeDigitalFileListForm")
-);
+// const Dashboard = React.lazy(() => import("./views/Dashboard/Dashboard"));
+// // const Transfers = React.lazy(() => import("./views/transfers/Transfers"));
+// const Transfers = React.lazy(() => import("./views/Transfers/TransferList"));
+// const Transfer = React.lazy(() => import("./views/Transfers/TransferEdit"));
+// const UploadeDigitalFileListForm = React.lazy(
+//   () => import("./views/UploadeDigitalFileList/UploadeDigitalFileListForm")
+// );
 
+// interface Route {
+//   path: string;
+//   exact?: boolean;
+//   name: string;
+//   element: ReactElement<any>;
+// }
+// interface EditTransferPageProps {
+//   transferFormData: ITransferFormData;
+//   onEditTransfer: (transferFormData: ITransferFormData) => void;
+// }
+
+// const routes: Route[] = [
+//   { path: "/", exact: true, name: "Home", element: <div>Home</div> }, // Replace with your desired content
+//   { path: "/dashboard", name: "Dashboard", element: <Dashboard /> },
+//   { path: "/Transfers", name: "Transfers", element: <Transfers /> },
+//   { path: "/Transfer/:transferId", name: "Transfer", element: <Transfer /> },
+//   {
+//     path: "/UploadDigitalFileList/UploadDigitalFileListForm",
+//     name: "UploadDigitalFileList",
+//     element: <UploadeDigitalFileListForm />,
+//   },
+//   // ... Define other routes similarly
+// ];
+
+// export default routes;
+// pages
+import Home from "./views/Home/Home";
+import CreateDigitalFileList from "./views/CreateDigitalFileList/CreateDigitalFileList";
+import SendRecords from "./views/SendRecords/SendRecords";
+import ViewTransferStatus from "./views/ViewTransferStatus/ViewTransferStatus";
+
+// import Dashboard from "./views/Dashboard/Dashboard";
+
+// other
+import { FC } from "react";
+
+// interface
 interface Route {
+  key: string;
+  title: string;
   path: string;
-  exact?: boolean;
-  name: string;
-  element: ReactElement<any>;
-}
-interface EditTransferPageProps {
-  transferFormData: ITransferFormData;
-  onEditTransfer: (transferFormData: ITransferFormData) => void;
+  enabled: boolean;
+  component: FC<{}>;
 }
 
-const routes: Route[] = [
-  { path: "/", exact: true, name: "Home", element: <div>Home</div> }, // Replace with your desired content
-  { path: "/dashboard", name: "Dashboard", element: <Dashboard /> },
-  { path: "/Transfers", name: "Transfers", element: <Transfers /> },
-  { path: "/Transfer/:transferId", name: "Transfer", element: <Transfer /> },
+export const routes: Array<Route> = [
   {
-    path: "/UploadDigitalFileList/UploadDigitalFileListForm",
-    name: "UploadDigitalFileList",
-    element: <UploadeDigitalFileListForm />,
+    key: "home-route",
+    title: "Home",
+    path: "/",
+    enabled: true,
+    component: Home,
   },
-  // ... Define other routes similarly
+  {
+    key: "create-Digital-File-List-route",
+    title: "CreateDigitalFileList",
+    path: "/CreateDigitalFileList",
+    enabled: true,
+    component: CreateDigitalFileList,
+  },
+  {
+    key: "sendRecords-route",
+    title: "SendRecords",
+    path: "/SendRecords",
+    enabled: true,
+    component: SendRecords,
+  },
+  {
+    key: "view-transfer-status-route",
+    title: "ViewTransferStatus",
+    path: "/ViewTransferStatus",
+    enabled: true,
+    component: ViewTransferStatus,
+  },
 ];
-
-export default routes;
