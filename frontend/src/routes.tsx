@@ -39,7 +39,9 @@
 import Home from "./views/Home/Home";
 import CreateDigitalFileList from "./views/CreateDigitalFileList/CreateDigitalFileList";
 import SendRecords from "./views/SendRecords/SendRecords";
-import ViewTransferStatus from "./views/ViewTransferStatus/ViewTransferStatus";
+import TransferViewStatus from "./views/ViewTransferStatus/TransferViewStatus";
+
+import TransferViewEdit from "./views/ViewTransferStatus/TransferViewEdit";
 
 // import Dashboard from "./views/Dashboard/Dashboard";
 
@@ -78,10 +80,17 @@ export const routes: Array<Route> = [
     component: SendRecords,
   },
   {
-    key: "view-transfer-status-route",
-    title: "ViewTransferStatus",
+    key: "transfer-view-status-route",
+    title: "TransferViewStatus",
     path: "/ViewTransferStatus",
     enabled: true,
-    component: ViewTransferStatus,
+    component: TransferViewStatus,
+  },
+  {
+    key: "transfer-view-edit-route",
+    title: "TransferViewEdit",
+    path: "/TransferViewEdit/:transferId",
+    enabled: true,
+    component: TransferViewEdit,
   },
 ];

@@ -69,9 +69,9 @@
 
 //   return (
 //     <>
-//       <CButton onClick={() => setVisible(!visible)}>
-//         Register your Transfer Information
-//       </CButton>
+<CButton onClick={() => setVisible(!visible)}>
+        Register your Transfer Information
+</CButton>
 //       <CModal visible={visible} size="xl" onClose={onRequestClose}>
 //         <CModalHeader>
 //           <strong>Enter your Transfer Information</strong>
