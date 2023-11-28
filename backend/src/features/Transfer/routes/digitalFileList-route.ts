@@ -16,6 +16,6 @@ router
   .delete(digitalFileListController.deleteDigitalDatalistFromTransfer)
   .post(digitalFileListController.updateDigitalFileList);
 
-// ObjectDetails for DigitalFileLists Children
+// router.route("/digitalFileLists/upload66x").post(digitalFileListController);
 
 export default router;

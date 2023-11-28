@@ -11,6 +11,8 @@
 # production
 /build
 
+# upload Files
+/Upload66x
 # misc
 .DS_Store
 .env.local

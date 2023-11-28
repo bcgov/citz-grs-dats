@@ -1,13 +1,6 @@
 import React, { useState } from "react";
-import {
-  Card,
-  Divider,
-  Typography,
-  Box,
-  Button,
-  Grid,
-  TextField,
-} from "@mui/material";
+import UploadService from "../../../services/uploadService";
+import { Card, Divider, Typography, Box, Button, Grid } from "@mui/material";
 
 const FileUploadComponent: React.FC = () => {
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
@@ -25,8 +18,12 @@ const FileUploadComponent: React.FC = () => {
       const formData = new FormData();
       for (let i = 0; i < selectedFiles.length; i++) {
         formData.append("files", selectedFiles[i]);
+        console.log(selectedFiles[i].name);
       }
+      // const response = uploadService.upload66xFile(formData);
+      // console.log(response);
 
+      // await transferService.updateTransfer(transfer);
       // Make an API call to upload the files using a service or fetch
       // Example: You might use the Fetch API or an Axios instance
       // fetch("your-upload-api-endpoint", {

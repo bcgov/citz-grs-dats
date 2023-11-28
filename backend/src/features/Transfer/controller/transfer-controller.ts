@@ -6,13 +6,6 @@ import {
   transferUpdateValidation,
 } from "./validators/transfer-validators";
 
-// const getTransfers = (req: Request, res: Response): void => {
-//     res.json(req.user);
-// };
-// export default {
-//     getTransfers,
-// };
-
 export default class TransferController {
   private transferService: TransferService;
 

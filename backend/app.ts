@@ -3,11 +3,10 @@ import cors from "cors";
 import { Response, Request, NextFunction } from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import multer from "multer";
-import fs from "fs";
 import transferRouter from "./src/features/Transfer/routes/transfer-route";
 import digitalFileListRouter from "./src/features/Transfer/routes/digitalFileList-route";
 import digitalFileRouter from "./src/features/Transfer/routes/digitalFile-route";
+import uploadFileRouter from "./src/features/Transfer/routes/uploadFiles-route";
 import { swaggerDefinition } from "./swagger-definition";
 import { datsComponents } from "./swagger-components";
 
@@ -98,10 +97,31 @@ app.get("/", (req, res) => {
 app.use("/api", transferRouter); // Mount the transferRouter under the '/api' prefix
 app.use("/api", digitalFileListRouter); // Mount the transferRouter under the '/api' prefix
 app.use("/api", digitalFileRouter); // Mount the transferRouter under the '/api' prefix
+app.use("/api", uploadFileRouter); // Mount the transferRouter under the '/api' prefix
 
-// Define the storage location for uploaded files
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+// Express upload REST API
+
+// Express upload REST API
+// app.post("/api/uploadfile", upload.single("uploadfile"), (req, res) => {
+//   try {
+//     if (!req.file) {
+//       res.status(400).send("No file uploaded.");
+//       return;
+//     }
+//     const filePath = path.join(uploadDestination, req.file.originalname);
+//     // const filePath = req.file;
+//     console.log(filePath);
+//     extractsFromAra66x(filePath);
+//     //const excelJson = importExcelData2MongoDB(filePath);
+//     res.json({
+//       msg: "File Uploaded",
+//       file: req.file,
+//     });
+//   } catch (err) {
+//     console.log("Error uploading file:", err);
+//     res.status(500).json({ error: "Failed to upload file" });
+//   }
+// });
 
 // // Handle the file upload
 // app.post('/upload', upload.single('file'), (req, res) => {
