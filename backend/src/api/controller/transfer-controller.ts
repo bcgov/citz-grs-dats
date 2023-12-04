@@ -74,7 +74,7 @@ export default class TransferController {
   async getTransfers(req: Request, res: Response) {
     try {
       const transfers = await this.transferService.getTransfers();
-      res.json(transfers);
+      res.status(200).json(transfers);
     } catch (error) {
       res.status(500).json({ error: "An error occurred" });
     }
@@ -108,7 +108,7 @@ export default class TransferController {
       if (!transfer) {
         return res.status(404).json({ error: "Transfer not found" });
       }
-      res.json(transfer);
+      res.status(200).json(transfer);
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "An error occurred" });
@@ -128,7 +128,7 @@ export default class TransferController {
         res.status(404).json({ error: "Transfer not found" });
       }
 
-      res.json(transfer);
+      res.status(200).json(transfer);
     } catch (error) {
       res.status(500).json({ error: "An error occurred" });
     }
@@ -140,7 +140,7 @@ export default class TransferController {
       const transfers = await this.transferService.getSearchTransfers(
         transferFilters
       );
-      res.json(transfers);
+      res.status(200).json(transfers);
     } catch (error) {
       res.status(500).json({ error: "An error occurred" });
     }
@@ -230,7 +230,7 @@ export default class TransferController {
       if (!updatedTransfer) {
         return res.status(404).json({ error: "Transfer not found" });
       }
-      res.json(updatedTransfer);
+      res.status(200).json(updatedTransfer);
     } catch (error) {
       res.status(500).json({ error: "An error occurred" });
     }
@@ -245,7 +245,7 @@ export default class TransferController {
       if (!deletedTransfer) {
         return res.status(404).json({ error: "Transfer not found" });
       }
-      res.json({ message: "Transfer deleted successfully" });
+      res.status(200).json({ message: "Transfer deleted successfully" });
     } catch (error) {
       res.status(500).json({ error: "An error occurred" });
     }

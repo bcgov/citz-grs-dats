@@ -20,4 +20,18 @@ export default class UploadService {
         return error;
       });
   }
+  public async checkFolderAccessibility(folderPath: string): Promise<boolean> {
+    try {
+      // Make an API call or any other method to check folder accessibility
+      const response = await axios.get(
+        `/api/check-accessibility?folder=${folderPath}`
+      );
+
+      // Assuming the API responds with a boolean indicating accessibility
+      return response.data.accessible;
+    } catch (error) {
+      console.error("Error checking folder accessibility:", error);
+      return false; // Handle error as needed
+    }
+  }
 }

@@ -65,13 +65,13 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface Aris66xDropZoneProps {
+interface Aris617DropZoneProps {
   onFileChange?: (file: File) => void;
   onUpload?: () => void;
   handleFileUpload: (file: File) => void;
 }
 
-const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
+const Aris617DropZone: React.FC<Aris617DropZoneProps> = ({
   onFileChange,
   onUpload,
   handleFileUpload,
@@ -161,4 +161,4 @@ const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
   );
 };
 
-export default Aris66xDropZone;
+export default Aris617DropZone;

@@ -22,7 +22,7 @@ export default class DigitalFileController {
       if (!digitalLists) {
         return res.status(404).json({ error: "Digital File List not found" });
       }
-      res.json(digitalLists);
+      res.status(200).json(digitalLists);
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "An error occurred" });

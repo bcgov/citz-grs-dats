@@ -28,7 +28,7 @@ export default class DigitalFileListController {
       if (!digitalFileLists) {
         return res.status(404).json({ error: "Digital File List not found" });
       }
-      res.json(digitalFileLists);
+      res.status(200).json(digitalFileLists);
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "An error occurred" });
@@ -66,7 +66,7 @@ export default class DigitalFileListController {
       if (!deleteddigitalDatalist) {
         return res.status(404).json({ error: "Digital Data list not found" });
       }
-      return res.json({
+      return res.status(200).json({
         message:
           "Digital Data list deleted successfully" + digitalDatalistId + " ",
       });
@@ -87,7 +87,7 @@ export default class DigitalFileListController {
       if (!updatedDigitalFileList) {
         return res.status(404).json({ error: "Digital File List not found" });
       }
-      res.json(updatedDigitalFileList);
+      res.status(200).json(updatedDigitalFileList);
     } catch (error) {
       res.status(500).json({ error: "An error occurred" });
     }

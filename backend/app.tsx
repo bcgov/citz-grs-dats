@@ -3,10 +3,11 @@ import cors from "cors";
 import { Response, Request, NextFunction } from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import transferRouter from "./src/features/Transfer/routes/transfer-route";
-import digitalFileListRouter from "./src/features/Transfer/routes/digitalFileList-route";
-import digitalFileRouter from "./src/features/Transfer/routes/digitalFile-route";
-import uploadFileRouter from "./src/features/Transfer/routes/uploadFiles-route";
+import * as routers from "./src/api/routes";
+// import transferRouter from "./src/api/routes/transfer-route";
+// import digitalFileListRouter from "./src/features/Transfer/routes/digitalFileList-route";
+// import digitalFileRouter from "./src/features/Transfer/routes/digitalFile-route";
+// import uploadFileRouter from "./src/features/Transfer/routes/uploadFiles-route";
 import { swaggerDefinition } from "./swagger-definition";
 import { datsComponents } from "./swagger-components";
 
@@ -94,10 +95,10 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.send("hello world from HR management App Backend");
 });
-app.use("/api", transferRouter); // Mount the transferRouter under the '/api' prefix
-app.use("/api", digitalFileListRouter); // Mount the transferRouter under the '/api' prefix
-app.use("/api", digitalFileRouter); // Mount the transferRouter under the '/api' prefix
-app.use("/api", uploadFileRouter); // Mount the transferRouter under the '/api' prefix
+app.use("/api", routers.transferRouter);
+app.use("/api", routers.digitalFileListRoute);
+app.use("/api", routers.digitalFileRouter);
+app.use("/api", routers.uploadFilesRouter);
 
 // Express upload REST API
 
