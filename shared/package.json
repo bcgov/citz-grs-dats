@@ -1,7 +1,8 @@
 {
-    "name": "dats_shared",
-    "version": "1.0.0",
-    "dependencies": {
-        "mongoose": "^7.4.4"
-    }
+  "name": "dats_shared",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "mongoose": "^7.4.4"
+  }
 }

@@ -1,10 +1,17 @@
 {
-    "name": "dats",
-    "private": true,
-    "workspaces": [
-      "frontend",
-      "backend",
-      "shared"
-    ]
+  "name": "dats",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
+  "scripts": {
+    "client": "yarn workspace frontend start",
+    "server": "yarn workspace backend dev",
+    "start": "concurrently --kill-others \"yarn server\" \"yarn client\""
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
   }
-  
+}

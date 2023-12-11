@@ -20,6 +20,23 @@ export default class UploadService {
         return error;
       });
   }
+
+  public async upload617File(formData: any): Promise<any> {
+    return await axios
+      .post(`${API_URL}uploadfileARIS617`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        // const transfer: ITransfer = response.data;
+        return response.data;
+      })
+      .catch((error) => {
+        console.error(error);
+        return error;
+      });
+  }
   public async checkFolderAccessibility(folderPath: string): Promise<boolean> {
     try {
       // Make an API call or any other method to check folder accessibility

@@ -14,7 +14,7 @@ import {
   Paper,
 } from "@mui/material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import ExcelImg from "../../../assets/images/Microsoft_Office_Excel_(2019–present).svg.png";
+import PDFImg from "../../../assets/images/adobe-pdf-icon-logo-png-transparent.png";
 import UploadService from "../../../services/uploadService";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -121,8 +121,8 @@ const Aris617DropZone: React.FC<Aris617DropZoneProps> = ({
               {selectedFile ? (
                 <div className={classes.fileDisplay}>
                   <img
-                    src={ExcelImg}
-                    alt="Excel Icon"
+                    src={PDFImg}
+                    alt="PDF Icon"
                     style={{ width: 48, height: 48 }}
                     className={classes.fileIcon}
                   />

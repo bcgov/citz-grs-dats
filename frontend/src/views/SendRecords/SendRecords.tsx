@@ -7,6 +7,7 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Aris66xDropZone from "./components/Aris66xDropZone";
+import Aris617DropZone from "./components/Aris617DropZone";
 import FoldersValidation from "./components/FoldersValidations";
 import UploadService from "../../services/uploadService";
 
@@ -24,7 +25,7 @@ export default function SendRecords() {
     // Perform validation logic
     console.log("Validating folders");
   };
-  const handleFileUpload = useCallback((file: File) => {
+  const handle66xFileUpload = useCallback((file: File) => {
     const formData = new FormData();
     formData.append("uploadARIS66xfile", file);
 
@@ -34,6 +35,24 @@ export default function SendRecords() {
       .then((response) => {
         console.log(response);
         setFolders(response.folders || []);
+        // Do any additional handling or state updates here
+      })
+      .catch((error) => {
+        console.error("Upload error:", error);
+        // Handle the error as needed
+      });
+  }, []);
+
+  const handle617FileUpload = useCallback((file: File) => {
+    const formData = new FormData();
+    formData.append("uploadARIS617file", file);
+
+    // Assuming uploadService.upload66xFile returns a Promise
+    uploadService
+      .upload617File(formData)
+      .then((response) => {
+        console.log(response);
+        // setFolders(response.folders || []);
         // Do any additional handling or state updates here
       })
       .catch((error) => {
@@ -59,7 +78,7 @@ export default function SendRecords() {
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Aris66xDropZone handleFileUpload={handleFileUpload} />
+          <Aris66xDropZone handleFileUpload={handle66xFileUpload} />
         </AccordionDetails>
       </Accordion>
       <Accordion
@@ -99,10 +118,7 @@ export default function SendRecords() {
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography>
-            Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer
-            sit amet egestas eros, vitae egestas augue. Duis vel est augue.
-          </Typography>
+          <Aris617DropZone handleFileUpload={handle617FileUpload} />
         </AccordionDetails>
       </Accordion>
       <Accordion

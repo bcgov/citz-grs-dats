@@ -52,20 +52,6 @@ const columns: readonly Column[] = [
 ];
 
 export default function TransfersTable() {
-  //   const [page, setPage] = React.useState(0);
-  //   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-
-  //   const handleChangePage = (event: unknown, newPage: number) => {
-  //     setPage(newPage);
-  //   };
-
-  //   const handleChangeRowsPerPage = (
-  //     event: React.ChangeEvent<HTMLInputElement>
-  //   ) => {
-  //     setRowsPerPage(+event.target.value);
-  //     setPage(0);
-  //   };
-
   const [transfers, setTransfers] = useState<ITransfer[]>([]);
   const transferService = new TransferService();
 
@@ -73,7 +59,6 @@ export default function TransfersTable() {
     const fetchTransfers = async () => {
       try {
         const transfers = await transferService.getTransfers();
-        console.log(transfers);
         setTransfers(transfers);
       } catch (error) {
         console.error("Error:", error);
@@ -103,7 +88,7 @@ export default function TransfersTable() {
           </TableHead>
           <TableBody>
             {transfers.map((transfer) => (
-              <TableRow key={transfer.id}>
+              <TableRow key={transfer._id}>
                 <TableCell>{transfer.applicationNumber}</TableCell>
                 <TableCell>{transfer.accessionNumber}</TableCell>
                 <TableCell>{transfer.description}</TableCell>

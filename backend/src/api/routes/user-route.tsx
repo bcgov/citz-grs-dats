@@ -3,14 +3,14 @@
  * @author Jlevesqu
  */
 import express from "express";
-import { getUserByGuid, getUsers } from "../controller/user-controller";
+import UserController from "../controller/user-controller";
 
 const router = express.Router();
 
 // User from single guid
-router.route("/user/guid").get(getUserByGuid);
+// router.route("/user/guid").get(getUserByGuid);
 
 // Get all users
-router.route("/user").get(getUsers);
+// router.route("/user").get(UserController.getUsers);
 
 export default router;

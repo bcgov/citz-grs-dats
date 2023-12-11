@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@bcgov/bc-sans": "2.1.0",
+    "@bcgov/citz-imb-kc-react": "https://github.com/bcgov/citz-imb-kc-react/releases/download/v1.0.0/bcgov-citz-imb-kc-react-1.0.0.tgz",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@fontsource/roboto": "^5.0.8",
@@ -34,7 +36,6 @@
     "react-router-dom": "^6.15.0",
     "react-scripts": "5.0.1",
     "recharts": "^2.9.3",
-    "redux": "^4.2.1",
     "timers": "^0.1.1",
     "typescript": "^4.4.2",
     "web-vitals": "^2.1.0"

@@ -13,6 +13,7 @@
     "prod-build": "ENVIRONMENT='production' gulp"
   },
   "dependencies": {
+    "@bcgov/citz-imb-kc-express": "https://github.com/bcgov/citz-imb-kc-express/releases/download/v1.0.0/bcgov-citz-imb-kc-express-1.0.0.tgz",
     "@types/body-parser": "^1.19.2",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
@@ -22,7 +23,6 @@
     "@types/swagger-schema-official": "^2.0.23",
     "body-parser": "^1.20.2",
     "connect-mongo": "^5.0.0",
-    "convert-excel-to-json": "^1.7.0",
     "cors": "^2.8.5",
     "dats": "^0.0.0",
     "dotenv": "^16.3.1",

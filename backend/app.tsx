@@ -100,30 +100,6 @@ app.use("/api", routers.digitalFileListRoute);
 app.use("/api", routers.digitalFileRouter);
 app.use("/api", routers.uploadFilesRouter);
 
-// Express upload REST API
-
-// Express upload REST API
-// app.post("/api/uploadfile", upload.single("uploadfile"), (req, res) => {
-//   try {
-//     if (!req.file) {
-//       res.status(400).send("No file uploaded.");
-//       return;
-//     }
-//     const filePath = path.join(uploadDestination, req.file.originalname);
-//     // const filePath = req.file;
-//     console.log(filePath);
-//     extractsFromAra66x(filePath);
-//     //const excelJson = importExcelData2MongoDB(filePath);
-//     res.json({
-//       msg: "File Uploaded",
-//       file: req.file,
-//     });
-//   } catch (err) {
-//     console.log("Error uploading file:", err);
-//     res.status(500).json({ error: "Failed to upload file" });
-//   }
-// });
-
 // // Handle the file upload
 // app.post('/upload', upload.single('file'), (req, res) => {
 //   const file: IDigitalObject = req.file;
@@ -140,13 +116,6 @@ app.use(function (req: Request, res: Response, next: NextFunction) {
   );
   next();
 });
-// app.use((req: Request, res: Response, next: NextFunction) => {
-//     res.locals.user = req.user;
-//     next();
-// });
-// if (process.env.NODE_ENV === "development") {
-//     app.use(errorHandler());
-// }
 
 // Server rendering configuration
 // if (process.env.NODE_ENV === "production") {

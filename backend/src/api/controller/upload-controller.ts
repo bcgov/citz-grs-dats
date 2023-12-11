@@ -30,7 +30,7 @@ export default class UploadController {
 
       // Respond with the extracted data
       res.status(201).json({
-        message: "Upload successful",
+        message: "Upload ARIS 66x successful",
         accession: transferData?.accession,
         application: transferData?.application,
         ministry: transferData?.ministry,
@@ -44,7 +44,31 @@ export default class UploadController {
   };
 
   handleARIS617Upload: RequestHandler = async (req, res, next) => {
-    // TODO Implementation
+    try {
+      // Handle the uploaded files here (e.g., save to the database)
+      const uploadedFile = req.file;
+
+      if (!uploadedFile) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const filePath = uploadedFile.path;
+
+      console.log(uploadedFile.fieldname);
+
+      // Your upload service logic
+      // const transferData = await extractsFromAra66x(filePath);
+
+      // Need to check if the transfer is new
+
+      // Respond with the extracted data
+      res.status(201).json({
+        message: "Upload ARIS 617 successful",
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "An error occurred" });
+    }
   };
   checkAccessibility: RequestHandler = (req, res, next) => {
     const { folder } = req.query;
