@@ -4,12 +4,42 @@ import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import Grid from "@mui/material/Grid";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
+import { Chip, Link as MuiLink, emphasize, styled } from "@mui/material/";
+import { Link, Link as RouterLink } from "react-router-dom";
+
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Box } from "@mui/material";
 import SelectFolder from "./components/SelectFolder";
 import FileUploadComponent from "../../components/FileUploadComponent";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import HomeIcon from "@mui/icons-material/Home";
 
+const StyledBreadcrumb = styled(Chip)(({ theme }) => {
+  const backgroundColor =
+    theme.palette.mode === "light"
+      ? theme.palette.grey[100]
+      : theme.palette.grey[800];
+  return {
+    backgroundColor,
+    height: theme.spacing(3),
+    color: theme.palette.text.primary,
+    fontWeight: theme.typography.fontWeightRegular,
+    "&:hover, &:focus": {
+      backgroundColor: emphasize(backgroundColor, 0.06),
+    },
+    "&:active": {
+      boxShadow: theme.shadows[1],
+      backgroundColor: emphasize(backgroundColor, 0.12),
+    },
+  };
+}) as typeof Chip; // TypeScript only: need a type cast here because https://github.com/Microsoft/TypeScript/issues/26591
+
+function handleClick(event: React.MouseEvent<Element, MouseEvent>) {
+  event.preventDefault();
+  console.log("You clicked a breadcrumb.");
+}
 export default function CreateDigitalFileList() {
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const handleChange =
@@ -22,6 +52,25 @@ export default function CreateDigitalFileList() {
   };
   return (
     <Grid>
+      {/* Breadcrumb
+      <Box p={3}>
+        <Breadcrumbs aria-label="breadcrumb">
+          <StyledBreadcrumb
+            component="a"
+            href="#"
+            label="Home"
+            icon={<HomeIcon fontSize="small" />}
+          />
+          <StyledBreadcrumb component="a" href="#" label="Catalog" />
+          <StyledBreadcrumb
+            label="Accessories"
+            deleteIcon={<ExpandMoreIcon />}
+            onDelete={handleClick}
+            onClick={handleClick}
+          />
+        </Breadcrumbs>
+      </Box> */}
+      ``
       <Accordion
         expanded={expanded === "panel1"}
         onChange={handleChange("panel1")}

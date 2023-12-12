@@ -1,8 +1,8 @@
 import { FilterQuery } from "mongoose";
-import { TransferRepository } from "../repository/transfer-repository";
+import TransferRepository from "../repository/transfer-repository";
 import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
 
-export class TransferService {
+export default class TransferService {
   private transferRepository: TransferRepository;
 
   constructor() {

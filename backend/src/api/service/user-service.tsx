@@ -1,7 +1,7 @@
-import { UserRepository } from "../repository/user-repository";
+import UserRepository from "../repository/user-repository";
 import { IUser } from "dats_shared/Types/interfaces/IUser";
 
-export class UserService {
+export default class UserService {
   private userRepository: UserRepository;
 
   constructor() {

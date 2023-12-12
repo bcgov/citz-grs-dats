@@ -3,7 +3,7 @@ import { TransferModel } from "../model/transfer-model";
 // import { TransferModel } from "@model/transfer-model";
 import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
 
-export class TransferRepository {
+export default class TransferRepository {
   constructor() {}
 
   async getTransfers(): Promise<ITransfer[] | null> {

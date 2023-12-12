@@ -72,7 +72,7 @@ const TransferViewEdit: React.FC = () => {
   return (
     <>
       <Grid container spacing={1}>
-        <Grid item xs={12} sx={{ marginBottom: 2 }}>
+        <Grid item xs={12} sx={{ marginBottom: 1 }}>
           <Card>
             <Box
               p={1}
@@ -108,7 +108,7 @@ const TransferViewEdit: React.FC = () => {
               container
               spacing={1}
               direction="row"
-              sx={{ marginTop: 2, marginBottom: 2, marginLeft: 2 }}
+              sx={{ marginTop: 1, marginBottom: 2, marginLeft: 2 }}
             >
               <TextField
                 disabled={!isTransferEditing}

@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { TransferService } from "../service/transfer-service";
+import TransferService from "../service/transfer-service";
 import extractsFromAra66x from "./utils/extractsFromAra66x";
 import fs from "fs";
 

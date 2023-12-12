@@ -1,4 +1,4 @@
-import { DigitalFileListService } from "../service/digitalFileList-service";
+import DigitalFileListService from "../service/digitalFileList-service";
 import { Request, Response } from "express";
 
 export default class DigitalFileListController {

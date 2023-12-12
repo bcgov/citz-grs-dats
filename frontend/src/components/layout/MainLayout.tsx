@@ -16,6 +16,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import { NavItems } from "./NavItems";
 import AppBar from "./AppBar";
 import Drawer from "./Drawer";
+import BreadcrumbsRouter from "./BreadcrumbsRouter";
 
 interface LayoutProps {
   children: ReactNode;
@@ -99,6 +100,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
           {" "}
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <BreadcrumbsRouter />
             {children}
           </Container>
         </Box>

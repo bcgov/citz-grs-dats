@@ -1,4 +1,4 @@
-import { TransferService } from "../service/transfer-service";
+import TransferService from "../service/transfer-service";
 import { Request, Response } from "express";
 import { validationResult, param } from "express-validator";
 import {

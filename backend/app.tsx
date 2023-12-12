@@ -4,10 +4,6 @@ import { Response, Request, NextFunction } from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import * as routers from "./src/api/routes";
-// import transferRouter from "./src/api/routes/transfer-route";
-// import digitalFileListRouter from "./src/features/Transfer/routes/digitalFileList-route";
-// import digitalFileRouter from "./src/features/Transfer/routes/digitalFile-route";
-// import uploadFileRouter from "./src/features/Transfer/routes/uploadFiles-route";
 import { swaggerDefinition } from "./swagger-definition";
 import { datsComponents } from "./swagger-components";
 
@@ -99,14 +95,6 @@ app.use("/api", routers.transferRouter);
 app.use("/api", routers.digitalFileListRoute);
 app.use("/api", routers.digitalFileRouter);
 app.use("/api", routers.uploadFilesRouter);
-
-// // Handle the file upload
-// app.post('/upload', upload.single('file'), (req, res) => {
-//   const file: IDigitalObject = req.file;
-
-//   // You can now save the file to a backend folder using fs or any storage mechanism of your choice
-//   // For example:
-//   fs.writeFileSync(`backend-folder/${file.originalname}`, file.buffer);
 
 app.use(function (req: Request, res: Response, next: NextFunction) {
   console.log(

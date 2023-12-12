@@ -1,6 +1,6 @@
 /**
  * @summary Generic http response text to minimize typos and update time
- * @author  LocalNewsTV
+ * @author  Jlevesque
  */
 const httpResponses = {
   200: "OK",

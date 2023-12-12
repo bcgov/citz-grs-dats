@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { DigitalFileService } from "../service/digitalFile-service";
+import DigitalFileService from "../service/digitalFile-service";
 
 export default class DigitalFileController {
   private digitalFileService: DigitalFileService;

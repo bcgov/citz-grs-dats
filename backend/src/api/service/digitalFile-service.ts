@@ -1,7 +1,7 @@
-import { DigitalFileRepository } from "../repository/digitalList-repository";
+import DigitalFileRepository from "../repository/digitalList-repository";
 import { IDigitalFile } from "dats_shared/Types/interfaces/IDigitalFile";
 
-export class DigitalFileService {
+export default class DigitalFileService {
   private digitalFileRepository: DigitalFileRepository;
 
   constructor() {

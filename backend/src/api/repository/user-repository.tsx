@@ -1,7 +1,7 @@
 import { UserModel } from "../model/user-model";
 import { IUser } from "dats_shared/Types/interfaces/IUser";
 
-export class UserRepository {
+export default class UserRepository {
   constructor() {}
 
   async getUsers(): Promise<IUser[] | null> {

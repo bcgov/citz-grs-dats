@@ -4,7 +4,7 @@ import {
   IDigitalFileList,
 } from "../model/digitalFileList-model";
 
-export class DigitalFileListRepository {
+export default class DigitalFileListRepository {
   constructor() {}
   async getDigitalFileListsByTransferId(
     transferId: any

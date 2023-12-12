@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { UserService } from "../service/user-service";
+import UserService from "../service/user-service";
 import { KeycloakUser, KeycloakIdirUser } from "@bcgov/citz-imb-kc-express";
 import httpResponses from "../../utils/httpResponse";
 
