@@ -1,13 +1,14 @@
-import { Document, Schema, Types } from "mongoose";
+import { Types } from "mongoose";
+import { TransferStatus as status } from "dats_shared/Types/Enums/TransferStatus";
 
-export interface ITransfer extends Document {
+export interface ITransfer {
+  _id: Types.ObjectId;
   accessionNumber: string;
   applicationNumber: string;
   description?: string;
-  status?: string;
+  status?: status;
   // typeOfService: TypeOfServiceEnum;
   // typeOfS?chedule: typeOfScheduleEnum;
-  scheduleNumber?: String;
   descriptionOfRecords?: String;
   agentLastName?: String; // Agent and Producer informations
   agentFirstName?: String;
@@ -20,7 +21,7 @@ export interface ITransfer extends Document {
   producerOfficePostalCode?: String;
   digitalFileLists?: [
     {
-      type: Schema.Types.ObjectId;
+      type: Types.ObjectId;
       ref: "DigitalFileList";
     }
   ];

@@ -74,7 +74,7 @@ export default class DigitalFileRepository {
         _id: digitalFileLisId,
       });
       if (digitalFileList) {
-        digitalFileList.digitalFiles.push(digitalFile.id);
+        digitalFileList.digitalFiles?.push(digitalFile.id);
         await digitalFileList.save();
       }
       return digitalFile;

@@ -16,6 +16,7 @@ import {
 import { TransferService } from "../../../services/transferService";
 
 import ITransferFormData from "../../../types/Interfaces/ITransferFormData";
+import { TransferStatus as status } from "dats_shared/Types/Enums/TransferStatus";
 
 interface CreateTransferModalProps {
   isOpen: boolean;
@@ -31,8 +32,7 @@ const CreateTransferModal: React.FC<CreateTransferModalProps> = ({
     accessionNumber: "",
     applicationNumber: "",
     description: "",
-    status: "",
-    scheduleNumber: "",
+    // status: status new ,
     descriptionOfRecords: "",
     agentLastName: "",
     agentFirstName: "",
@@ -143,14 +143,6 @@ const CreateTransferModal: React.FC<CreateTransferModalProps> = ({
                     variant="outlined"
                     onChange={handleInputChange}
                     value={transfer.description}
-                  />
-                  <TextField
-                    sx={{ marginLeft: 2, marginBottom: 2, width: "20%" }}
-                    name="scheduleNumber"
-                    label="SchedulecNumber"
-                    variant="outlined"
-                    onChange={handleInputChange}
-                    value={transfer.scheduleNumber}
                   />
                   <TextField
                     sx={{ marginLeft: 2, marginBottom: 2, width: "20%" }}

@@ -1,14 +1,18 @@
 import { model, Schema, Model, Document } from "mongoose";
 
 import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
+import { TransferStatus as status } from "dats_shared/Types/Enums/TransferStatus";
 
 const TransferSchema: Schema = new Schema<ITransfer>({
   accessionNumber: { type: String, required: true },
   applicationNumber: { type: String, required: true },
   description: { type: String, required: false },
-  scheduleNumber: { type: String, required: false },
   descriptionOfRecords: { type: String, required: false },
-  status: { type: String, required: false },
+  status: {
+    type: String,
+    enum: status,
+    default: status.Draft,
+  },
   digitalFileLists: [
     {
       type: Schema.Types.ObjectId,

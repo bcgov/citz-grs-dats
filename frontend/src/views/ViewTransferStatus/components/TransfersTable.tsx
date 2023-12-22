@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
-import { TransferService } from "../../../services/transferService"; // Adjust the path
+import { TransferService } from "../../../services/transferService";
 // import CreateTransferModal from "./TransferCreateModal";
 // import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
-import ITransferFormData from "../../../types/Interfaces/ITransferFormData";
 import { Link } from "react-router-dom"; // Import Link component
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -88,7 +87,9 @@ export default function TransfersTable() {
           </TableHead>
           <TableBody>
             {transfers.map((transfer) => (
-              <TableRow key={transfer._id}>
+              <TableRow
+                key={transfer.applicationNumber + transfer.accessionNumber}
+              >
                 <TableCell>{transfer.applicationNumber}</TableCell>
                 <TableCell>{transfer.accessionNumber}</TableCell>
                 <TableCell>{transfer.description}</TableCell>

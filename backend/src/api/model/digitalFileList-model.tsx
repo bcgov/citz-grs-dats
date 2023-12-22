@@ -2,12 +2,12 @@ import { model, Schema, Model, Document } from "mongoose";
 import { IDigitalFileList } from "dats_shared/Types//interfaces/IDigitalFileList";
 
 const DigitalFileListSchema: Schema = new Schema<IDigitalFileList>({
-  primarySecondary: { type: String, required: true },
-  schedule: { type: String, required: true },
+  primarySecondary: { type: String, required: false },
+  schedule: { type: String, required: false },
   description: { type: String, required: false },
   fileId: { type: String, required: false },
   folder: { type: String, required: true },
-  fileTitle: { type: String, required: true },
+  fileTitle: { type: String, required: false },
   transfer: {
     type: Schema.Types.ObjectId,
     ref: "Transfer",
@@ -18,7 +18,7 @@ const DigitalFileListSchema: Schema = new Schema<IDigitalFileList>({
       ref: "DigitalFile",
     },
   ],
-  isOPR: { type: Boolean, required: true },
+  isOPR: { type: Boolean, required: false },
   startDate: { type: Date },
   endtDate: { type: Date },
   finalDispositionDate: { type: Date },

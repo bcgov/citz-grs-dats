@@ -16,8 +16,8 @@ export default class DigitalFileListService {
   }
 
   async createDigitalFileListByTransferId(
-    transferId,
-    digitalFileList
+    transferId: string,
+    digitalFileList: any
   ): Promise<IDigitalFileList | null> {
     try {
       console.log("Transfer Id Service : " + transferId);

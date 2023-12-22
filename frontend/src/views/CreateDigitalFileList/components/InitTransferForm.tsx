@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { FC, ReactElement } from "react";
+import ITransferFormData from "../../../types/Interfaces/ITransferFormData";
 import {
   Card,
   Divider,
@@ -8,62 +8,40 @@ import {
   Button,
   Grid,
   TextField,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from "@mui/material";
 
 import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
 import DoneTwoToneIcon from "@mui/icons-material/DoneTwoTone";
-import { TransferService } from "../../services/transferService";
-import ITransferFormData from "../../types/Interfaces/ITransferFormData";
-//import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
-//import TransferForm from "../Transfers/components/TransferForm";
+import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
+import { TransferStatus } from "../../../types/Enums/TransferStatus";
 
-const TransferViewEdit: React.FC = () => {
-  const { transferId } = useParams();
-  const [transfer, setTransfer] = useState<ITransferFormData | any>(null);
-  const [isTransferEditing, setIsTransferEditing] = useState(false);
-  const [isProducerEditing, setIsProducerEditing] = useState(false);
+interface InitTransferFormProps {
+  transfer: ITransferFormData | any;
+  isTransferEditing: boolean;
+  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSelectChange: (e: SelectChangeEvent) => void;
+  onToggleTransferEditing: () => void;
+}
 
-  const transferService = new TransferService();
+const InitTransferForm: React.FC<InitTransferFormProps> = (props) => {
+  // Destructure props
+  const {
+    transfer,
+    isTransferEditing,
+    onInputChange,
+    onSelectChange,
+    onToggleTransferEditing,
+  } = props;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setTransfer({ ...transfer, [name]: value });
-    console.log(name + ":" + value);
-  };
-
-  const handleUpdateTransfer = async () => {
-    try {
-      await transferService.updateTransfer(transfer);
-      // setIsReadonly(true);
-    } catch (error) {
-      console.error("Error updating transfer:", error);
-    }
-  };
-
-  useEffect(() => {
-    const fetchTransfer = async () => {
-      if (transferId) {
-        try {
-          const transfer = await transferService.getTransfer(transferId);
-          setTransfer(transfer);
-        } catch (error) {
-          console.error("Error:", error);
-        }
-      }
-    };
-
-    fetchTransfer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transferId]);
-
-  if (!transfer) {
-    return <div>Loading...</div>;
-  }
   return (
     <>
       <Grid container spacing={1}>
-        <Grid item xs={12} sx={{ marginBottom: 1 }}>
-          <Card>
+        <Card sx={{ width: "100%" }}>
+          <Grid item xs={12} sx={{ marginBottom: 1 }}>
+            {/* <Card> */}
             <Box
               p={1}
               display="flex"
@@ -71,27 +49,17 @@ const TransferViewEdit: React.FC = () => {
               justifyContent="space-between"
             >
               <Box>
-                <Typography variant="h5" gutterBottom>
-                  Transfer Informations
-                </Typography>
-                <Typography variant="subtitle2">
-                  Manage informations related to your Transfer details
-                </Typography>
+                <Typography variant="subtitle2">Transfer details</Typography>
               </Box>
-              <Button
+              {/* <Button
                 variant="text"
                 startIcon={
                   isTransferEditing ? <DoneTwoToneIcon /> : <EditTwoToneIcon />
                 }
-                onClick={() => {
-                  if (isTransferEditing) {
-                    handleUpdateTransfer();
-                  }
-                  setIsTransferEditing(!isTransferEditing);
-                }}
+                onClick={onToggleTransferEditing}
               >
                 {isTransferEditing ? "Done" : "Edit"}
-              </Button>
+              </Button> */}
             </Box>
             <Divider />
             <Grid
@@ -106,7 +74,7 @@ const TransferViewEdit: React.FC = () => {
                 name="accessionNumber"
                 label="Accession Number"
                 variant="outlined"
-                onChange={handleInputChange}
+                onChange={onInputChange}
                 value={transfer.accessionNumber}
               />
 
@@ -116,7 +84,7 @@ const TransferViewEdit: React.FC = () => {
                 name="applicationNumber"
                 label="Application Number"
                 variant="outlined"
-                onChange={handleInputChange}
+                onChange={onInputChange}
                 value={transfer.applicationNumber}
               />
             </Grid>
@@ -133,23 +101,29 @@ const TransferViewEdit: React.FC = () => {
                 label="Description"
                 name="description"
                 variant="outlined"
-                onChange={handleInputChange}
+                onChange={onInputChange}
                 value={transfer.description}
               />
-              <TextField
-                sx={{ marginLeft: 2, marginBottom: 2, width: "20%" }}
+              <Select
                 disabled={!isTransferEditing}
+                sx={{ width: "20%" }}
                 name="status"
                 label="Status"
                 variant="outlined"
-                onChange={handleInputChange}
+                onChange={onSelectChange}
                 value={transfer.status}
-              />
+              >
+                {Object.values(TransferStatus).map((status) => (
+                  <MenuItem key={status} value={status}>
+                    {status}
+                  </MenuItem>
+                ))}
+              </Select>
             </Grid>
-          </Card>
-        </Grid>
-        <Grid item xs={12}>
-          <Card>
+            {/* </Card> */}
+          </Grid>
+          <Grid item xs={12}>
+            {/* <Card> */}
             <Box
               p={1}
               display="flex"
@@ -157,27 +131,19 @@ const TransferViewEdit: React.FC = () => {
               justifyContent="space-between"
             >
               <Box>
-                <Typography variant="h5" gutterBottom>
+                <Typography variant="subtitle2">
                   Producer Informations
                 </Typography>
-                <Typography variant="subtitle2">
-                  Manage details related the Producer of the transfer
-                </Typography>
               </Box>
-              <Button
+              {/* <Button
                 variant="text"
                 startIcon={
                   isProducerEditing ? <DoneTwoToneIcon /> : <EditTwoToneIcon />
                 }
-                onClick={() => {
-                  if (isProducerEditing) {
-                    handleUpdateTransfer();
-                  }
-                  setIsProducerEditing(!isProducerEditing);
-                }}
+                onClick={onToggleTransferEditing}
               >
                 {isProducerEditing ? "Done" : "Edit"}
-              </Button>
+              </Button> */}
             </Box>
             <Divider />
 
@@ -188,31 +154,31 @@ const TransferViewEdit: React.FC = () => {
               sx={{ marginTop: 2, marginBottom: 2, marginLeft: 2 }}
             >
               <TextField
-                disabled={!isProducerEditing}
+                disabled={!isTransferEditing}
                 sx={{ width: "20%", marginRight: "2%" }} // Adjust width here
                 name="agentLastName"
                 label="Agent LastName"
                 variant="outlined"
-                onChange={handleInputChange}
+                onChange={onInputChange}
                 value={transfer.agentLastName}
               />
 
               <TextField
-                disabled={!isProducerEditing}
+                disabled={!isTransferEditing}
                 sx={{ width: "20%" }} // Adjust width here
                 name="agentFirstName"
                 label="Agent FirstName"
                 variant="outlined"
-                onChange={handleInputChange}
+                onChange={onInputChange}
                 value={transfer.agentFirstName}
               />
               <TextField
-                disabled={!isProducerEditing}
+                disabled={!isTransferEditing}
                 sx={{ width: "45%", marginLeft: 4 }} // Adjust width here
                 name="agentEmail"
                 label="Agent Email"
                 variant="outlined"
-                onChange={handleInputChange}
+                onChange={onInputChange}
                 value={transfer.agentEmail}
               />
             </Grid>
@@ -223,39 +189,81 @@ const TransferViewEdit: React.FC = () => {
               sx={{ marginTop: 2, marginBottom: 2, marginLeft: 2 }}
             >
               <TextField
-                disabled={!isProducerEditing}
+                disabled={!isTransferEditing}
                 sx={{ width: "30%", marginRight: "2%" }} // Adjust width here
                 name="producerMinistry"
                 label="Ministry"
                 variant="outlined"
-                onChange={handleInputChange}
+                onChange={onInputChange}
                 value={transfer.producerMinistry}
               />
 
               <TextField
-                disabled={!isProducerEditing}
+                disabled={!isTransferEditing}
                 sx={{ width: "30%" }} // Adjust width here
                 name="producerBranch"
                 label="Branch"
                 variant="outlined"
-                onChange={handleInputChange}
+                onChange={onInputChange}
                 value={transfer.producerBranch}
               />
               <TextField
-                disabled={!isProducerEditing}
+                disabled={!isTransferEditing}
                 sx={{ width: "30%", marginLeft: 2 }} // Adjust width here
                 name="producerOfficeName"
                 label="Office"
                 variant="outlined"
-                onChange={handleInputChange}
+                onChange={onInputChange}
                 value={transfer.producerOfficeName}
               />
             </Grid>
-          </Card>
-        </Grid>
+            {/* </Card> */}
+            <Divider />
+            <Grid>
+              <Box
+                p={1}
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Box>
+                  <Typography variant="subtitle2">
+                    Producer Informations
+                  </Typography>
+                </Box>
+                <Button
+                  variant="contained"
+                  startIcon={
+                    isTransferEditing ? (
+                      <FactCheckOutlinedIcon />
+                    ) : (
+                      <DoneTwoToneIcon />
+                    )
+                  }
+                  onClick={onToggleTransferEditing}
+                >
+                  {isTransferEditing ? "Validation" : "Done"}
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={
+                    isTransferEditing ? (
+                      <FactCheckOutlinedIcon />
+                    ) : (
+                      <DoneTwoToneIcon />
+                    )
+                  }
+                  onClick={onToggleTransferEditing}
+                >
+                  {isTransferEditing ? "Validation" : "Done"}
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
+        </Card>
       </Grid>
     </>
   );
 };
 
-export default TransferViewEdit;
+export default InitTransferForm;

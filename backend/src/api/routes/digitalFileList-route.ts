@@ -7,14 +7,15 @@ const router = express.Router();
 const digitalFileListController = new DigitalFileListController();
 // DigitalFileLists Children
 router
-  .route("/digitalFileLists/:transferId/digitalFileLists")
+  .route("/transfers/:transferId/digitalFileLists")
   .get(digitalFileListController.getDigitalFileListsByTransferId)
   .post(digitalFileListController.createDigitalFileListByTransferId);
 
 router
   .route("/transfers/:transferId/digitalFileLists/:digitalDatalistId")
   .delete(digitalFileListController.deleteDigitalDatalistFromTransfer)
-  .post(digitalFileListController.updateDigitalFileList);
+  .put(digitalFileListController.updateDigitalFileList)
+  .patch(digitalFileListController.updateDigitalFileList);
 
 // router.route("/digitalFileLists/upload66x").post(digitalFileListController);
 

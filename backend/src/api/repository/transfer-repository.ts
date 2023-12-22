@@ -67,7 +67,7 @@ export default class TransferRepository {
       const updatedTransfer = await TransferModel.findByIdAndUpdate(
         transferId,
         updatedData,
-        { new: true } // This option returns the updated document after the update
+        { new: true }
       );
 
       if (!updatedTransfer) {
