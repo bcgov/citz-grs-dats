@@ -20,7 +20,7 @@ export default class DigitalFileListController {
   async getDigitalFileListsByTransferId(req: Request, res: Response) {
     try {
       const transferId = req.params.transferId; // Assuming the parameter is named 'transferId' in the route
-      console.log(transferId);
+      console.log("in getDigitalFileListsByTransferId" + transferId);
       const digitalFileLists =
         await this.digitalFileListService.getDigitalFileListsByTransferId(
           transferId

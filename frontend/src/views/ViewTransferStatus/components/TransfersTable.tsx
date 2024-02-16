@@ -20,7 +20,7 @@ interface Column {
     | "description"
     | "ministry"
     | "branch"
-    | "status";
+    | "transferStatus";
   label: string;
   minWidth?: number;
 }
@@ -44,7 +44,7 @@ const columns: readonly Column[] = [
     minWidth: 120,
   },
   {
-    id: "status",
+    id: "transferStatus",
     label: "Status",
     minWidth: 75,
   },
@@ -95,7 +95,7 @@ export default function TransfersTable() {
                 <TableCell>{transfer.description}</TableCell>
                 <TableCell>{transfer.producerMinistry}</TableCell>
                 <TableCell>{transfer.producerBranch}</TableCell>
-                <TableCell>{transfer.status}</TableCell>
+                <TableCell>{transfer.transferStatus}</TableCell>
                 <TableCell>
                   <Link
                     className="btn btn-light"

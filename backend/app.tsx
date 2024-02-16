@@ -34,7 +34,7 @@ const options = {
   // components: {
   //   schemas: components, // Use the components from the separate file
   // },
-  apis: ["src/features/*/controller/*-controller.ts"],
+  apis: ["src/api/controller/*-controller.ts"],
 };
 
 const swaggerJSDoc = require("swagger-jsdoc");

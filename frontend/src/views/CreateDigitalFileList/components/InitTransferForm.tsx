@@ -255,7 +255,7 @@ const InitTransferForm: React.FC<InitTransferFormProps> = (props) => {
                   }
                   onClick={onToggleTransferEditing}
                 >
-                  {isTransferEditing ? "Validation" : "Done"}
+                  {isTransferEditing ? "Next" : "Next"}
                 </Button>
               </Box>
             </Grid>

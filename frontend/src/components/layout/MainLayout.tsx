@@ -58,11 +58,11 @@ const Layout: FC<LayoutProps> = ({ children }) => {
             >
               Digital Archive Transfer Service - DATS
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
+            {/* <IconButton color="inherit">
+              <Badge badgeContent={5} color="secondary">
                 <NotificationsIcon />
               </Badge>
-            </IconButton>
+            </IconButton> */}
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>

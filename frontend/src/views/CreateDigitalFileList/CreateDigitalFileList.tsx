@@ -19,22 +19,15 @@ import { IDigitalFileList } from "dats_shared/Types/interfaces/IDigitalFileList"
 
 export default function CreateDigitalFileList() {
   const [data, setData] = useState([]);
+
   const [transfer, setTransfer] = useState<ITransfer>({
     _id: new Types.ObjectId(),
     accessionNumber: "",
     applicationNumber: "",
     description: "",
-    status: TransferStatus.Draft,
-    descriptionOfRecords: "",
-    agentLastName: "",
-    agentFirstName: "",
-    agentEmail: "",
-    producerOfficeName: "",
+    transferStatus: TransferStatus.Draft,
     producerMinistry: "",
     producerBranch: "",
-    producerOfficeAddress: "",
-    producerOfficeCity: "",
-    producerOfficePostalCode: "",
     digitalFileLists: undefined,
     createDate: undefined,
     updatedDate: undefined,
@@ -49,26 +42,26 @@ export default function CreateDigitalFileList() {
   const transferService = new TransferService();
   //setIsTransferEditing(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await transferService.getDigitalFileListsFromTransfer(
-          "65135928f00793fec8a5d525"
-        );
-        // Add an 'id' property to each item in the result array
-        const dataWithGridId = result.map((item: any, index: number) => ({
-          ...item,
-          id: index + 1, // You can adjust the logic for generating IDs as needed
-        }));
-        console.log("dataWithId : ", dataWithGridId);
-        setData(dataWithGridId);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const result = await transferService.getDigitalFileListsFromTransfer(
+  //         "65135928f00793fec8a5d525"
+  //       );
+  //       // Add an 'id' property to each item in the result array
+  //       const dataWithGridId = result.map((item: any, index: number) => ({
+  //         ...item,
+  //         id: index + 1, // You can adjust the logic for generating IDs as needed
+  //       }));
+  //       console.log("dataWithId : ", dataWithGridId);
+  //       setData(dataWithGridId);
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   };
 
-    fetchData();
-  }, [transferService]);
+  //   fetchData();
+  // }, [transferService]);
   //
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -12,7 +12,7 @@ export default class TransferService {
   async getTransfers(): Promise<ITransfer[] | null> {
     return await this.transferRepository.getTransfers();
   }
-  async getTransferById(transferId): Promise<ITransfer | null> {
+  async getTransferById(transferId: string): Promise<ITransfer | null> {
     return await this.transferRepository.getTransfersById(transferId);
   }
   async getTransfer(
