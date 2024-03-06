@@ -1,5 +1,5 @@
 import { DigitalFileListModel } from "../model/digitalFileList-model";
-import { IDigitalFile } from "dats_shared/Types/interfaces/IDigitalFile";
+import { IDigitalFile } from "../model/interfaces/IDigitalFile";
 import { DigitalFileModel } from "../model/digitalFile-model";
 
 export default class DigitalFileRepository {

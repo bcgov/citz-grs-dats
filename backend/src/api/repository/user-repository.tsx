@@ -1,5 +1,5 @@
 import { UserModel } from "../model/user-model";
-import { IUser } from "dats_shared/Types/interfaces/IUser";
+import { IUser } from "../model/interfaces/IUser";
 
 export default class UserRepository {
   constructor() {}

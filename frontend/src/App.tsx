@@ -1,17 +1,20 @@
 import React from "react";
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import { useAuthentication } from "./hooks/useAuthentication/useAuthentication";
 // import { createTheme } from "@mui/material/styles";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+
 import { routes as appRoutes } from "./routes";
 import Layout from "./components/layout/MainLayout";
 import BCTheme from "./assets/styles/styles";
+import GetAuthentication from "./utils/getAuthentication";
 
 function App() {
-  //const { KeycloakProvider } = useAuthentication();
-
   return (
-    //<KeycloakProvider>
     <ThemeProvider theme={BCTheme}>
       <CssBaseline />
       <Router>
@@ -21,14 +24,23 @@ function App() {
               <Route
                 key={route.key}
                 path={route.path}
-                element={<route.component />}
+                element={
+                  route.requiresAuth ? (
+                    localStorage.getItem("token") ? (
+                      <route.component />
+                    ) : (
+                      <GetAuthentication />
+                    )
+                  ) : (
+                    <route.component />
+                  )
+                }
               />
             ))}
           </Routes>
         </Layout>
       </Router>
     </ThemeProvider>
-    //</KeycloakProvider>
   );
 }
 

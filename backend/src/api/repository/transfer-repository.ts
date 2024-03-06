@@ -1,7 +1,7 @@
 import { FilterQuery } from "mongoose";
 import { TransferModel } from "../model/transfer-model";
 // import { TransferModel } from "@model/transfer-model";
-import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
+import { ITransfer } from "../model/interfaces/ITransfer";
 
 export default class TransferRepository {
   constructor() {}

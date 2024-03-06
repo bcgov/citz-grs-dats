@@ -9,6 +9,7 @@ import TransferViewEdit from "./views/ViewTransferStatus/TransferViewEdit";
 
 // other
 import { FC } from "react";
+import { Navigate } from "react-router-dom";
 
 // interface
 interface Route {
@@ -16,6 +17,7 @@ interface Route {
   title: string;
   path: string;
   enabled: boolean;
+  requiresAuth: boolean;
   component: FC<{}>;
 }
 
@@ -25,12 +27,14 @@ export const routes: Array<Route> = [
     title: "Home",
     path: "/",
     enabled: true,
+    requiresAuth: false,
     component: Home,
   },
   {
     key: "create-Digital-File-List-route",
     title: "CreateDigitalFileList",
     path: "/CreateDigitalFileList",
+    requiresAuth: false,
     enabled: true,
     component: CreateDigitalFileList,
   },
@@ -38,6 +42,7 @@ export const routes: Array<Route> = [
     key: "sendRecords-route",
     title: "SendRecords",
     path: "/SendRecords",
+    requiresAuth: true,
     enabled: true,
     component: SendRecords,
   },
@@ -45,6 +50,7 @@ export const routes: Array<Route> = [
     key: "transfer-view-status-route",
     title: "TransferViewStatus",
     path: "/ViewTransferStatus",
+    requiresAuth: true,
     enabled: true,
     component: TransferViewStatus,
   },
@@ -52,6 +58,7 @@ export const routes: Array<Route> = [
     key: "transfer-view-edit-route",
     title: "TransferViewEdit",
     path: "/TransferViewEdit/:transferId",
+    requiresAuth: true,
     enabled: true,
     component: TransferViewEdit,
   },

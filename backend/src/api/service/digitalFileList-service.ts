@@ -1,4 +1,4 @@
-import { IDigitalFileList } from "dats_shared/Types/interfaces/IDigitalFileList";
+import { IDigitalFileList } from "../model/interfaces/IDigitalFileList";
 import DigitalFileListRepository from "../repository/digitalFileList-repository";
 
 export default class DigitalFileListService {

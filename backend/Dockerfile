@@ -1,8 +1,8 @@
 # Development
-FROM node:16-alpine
+FROM node:18-alpine
 WORKDIR /app
-COPY package*.json /app/
-RUN yarn 
-COPY . /app/
+COPY package*.json ./
+RUN yarn install
+COPY ./ .
 EXPOSE 5000
-CMD ["yarn", "server"]
+CMD ["yarn", "start"]

@@ -8,7 +8,7 @@ import {
   Button,
 } from "@mui/material";
 import TransfersTable from "./components/TransfersTable";
-import TransferCreateModal from "./components/TransferCreateModal";
+
 function Copyright(props: any) {
   return (
     <Typography
@@ -35,10 +35,10 @@ const ViewTransferStatus: FC<any> = (): ReactElement => {
       <Grid container spacing={1}>
         <Grid item xs={12}>
           <Paper>
-            <TransferCreateModal
+            {/* <TransferCreateModal
               isOpen={isCreatetModalOpen}
               onRequestClose={() => setIsCreateModalOpen(false)}
-            />
+            /> */}
           </Paper>
         </Grid>
         <Grid item xs={12}>

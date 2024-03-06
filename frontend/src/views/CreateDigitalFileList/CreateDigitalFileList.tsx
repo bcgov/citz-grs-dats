@@ -11,21 +11,20 @@ import DigitalfileListGrid from "./components/DigitalfileListGrid";
 import InitTransferForm from "./components/InitTransferForm";
 import { TransferService } from "../../services/transferService";
 import { GridRowId } from "@mui/x-data-grid";
-import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
+import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
 import { TransferStatus } from "../../types/Enums/TransferStatus";
 
-import { Types, ObjectId } from "mongoose";
-import { IDigitalFileList } from "dats_shared/Types/interfaces/IDigitalFileList";
+import { IDigitalFileListDTO } from "../../types/DTO/Interfaces/IDigitalFileListDTO";
 
 export default function CreateDigitalFileList() {
   const [data, setData] = useState([]);
 
-  const [transfer, setTransfer] = useState<ITransfer>({
-    _id: new Types.ObjectId(),
+  const [transfer, setTransfer] = useState<ITransferDTO>({
+    _id: "",
     accessionNumber: "",
     applicationNumber: "",
     description: "",
-    transferStatus: TransferStatus.Draft,
+    status: TransferStatus.Draft,
     producerMinistry: "",
     producerBranch: "",
     digitalFileLists: undefined,
@@ -94,7 +93,7 @@ export default function CreateDigitalFileList() {
   };
   const handleToggleTransferEditing = () => {
     if (isTransferEditing) {
-      if (transfer._id) {
+      if (transfer.applicationNumber) {
         handleUpdateTransfer();
       }
       //  handleCreateTransfer();

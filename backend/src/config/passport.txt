@@ -1,0 +1,5 @@
+import passport from "passport";
+
+module.exports = passport;
+
+export { passport };

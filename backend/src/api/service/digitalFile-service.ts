@@ -1,5 +1,5 @@
 import DigitalFileRepository from "../repository/digitalList-repository";
-import { IDigitalFile } from "dats_shared/Types/interfaces/IDigitalFile";
+import { IDigitalFile } from "../model/interfaces/IDigitalFile";
 
 export default class DigitalFileService {
   private digitalFileRepository: DigitalFileRepository;

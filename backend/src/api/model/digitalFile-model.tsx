@@ -1,6 +1,6 @@
 import { model, Schema, Model, Document } from "mongoose";
 
-import { IDigitalFile } from "dats_shared/Types/interfaces/IDigitalFile";
+import { IDigitalFile } from "./interfaces/IDigitalFile";
 
 const DigitalFileSchema: Schema = new Schema<IDigitalFile>({
   checksum_MD5: { type: String },

@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { TransferService } from "../../../services/transferService";
 
-import ITransferFormData from "../../../types/Interfaces/ITransferFormData";
+import ITransferFormData from "../../../types/Interfaces/ITransferView";
 import { TransferStatus as status } from "dats_shared/Types/Enums/TransferStatus";
 
 interface CreateTransferModalProps {
@@ -33,16 +33,8 @@ const CreateTransferModal: React.FC<CreateTransferModalProps> = ({
     applicationNumber: "",
     description: "",
     // status: status new ,
-    descriptionOfRecords: "",
-    agentLastName: "",
-    agentFirstName: "",
-    agentEmail: "",
-    producerOfficeName: "",
     producerMinistry: "Attorney General",
-    producerBranch: "Legal Services Branch",
-    producerOfficeAddress: "",
-    producerOfficeCity: "",
-    producerOfficePostalCode: "",
+    producerBranch: "Legal Services Branch"
   });
 
   const [visible, setVisible] = useState(isOpen); // Initialize the state based on the prop

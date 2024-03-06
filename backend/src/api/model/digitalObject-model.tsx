@@ -1,6 +1,6 @@
 import { model, Schema, Model, Document } from "mongoose";
 
-import { IDigitalObject } from "dats_shared/Types/interfaces/IDigitalObject";
+import { IDigitalObject } from "./interfaces/IDigitalObject";
 
 const DigitalObjectSchema: Schema = new Schema<IDigitalObject>({
   title: { type: String },

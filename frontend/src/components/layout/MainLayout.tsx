@@ -17,6 +17,7 @@ import { NavItems } from "./NavItems";
 import AppBar from "./AppBar";
 import Drawer from "./Drawer";
 import BreadcrumbsRouter from "./BreadcrumbsRouter";
+import L_LOGO from "../../assets/images/BCID_H_rgb_rev.e68ccb04..png";
 
 interface LayoutProps {
   children: ReactNode;
@@ -34,9 +35,13 @@ const Layout: FC<LayoutProps> = ({ children }) => {
         <AppBar position="absolute" open={open}>
           <Toolbar
             sx={{
+              //backgroundColor: "#fff",
               pr: "24px", // keep right padding when drawer closed
             }}
           >
+            <a>
+              <img width="200px" alt="BC Mark" src={L_LOGO} />
+            </a>
             <IconButton
               edge="start"
               color="inherit"
@@ -58,11 +63,11 @@ const Layout: FC<LayoutProps> = ({ children }) => {
             >
               Digital Archive Transfer Service - DATS
             </Typography>
-            {/* <IconButton color="inherit">
+            <IconButton color="inherit">
               <Badge badgeContent={5} color="secondary">
                 <NotificationsIcon />
               </Badge>
-            </IconButton> */}
+            </IconButton>
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
@@ -75,15 +80,15 @@ const Layout: FC<LayoutProps> = ({ children }) => {
             }}
           >
             <IconButton onClick={toggleDrawer}>
-              <ChevronLeftIcon />
+              <ChevronLeftIcon style={{ color: "white" }} />
             </IconButton>
           </Toolbar>
           <Divider />
-          <List component="nav">
+          {/* <List component="nav">
             {NavItems}
             <Divider sx={{ my: 1 }} />
             {/* {secondaryListItems} */}
-          </List>
+          {/* </List> */}
         </Drawer>
         <Box
           component="main"

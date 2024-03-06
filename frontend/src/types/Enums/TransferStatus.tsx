@@ -1,7 +1,8 @@
 export enum TransferStatus {
   Draft = "Draft",
-  Up = "UP",
-  Down = "DOWN",
-  Left = "LEFT",
-  Right = "RIGHT",
+  InProgress = "In Process",
+  InReview = "In Review",
+  RecordsInDATS = "Records In DATS",
+  PSPCreated = "PSP Created",
+  Transfered = "Transfered",
 }

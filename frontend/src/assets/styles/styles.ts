@@ -1,5 +1,5 @@
 import { createTheme } from "@mui/material/styles";
-import "@bcgov/bc-sans/css/BC_Sans.css";
+//import "@bcgov/bc-sans/css/BC_Sans.css";
 
 const BCTheme = createTheme({
   typography: {
