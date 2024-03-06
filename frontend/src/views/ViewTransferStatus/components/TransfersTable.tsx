@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
+import ITransferDTO from "../../../types/DTO/Interfaces/ITransferDTO";
 import { TransferService } from "../../../services/transferService";
 // import CreateTransferModal from "./TransferCreateModal";
 // import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
@@ -51,7 +51,7 @@ const columns: readonly Column[] = [
 ];
 
 export default function TransfersTable() {
-  const [transfers, setTransfers] = useState<ITransfer[]>([]);
+  const [transfers, setTransfers] = useState<ITransferDTO[]>([]);
   const transferService = new TransferService();
 
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function TransfersTable() {
                 <TableCell>{transfer.description}</TableCell>
                 <TableCell>{transfer.producerMinistry}</TableCell>
                 <TableCell>{transfer.producerBranch}</TableCell>
-                <TableCell>{transfer.transferStatus}</TableCell>
+                <TableCell>{transfer.status}</TableCell>
                 <TableCell>
                   <Link
                     className="btn btn-light"

@@ -1,5 +1,5 @@
 import { FC, ReactElement } from "react";
-import ITransferFormData from "../../../types/Interfaces/ITransferFormData";
+import ITransferDTO from "../../../types/DTO/Interfaces/ITransferDTO";
 import {
   Card,
   Divider,
@@ -19,7 +19,7 @@ import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
 import { TransferStatus } from "../../../types/Enums/TransferStatus";
 
 interface InitTransferFormProps {
-  transfer: ITransferFormData | any;
+  transfer: ITransferDTO | any;
   isTransferEditing: boolean;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectChange: (e: SelectChangeEvent) => void;

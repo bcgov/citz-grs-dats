@@ -13,13 +13,13 @@ import {
 import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
 import DoneTwoToneIcon from "@mui/icons-material/DoneTwoTone";
 import { TransferService } from "../../services/transferService";
-import ITransferFormData from "../../types/Interfaces/ITransferFormData";
+import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
 //import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
 //import TransferForm from "../Transfers/components/TransferForm";
 
 const TransferViewEdit: React.FC = () => {
   const { transferId } = useParams();
-  const [transfer, setTransfer] = useState<ITransferFormData | any>(null);
+  const [transfer, setTransfer] = useState<ITransferDTO | any>(null);
   const [isTransferEditing, setIsTransferEditing] = useState(false);
   const [isProducerEditing, setIsProducerEditing] = useState(false);
 

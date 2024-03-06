@@ -1,5 +1,5 @@
 import UserRepository from "../repository/user-repository";
-import { IUser } from "dats_shared/Types/interfaces/IUser";
+import { IUser } from "../model/interfaces/IUser";
 
 export default class UserService {
   private userRepository: UserRepository;

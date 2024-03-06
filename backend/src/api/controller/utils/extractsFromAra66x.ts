@@ -1,5 +1,5 @@
 import ExcelJS from "exceljs";
-import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
+import { ITransfer } from "../../model/interfaces/ITransfer";
 
 interface TransferData {
   accession: string;

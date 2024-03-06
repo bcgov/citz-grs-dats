@@ -1,7 +1,7 @@
 import { model, Schema, Model, Document } from "mongoose";
 
-import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
-import { TransferStatus as status } from "dats_shared/Types/Enums/TransferStatus";
+import { ITransfer } from "./interfaces/ITransfer";
+import { TransferStatus as status } from "./enums/TransferStatus";
 
 const TransferSchema: Schema = new Schema<ITransfer>({
   accessionNumber: { type: String, required: true },

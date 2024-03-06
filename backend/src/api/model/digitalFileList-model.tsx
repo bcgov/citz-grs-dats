@@ -1,5 +1,5 @@
 import { model, Schema, Model, Document } from "mongoose";
-import { IDigitalFileList } from "dats_shared/Types//interfaces/IDigitalFileList";
+import { IDigitalFileList } from "./interfaces/IDigitalFileList";
 
 const DigitalFileListSchema: Schema = new Schema<IDigitalFileList>({
   primarySecondary: { type: String, required: false },
