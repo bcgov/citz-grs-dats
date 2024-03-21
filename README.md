@@ -6,7 +6,7 @@ Digital Archive Transfer Service Dats is a web application based on the MERN sta
 
 The product is anticipated to include:
 
-1. Create a digital file list
+1. ##Create a digital file list
    A ministry employe (Producer) will use DATS functionality "create a digital file list". DATS will scan a folder and extract metadata information into a report.
 2. Send Digital Records
    A ministry employe (Producer) will be able to Transfer FR Digital Records from EDRMS or Lan Drive to GRS team
