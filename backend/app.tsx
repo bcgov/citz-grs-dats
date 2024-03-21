@@ -139,6 +139,12 @@ passport.deserializeUser((user, done) => {
 app.get("/", (req, res) => {
   res.send("hello world from HR management App Backend");
 });
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
 
 interface AuthenticatedRequest extends Request {
   user?: string; // Assuming 'user' is a string, replace it with the correct type if needed
