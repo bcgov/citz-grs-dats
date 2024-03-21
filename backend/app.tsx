@@ -62,11 +62,27 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.set("server_port", port);
 
 app.use(cors());
-// app.use(
-//   cors({
-//     origin: "http://localhost:3000", // Allow only this origin
-//   })
-// );
+
+// Use CORS middleware with custom options
+// app.use(cors({
+//     origin: 'http://localhost:3000', // Replace with your client's origin
+//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//     allowedHeaders: ['Content-Type', 'Authorization'],
+//   }));
+
+// app.use(cors({
+//     origin: (requestOrigin: string | undefined, callback: (err: Error | null, allow?: boolean) => void): void  => {
+//         // allow requests with no origin
+//         if (requestOrigin && CORS_WHITELIST.indexOf(requestOrigin) === -1) {
+//             const message: string = "The CORS policy for this origin doesn't allow access from the particular origin.";
+//             return callback(new Error(message), false);
+//         } else {
+//             // tslint:disable-next-line:no-null-keyword
+//             return callback(null, true);
+//         }
+//     },
+//     credentials: true
+// }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(
