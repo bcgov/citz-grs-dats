@@ -1,5 +1,14 @@
 version: '3.7'
 services:
+  mongo_db:
+    image: mongo
+    ports:
+      - 27017:27017
+    container_name: mongodb
+    networks:
+      - mern-stack-net
+    volumes:
+      - mongo-data:/data/db
   backend:
     container_name: backend
     build:
@@ -8,6 +17,10 @@ services:
       - "5000:5000"
     environment:
       NODE_ENV: development
+    networks:
+      - mern-stack-net
+    depends_on: 
+      - mongo_db
     volumes:
       - ./backend:/backend
       - /frontend/node_modules
@@ -17,6 +30,15 @@ services:
       context: ./frontend
     ports:
       - "3000:3000"
+    networks:
+      - mern-stack-net
     volumes:
       - ./frontend:/frontend
       - /frontend/node_modules
+networks:
+  mern-stack-net:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local

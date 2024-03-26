@@ -18,7 +18,7 @@ const store = new session.MemoryStore();
 
 dotenv.config(); // Load environment variables from .env
 // Connect to MongoDB
-const mongoUrl = process.env.MONGO_URI || "mongodb://localhost:27017/mydb";
+const mongoUrl = process.env.MONGO_URI || "mongodb://mongo_db:27017";
 const port = process.env.SERVER_PORT || 5000;
 // (<any>mongoose).Promise = bluebird;
 
@@ -173,8 +173,23 @@ app.get("/", (req, res, next) => {
 //   passport.authenticate("oidc")(req, res, next);
 // });
 
-app.get("/auth", passport.authenticate("oidc"));
-
+//app.get("/auth", passport.authenticate("oidc"));
+app.get(
+  "/auth",
+  function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PATCH, PUT, DELETE, OPTIONS"
+    );
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, Content-Type, X-Auth-Token, Authorization, Accept,charset,boundary,Content-Length"
+    );
+    next();
+  },
+  passport.authenticate("oidc")
+);
 app.get(
   "/auth/callback",
   passport.authenticate("oidc", { session: false }),

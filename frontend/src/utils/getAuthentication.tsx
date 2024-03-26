@@ -5,7 +5,16 @@ const GetAuthentication: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/auth");
+        const response = await axios.get("http://localhost:5000/auth", {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods":
+              "GET, POST, PATCH, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers":
+              "Origin, Content-Type, X-Auth-Token, Authorization, Accept,charset,boundary,Content-Length",
+          },
+        });
+
         console.log(response.data);
         const { token } = response.data;
         console.log(token);
