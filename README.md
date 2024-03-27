@@ -6,12 +6,18 @@ DATS acted has a Aggragetor for differentes sources of Digital Records coming fr
 
 DATS will export the Transfer into structured Pre-Soumission Package (PSP), so the Archivistes will be able to review them and create SIP to be ingest in the SaaS Archive Solution
 
-## Components
+## Features
 
-1. Database (MongoDB): Stores all admin and Technical Metadata files, converted to JSON, for each Transfer/Classification in t.
-2. Backend (Node/Express API): Provides read and write access to the database. The read endpoint is open to the public, while the write endpoint is protected by an API key. Both are rate-limited.
-3. Frontend (React.js and MaterialUI): Allows users to create bcgovpubcode.yml files or edit existing ones using a GitHub link.
-4. Schema (JSON Schema): The standard on which the bcgovpubcode.yml file is based.
+The product is anticipated to include:
+
+1. **Create Digital File List**  
+   Support for ministry employe (Producer) to use DATS functionality "create a digital file list". DATS will scan a folder and extract metadata information into a report in a form of a Excel Sheet .
+2. **Send Digital Records (Lan drive and EDRMS)**
+   Support for the Transfer of FR Digital Records to GRS team from the Producer. Producer will be able to use it for the Lan Drive or EDRMS content and objects
+3. **Create structured PSPs**
+   Support to create structured PSP for the Transfer received from Producer base on theirs Primary/Secondery classification
+4. **View Transfer status**
+   Support for archivist who needs a view to see the information on PSPs processed and created by DATS in order to process the accession and create the SIP.
 
 # DATS Architecture
 
