@@ -21,6 +21,6 @@ The product is anticipated to include:
 4. **View Transfer status**
    Support for archivist who needs a view to see the information on PSPs processed and created by DATS in order to process the accession and create the SIP.
 
-# DATS Architecture
+## Documentations
 
-![image](https://github.com/bcgov/citz-grs-dats/assets/150071375/44e9b1a9-2ece-4a49-a9b8-6992b0059604)
+- [Architecture](Docs/Architecture/README.md)
