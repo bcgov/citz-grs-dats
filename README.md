@@ -24,3 +24,4 @@ The product is anticipated to include:
 ## Documentations
 
 - [Architecture](Docs/Architecture/README.md)
+- [Devops guide](Docs/Devops/README.md)
