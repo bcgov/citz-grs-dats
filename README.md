@@ -25,3 +25,4 @@ The product is anticipated to include:
 
 - [Architecture](Docs/Architecture/README.md)
 - [Devops guide](Docs/Devops/README.md)
+- [Openshift](Docs/Openshift/README.md)
