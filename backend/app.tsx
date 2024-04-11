@@ -18,7 +18,8 @@ const store = new session.MemoryStore();
 
 dotenv.config(); // Load environment variables from .env
 // Connect to MongoDB
-const mongoUrl = process.env.MONGO_URI || "mongodb://mongo_db:27017";
+const mongoUrl =
+  process.env.MONGO_URI || "mongodb://dbuser:dbpass@mongodb:27017/dats";
 const port = process.env.SERVER_PORT || 5000;
 // (<any>mongoose).Promise = bluebird;
 
