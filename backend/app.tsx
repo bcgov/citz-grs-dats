@@ -30,7 +30,10 @@ mongoose
   })
   .catch((err: any) => {
     console.error(
-      "  MongoDB connection error. Please make sure MongoDB is running. " + err
+      "  MongoDB connection error. Please make sure MongoDB is running. at " +
+        mongoUrl +
+        "  " +
+        err
     );
     process.exit();
   });
