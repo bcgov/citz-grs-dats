@@ -100,34 +100,34 @@ app.use(passport.session());
 
 let tokenset = {};
 
-initializeKeycloakClient()
-  .then((keycloakClient) => {
-    console.log("Keycloak client ID:", keycloakClient.keycloakClient.client_id);
+// initializeKeycloakClient()
+//   .then((keycloakClient) => {
+//     console.log("Keycloak client ID:", keycloakClient.keycloakClient.client_id);
 
-    passport.use(
-      "oidc",
-      new Strategy(
-        { client: keycloakClient.keycloakClient },
-        (tokenSet, userinfo, done) => {
-          tokenset = tokenSet;
-          console.log(tokenSet.claims());
-          // return done(null, tokenSet.claims());
-          // Generate JWT token
-          const token = jwt.sign(
-            userinfo,
-            process.env.JWT_SECRET || "jwtsecret",
-            { expiresIn: "1h" }
-          );
+//     passport.use(
+//       "oidc",
+//       new Strategy(
+//         { client: keycloakClient.keycloakClient },
+//         (tokenSet, userinfo, done) => {
+//           tokenset = tokenSet;
+//           console.log(tokenSet.claims());
+//           // return done(null, tokenSet.claims());
+//           // Generate JWT token
+//           const token = jwt.sign(
+//             userinfo,
+//             process.env.JWT_SECRET || "jwtsecret",
+//             { expiresIn: "1h" }
+//           );
 
-          // Pass the token to the callback function
-          return done(null, token);
-        }
-      )
-    );
-  })
-  .catch((error) => {
-    console.error("Error initializeKeycloakClient:", error);
-  });
+//           // Pass the token to the callback function
+//           return done(null, token);
+//         }
+//       )
+//     );
+//   })
+//   .catch((error) => {
+//     console.error("Error initializeKeycloakClient:", error);
+//   });
 
 passport.serializeUser((user, done) => {
   done(null, user);
