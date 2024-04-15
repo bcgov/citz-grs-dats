@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/styles";
+import { styled } from "@mui/material/styles";
 import {
   Card,
   Typography,
@@ -13,13 +14,13 @@ import {
   ListItemAvatar,
   Avatar,
   Paper,
+  Theme,
 } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
 import UploadService from "../../../services/uploadService";
 import checkMark from "../../../assets/images/Sign-check-icon.png";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
+const useStyles = makeStyles((theme: Theme) => ({
     container: {
       display: "flex",
       flexWrap: "nowrap",

@@ -20,12 +20,6 @@ const ViewTransferStatusCard: FC = (): ReactElement => {
   };
   return (
     <Card sx={{ maxWidth: 345 }}>
-      <CardMedia
-        component="img"
-        alt="Digital-File-List"
-        height="140"
-        image={ViewTransferStatusImage}
-      />
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
           View Transfer status

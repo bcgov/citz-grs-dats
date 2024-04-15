@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/styles";
 import {
   Card,
   Divider,
@@ -8,62 +8,58 @@ import {
   Box,
   Button,
   Grid,
-  List,
-  ListItem,
-  ListItemText,
   Paper,
+  Theme,
 } from "@mui/material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import ExcelImg from "../../../assets/images/Microsoft_Office_Excel_(2019–present).svg.png";
 import UploadService from "../../../services/uploadService";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    container: {
-      display: "flex",
-      flexWrap: "nowrap",
-      "& > :not(style)": {
-        m: 1,
-        width: "80%",
-        height: "auto",
-      },
+const useStyles = makeStyles((theme: Theme) => ({
+  container: {
+    display: "flex",
+    flexWrap: "nowrap",
+    "& > :not(style)": {
+      margin: theme.spacing(1),
+      width: "80%",
+      height: "auto",
     },
-    dropzone: {
-      marginTop: theme.spacing(2),
-      border: "3px dashed #513dd4",
-      borderRadius: theme.shape.borderRadius,
-      backgroundColor: theme.palette.background.paper,
-      padding: theme.spacing(2),
-      textAlign: "center",
-      cursor: "pointer",
-    },
-    uploadButton: {
-      marginTop: theme.spacing(4),
-      marginLeft: theme.spacing(4),
-      variant: "contained",
-      color: "primary",
-    },
-    fileList: {
-      marginTop: theme.spacing(2),
-      maxHeight: "150px",
-      overflowY: "auto",
-    },
-    infoBox: {
-      marginTop: theme.spacing(2),
-      marginLeft: theme.spacing(2),
-      height: "80%",
-      padding: theme.spacing(2),
-    },
-    fileDisplay: {
-      display: "flex",
-      alignItems: "center",
-      padding: theme.spacing(2),
-    },
-    fileIcon: {
-      marginRight: theme.spacing(1),
-    },
-  })
-);
+  },
+  dropzone: {
+    marginTop: theme.spacing(2),
+    border: "3px dashed #513dd4",
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(2),
+    textAlign: "center",
+    cursor: "pointer",
+  },
+  uploadButton: {
+    marginTop: theme.spacing(4),
+    marginLeft: theme.spacing(4),
+    variant: "contained",
+    color: "primary",
+  },
+  fileList: {
+    marginTop: theme.spacing(2),
+    maxHeight: "150px",
+    overflowY: "auto",
+  },
+  infoBox: {
+    marginTop: theme.spacing(2),
+    marginLeft: theme.spacing(2),
+    height: "80%",
+    padding: theme.spacing(2),
+  },
+  fileDisplay: {
+    display: "flex",
+    alignItems: "center",
+    padding: theme.spacing(2),
+  },
+  fileIcon: {
+    marginRight: theme.spacing(1),
+  },
+}));
 
 interface Aris66xDropZoneProps {
   onFileChange?: (file: File) => void;

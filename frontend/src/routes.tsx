@@ -1,15 +1,14 @@
-import Home from "./views/Home/Home";
+import Home from "./views/home/home";
 import CreateDigitalFileList from "./views/CreateDigitalFileList/CreateDigitalFileList";
 import SendRecords from "./views/SendRecords/SendRecords";
-import TransferViewStatus from "./views/ViewTransferStatus/TransferViewStatus";
+import TransferViewStatus from "./views/ViewTransferStatus/ViewTransferStatus";
 
-import TransferViewEdit from "./views/ViewTransferStatus/TransferViewEdit";
+// import TransferViewEdit from "./views/ViewTransferStatus/TransferViewEdit";
 
 // import Dashboard from "./views/Dashboard/Dashboard";
 
 // other
 import { FC } from "react";
-import { Navigate } from "react-router-dom";
 
 // interface
 interface Route {
@@ -54,12 +53,12 @@ export const routes: Array<Route> = [
     enabled: true,
     component: TransferViewStatus,
   },
-  {
-    key: "transfer-view-edit-route",
-    title: "TransferViewEdit",
-    path: "/TransferViewEdit/:transferId",
-    requiresAuth: true,
-    enabled: true,
-    component: TransferViewEdit,
-  },
+  // {
+  //   key: "transfer-view-edit-route",
+  //   title: "TransferViewEdit",
+  //   path: "/TransferViewEdit/:transferId",
+  //   requiresAuth: true,
+  //   enabled: true,
+  //   component: TransferViewEdit,
+  // },
 ];

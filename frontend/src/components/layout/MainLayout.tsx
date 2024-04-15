@@ -1,10 +1,8 @@
 import React, { FC, ReactNode } from "react";
-import { styled } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
-import List from "@mui/material/List";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
@@ -13,11 +11,10 @@ import Container from "@mui/material/Container";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import { NavItems } from "./NavItems";
 import AppBar from "./AppBar";
 import Drawer from "./Drawer";
-import BreadcrumbsRouter from "./BreadcrumbsRouter";
 import L_LOGO from "../../assets/images/BCID_H_rgb_rev.e68ccb04..png";
+import { BC_COLOURS } from "../../assets/themes/bcGovStyles";
 
 interface LayoutProps {
   children: ReactNode;
@@ -35,13 +32,13 @@ const Layout: FC<LayoutProps> = ({ children }) => {
         <AppBar position="absolute" open={open}>
           <Toolbar
             sx={{
-              //backgroundColor: "#fff",
+              backgroundColor: BC_COLOURS.bc_primary_blue,
               pr: "24px", // keep right padding when drawer closed
             }}
           >
-            <a>
+            {/* <a>
               <img width="200px" alt="BC Mark" src={L_LOGO} />
-            </a>
+            </a> */}
             <IconButton
               edge="start"
               color="inherit"
@@ -105,7 +102,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
           {" "}
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <BreadcrumbsRouter />
+            {/* <BreadcrumbsRouter /> */}
             {children}
           </Container>
         </Box>

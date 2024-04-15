@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import { makeStyles } from "@mui/styles";
 import {
   Card,
   Divider,
@@ -8,7 +8,7 @@ import {
   Box,
   Button,
   Grid,
-  List,
+  Theme,
   ListItem,
   ListItemText,
   Paper,
@@ -17,8 +17,7 @@ import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import PDFImg from "../../../assets/images/adobe-pdf-icon-logo-png-transparent.png";
 import UploadService from "../../../services/uploadService";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
+const useStyles = makeStyles((theme: Theme) => ({
     container: {
       display: "flex",
       flexWrap: "nowrap",

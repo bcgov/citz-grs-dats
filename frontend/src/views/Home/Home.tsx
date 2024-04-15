@@ -5,8 +5,8 @@ import Box from "@mui/material/Box";
 import { Card } from "@mui/material";
 
 import CreateFileListCard from "./components/CreateFileListCard";
-// import SendRecordsCard from "./components/SendRecordsCard";
-// import ViewTransferStatusCard from "./components/ViewTransferStatusCard";
+import SendRecordsCard from "./components/SendRecordsCard";
+import ViewTransferStatusCard from "./components/ViewTransferStatusCard";
 
 // const Item = styled(Card)(({ theme }) => ({
 //   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",

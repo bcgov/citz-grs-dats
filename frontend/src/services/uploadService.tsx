@@ -12,7 +12,7 @@ export default class UploadService {
         },
       })
       .then((response) => {
-        // const transfer: ITransfer = response.data;
+        // const transfer: ITransfer = response.data; 
         return response.data;
       })
       .catch((error) => {

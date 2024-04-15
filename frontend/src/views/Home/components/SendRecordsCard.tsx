@@ -1,10 +1,8 @@
 import React, { FC, ReactElement } from "react";
-import SendRecordstoDATSImage from "../assets/Send-Records-to-DATS.png";
 import { useNavigate } from "react-router-dom";
 
 import {
   Card,
-  CardMedia,
   CardContent,
   Typography,
   CardActions,
@@ -20,12 +18,6 @@ const SendRecordsCard: FC = (): ReactElement => {
   };
   return (
     <Card sx={{ maxWidth: 345 }}>
-      <CardMedia
-        component="img"
-        alt="Send Records"
-        height="140"
-        image={SendRecordstoDATSImage}
-      />
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
           Send Record to DATS
