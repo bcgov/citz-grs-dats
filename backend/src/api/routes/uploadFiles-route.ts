@@ -20,4 +20,9 @@ router.post(
 
 router.get("/checkAccessibility", uploadController.checkAccessibility);
 // router.post('/create', isAuthenticated, createUser)
+
+router.get("/metadatas", uploadController.getMetadatas);
+
+router.get("/files", uploadController.getFilesinFolder);
+// router.post('/create', isAuthenticated, createUser)
 export default router;

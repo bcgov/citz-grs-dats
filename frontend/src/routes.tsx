@@ -3,7 +3,7 @@ import CreateDigitalFileList from "./views/CreateDigitalFileList/CreateDigitalFi
 import SendRecords from "./views/SendRecords/SendRecords";
 import TransferViewStatus from "./views/ViewTransferStatus/ViewTransferStatus";
 
-// import TransferViewEdit from "./views/ViewTransferStatus/TransferViewEdit";
+import TransferViewEdit from "./views/ViewTransferStatus/TransferViewEdit";
 
 // import Dashboard from "./views/Dashboard/Dashboard";
 
@@ -53,12 +53,12 @@ export const routes: Array<Route> = [
     enabled: true,
     component: TransferViewStatus,
   },
-  // {
-  //   key: "transfer-view-edit-route",
-  //   title: "TransferViewEdit",
-  //   path: "/TransferViewEdit/:transferId",
-  //   requiresAuth: true,
-  //   enabled: true,
-  //   component: TransferViewEdit,
-  // },
+  {
+    key: "transfer-view-edit-route",
+    title: "TransferViewEdit",
+    path: "/TransferViewEdit/:transferId",
+    requiresAuth: true,
+    enabled: true,
+    component: TransferViewEdit,
+  },
 ];

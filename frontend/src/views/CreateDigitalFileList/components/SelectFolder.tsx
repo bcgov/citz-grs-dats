@@ -1,7 +1,8 @@
 import React, { FC, ReactElement, useRef, useState } from "react";
+// import calculateHash from "../../../utils/calculateHash";
 
 interface SelectFolderProps {
-  onFolderSelect: (folderPath: string, files: string[]) => void;
+  onFolderSelect: (folderPaths: string[], files: string[]) => void;
 }
 
 interface FileListProps {
@@ -11,7 +12,7 @@ interface FileListProps {
 const FileList: FC<FileListProps> = ({ files }): ReactElement => {
   return (
     <div>
-      <h3>Files in Selected Folder:</h3>
+      <h3>Files in Selected Folders:</h3>
       <ul>
         {files.map((file, index) => (
           <li key={index}>{file}</li>
@@ -25,21 +26,32 @@ const SelectFolder: FC<SelectFolderProps> = ({
   onFolderSelect,
 }): ReactElement => {
   const folderInput = useRef<HTMLInputElement>(null);
+  const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
 
   const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
 
     if (files && files.length > 0) {
-      const folderPath = files[0].webkitRelativePath
-        ? files[0].webkitRelativePath.split("/").slice(0, -1).join("/")
-        : undefined;
+      const folderPaths: string[] = [];
+      const fileList: string[] = [];
 
-      if (folderPath) {
-        const fileList = Array.from(files).map((file) => file.name);
-        onFolderSelect(folderPath, fileList);
-        setSelectedFiles(fileList);
-      }
+      Array.from(files).forEach((file) => {
+        const folderPath = file.webkitRelativePath
+          ? file.webkitRelativePath.split("/").slice(0, -1).join("/")
+          : undefined;
+
+        if (folderPath && !folderPaths.includes(folderPath)) {
+          folderPaths.push(folderPath);
+        }
+        // const filePathWhitFile = folderPath + "/" + file.name
+        // const sha256HashPromise = calculateHash(filePathWhitFile, 'sha256');
+        fileList.push(folderPath + "/" + file.name);
+      });
+
+      setSelectedFolders(folderPaths);
+      setSelectedFiles(fileList);
+      onFolderSelect(folderPaths, fileList);
     }
   };
 
@@ -55,54 +67,17 @@ const SelectFolder: FC<SelectFolderProps> = ({
           id="folderInput"
           type="file"
           onChange={handleFolderSelect}
-          directory={supportsDirectoryAttribute ? "" : undefined}
-          webkitdirectory={supportsDirectoryAttribute ? "" : undefined}
           className="form-control"
-          ref={folderInput}
+          ref={(folderInput as unknown) as React.RefObject<HTMLInputElement>}
+          multiple
+          // @ts-ignore
+          directory={supportsDirectoryAttribute ? "" : undefined}
+          // @ts-ignore
+          webkitdirectory={supportsDirectoryAttribute ? "" : undefined}
         />
       </label>
     </div>
   );
 };
-declare module "react" {
-  interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
-    // extends React's HTMLAttributes
-    directory?: string; // remember to make these attributes optional....
-    webkitdirectory?: string;
-  }
-}
+
 export default SelectFolder;
-
-// declare module "react" {
-//   interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
-//     // extends React's HTMLAttributes
-//     directory?: string; // remember to make these attributes optional....
-//     webkitdirectory?: string;
-//   }
-// }
-
-// import * as React from "react";
-// import { FormProps } from "react-router-dom";
-
-// export const SelectFolder: React.FunctionComponent<FormProps> = (props) => {
-//   const folderInput = React.useRef(null);
-
-//   return (
-//     <>
-//       <div className="form-group row">
-//         <div className="col-lg-6">
-//           <label>Select Folder</label>
-//         </div>
-//         <div className="col-lg-6">
-//           <input
-//             type="file"
-//             directory=""
-//             webkitdirectory=""
-//             className="form-control"
-//             ref={folderInput}
-//           />
-//         </div>
-//       </div>
-//     </>
-//   );
-// };

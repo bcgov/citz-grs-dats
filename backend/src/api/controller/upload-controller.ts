@@ -1,18 +1,24 @@
 import { RequestHandler } from "express";
 import TransferService from "../service/transfer-service";
+import FileService from "../service/File-service";
 import extractsFromAra66x from "./utils/extractsFromAra66x";
 import fs from "fs";
 
 export default class UploadController {
   // Constructor to initialize any properties or perform setup
   private transferService: TransferService;
+  private fileService: FileService;
+
   constructor() {
     // Initialize any properties or perform setup here if needed
     this.transferService = new TransferService();
+    this.fileService = new FileService();
+    this.getMetadatas = this.getMetadatas.bind(this);
+    this.getFilesinFolder = this.getFilesinFolder.bind(this);
   }
   handleARIS66xUpload: RequestHandler = async (req, res, next) => {
     try {
-      // Handle the uploaded files here (e.g., save to the database)
+
       const uploadedFile = req.file;
 
       if (!uploadedFile) {
@@ -23,12 +29,12 @@ export default class UploadController {
 
       console.log(uploadedFile.fieldname);
 
-      // Your upload service logic
+
       const transferData = await extractsFromAra66x(filePath);
 
-      // Need to check if the transfer is new
+      console.log(transferData?.folders);
 
-      // Respond with the extracted data
+
       res.status(201).json({
         message: "Upload ARIS 66x successful",
         accession: transferData?.accession,
@@ -45,7 +51,7 @@ export default class UploadController {
 
   handleARIS617Upload: RequestHandler = async (req, res, next) => {
     try {
-      // Handle the uploaded files here (e.g., save to the database)
+
       const uploadedFile = req.file;
 
       if (!uploadedFile) {
@@ -87,4 +93,29 @@ export default class UploadController {
       }
     });
   };
-}
+
+  getMetadatas: RequestHandler = async (req, res, next) => {
+    // Get the file path from the query parameter
+    try {
+      // Get the file path from the query parameter
+      const filePath = req.query.path;
+      const response = await FileService.getMetadatas(filePath);
+      res.status(200).json(response);
+    } catch (error) {
+      res.status(500).json({ error: "An error occurred" });
+    }
+  }
+
+  getFilesinFolder: RequestHandler = async (req, res, next) => {
+    // Get the file path from the query parameter
+    try {
+      // Get the file path from the query parameter
+      const filePath = req.query.path;
+      const response = await FileService.getMetadatas(filePath);
+      res.status(200).json(response);
+    } catch (error) {
+      res.status(500).json({ error: "An error occurred" });
+    }
+  }
+
+};

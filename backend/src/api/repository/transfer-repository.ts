@@ -4,13 +4,14 @@ import { TransferModel } from "../model/transfer-model";
 import { ITransfer } from "../model/interfaces/ITransfer";
 
 export default class TransferRepository {
-  constructor() {}
+  constructor() { }
 
   async getTransfers(): Promise<ITransfer[] | null> {
     const transfers = await TransferModel.find({});
     console.log("transfers:::", transfers);
     return transfers;
   }
+
   async getTransfersById(transferId): Promise<ITransfer | null> {
     const transfer = await TransferModel.findById(transferId);
     console.log("transfer:::", transfer);

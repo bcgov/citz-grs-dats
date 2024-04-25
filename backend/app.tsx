@@ -10,8 +10,8 @@ import mongoose from "mongoose";
 import * as routers from "./src/api/routes";
 import { swaggerJSDoc } from "swagger-jsdoc";
 import { swaggerUi } from "swagger-ui-express";
-import { swaggerDefinition } from "./swagger-definition";
-import { datsComponents } from "./swagger-components";
+import { swaggerDefinition } from "./src/config/swagger/swagger-definition";
+import { datsComponents } from "./src/config/swagger/swagger-components";
 import { initializeKeycloakClient } from "./src/config/authConfig";
 
 const store = new session.MemoryStore();
