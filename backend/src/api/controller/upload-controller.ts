@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import TransferService from "../service/transfer-service";
 import FileService from "../service/File-service";
 import extractsFromAra66x from "./utils/extractsFromAra66x";
+import extractsTransferInfo from "./utils/extractsTransferInfo";
 import fs from "fs";
 
 export default class UploadController {
@@ -48,6 +49,36 @@ export default class UploadController {
       res.status(500).json({ error: "An error occurred" });
     }
   };
+  get66xFileTransferInfos: RequestHandler = async (req, res, next) => {
+    try {
+
+      const aris66xFile = req.file;
+
+      if (!aris66xFile) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const filePath = aris66xFile.path;
+
+      console.log(aris66xFile.fieldname);
+
+
+      const transferData = await extractsTransferInfo(filePath);
+
+      console.log(transferData?.application + " " + transferData?.accession);
+
+
+      res.status(201).json({
+        accession: transferData?.accession,
+        application: transferData?.application,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "An error occurred" });
+    }
+
+  }
+
 
   handleARIS617Upload: RequestHandler = async (req, res, next) => {
     try {

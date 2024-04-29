@@ -12,6 +12,11 @@ router.post(
   uploadARIS66xMiddleware,
   uploadController.handleARIS66xUpload
 );
+
+router.get(
+  "/get66xFileTransferInfos",
+  uploadController.get66xFileTransferInfos
+);
 router.post(
   "/uploadfileARIS617",
   uploadARIS617Middleware,

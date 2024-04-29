@@ -25,7 +25,7 @@ const ViewTransferStatusCard: FC = (): ReactElement => {
           View Transfer status
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Producer or Archivist can view and managed the information on PSPs
+          Archivist can view and managed the information on PSPs
           processed and created by DATS in order to process the accession and
           create the SIP.
         </Typography>

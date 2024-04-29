@@ -22,20 +22,20 @@ export default function SendRecords() {
       setExpanded(isExpanded ? panel : false);
     };
   const handleValidation = () => {
-    // Perform validation logic
+
     console.log("Validating folders");
   };
   const handle66xFileUpload = useCallback((file: File) => {
     const formData = new FormData();
     formData.append("uploadARIS66xfile", file);
 
-    // Assuming uploadService.upload66xFile returns a Promise
+
     uploadService
       .upload66xFile(formData)
       .then((response) => {
         console.log(response);
         setFolders(response.folders || []);
-        // Do any additional handling or state updates here
+
       })
       .catch((error) => {
         console.error("Upload error:", error);

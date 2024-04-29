@@ -1,6 +1,7 @@
 
 import fs from "fs";
 import mimeTypes from "mime-types";
+const path = require('path');
 import calculateHash from "../../utils/calculateHash";
 
 function getContentType(filePath: string): any | false {
@@ -56,23 +57,29 @@ export default class FileService {
     }
 
 
-    static async getFilesinFolder(filePath) {
-        return new Promise((resolve, reject) => {
-            if (fs.existsSync(filePath)) {
-                fs.readdir(filePath, (err, files) => {
-                    if (err) {
-                        console.error('Error reading directory:', err);
-                        reject(err); // Reject the promise if there's an error
-                    } else {
-                        console.log('Files and folders in the directory:', files);
-                        resolve(files); // Resolve the promise with the list of files
+    static async getFilesinFolder(directoryPath) {
+        fs.readdir(directoryPath, (err, items) => {
+            if (err) {
+                console.error('Error reading directory: jl', err);
+                return;
+            }
+
+            // Use async forEach to filter and log only files
+            items.forEach((item) => {
+                const itemPath = path.join(directoryPath, item);
+                fs.stat(itemPath, (statErr, stats) => {
+                    if (statErr) {
+                        console.error(`Error reading ${item}:`, statErr);
+                        return;
+                    }
+
+                    if (stats.isFile()) {
+                        console.log('File:', item);
                     }
                 });
-            } else {
-                // Reject the promise with a not found error
-                reject(new Error("File not found"));
-            }
+            });
         });
+
     }
 
 }

@@ -81,7 +81,7 @@ const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
       // Only accept the first file if multiple are dropped
       const file = acceptedFiles[0];
       setSelectedFile(file);
-
+      // console.log("In callBack : "+file.name);
       // If an external callback is provided, call it
       if (onFileChange) {
         onFileChange(file);
@@ -127,9 +127,8 @@ const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
               ) : (
                 <div
                   {...getRootProps()}
-                  className={`${classes.dropzone} ${
-                    isDragActive ? "active" : ""
-                  }`}
+                  className={`${classes.dropzone} ${isDragActive ? "active" : ""
+                    }`}
                 >
                   <input {...getInputProps()} />
                   <p>Drag 'n' drop a file here, or click to select a file</p>
