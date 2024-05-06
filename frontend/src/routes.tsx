@@ -1,4 +1,4 @@
-import Home from "./views/home/home";
+import Home from "./views/Home/Home";
 import CreateDigitalFileList from "./views/CreateDigitalFileList/CreateDigitalFileList";
 import SendRecords from "./views/SendRecords/SendRecords";
 import TransferViewStatus from "./views/ViewTransferStatus/ViewTransferStatus";
