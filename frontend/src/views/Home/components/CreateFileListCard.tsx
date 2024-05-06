@@ -1,5 +1,4 @@
 import React, { FC, ReactElement } from "react";
-// import DigitalFileListImage from "../assets/Digital-File-List.png";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -20,12 +19,6 @@ const CreateFileListCard: FC = (): ReactElement => {
   };
   return (
     <Card sx={{ maxWidth: 345 }}>
-      {/* <CardMedia
-        component="img"
-        alt="Digital-File-List"
-        height="140"
-        image={DigitalFileListImage}
-      /> */}
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
           Create a Digital File List

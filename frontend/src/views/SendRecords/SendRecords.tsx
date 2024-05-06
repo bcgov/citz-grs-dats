@@ -52,8 +52,6 @@ export default function SendRecords() {
       .upload617File(formData)
       .then((response) => {
         console.log(response);
-        // setFolders(response.folders || []);
-        // Do any additional handling or state updates here
       })
       .catch((error) => {
         console.error("Upload error:", error);
