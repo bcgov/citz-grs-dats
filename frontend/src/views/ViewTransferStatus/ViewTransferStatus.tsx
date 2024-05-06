@@ -28,18 +28,12 @@ function Copyright(props: any) {
 }
 
 const ViewTransferStatus: FC<any> = (): ReactElement => {
-  // const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreatetModalOpen, setIsCreateModalOpen] = useState(false);
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <Paper>
-            {/* <TransferCreateModal
-              isOpen={isCreatetModalOpen}
-              onRequestClose={() => setIsCreateModalOpen(false)}
-            /> */}
-          </Paper>
+          <Paper/>
         </Grid>
         <Grid item xs={12}>
           <Paper

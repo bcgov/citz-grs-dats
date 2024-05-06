@@ -36,9 +36,6 @@ const Layout: FC<LayoutProps> = ({ children }) => {
               pr: "24px", // keep right padding when drawer closed
             }}
           >
-            {/* <a>
-              <img width="200px" alt="BC Mark" src={L_LOGO} />
-            </a> */}
             <IconButton
               edge="start"
               color="inherit"
@@ -81,11 +78,6 @@ const Layout: FC<LayoutProps> = ({ children }) => {
             </IconButton>
           </Toolbar>
           <Divider />
-          {/* <List component="nav">
-            {NavItems}
-            <Divider sx={{ my: 1 }} />
-            {/* {secondaryListItems} */}
-          {/* </List> */}
         </Drawer>
         <Box
           component="main"
@@ -102,7 +94,6 @@ const Layout: FC<LayoutProps> = ({ children }) => {
           {" "}
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            {/* <BreadcrumbsRouter /> */}
             {children}
           </Container>
         </Box>
