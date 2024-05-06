@@ -1,6 +1,5 @@
 import React from "react";
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import Dashboard from "./Dashboard/Dashboard";
 import { bcGovTheme } from "./assets/themes/bcGovTheme";
 import {
   BrowserRouter as Router,
@@ -10,7 +9,6 @@ import {
 
 import { routes as appRoutes } from "./routes";
 import Layout from "./components/layout/MainLayout"
-//import { bcGovTheme } from "./assets/themes/bcGovTheme";
 
 function App() {
   return (
@@ -28,7 +26,6 @@ function App() {
                     localStorage.getItem("token") ? (
                       <route.component />
                     ) : (
-                      //<GetAuthentication />
                       <route.component />
                     )
                   ) : (

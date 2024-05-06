@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ITransferDTO from "../../../types/DTO/Interfaces/ITransferDTO";
 import { TransferService } from "../../../services/transferService";
-// import CreateTransferModal from "./TransferCreateModal";
-// import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
 import { Link } from "react-router-dom"; // Import Link component
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -109,15 +107,6 @@ export default function TransfersTable() {
           </TableBody>
         </Table>
       </TableContainer>
-      {/* <TablePagination
-        rowsPerPageOptions={[10, 25, 100]}
-        component="div"
-        count={rows.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      /> */}
     </Paper>
   );
 }
