@@ -13,9 +13,6 @@ import DropZoneComponent from "./components/DropZoneComponent"
 export default function CreateDigitalFileList() {
   const [data, setData] = useState([]);
   const [file, setFile] = useState(null)
-  // interface FileListProps {
-  //   files: string[];
-  // }
 
   interface FolderWithFiles {
     folderPath: string;

@@ -16,19 +16,11 @@ import DoneTwoToneIcon from "@mui/icons-material/DoneTwoTone";
 import { TransferService } from "../../services/transferService";
 import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
 import { TransferStatus } from "../../types/Enums/TransferStatus"
-//import { ITransfer } from "dats_shared/Types/interfaces/ITransfer";
-//import TransferForm from "../Transfers/components/TransferForm";
 
 const TransferViewEdit: React.FC = () => {
   const { transferId } = useParams();
   const [transfer, setTransfer] = useState<ITransferDTO | any>(null);
   const [isTransferEditing, setIsTransferEditing] = useState(false);
-
-  //const [selectedValue, setSelectedValue] = React.useState(TransferStatus.);
-
-  // const handleChange = (event) => {
-  //   setSelectedValue(event.target.value);
-  // };
 
   const transferService = new TransferService();
 
@@ -41,7 +33,6 @@ const TransferViewEdit: React.FC = () => {
   const handleUpdateTransfer = async () => {
     try {
       await transferService.updateTransfer(transfer);
-      // setIsReadonly(true);
     } catch (error) {
       console.error("Error updating transfer:", error);
     }
@@ -140,16 +131,6 @@ const TransferViewEdit: React.FC = () => {
                 onChange={handleInputChange}
                 value={transfer.description}
               />
-              {/* <TextField
-                sx={{ marginLeft: 2, marginBottom: 2, width: "20%" }}
-                disabled={!isTransferEditing}
-                name="status"
-                label="Status"
-                variant="outlined"
-                onChange={handleInputChange}
-                value={transfer.status}
-              /> */}
-
               <TextField
                 id="outlined-select-currency"
                 select
@@ -167,8 +148,6 @@ const TransferViewEdit: React.FC = () => {
               </TextField>
             </Grid>
           </Card>
-          {/* </Grid>
-        <Grid item xs={12}> */}
           <Card>
             <Box
               p={1}

@@ -81,7 +81,6 @@ const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
       // Only accept the first file if multiple are dropped
       const file = acceptedFiles[0];
       setSelectedFile(file);
-      // console.log("In callBack : "+file.name);
       // If an external callback is provided, call it
       if (onFileChange) {
         onFileChange(file);

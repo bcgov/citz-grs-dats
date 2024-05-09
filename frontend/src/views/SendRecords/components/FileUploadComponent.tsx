@@ -20,19 +20,6 @@ const FileUploadComponent: React.FC = () => {
         formData.append("files", selectedFiles[i]);
         console.log(selectedFiles[i].name);
       }
-      // const response = uploadService.upload66xFile(formData);
-      // console.log(response);
-
-      // await transferService.updateTransfer(transfer);
-      // Make an API call to upload the files using a service or fetch
-      // Example: You might use the Fetch API or an Axios instance
-      // fetch("your-upload-api-endpoint", {
-      //   method: "POST",
-      //   body: formData,
-      // })
-      // .then(response => response.json())
-      // .then(data => console.log(data))
-      // .catch(error => console.error("Upload error:", error));
 
       // Clear the selected files after uploading
       setSelectedFiles(null);
