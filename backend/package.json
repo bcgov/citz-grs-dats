@@ -51,7 +51,6 @@
     "@types/jest": "^29.5.11",
     "@types/node": "^20.12.7",
     "@types/openid-client": "^3.7.0",
-    "./src/types/custom.d.ts": "file",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.2"
   },
