@@ -54,21 +54,7 @@ const FoldersValidation: React.FC<FoldersValidationProps> = ({
   onValidation,
 }) => {
   const classes = useStyles();
-  //   const [folders, setFolders] = useState<string[]>([]);
   const uploadService = new UploadService();
-
-  //   useEffect(() => {
-  //     // Call the service method to get the list of folders
-  //     // Update the state with the received folders
-  //     uploadService
-  //       .getFoldersList()
-  //       .then((response) => {
-  //         setFolders(response.data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching folders:", error);
-  //       });
-  //   }, []);
 
   return (
     <Card>

@@ -26,6 +26,7 @@ function App() {
                     localStorage.getItem("token") ? (
                       <route.component />
                     ) : (
+                      //<GetAuthentication />
                       <route.component />
                     )
                   ) : (

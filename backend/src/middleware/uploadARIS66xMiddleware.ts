@@ -1,10 +1,13 @@
 import multer from "multer";
 import { Request, Response, NextFunction } from "express";
+import createFolder from "../utils/createFolder";
 
+var folderPath = process.env.UPLOAD_ARIS66X_FOLDER || "Upload66x/";
+createFolder(folderPath);
 // Configure multer storage and file name
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "Upload66x/");
+    cb(null, folderPath);
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
