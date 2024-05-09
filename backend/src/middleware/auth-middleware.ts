@@ -18,7 +18,26 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
 
 export async function handleCallback(req: Request, res: Response) {
   const params = client.callbackParams(req);
-  const tokenSet = await client.callback(process.env.BASE_URL + '/callback', params);
+  console.log('params', params);
+  const tokenSet = await client.callback(process.env.BASE_URL + '/callback', params, {
+        state: req.query.state
+    }); 
+  
+  console.log('tokenSet', tokenSet);
   req.session.tokenSet = tokenSet;
-  res.redirect('/'); 
+  res.redirect(`http://localhost:3000/tokenReceived?access_token=${tokenSet.access_token}`);
 }
+export const protect = async (req: Request, res: Response, next: NextFunction) => {
+  
+  if (!req.headers.authorization) {
+      return res.status(401).send('Authorization header missing');
+  }
+  try {
+      const accessToken = req.headers.authorization.split(' ')[1];
+      const userinfo = await client.userinfo(accessToken);
+      req.user = userinfo;  // Attach user info to the request
+      next();
+  } catch (error) {
+      return res.status(401).send('Invalid or expired token');
+  }
+};

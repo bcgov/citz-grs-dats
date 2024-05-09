@@ -8,8 +8,13 @@ import digitalFileRoute from "./routes/digital-file-route";
 import uploadFilesRoute from "./routes/upload-files-route";
 import { specs, swaggerUi } from "./config/swagger/swagger-config";
 import cors from "cors";
+import { login, logout } from "./controller/authController";
 
 const app = express();
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 app.use(
   session({
@@ -25,15 +30,16 @@ const corsOptions = {
   optionsSuccessStatus: 200         // For legacy browser support
 };
 
-app.use(cors());
+
 
 app.get("/", authenticate ,(req, res) => {
   res.send("hello world from HR management App Backend");
 });
 
 // Authentication Routes
-app.get('/login', authenticate);
+app.get('/login', login);
 app.get('/callback', handleCallback);
+app.post('/callback', handleCallback);
 app.get('/protected', authenticate,(req, res) => { 
   res.send('Protected route');
 });
