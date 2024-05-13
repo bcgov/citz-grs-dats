@@ -10,11 +10,12 @@ import Aris66xDropZone from "./components/Aris66xDropZone";
 import Aris617DropZone from "./components/Aris617DropZone";
 import FoldersValidation from "./components/FoldersValidations";
 import UploadService from "../../services/uploadService";
+import { Box, Button, Step, StepLabel, Stepper } from "@mui/material";
 
 export default function SendRecords() {
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [folders, setFolders] = useState<string[]>([]);
-
+  const [activeStep, setActiveStep] = useState(0);
   const uploadService = new UploadService();
 
   const handleChange =
@@ -58,109 +59,70 @@ export default function SendRecords() {
         // Handle the error as needed
       });
   }, []);
+  const steps = [
+    'Upload your 66x Digital Data List Excel Sheets',
+    'Validates the folders identified from the Digital File List',
+    'Uploads their approved Transfer form',
+    'View and Accept the Submission Agreement.',
+    'Review and Confirmed the Records Importation'
+  ];
 
+  const handleNext = () => setActiveStep(prev => prev + 1);
+  const handleBack = () => setActiveStep(prev => prev - 1);
+  const handleReset = () => setActiveStep(0);
+
+  const getStepContent = (index: number) => {
+    switch (index) {
+      case 0:
+        return <Aris66xDropZone handleFileUpload={(file) => handle66xFileUpload(file)} />;
+      case 1:
+        return <FoldersValidation folders={folders} onValidation={handleValidation} />
+      case 2:
+        return <Aris617DropZone handleFileUpload={handle617FileUpload} />
+      case 3:
+        return  <Typography>
+        Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.
+      </Typography>
+      case 4:
+        return <Typography>
+        Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.
+      </Typography>
+      default:
+        return 'Unknown step';
+    }
+  };
   return (
-    <Grid>
-      <Accordion
-        expanded={expanded === "panel1"}
-        onChange={handleChange("panel1")}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1bh-content"
-          id="panel1bh-header"
-        >
-          <Typography sx={{ width: "33%", flexShrink: 0 }}>Step - 1</Typography>
-          <Typography sx={{ color: "text.secondary" }}>
-            Upload your 66x Digital Data List Excel Sheets
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Aris66xDropZone handleFileUpload={handle66xFileUpload} />
-        </AccordionDetails>
-      </Accordion>
-      <Accordion
-        expanded={expanded === "panel2"}
-        onChange={handleChange("panel2")}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel2bh-content"
-          id="panel2bh-header"
-        >
-          <Typography sx={{ width: "33%", flexShrink: 0 }}>Step - 2</Typography>
-          <Typography sx={{ color: "text.secondary" }}>
-            Validates the folders identified from the Digital File List (ARS
-            66X)
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <FoldersValidation
-            folders={folders}
-            onValidation={handleValidation}
-          />
-        </AccordionDetails>
-      </Accordion>
-      <Accordion
-        expanded={expanded === "panel3"}
-        onChange={handleChange("panel3")}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel3bh-content"
-          id="panel3bh-header"
-        >
-          <Typography sx={{ width: "33%", flexShrink: 0 }}>Step - 3</Typography>
-          <Typography sx={{ color: "text.secondary" }}>
-            uploads their approved Transfer form (ARS 617)
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Aris617DropZone handleFileUpload={handle617FileUpload} />
-        </AccordionDetails>
-      </Accordion>
-      <Accordion
-        expanded={expanded === "panel4"}
-        onChange={handleChange("panel4")}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel4bh-content"
-          id="panel4bh-header"
-        >
-          <Typography sx={{ width: "33%", flexShrink: 0 }}>Step - 4</Typography>
-          <Typography sx={{ color: "text.secondary" }}>
-            View and Accept the Submission Agreement.
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>
-            Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer
-            sit amet egestas eros, vitae egestas augue. Duis vel est augue.
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
-      <Accordion
-        expanded={expanded === "panel5"}
-        onChange={handleChange("panel5")}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel5bh-content"
-          id="panel5bh-header"
-        >
-          <Typography sx={{ width: "33%", flexShrink: 0 }}>Step - 5</Typography>
-          <Typography sx={{ color: "text.secondary" }}>
-            Review and Confirmed the Records Importation
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>
-            Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer
-            sit amet egestas eros, vitae egestas augue. Duis vel est augue.
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
-    </Grid>
+    <Box sx={{ width: '100%' }}>
+      <Stepper activeStep={activeStep} alternativeLabel>
+        {steps.map((label, index) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
+      <div>
+        {getStepContent(activeStep)}
+        <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+          <Button
+            color="inherit"
+            disabled={activeStep === 0}
+            onClick={handleBack}
+            sx={{ mr: 1 }}
+          >
+            Back
+          </Button>
+          <Box sx={{ flex: '1 1 auto' }} />
+          {activeStep === steps.length - 1 ? (
+            <Button onClick={handleReset}>
+              Reset
+            </Button>
+          ) : (
+            <Button variant="contained" onClick={handleNext}>
+              Next
+            </Button>
+          )}
+        </Box>
+      </div>
+    </Box>
   );
 }
