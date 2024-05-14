@@ -67,13 +67,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 interface Aris617DropZoneProps {
   onFileChange?: (file: File) => void;
   onUpload?: () => void;
-  handleFileUpload: (file: File) => void;
 }
 
 const Aris617DropZone: React.FC<Aris617DropZoneProps> = ({
   onFileChange,
-  onUpload,
-  handleFileUpload,
+  onUpload
 }) => {
   const classes = useStyles();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -93,11 +91,21 @@ const Aris617DropZone: React.FC<Aris617DropZoneProps> = ({
     [onFileChange]
   );
 
-  const handleUpload = useCallback(() => {
-    if (onUpload) {
-      onUpload();
-    }
-  }, [onUpload]);
+  const handleFileUpload = useCallback((file: File) => {
+    const formData = new FormData();
+    formData.append("uploadARIS617file", file);
+
+    // Assuming uploadService.upload66xFile returns a Promise
+    uploadService
+      .upload617File(formData)
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error("Upload error:", error);
+        // Handle the error as needed
+      });
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleDrop,

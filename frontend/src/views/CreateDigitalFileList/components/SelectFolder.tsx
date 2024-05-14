@@ -2,13 +2,16 @@ import React, { FC, ReactElement, useRef, useState } from "react";
 // import calculateHash from "../../../utils/calculateHash";
 
 interface SelectFolderProps {
-  onFolderSelect: (folderPaths: string[], files: string[]) => void;
+  
 }
 
 interface FileListProps {
   files: string[];
 }
-
+interface FolderWithFiles {
+  folderPath: string;
+  files: string[];
+}
 const FileList: FC<FileListProps> = ({ files }): ReactElement => {
   return (
     <div>
@@ -23,7 +26,7 @@ const FileList: FC<FileListProps> = ({ files }): ReactElement => {
 };
 
 const SelectFolder: FC<SelectFolderProps> = ({
-  onFolderSelect,
+  
 }): ReactElement => {
   const folderInput = useRef<HTMLInputElement>(null);
   const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
@@ -54,10 +57,52 @@ const SelectFolder: FC<SelectFolderProps> = ({
       onFolderSelect(folderPaths, fileList);
     }
   };
+  const onFolderSelect = (folderPaths: string[], files: string[]) => {
+    console.log(folderPaths);
+    const foldersWithFiles: FolderWithFiles[] = organizeFilesByFolder(folderPaths, files);
+    console.log(foldersWithFiles);
+  };
 
+  const organizeFilesByFolder = (folderPaths: string[], files: string[]): FolderWithFiles[] => {
+    const folders: FolderWithFiles[] = [];
+    const mainFolder = findCommonPrefix(folderPaths);
+    console.log(mainFolder);
+
+    // Iterate through each folder path
+    folderPaths.forEach((folderPath) => {
+      // Filter files that belong to the current folder
+      const filesInFolder = files.filter((file) => file.startsWith(folderPath));
+
+      // Remove folder path from file names
+      const formattedFiles = filesInFolder.map((file) => file.replace(`${folderPath}/`, ''));
+
+      // Add folder with formatted files to the array
+      folders.push({
+        folderPath,
+        files: formattedFiles,
+      });
+    });
+
+    return folders;
+  };
+
+  // Function to find the common prefix among strings
+  const findCommonPrefix = (strings: string[]): string => {
+    if (!strings || strings.length === 0) {
+      return '';
+    }
+
+    let prefix = strings[0];
+    for (let i = 1; i < strings.length; i++) {
+      while (strings[i].indexOf(prefix) !== 0) {
+        prefix = prefix.substring(0, prefix.length - 1);
+      }
+    }
+
+    return prefix;
+  };
   const supportsDirectoryAttribute =
     typeof document.createElement("input").webkitdirectory !== "undefined";
-
   return (
     <div>
       <FileList files={selectedFiles} />
