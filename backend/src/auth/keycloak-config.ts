@@ -1,6 +1,10 @@
 import { BaseClient, Issuer } from 'openid-client';
 import dotenv from 'dotenv';
+import { custom } from 'openid-client';
 
+custom.setHttpOptionsDefaults({
+  timeout: parseInt(process.env.SSO_HTTP_TIMEOUT || "",10000),
+});
 dotenv.config();
 /**
  * Setup Keycloak client
