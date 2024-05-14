@@ -13,7 +13,6 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import AppBar from "./AppBar";
 import Drawer from "./Drawer";
-import L_LOGO from "../../assets/images/BCID_H_rgb_rev.e68ccb04..png";
 import { BC_COLOURS } from "../../assets/themes/bcGovStyles";
 
 interface LayoutProps {

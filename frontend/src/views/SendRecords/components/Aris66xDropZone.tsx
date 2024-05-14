@@ -64,13 +64,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 interface Aris66xDropZoneProps {
   onFileChange?: (file: File) => void;
   onUpload?: () => void;
-  handleFileUpload: (file: File) => void;
 }
 
 const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
   onFileChange,
-  onUpload,
-  handleFileUpload,
+  onUpload
 }) => {
   const classes = useStyles();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -89,11 +87,23 @@ const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
     [onFileChange]
   );
 
-  const handleUpload = useCallback(() => {
-    if (onUpload) {
-      onUpload();
-    }
-  }, [onUpload]);
+  const handleFileUpload = useCallback((file: File) => {
+    const formData = new FormData();
+    formData.append("uploadARIS66xfile", file);
+
+
+    uploadService
+      .upload66xFile(formData)
+      .then((response) => {
+        console.log(response);
+        setFolders(response.folders || []);
+
+      })
+      .catch((error) => {
+        console.error("Upload error:", error);
+        // Handle the error as needed
+      });
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleDrop,
@@ -156,3 +166,7 @@ const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
 };
 
 export default Aris66xDropZone;
+function setFolders(arg0: any) {
+  throw new Error("Function not implemented.");
+}
+
