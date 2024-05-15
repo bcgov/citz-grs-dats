@@ -7,9 +7,9 @@ dotenv.config();
  * @returns {Promise<BaseClient>} - Keycloak client
  */
 export async function setupKeycloak(): Promise<BaseClient> {
-  console.log('KEYCLOAK_URL', process.env.KEYCLOAK_URL);
+  //console.log('KEYCLOAK_URL', process.env.KEYCLOAK_URL);
   const keycloakIssuer = await Issuer.discover(`${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/.well-known/openid-configuration`);
-  console.log('keycloakIssuer', keycloakIssuer);
+  //console.log('keycloakIssuer', keycloakIssuer);
   const client = new keycloakIssuer.Client({
     client_id: process.env.KEYCLOAK_CLIENT_ID || 'dats-5158',
     client_secret: process.env.KEYCLOAK_CLIENT_SECRET || 'jUGWQRsxYQ4YQml50NdEXie2M0Mj8jxQ',
