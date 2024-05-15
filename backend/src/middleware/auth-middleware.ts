@@ -1,43 +1,21 @@
-import { Request, Response, NextFunction } from 'express';
-import { setupKeycloak } from '../auth/keycloak-config';
-import * as sessionTypes from '../types/custom-types'
-let client;
+import logger from '../config/logs/winston-config';
+import { verifyToken } from '../utils/jwt-utils';
 
-(async () => {
-  client = await setupKeycloak();
-})();
-
-export async function authenticate(req: Request, res: Response, next: NextFunction) {
-  if (!req.session.tokenSet) {
-    const authUrl = client.authorizationUrl({ scope: 'openid profile email' });
-    res.redirect(authUrl);
-  } else {
-    next();
-  }
-}
-
-export async function handleCallback(req: Request, res: Response) {
-  const params = client.callbackParams(req);
-  console.log('params', params);
-  const tokenSet = await client.callback(process.env.BASE_URL + '/callback', params, {
-        state: req.query.state
-    }); 
-  
-  console.log('tokenSet', tokenSet);
-  req.session.tokenSet = tokenSet;
-  res.redirect(`http://localhost:3000/tokenReceived?access_token=${tokenSet.access_token}`);
-}
-export const protect = async (req: Request, res: Response, next: NextFunction) => {
-  
-  if (!req.headers.authorization) {
-      return res.status(401).send('Authorization header missing');
-  }
-  try {
-      const accessToken = req.headers.authorization.split(' ')[1];
-      const userinfo = await client.userinfo(accessToken);
-      req.user = userinfo;  // Attach user info to the request
+export const authenticateJWT = (req: any, res: any, next: any) => {
+  logger.info('Authenticating JWT');
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const token = authHeader.split(' ')[1];
+    try {
+      req.user = verifyToken(token);
+      logger.debug(`JWT token is valid ${JSON.stringify(req.user)}`);
       next();
-  } catch (error) {
-      return res.status(401).send('Invalid or expired token');
+    } catch {
+      logger.error('Invalid JWT token');
+      res.sendStatus(403);
+    }
+  } else {
+    logger.error('No authorization header');
+    res.sendStatus(401);
   }
 };
