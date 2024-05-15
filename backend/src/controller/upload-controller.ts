@@ -5,6 +5,7 @@ import { RequestHandler } from "express";
 import fs from "fs";
 import extractsFromAra66x from "../utils/extractsFromAra66x";
 import extractsTransferInfo from "../utils/extractsTransferInfo";
+import createFolder from "../utils/createFolder";
 
 export default class UploadController {
   // Constructor to initialize any properties or perform setup
@@ -36,6 +37,17 @@ export default class UploadController {
 
       console.log(transferData?.folders);
 
+      console.log("---------accession num: "+transferData?.accession);
+      console.log("---------application num: "+transferData?.application);
+
+      var folderPath = process.env.TRANSFER_FOLDER ||"Transfer/";
+      createFolder(folderPath);
+
+      var accession_num=transferData?.accession;
+      var application_num=transferData?.application;
+      var subFolderPath = folderPath+accession_num+"-"+application_num+"/";
+      console.log("------------subFolderPath: "+subFolderPath);
+      createFolder(subFolderPath);
 
       res.status(201).json({
         message: "Upload ARIS 66x successful",
