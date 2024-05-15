@@ -1,5 +1,10 @@
 import { BaseClient, Issuer } from 'openid-client';
 import dotenv from 'dotenv';
+import {custom} from 'openid-client'
+
+custom.setHttpOptionsDefaults ({
+   timeout: 10000,
+});
 
 dotenv.config();
 /**
