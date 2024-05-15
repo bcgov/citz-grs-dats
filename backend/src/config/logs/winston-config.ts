@@ -1,7 +1,6 @@
 import winston from 'winston';
 import fs from 'fs';
 import dotenv from 'dotenv';
-
 dotenv.config();
 
 const logDir = process.env.LOG_DIR || 'logs';
@@ -12,7 +11,7 @@ if (!fs.existsSync(logDir)) {
 }
 
 const logger = winston.createLogger({
-    level: 'info',
+    level: process.env.LOG_LEVEL!,
     format: winston.format.combine( 
         winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         winston.format.errors({ stack: true }),
@@ -24,4 +23,4 @@ const logger = winston.createLogger({
     ],
 });
 
-module.exports = logger;
+export default logger;
