@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import Typography from "@mui/material/Typography";
 import Aris66xDropZone from "./components/Aris66xDropZone";
 import Aris617DropZone from "./components/Aris617DropZone";
-import FoldersValidation from "./components/FoldersValidations";
+import SubmissionAgreement from "./components/SubmissionAgreement";
 import UploadService from "../../services/uploadService";
 import { Box, Button, Step, StepLabel, Stepper } from "@mui/material";
 import GenericStepper from "../../components/GenericStepper";
@@ -28,14 +28,14 @@ export default function SendRecords() {
         // Handle the error as needed
       });
   }, []);
-  
+
 
   const steps = [
     { label: 'Upload 66x file', content: <Aris66xDropZone /> },
-    { label: 'Validate', content: <FoldersValidation /> },
     { label: 'Upload approved Transfer form', content: <Aris617DropZone /> },
-    { label: 'Accept Terms.', content: <Typography>Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.  </Typography> },
-    { label: 'Review and Confirm', content: <Typography>Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.  </Typography> },  
-];
-return <GenericStepper steps={steps} />;
+    { label: 'Accept Terms.', content: <SubmissionAgreement /> },
+    { label: 'Review and Uplaod', content: <Typography>Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.  </Typography> },
+    { label: 'Download Files', content: <Typography>Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.  </Typography> },
+  ];
+  return <GenericStepper steps={steps} />;
 }
