@@ -12,8 +12,15 @@ import authRoutes from "./routes/authRoutes";
 import { authenticateJWT } from "./middleware/auth-middleware";
 import * as sessionTypes from "./types/custom-types";
 import logger from "./config/logs/winston-config";
+import cookieParser from "cookie-parser";
 const app = express();
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  credentials: true
+};
 
+app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(
   session({
@@ -26,10 +33,6 @@ app.use(
 
 
 app.use(authRoutes);
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
 app.use(express.json());
 
 
@@ -47,7 +50,10 @@ app.use("/api", transferRouter);
 app.use("/api", digitalFileListRoute);
 app.use("/api", digitalFileRoute);
 app.use("/api", uploadFilesRoute);
-
+app.get('/userinfo', authenticateJWT, (req: any, res) => {
+  logger.info('Userinfo route called');
+  res.json(req.user.userinfo);
+});
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(function (req: Request, res: Response, next: NextFunction) {
   console.log(
