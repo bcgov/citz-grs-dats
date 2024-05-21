@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { setupKeycloak } from '../auth/keycloak-config';
-import { generators } from 'openid-client';
+import { BaseClient, generators } from 'openid-client';
 import { generateTokens, verifyToken } from '../utils/jwt-utils';
 import * as sessionTypes from '../types/custom-types' 
 import logger from '../config/logs/winston-config';
@@ -24,8 +24,10 @@ router.get('/login', (req, res) => {
     response_type: 'code',
     state,
     nonce,
+    'kc_idp_hint': 'idir',
   });
   logger.info(`/login route called, redirecting to ${authUrl}`);
+
   res.redirect(authUrl);
 });
 
@@ -46,7 +48,7 @@ logger.debug(`Token set: ${JSON.stringify(tokens)}`);
 
 router.post('/refresh-token', (req, res) => {
   logger.info(`/refresh-token route called`);
-  const refreshToken = req.cookies.refreshToken;
+  const refreshToken = req.cookies['refreshToken'];
   if (!refreshToken) return res.sendStatus(403);
 
   try {
@@ -54,9 +56,19 @@ router.post('/refresh-token', (req, res) => {
     const tokens = generateTokens(user);
     res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true });
     res.json({ accessToken: tokens.accessToken });
-  } catch {
+  } catch(e){
+    logger.error(`Error refreshing token: ${e}`);
     res.sendStatus(403);
   }
+});
+
+router.get('/logout', (req, res) => {
+  const postLogoutRedirectUri = 'http://localhost:3000/';
+  const ssoLogoutUrlWithRedirect = `${client.endSessionUrl()}?post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri)}`;
+  logger.info(`/logout route called, redirecting to ${ssoLogoutUrlWithRedirect}`);
+  res.cookie('accessToken', '', { httpOnly: true, expires: new Date(0) });
+  res.cookie('refreshToken', '', { httpOnly: true, expires: new Date(0) });
+  res.redirect(ssoLogoutUrlWithRedirect); // Redirect to SSO provider's logout endpoint with post-logout redirect URI
 });
 
 export default router;
