@@ -1,6 +1,5 @@
 import express from "express";
 
-
 import { uploadARIS66xMiddleware } from "../middleware/uploadARIS66xMiddleware";
 import { uploadARIS617Middleware } from "../middleware/uploadARIS617Middleware";
 import UploadController from "../controller/upload-controller";
@@ -18,6 +17,7 @@ router.get(
   "/get66xFileTransferInfos",
   uploadController.get66xFileTransferInfos
 );
+
 router.post(
   "/uploadfileARIS617",
   uploadARIS617Middleware,
@@ -25,10 +25,9 @@ router.post(
 );
 
 router.get("/checkAccessibility", uploadController.checkAccessibility);
-// router.post('/create', isAuthenticated, createUser)
 
 router.get("/metadatas", uploadController.getMetadatas);
 
 router.get("/files", uploadController.getFilesinFolder);
-// router.post('/create', isAuthenticated, createUser)
+
 export default router;

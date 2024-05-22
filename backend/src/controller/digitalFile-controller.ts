@@ -30,7 +30,6 @@ export default class DigitalFileController {
   }
   async createDigitalFileByDigitalFileListId(req: Request, res: Response) {
     try {
-      //   console.log(req.body);
       const digitalFileListId = req.params.digitalFileListId;
       console.log("digitalFileLidt Id : " + digitalFileListId);
       const digitalFile = req.body; // Assuming the transfer data is in the request body

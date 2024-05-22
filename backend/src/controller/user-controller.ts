@@ -21,30 +21,3 @@ export default class UserController {
     }
   }
 }
-
-/**
- * @summary Creates or updates user data
- * @author jacques levesque
- */
-// export const upsertUser = async (userData: KeycloakUser & KeycloakIdirUser) => {
-//   const newUser = {
-//     guid: userData.idir_user_guid,
-//     username: userData.idir_username,
-//     email: userData.email,
-//     user_first_name: userData.given_name,
-//     user_last_name: userData.family_name,
-//     roles: userData.client_roles ?? [],
-//   };
-//   try {
-//     // await userService. .user.upsert({
-//     //   where: {
-//     //     guid: userData.idir_user_guid,
-//     //   },
-//     //   create: newUser,
-//     //   update: newUser,
-//     // });
-//   } catch (error) {
-//     // eslint-disable-next-line no-console
-//     console.log("Error: ", error);
-//   }
-// };
