@@ -49,19 +49,12 @@ export default class TransferService {
        filePath: string
   ) {
         const transferData = await extractsFromAra66x(filePath);
-
-        console.log(transferData?.folders);
-
-        console.log("---------accession num: "+transferData?.accession);
-        console.log("---------application num: "+transferData?.application);
-
         var folderPath = process.env.TRANSFER_FOLDER ||"Transfer/";
         createFolder(folderPath);
 
         var accession_num=transferData?.accession;
         var application_num=transferData?.application;
         var subFolderPath = folderPath+accession_num+"-"+application_num+"/";
-        console.log("------------subFolderPath: "+subFolderPath);
         createFolder(subFolderPath);
         
         return transferData;
@@ -71,7 +64,6 @@ export default class TransferService {
     filePath: string
   ) {
       const transferData = await extractsTransferInfo(filePath);
-      console.log(transferData?.application + " " + transferData?.accession);
       return transferData;
   }
 
