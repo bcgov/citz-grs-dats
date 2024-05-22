@@ -1,11 +1,7 @@
 import FileService from "../service/File-service";
 import TransferService from "../service/transfer-service";
 import { RequestHandler } from "express";
-
 import fs from "fs";
-import extractsFromAra66x from "../utils/extractsFromAra66x";
-import extractsTransferInfo from "../utils/extractsTransferInfo";
-import createFolder from "../utils/createFolder";
 
 export default class UploadController {
   // Constructor to initialize any properties or perform setup
@@ -19,6 +15,7 @@ export default class UploadController {
     this.getMetadatas = this.getMetadatas.bind(this);
     this.getFilesinFolder = this.getFilesinFolder.bind(this);
   }
+
   handleARIS66xUpload: RequestHandler = async (req, res, next) => {
     try {
 
@@ -28,26 +25,7 @@ export default class UploadController {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const filePath = uploadedFile.path;
-
-      console.log(uploadedFile.fieldname);
-
-
-      const transferData = await extractsFromAra66x(filePath);
-
-      console.log(transferData?.folders);
-
-      console.log("---------accession num: "+transferData?.accession);
-      console.log("---------application num: "+transferData?.application);
-
-      var folderPath = process.env.TRANSFER_FOLDER ||"Transfer/";
-      createFolder(folderPath);
-
-      var accession_num=transferData?.accession;
-      var application_num=transferData?.application;
-      var subFolderPath = folderPath+accession_num+"-"+application_num+"/";
-      console.log("------------subFolderPath: "+subFolderPath);
-      createFolder(subFolderPath);
+      const transferData = await this.transferService.createFolder(uploadedFile.path);
 
       res.status(201).json({
         message: "Upload ARIS 66x successful",
@@ -62,6 +40,7 @@ export default class UploadController {
       res.status(500).json({ error: "An error occurred" });
     }
   };
+
   get66xFileTransferInfos: RequestHandler = async (req, res, next) => {
     try {
 
@@ -71,15 +50,8 @@ export default class UploadController {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const filePath = aris66xFile.path;
-
-      console.log(aris66xFile.fieldname);
-
-
-      const transferData = await extractsTransferInfo(filePath);
-
+      const transferData = await this.transferService.extractsTransferInfo(aris66xFile.path);
       console.log(transferData?.application + " " + transferData?.accession);
-
 
       res.status(201).json({
         accession: transferData?.accession,
@@ -102,16 +74,8 @@ export default class UploadController {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const filePath = uploadedFile.path;
+      //const transferData = await this.transferService.upload(uploadedFile.path);
 
-      console.log(uploadedFile.fieldname);
-
-      // Your upload service logic
-      // const transferData = await extractsFromAra66x(filePath);
-
-      // Need to check if the transfer is new
-
-      // Respond with the extracted data
       res.status(201).json({
         message: "Upload ARIS 617 successful",
       });
@@ -120,6 +84,7 @@ export default class UploadController {
       res.status(500).json({ error: "An error occurred" });
     }
   };
+
   checkAccessibility: RequestHandler = (req, res, next) => {
     const { folder } = req.query;
 
