@@ -14,18 +14,18 @@ import { AuthProvider } from "./auth/AuthContext";
 import PrivateRoute from "./auth/PrivateRoute";
 import Dashboard from "./views/Dashboard/Dashboard";
 import CreateDigitalFileList from "./views/CreateDigitalFileList/CreateDigitalFileList";
-import SendRecords from "./views/SendRecords/SendRecords";
 import TransferViewEdit from "./views/ViewTransferStatus/TransferViewEdit";
+import { SendRecords } from "./views/SendRecords/SendRecords";
 //import { bcGovTheme } from "./assets/themes/bcGovTheme";
 
 
 const App: React.FC = () => {
     return (
-<ThemeProvider theme={bcGovTheme}>
-      <CssBaseline />
+
       <AuthProvider>
+      <CssBaseline />
       <Router>
-      <MyAppBar />
+      <MyAppBar />   
       <Routes>
       <Route path="/" element={<Landing />} />
       <Route element={<PrivateRoute />}>
@@ -38,7 +38,7 @@ const App: React.FC = () => {
       </Routes>
       </Router>
       </AuthProvider>
-    </ThemeProvider>
+    
   );
 }
 
