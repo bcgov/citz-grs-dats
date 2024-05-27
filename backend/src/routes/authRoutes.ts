@@ -41,7 +41,7 @@ router.get('/oidc/callback', async (req, res) => {
   const userinfo = await client.userinfo(tokenSet.access_token);
   const tokens = generateTokens({ userinfo });
 logger.debug(`Token set: ${JSON.stringify(tokens)}`);
-  const returnUrl = req.session.returnUrl || process.env.CLIENT_BASE_URL!;
+  const returnUrl = process.env.CLIENT_BASE_URL!; //req.session.returnUrl || process.env.CLIENT_BASE_URL!; irrespective of the return URL, redirect to the frontend dashboard
   res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true });
   res.redirect(returnUrl); // Redirect to frontend dashboard after successful login
 });

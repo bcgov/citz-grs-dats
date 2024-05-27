@@ -1,171 +1,105 @@
-import React, { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
-import { makeStyles } from "@mui/styles";
-import {
-  Card,
-  Divider,
-  Typography,
-  Box,
-  Button,
-  Grid,
-  Theme,
-  ListItem,
-  ListItemText,
-  Paper,
-} from "@mui/material";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import PDFImg from "../../../assets/images/adobe-pdf-icon-logo-png-transparent.png";
-import UploadService from "../../../services/uploadService";
+import React, { ChangeEvent, useCallback, useRef, useState } from "react";
+import DropZoneComponent from "../../../components/DropZoneComponent";
+import { Button, Input, TextField } from "@mui/material";
+import { text } from "stream/consumers";
 
-const useStyles = makeStyles((theme: Theme) => ({
-    container: {
-      display: "flex",
-      flexWrap: "nowrap",
-      "& > :not(style)": {
-        m: 1,
-        width: "80%",
-        height: "auto",
-      },
-    },
-    dropzone: {
-      marginTop: theme.spacing(2),
-      border: "3px dashed #513dd4",
-      borderRadius: theme.shape.borderRadius,
-      backgroundColor: theme.palette.background.paper,
-      padding: theme.spacing(2),
-      textAlign: "center",
-      cursor: "pointer",
-    },
-    uploadButton: {
-      marginTop: theme.spacing(4),
-      marginLeft: theme.spacing(4),
-      variant: "contained",
-      color: "primary",
-    },
-    fileList: {
-      marginTop: theme.spacing(2),
-      maxHeight: "150px",
-      overflowY: "auto",
-    },
-    infoBox: {
-      marginTop: theme.spacing(2),
-      marginLeft: theme.spacing(2),
-      height: "80%",
-      padding: theme.spacing(2),
-    },
-    fileDisplay: {
-      display: "flex",
-      alignItems: "center",
-      padding: theme.spacing(2),
-    },
-    fileIcon: {
-      marginRight: theme.spacing(1),
-    },
-  })
-);
+const acceptedFileTypes = {
+  'text/csv': ['.csv'],
+  'application/vnd.ms-excel': ['.xls'],
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+  'application/pdf': ['.pdf'],
+  'image/*': ['.jpeg', '.jpg', '.png', '.gif'],
+  'text/plain': ['.txt'],
+};
 
-interface Aris617DropZoneProps {
-  onFileChange?: (file: File) => void;
-  onUpload?: () => void;
+interface FileMetadata {
+  Name: string;
+  Path: string;
+  LastModified: Date;
+  Md5: string;
 }
+const Aris617DropZone: React.FC = () => {
+  const [files, setFiles] = useState<FileMetadata[]>([]);
+  const [value, setValue] = useState('');
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(event.target.value);
+  };
+const handleClicked = async () => {
+    console.log('clicked');
+    const fileList = await getFileMetadata(value);
+    setFiles(fileList);
+}
+  const handleFolderUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const filesArray = Array.from(event.target.files || []);
+    if (filesArray.length === 0) {
+      console.error("No files selected.");
+      return;
+    }
 
-const Aris617DropZone: React.FC<Aris617DropZoneProps> = ({
-  onFileChange,
-  onUpload
-}) => {
-  const classes = useStyles();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const uploadService = new UploadService();
+    const folderPath = filesArray[0].webkitRelativePath.split('/')[0];
+    if (!folderPath) {
+      console.error("No folder path found.");
+      return;
+    }
 
-  const handleDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      // Only accept the first file if multiple are dropped
-      const file = acceptedFiles[0];
-      setSelectedFile(file);
+    const fileList = await getFileMetadata(folderPath);
+    setFiles(fileList);
+  };
 
-      // If an external callback is provided, call it
-      if (onFileChange) {
-        onFileChange(file);
-      }
-    },
-    [onFileChange]
-  );
+  const getFileMetadata = async (folderPath: string): Promise<FileMetadata[]> => {
+    const response = await fetch('http://localhost:5781/get-files', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ FolderPath : folderPath }),
+    });
 
-  const handleFileUpload = useCallback((file: File) => {
-    const formData = new FormData();
-    formData.append("uploadARIS617file", file);
-
-    // Assuming uploadService.upload66xFile returns a Promise
-    uploadService
-      .upload617File(formData)
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((error) => {
-        console.error("Upload error:", error);
-        // Handle the error as needed
-      });
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: handleDrop,
-    multiple: false,
-  });
+    if (response.ok) {
+      return await response.json();
+    } else {
+      console.error('Failed to fetch files');
+      return [];
+    }
+  };
 
   return (
-    <Card>
-      <Box p={3}>
-        <Typography variant="subtitle2">
-          Select a file from your computer or drop it here to upload.
-        </Typography>
-      </Box>
-      <Divider />
-
-      <Grid container spacing={2} direction="row" sx={{ marginBottom: 4 }}>
-        <Grid item xs={12}>
-          <Box className={classes.container}>
-            <Paper elevation={1}>
-              {selectedFile ? (
-                <div className={classes.fileDisplay}>
-                  <img
-                    src={PDFImg}
-                    alt="PDF Icon"
-                    style={{ width: 48, height: 48 }}
-                    className={classes.fileIcon}
-                  />
-                  <Typography>{selectedFile.name}</Typography>
-                </div>
-              ) : (
-                <div
-                  {...getRootProps()}
-                  className={`${classes.dropzone} ${
-                    isDragActive ? "active" : ""
-                  }`}
-                >
-                  <input {...getInputProps()} />
-                  <p>Drag 'n' drop a file here, or click to select a file</p>
-                </div>
-              )}
-            </Paper>
-            <Grid item xs={3}>
-              <Paper elevation={4} className={classes.infoBox}>
-                <Typography variant="body2">
-                  Additional information goes here...
-                </Typography>
-              </Paper>
-            </Grid>
-          </Box>
-
-          <Button
-            className={classes.uploadButton}
-            onClick={() => handleFileUpload(selectedFile!)}
-          >
-            Upload
-          </Button>
-        </Grid>
-      </Grid>
-    </Card>
+    <div>
+      <TextField id="standard-basic" label="Standard" variant="standard" value={value} onChange={handleChange} />
+      <Button onClick={handleClicked}>Click Me</Button>
+      <ul>
+        {files.map((file, index) => (
+          <li key={index}>
+            {file.Name} - {file.Path} - {new Date(file.LastModified).toLocaleString()} - {file.Md5}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
+  // return (
+  //   <DropZoneComponent 
+  //     accept={acceptedFileTypes}
+  //     allowFolders={true}
+  //     onFilesAccepted={async (files) => {
+  //       const file = files[0];
+  //       const folderPath = files[0].webkitRelativePath.split('/')[0];
+  //       debugger;
+  //         const response = await fetch('http://localhost:5781/get-files', {
+  //           method: 'POST',
+  //           headers: {
+  //             'Content-Type': 'application/json'
+  //           },
+  //           body: JSON.stringify({ folderPath })
+  //         });
+  //         if (response.ok) {
+  //           const data = await response.json();
+  //           debugger;
+  //         } else {
+  //           console.error('Failed to fetch files');
+  //         }
+  //     }}
+  //   />
+  // );
 };
 
 export default Aris617DropZone;

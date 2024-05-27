@@ -22,7 +22,7 @@ const MyAppBar: React.FC = () => {
   };
   console.log('isAuthenticated in Appbar: ' + isAuthenticated);
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{mb: 10}}>
       <Toolbar>
         { isAuthenticated ? <IconButton edge="start" color="inherit" aria-label="menu" onClick={home}>
           <HomeIcon />
