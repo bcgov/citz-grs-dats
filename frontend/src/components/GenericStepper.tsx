@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Stepper, Step, StepLabel, Button, Typography, Grid, Box } from '@mui/material';
+import { Stepper, Step, StepLabel, Button, Typography, Grid, Box, Paper } from '@mui/material';
 
 type StepConfig = {
     label: string;
@@ -11,7 +11,7 @@ type GenericStepperProps = {
     contentHeight?: string;  // Optional prop to set fixed content height
 };
 
-export default function GenericStepper({ steps, contentHeight = '300px' }: GenericStepperProps) {
+export default function GenericStepper({ steps, contentHeight = '500px' }: GenericStepperProps) {
     const [activeStep, setActiveStep] = useState(0);
 
     const handleNext = () => {
@@ -27,7 +27,8 @@ export default function GenericStepper({ steps, contentHeight = '300px' }: Gener
     };
 
     return (
-        <Grid container justifyContent="center" spacing={2}>
+            <Grid container justifyContent="center" spacing={2}>
+            <Grid item xs={12}>
             <Stepper activeStep={activeStep} alternativeLabel sx={{ width: '100%' }}>
                 {steps.map((step) => (
                     <Step key={step.label}>
@@ -35,10 +36,13 @@ export default function GenericStepper({ steps, contentHeight = '300px' }: Gener
                     </Step>
                 ))}
             </Stepper>
-            <Box sx={{ width: '100%', minHeight: contentHeight, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '10px' }}>
+           </Grid>
+           <Grid item xs={11}>
+           <Paper elevation={2} sx={{ width: '100%', minHeight: contentHeight, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '10px' }}>
                 {steps[activeStep].content}
-            </Box>
-            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', pt: 2 }}>
+            </Paper>
+            </Grid>
+            <Grid item xs={11} sx={{ display: 'flex', justifyContent: 'space-between', pt: 2 }}>
                 <Button disabled={activeStep === 0} onClick={handleBack}>
                     Back
                 </Button>

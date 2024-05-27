@@ -13,16 +13,21 @@ const Item = styled(Paper)(({ theme }) => ({
     textAlign: 'center',
     color: theme.palette.text.secondary,
 }));
-const SubmissionAgreement: React.FC = () => {
-    const [value, setValue] = React.useState('no');
+const SubmissionAgreement = ({ validate }: { validate: (isValid: boolean) => void }) => {
+    const [value, setValue] = React.useState('');
+    React.useEffect(() => { validate(false); }, []);
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setValue((event.target as HTMLInputElement).value);
+      const agreed = event.target.value === 'agree';
+      setValue(event.target.value);
+      console.log(event.target.value);
+      validate(agreed);
     };
+  
     return (
         <Box sx={{ flexGrow: 1 }}>
             <Grid container spacing={2}>
-                <Grid xs={6} md={8}>
+                <Grid xs={12}>
                     <Item>
                         <Typography sx={{ fontSize: 14 }} fontWeight="bold" align='center' gutterBottom>
                             BC GOVERNMENT DIGITAL ARCHIVES <br />
@@ -70,12 +75,9 @@ const SubmissionAgreement: React.FC = () => {
                         value={value}
                         onChange={handleChange}
                     >
-                        <FormControlLabel value="yes" control={<Radio />} label="Agree" />
-                        <FormControlLabel value="no" control={<Radio />} label="Reject" />
+                        <FormControlLabel value="agree" control={<Radio />} label="Agree" />
+                        <FormControlLabel value="disagree" control={<Radio />} label="Reject" />
                     </RadioGroup>
-                </Grid>
-                <Grid xs={6} md={4}>
-                    <Item>Help Text</Item>
                 </Grid>
             </Grid>
         </Box>
