@@ -26,11 +26,6 @@ export default async function extractsFromAra66x(excelfile: string) {
     const ministry = ws1.getCell("B2");
     const branch = ws1.getCell("B3");
 
-    console.log("Accession Number: " + accession.text);
-    console.log("Application Number: " + application.text);
-    console.log("Ministry: " + ministry.text);
-    console.log("Branch: " + branch.text);
-
     const transferData: TransferData = {
       accession: ws1.getCell("B4").text,
       application: ws1.getCell("B5").text,
