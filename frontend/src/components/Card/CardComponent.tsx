@@ -12,7 +12,7 @@ interface CardProps {
 const CardComponent: React.FC<CardProps> = ({ title, content, buttonText, link }) => {
   return (
     <MuiCard sx={{ maxWidth: 345, margin: 2 }}>
-      <CardContent>
+      <CardContent sx={{ textAlign: 'justify' }}>
         <Typography variant="h5" component="div">
           {title}
         </Typography>

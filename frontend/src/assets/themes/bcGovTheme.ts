@@ -106,25 +106,25 @@ export const bcGovTheme = createTheme({
         },
       },
     },
-    MuiButtonBase: {
-      defaultProps: {
-        disableRipple: true, // No more ripple, on the whole application
-      },
-    },
+    // MuiButtonBase: {
+    //   defaultProps: {
+    //     disableRipple: true, // No more ripple, on the whole application
+    //   },
+    // },
     MuiButton: {
       styleOverrides: {
         root: {
-          disableRipple: true,
+          // disableRipple: true,
           minHeight: "48px",
           padding: "0px 32px",
-          borderRadius: 4,
-          "&:hover": {
-            backgroundColor: BC_COLOURS.button_hover,
-          },
-          "&:focus": {
-            outline: "2px solid",
-            outlineColor: BC_COLOURS.focus_blue,
-          },
+          // borderRadius: 4,
+          // "&:hover": {
+          //   backgroundColor: BC_COLOURS.button_hover,
+          // },
+          // "&:focus": {
+          //   outline: "2px solid",
+          //   outlineColor: BC_COLOURS.focus_blue,
+          // },
           //transition: "0.5s all",
         },
       },

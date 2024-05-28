@@ -17,7 +17,7 @@ const Dashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={4}>
           <CardComponent
             title="Send Record to DATS"
-            content="Producer can create a Digital File list from a windows folder. The result will be a Excel sheets base on the Digital file list teamplate from GRS"
+            content="Producer can transfer their digital records to DATS using the Send Records to DATS wizard Producers can send their content from LAN Drive or EDRMS"
             buttonText="Start"
             link="/send"
           />
