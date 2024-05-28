@@ -1,16 +1,23 @@
 import FileService from "../service/File-service";
 import TransferService from "../service/transfer-service";
+import DigitalFileListService from "../service/digitalFileList-service";
+import DigitalFileService from "../service/digitalFile-service";
 import { RequestHandler } from "express";
 import fs from "fs";
+import mongoose from "mongoose";
 
 export default class UploadController {
   // Constructor to initialize any properties or perform setup
   private transferService: TransferService;
+  private digitalFileListService: DigitalFileListService;
+  private digitalFileService: DigitalFileService;
   private fileService: FileService;
 
   constructor() {
     // Initialize any properties or perform setup here if needed
     this.transferService = new TransferService();
+    this.digitalFileListService = new DigitalFileListService();
+    this.digitalFileService = new DigitalFileService();
     this.fileService = new FileService();
     this.getMetadatas = this.getMetadatas.bind(this);
     this.getFilesinFolder = this.getFilesinFolder.bind(this);
@@ -26,6 +33,10 @@ export default class UploadController {
       }
 
       const transferData = await this.transferService.createFolder(uploadedFile.path);
+      const newTransfer=await this.transferService.createTransferMetaData(uploadedFile.path);
+      const newTransferId=newTransfer?._id || new mongoose.mongo.ObjectId(0);
+      const hashDigitalFileList=await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
+      const newDigitalFile=await this.digitalFileService.createDigitalFileMetaData(hashDigitalFileList, uploadedFile.path);
 
       res.status(201).json({
         message: "Upload ARIS 66x successful",

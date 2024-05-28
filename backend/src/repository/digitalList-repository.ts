@@ -45,6 +45,7 @@ export default class DigitalFileRepository {
         checksum_SHA_1: digitalFileInput.checksum_SHA_1,
         checksum_SHA_256: digitalFileInput.checksum_SHA_256,
         checksum_SHA_512: digitalFileInput.checksum_SHA_512,
+        filePath: digitalFileInput.filePath,
         fileName: digitalFileInput.fileName,
         objectCreateDate: digitalFileInput.objectCreateDate,
         lastModifiedDate: digitalFileInput.lastModifiedDate,

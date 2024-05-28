@@ -1,11 +1,13 @@
 import { FilterQuery } from "mongoose";
 import TransferRepository from "../repository/transfer-repository";
 import { ITransfer } from "../models/interfaces/ITransfer";
+import { TransferStatus } from "../models/enums/TransferStatus";
 import { Express } from 'express';
 import fs from "fs";
 import extractsFromAra66x from "../utils/extractsFromAra66x";
 import extractsTransferInfo from "../utils/extractsTransferInfo";
 import createFolder from "../utils/createFolder";
+import extractsDigitalFileList from "../utils/extractsDigitalFileList";
 
 export default class TransferService {
   private transferRepository: TransferRepository;
@@ -46,18 +48,69 @@ export default class TransferService {
   }
 
   async createFolder(
+    filePath: string
+  ) {
+      const transferData = await extractsFromAra66x(filePath);
+
+      const folderPath = process.env.TRANSFER_FOLDER ||"Transfer/";
+      createFolder(folderPath);
+
+      const accession_num=transferData?.accession;
+      const application_num=transferData?.application;
+      const subFolderPath = folderPath+accession_num+"-"+application_num+"/";
+      createFolder(subFolderPath);
+
+      return transferData;
+  }
+
+  async createTransferMetaData(
        filePath: string
   ) {
         const transferData = await extractsFromAra66x(filePath);
-        var folderPath = process.env.TRANSFER_FOLDER ||"Transfer/";
-        createFolder(folderPath);
 
-        var accession_num=transferData?.accession;
-        var application_num=transferData?.application;
-        var subFolderPath = folderPath+accession_num+"-"+application_num+"/";
-        createFolder(subFolderPath);
-        
-        return transferData;
+        const digitalFileListData = await extractsDigitalFileList(filePath);
+        let hash = new Map<string, string[]>();
+        let folders =digitalFileListData?.folders || [];
+        let paths =digitalFileListData?.objectPaths || [];
+
+        for(let i=0; i<folders.length; i++) {
+             let key: string = folders[i];
+             //console.log("folders "+i+" key="+key);
+             for(let j=0; j<paths.length; j++) {
+                  let content: string = paths[j];
+
+                  //console.log("key: "+key+", "+j+", content: "+content)
+                  if(content.includes(key)) {
+                      //console.log("Find Key");
+                      let values:string[] = hash.get(key) || [];
+                      values.push(content);
+                      hash.set(key, values);
+                  }else {
+                    //console.log("Not Key");
+                  }
+             }
+        }
+
+        //console.log("---------------------Print Mapping---------------------");
+        //hash.forEach((value: string[], key: string) => {
+          //console.log(key, value);
+        //});
+
+        console.log("---------------------Create Transfer--------------------------------");
+        const accessionNumber = transferData?.accession || " ";
+        const applicationNumber = transferData?.application || " ";
+        const producerMinistry = transferData?.ministry || " ";
+        const producerBranch = transferData?.branch || " ";
+
+        const transferMetaData: ITransfer = {
+          "accessionNumber": accessionNumber,
+          "applicationNumber": applicationNumber,
+          "producerMinistry": producerMinistry,
+          "producerBranch": producerBranch
+        }
+
+        const newTransfer =await this.createTransfer(transferMetaData);
+        return newTransfer;
   }
 
   async extractsTransferInfo(
