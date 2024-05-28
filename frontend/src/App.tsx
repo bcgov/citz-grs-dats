@@ -21,7 +21,7 @@ import { SendRecords } from "./views/SendRecords/SendRecords";
 
 const App: React.FC = () => {
     return (
-
+      <ThemeProvider theme={bcGovTheme}>
       <AuthProvider>
       <CssBaseline />
       <Router>
@@ -38,7 +38,7 @@ const App: React.FC = () => {
       </Routes>
       </Router>
       </AuthProvider>
-    
+    </ThemeProvider>
   );
 }
 

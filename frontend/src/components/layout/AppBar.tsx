@@ -8,11 +8,19 @@ import HomeIcon from '@mui/icons-material/Home';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useAuth } from '../../auth/AuthContext';
 import { Menu, MenuItem } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
+// Create styles
+const useStyles = makeStyles((theme) => ({
+  logo: {
+    marginRight: '16px',
+    height: '50px', 
+  },
+}));
 const MyAppBar: React.FC = () => {
   const { isAuthenticated, login, logout, user, home } = useAuth();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
+  const classes = useStyles();
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -24,6 +32,7 @@ const MyAppBar: React.FC = () => {
   return (
     <AppBar position="static" sx={{mb: 10}}>
       <Toolbar>
+      <img src="/assets/BCID_H_rgb_rev.e68ccb04.png" alt="Logo" className={classes.logo} />
         { isAuthenticated ? <IconButton edge="start" color="inherit" aria-label="menu" onClick={home}>
           <HomeIcon />
         </IconButton> : null  }
