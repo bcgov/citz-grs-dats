@@ -69,7 +69,7 @@ const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: bool
                             6.	The Digital Archives will protect personal information and provide access to the government records in accordance with the Information Management Act (IMA), the Freedom of Information and Protection of Privacy Act, and other relevant legislation.
                         </Typography>
                     </Item>
-                    <FormLabel id="demo-controlled-radio-buttons-group">Do you agree with this Soumission Agrement</FormLabel>
+                    <FormLabel id="demo-controlled-radio-buttons-group">Do you agree with this Submission Agreement</FormLabel>
                     <RadioGroup
                         aria-labelledby="demo-controlled-radio-buttons-group"
                         name="controlled-radio-buttons-group"
