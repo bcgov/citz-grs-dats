@@ -17,7 +17,7 @@ const Aris617DropZone: React.FC = () => {
     if (file) {
       try {
         const extractedData = await extractExcelData(file);
-        setData(extractedData);
+        //setData(extractedData);
       } catch (error) {
         console.error(error);
       }

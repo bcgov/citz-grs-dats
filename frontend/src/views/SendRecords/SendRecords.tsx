@@ -7,18 +7,21 @@ import UploadService from "../../services/uploadService";
 import { Alert, AlertColor, Box, Button, Grid, Paper, Snackbar, Step, StepContent, StepLabel, Stepper, useMediaQuery, useTheme } from "@mui/material";
 import ErrorIcon from '@mui/icons-material/Error';
 import { Aris66xDropZone } from "./components/Aris66xDropZone";
+import { DatsExcelModel } from "../../utils/xlsxUtils";
 
 
 export const SendRecords = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<number[]>([]);
-  const [isValid, setIsValid] = useState(true);
+  const [isValid, setIsValid] = useState(false);
+  const [isInErrorState, setIsInErrorState] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [beforeNextCompleted, setBeforeNextCompleted] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<AlertColor>('success');
   const [file, setFile] = useState<File | null>(null);
+  const [excelData, setexcelData] = useState<DatsExcelModel | null>(null);
   const [nextButtonLabel, setNextButtonLabel] = useState('Upload 66x file'); //because the first step is to upload the 66x file
 
   const uploadService = new UploadService();
@@ -44,9 +47,9 @@ export const SendRecords = () => {
         setNextButtonLabel('Upload 66x file');
         return;
       }
-    }, beforeNextCompleted: false, content: <Aris66xDropZone validate={(isValid) => handleValidationChange(0,isValid)} setFile={(file) => updateFile(file) } />, validate: () => isValid },
+    }, beforeNextCompleted: false, content: <Aris66xDropZone validate={(isValid) => handleValidationChange(0,isValid)} setFile={(file) => updateFile(file) } setExcelData={setexcelData} />, validate: () => isValid },
     { label: 'Upload approved Transfer form', content: <Aris617DropZone />, validate: () => true  },
-    { label: 'Accept Terms.', content: <SubmissionAgreement validate={(isValid) => handleValidation(isValid)} />, validate: () => isValid  },
+    { label: 'Accept Terms.', content: <SubmissionAgreement validate={(isValid) => handleValidation(isValid)} excelData={excelData} />, validate: () => isValid  },
     { label: 'Review and Uplaod', content: <Typography>Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.  </Typography>, validate: () => true  },
     { label: 'Download Files', content: <Typography>Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.  </Typography>,validate: () => true  },
   ];
@@ -64,17 +67,17 @@ const handleValidation = (isValid: boolean) => {
 }
 const updateFile = (file: File | null) => {  
   setFile(file);
-  console.log('file updated');
-  console.log(file);
 }
   const handleNext = async () => {
     var step  = steps[activeStep];
     const validate = step.validate;
     const isValid = validate();
+    console.log('isValid' + isValid);
+    setIsValid(isValid);
+    setIsInErrorState(!isValid);
     if (!isValid) {
       console.log('validate');
       setErrors((prev) => [...prev, activeStep]);
-      setIsValid(false);
       return;
     }
     if (isValid && step.beforeNext && beforeNextCompleted === false) {
@@ -86,7 +89,6 @@ const updateFile = (file: File | null) => {
     }
     setNextButtonLabel('Next');
     setErrors((prev) => prev.filter((error) => error !== activeStep));
-    setIsValid(true);
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
     setBeforeNextCompleted(false);
   };
@@ -132,7 +134,7 @@ const updateFile = (file: File | null) => {
           Back
         </Button>
         <Box sx={{ flex: '1 1 auto' }} />
-        <Button {...(isValid ? {variant: 'contained'} : {variant:'outlined', color:'error', startIcon: <ErrorIcon />})}
+        <Button {...(!isInErrorState ? {variant: 'contained'} : {variant:'outlined', color:'error', startIcon: <ErrorIcon />})}
                 onClick={activeStep === steps.length - 1 ? handleReset : handleNext}>
           {nextButtonLabel}
         </Button>
