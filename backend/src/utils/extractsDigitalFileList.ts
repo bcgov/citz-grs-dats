@@ -1,11 +1,6 @@
 import ExcelJS from "exceljs";
-import { ITransfer } from "../models/interfaces/ITransfer";
 
-interface TransferData {
-  accession: string; //Cover Page
-  application: string;
-  ministry: string;
-  branch: string;
+interface DigtalFileListData {
   folders: string[]; //Digital File List
   schedules: string[];
   primaries: string[];
@@ -16,8 +11,6 @@ interface TransferData {
   endDates: string[];
   soDates: string[];
   finalDispositionDates: string[];
-  objectPaths: string[]; //Technical Metadata V1
-  objectFileNames: string[];
 }
 
 export default async function extractsDigitalFileList(excelfile: string) {
@@ -26,22 +19,7 @@ export default async function extractsDigitalFileList(excelfile: string) {
   try {
     await wb.xlsx.readFile(excelfile);
 
-    const ws1 = wb.getWorksheet("CoverPage");
-
-    if (!ws1) {
-      console.log("Worksheet 'CoverPage' not found.");
-      return null; // Return null if ws1 is not present
-    }
-    const accession = ws1.getCell("B4");
-    const application = ws1.getCell("B5");
-    const ministry = ws1.getCell("B2");
-    const branch = ws1.getCell("B3");
-
-    const transferData: TransferData = {
-      accession: ws1.getCell("B4").text,
-      application: ws1.getCell("B5").text,
-      ministry: ws1.getCell("B2").text,
-      branch: ws1.getCell("B3").text,
+    const digitalFileListData: DigtalFileListData = {
       folders: [],
       schedules: [],
       primaries: [],
@@ -52,8 +30,6 @@ export default async function extractsDigitalFileList(excelfile: string) {
       endDates: [],
       soDates: [],
       finalDispositionDates: [],
-      objectPaths: [],
-      objectFileNames: [],
     };
 
     const ws2 = wb.getWorksheet("DIGITAL FILE LIST");
@@ -69,7 +45,7 @@ export default async function extractsDigitalFileList(excelfile: string) {
       folders.push(cell.text);
     });
 
-    transferData.folders = folders;
+    digitalFileListData.folders = folders;
 
     const digitalFileListB = ws2.getColumn("B");
     const schedules: string[] = [];
@@ -77,7 +53,7 @@ export default async function extractsDigitalFileList(excelfile: string) {
       schedules.push(cell.text);
     });
 
-    transferData.schedules = schedules;
+    digitalFileListData.schedules = schedules;
 
     const digitalFileListC = ws2.getColumn("C");
     const primaries: string[] = [];
@@ -85,7 +61,7 @@ export default async function extractsDigitalFileList(excelfile: string) {
       primaries.push(cell.text);
     });
 
-    transferData.primaries = primaries;
+    digitalFileListData.primaries = primaries;
 
     const digitalFileListD = ws2.getColumn("D");
     const fileIds: string[] = [];
@@ -93,7 +69,7 @@ export default async function extractsDigitalFileList(excelfile: string) {
       fileIds.push(cell.text);
     });
 
-    transferData.fileIds = fileIds;
+    digitalFileListData.fileIds = fileIds;
 
     const digitalFileListE = ws2.getColumn("E");
     const fileTitles: string[] = [];
@@ -101,7 +77,7 @@ export default async function extractsDigitalFileList(excelfile: string) {
       fileTitles.push(cell.text);
     });
 
-    transferData.fileTitles = fileTitles;
+    digitalFileListData.fileTitles = fileTitles;
 
     const digitalFileListF = ws2.getColumn("F");
     const oprflags: string[] = [];
@@ -109,7 +85,7 @@ export default async function extractsDigitalFileList(excelfile: string) {
       oprflags.push(cell.text);
     });
 
-    transferData.oprflags = oprflags;
+    digitalFileListData.oprflags = oprflags;
 
     const digitalFileListG = ws2.getColumn("G");
     const startDates: string[] = [];
@@ -117,7 +93,7 @@ export default async function extractsDigitalFileList(excelfile: string) {
       startDates.push(cell.text);
     });
 
-    transferData.startDates = startDates;
+    digitalFileListData.startDates = startDates;
 
     const digitalFileListH = ws2.getColumn("H");
     const endDates: string[] = [];
@@ -125,7 +101,7 @@ export default async function extractsDigitalFileList(excelfile: string) {
       endDates.push(cell.text);
     });
 
-    transferData.endDates = endDates;
+    digitalFileListData.endDates = endDates;
 
     const digitalFileListI = ws2.getColumn("I");
     const soDates: string[] = [];
@@ -133,7 +109,7 @@ export default async function extractsDigitalFileList(excelfile: string) {
       soDates.push(cell.text);
     });
 
-    transferData.soDates = soDates;
+    digitalFileListData.soDates = soDates;
 
     const digitalFileListJ = ws2.getColumn("J");
     const finalDispositionDates: string[] = [];
@@ -141,32 +117,10 @@ export default async function extractsDigitalFileList(excelfile: string) {
       finalDispositionDates.push(cell.text);
     });
 
-    transferData.finalDispositionDates = finalDispositionDates;
+    digitalFileListData.finalDispositionDates = finalDispositionDates;
+    
+    return digitalFileListData;
 
-    const ws3 = wb.getWorksheet("Technical Metadata v1");
-    if (!ws3) {
-      console.log("Worksheet 'Technical Metadata v1' not found.");
-      return null;
-    }
-
-    ws3.spliceRows(0,1);
-    const objectsA = ws3.getColumn("A");
-    const objectPaths: string[] = [];
-    objectsA.eachCell({ includeEmpty: false }, (cell) => {
-      objectPaths.push(cell.text);
-    });
-
-    transferData.objectPaths = objectPaths;
-
-    const objectsB= ws3.getColumn("B");
-    const objectFileNames: string[] = [];
-    objectsB.eachCell({ includeEmpty: false }, (cell) => {
-      objectFileNames.push(cell.text);
-    });
-
-    transferData.objectFileNames = objectFileNames;
-
-    return transferData;
   } catch (err: any) {
     if (err instanceof Error) {
       console.error(err.message);

@@ -1,4 +1,4 @@
-import { FilterQuery } from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 import TransferRepository from "../repository/transfer-repository";
 import { ITransfer } from "../models/interfaces/ITransfer";
 import { TransferStatus } from "../models/enums/TransferStatus";
@@ -66,37 +66,8 @@ export default class TransferService {
   async createTransferMetaData(
        filePath: string
   ) {
-        const transferData = await extractsFromAra66x(filePath);
-
-        const digitalFileListData = await extractsDigitalFileList(filePath);
-        let hash = new Map<string, string[]>();
-        let folders =digitalFileListData?.folders || [];
-        let paths =digitalFileListData?.objectPaths || [];
-
-        for(let i=0; i<folders.length; i++) {
-             let key: string = folders[i];
-             //console.log("folders "+i+" key="+key);
-             for(let j=0; j<paths.length; j++) {
-                  let content: string = paths[j];
-
-                  //console.log("key: "+key+", "+j+", content: "+content)
-                  if(content.includes(key)) {
-                      //console.log("Find Key");
-                      let values:string[] = hash.get(key) || [];
-                      values.push(content);
-                      hash.set(key, values);
-                  }else {
-                    //console.log("Not Key");
-                  }
-             }
-        }
-
-        //console.log("---------------------Print Mapping---------------------");
-        //hash.forEach((value: string[], key: string) => {
-          //console.log(key, value);
-        //});
-
         console.log("---------------------Create Transfer--------------------------------");
+        const transferData = await extractsFromAra66x(filePath);
         const accessionNumber = transferData?.accession || " ";
         const applicationNumber = transferData?.application || " ";
         const producerMinistry = transferData?.ministry || " ";

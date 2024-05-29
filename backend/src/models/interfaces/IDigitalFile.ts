@@ -14,7 +14,7 @@ export interface IDigitalFile extends Document {
   lastSaveBy?: string;
   authors?: string;
   owners?: string;
-  compagny?: string;
+  company?: string;
   computer?: string;
   contenType?: string;
   programType?: string;

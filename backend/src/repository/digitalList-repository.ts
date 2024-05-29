@@ -54,7 +54,7 @@ export default class DigitalFileRepository {
         lastSaveBy: digitalFileInput.lastSaveBy,
         authors: digitalFileInput.authors,
         owners: digitalFileInput.owners,
-        compagny: digitalFileInput.compagny,
+        company: digitalFileInput.company,
         computer: digitalFileInput.computer,
         contenType: digitalFileInput.contenType,
         programType: digitalFileInput.programType,

@@ -20,40 +20,9 @@ export default class DigitalFileListService {
     transferId: string,
     filePath: string
   ) {
-      const digitalFileListData = await extractsDigitalFileList(filePath);
-      
-      let hash = new Map<string, string[]>();
-      let folders =digitalFileListData?.folders || [];
-      let paths =digitalFileListData?.objectPaths || [];
-
-      //console.log("---------------------Create Mapping---------------------");
-      //console.log("folders.length="+folders.length);
-      //console.log("paths.length="+paths.length);
-      for(let i=0; i<folders.length; i++) {
-            let key: string = folders[i];
-            //console.log("folders "+i+" key="+key);
-            for(let j=0; j<paths.length; j++) {
-                let content: string = paths[j];
-
-                //console.log("key: "+key+", "+j+", content: "+content)
-                if(content.includes(key)) {
-                    //console.log("Find Key");
-                    let values:string[] = hash.get(key) || [];
-                    values.push(content);
-                    hash.set(key, values);
-                }else {
-                  //console.log("Not Key");
-                }
-            }
-      }
-
-      //console.log("---------------------Print Mapping---------------------");
-      //hash.forEach((value: string[], key: string) => {
-        //console.log(key, value);
-      //});
-
       console.log("---------------------Create Digital File List--------------------------------");
-
+      const digitalFileListData = await extractsDigitalFileList(filePath);
+      const folders = digitalFileListData?.folders || [];
       const schedules = digitalFileListData?.schedules || [];
       const primaries = digitalFileListData?.primaries|| [];
       const fileIds = digitalFileListData?.fileIds|| [];

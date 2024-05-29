@@ -16,7 +16,7 @@ const DigitalFileSchema: Schema = new Schema<IDigitalFile>({
   lastSaveBy: { type: String },
   authors: { type: String },
   owners: { type: String },
-  compagny: { type: String },
+  company: { type: String },
   computer: { type: String },
   contenType: { type: String },
   programType: { type: String },

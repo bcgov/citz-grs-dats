@@ -1,6 +1,6 @@
 import DigitalFileRepository from "../repository/digitalList-repository";
 import { IDigitalFile } from "../models/interfaces/IDigitalFile";
-import extractsDigitalFileList from "../utils/extractsDigitalFileList";
+import extractsDigitalFile from "../utils/extractsDigitalFile";
 
 export default class DigitalFileService {
   private digitalFileRepository: DigitalFileRepository;
@@ -20,65 +20,73 @@ export default class DigitalFileService {
     hashDigtialFileList: Map<string, string>,
     filePath: string
   ) {
-      const digitalFileListData = await extractsDigitalFileList(filePath);
+      const digitalFileListData = await extractsDigitalFile(filePath);
       
-      let hash = new Map<string, string[]>();
-      let folders =digitalFileListData?.folders || [];
-      let paths =digitalFileListData?.objectPaths || [];
+      let hash = new Map<string, string>();
+      let folders = digitalFileListData?.folders || [];
+      let paths = digitalFileListData?.objectPaths|| [];
 
+      console.log("---------------------Create Mapping---------------------");
+      console.log("folders.length="+folders.length);
+      console.log("paths.length="+paths.length);
       for(let i=0; i<folders.length; i++) {
-            let key: string = folders[i];
-            //console.log("folders "+i+" key="+key);
+            let value: string = folders[i];
             for(let j=0; j<paths.length; j++) {
-                let content: string = paths[j];
-
-                //console.log("key: "+key+", "+j+", content: "+content)
-                if(content.includes(key)) {
-                    //console.log("Find Key");
-                    let values:string[] = hash.get(key) || [];
-                    values.push(content);
-                    hash.set(key, values);
-                }else {
-                  //console.log("Not Key");
+                let key: string = paths[j];
+                if(key.includes(value)) {
+                    hash.set(key, value);
                 }
             }
       }
 
       //console.log("---------------------Print Mapping---------------------");
-      //hash.forEach((value: string[], key: string) => {
+      //hash.forEach((value: string, key: string) => {
         //console.log(key, value);
       //});
-      
-      const digitalFileListId = "6656393725d0e86de728840a";
-      const digitalFileMetaData = {
-        checksum_MD5: "daaa977d61b90800853314c625e54ca8a6a6ec2fb6b4208ff88e724042e87e21",
-        checksum_SHA_1: "daaa977d61b90800853314c625e54ca8a6a6ec2fb6b4208ff88e724042e87e21",
-        checksum_SHA_256: "daaa977d61b90800853314c625e54ca8a6a6ec2fb6b4208ff88e724042e87e21",
-        checksum_SHA_512: "daaa977d61b90800853314c625e54ca8a6a6ec2fb6b4208ff88e724042e87e21",
-        filePath:"C:\\doc\\test.doc",
-        fileName: "cloud_security_schedule.pdf",
-        objectCreateDate: "10/17/2023",
-        lastModifiedDate: "10/17/2023",
-        lastAccessDate: "10/17/2023",
-        lastSaveDate: "10/17/2023",
-        lastSaveBy: "Jacques Levesque",
-        authors: "Jacques Levesque",
-        owners: "Jacques Levesque",
-        compagny: "BC gov",
-        computer: "CA-L19NW8G3 (this PC)",
-        contenType: "Adobe Acrobat Document",
-        programType: "",
-        size: "1.40 MB",
-        version: "",
-        description: "",
-        fileId: "",
-        digitalObject: "",
-        startDate: "10/17/2023",
-        endtDate: "10/17/2023",
-        finalDispositionDate: "10/17/2023"
-      };
 
-      const newDigitalFile =await this.createDigitalFileByDigitalFileListId(digitalFileListId,digitalFileMetaData);
+      console.log("---------------------Create Digital File--------------------------------");
+      let fileNames = digitalFileListData?.fileNames|| [];
+      let sha256Checusums = digitalFileListData?.sha256Checusums|| [];
+      let createdDates = digitalFileListData?.createdDates|| [];
+      let lastModifiedDates = digitalFileListData?.lastModifiedDates|| [];
+      let lastAccessedDates = digitalFileListData?.lastAccessedDates|| [];
+      let authors = digitalFileListData?.authors|| [];
+      let owners = digitalFileListData?.owners|| [];
+      let companies = digitalFileListData?.companies|| [];
+      let computers = digitalFileListData?.computers|| [];
+      let contentTypes = digitalFileListData?.contentTypes|| [];
+      let programNames = digitalFileListData?.programNames|| [];
+      let sizes = digitalFileListData?.sizes|| [];
+      let revisionNumbers = digitalFileListData?.revisionNumbers|| [];
+
+      let newDigitalFile;
+      for(let i=0; i<paths.length; i++) {
+          
+          let path = paths[i];
+          let folder = hash.get(path) || "0";
+          let digitalFileListId = hashDigtialFileList.get(folder) || "0";
+          console.log("path="+path+", folder="+folder+", digitalFileListId="+digitalFileListId);
+          
+          const digitalFileMetaData = {
+            checksum_SHA_256: sha256Checusums[i],
+            filePath: path,
+            fileName: fileNames[i],
+            objectCreateDate: createdDates[i],
+            lastModifiedDate: lastModifiedDates[i],
+            lastAccessDate: lastAccessedDates[i],
+            authors: authors[i],
+            owners: owners[i],
+            company: companies[i],
+            computer: computers[i],
+            contenType: contentTypes[i],
+            programType: programNames[i],
+            size: sizes[i],
+            version: revisionNumbers[i]
+          };
+
+          newDigitalFile =await this.createDigitalFileByDigitalFileListId(digitalFileListId,digitalFileMetaData);
+          console.log("newDigitalFile.id"+newDigitalFile?._id);
+      }
       
       return newDigitalFile;
   }
