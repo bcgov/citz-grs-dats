@@ -5,6 +5,7 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 import { Checkbox, FormControlLabel, FormGroup, FormLabel, Radio, RadioGroup } from '@mui/material';
+import { DatsExcelModel } from '../../../utils/xlsxUtils';
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -13,7 +14,7 @@ const Item = styled(Paper)(({ theme }) => ({
     textAlign: 'center',
     color: theme.palette.text.secondary,
 }));
-const SubmissionAgreement = ({ validate }: { validate: (isValid: boolean) => void }) => {
+const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: boolean) => void, excelData: DatsExcelModel | null }) => {
     const [value, setValue] = React.useState('');
     React.useEffect(() => { validate(false); }, []);
 
@@ -35,7 +36,7 @@ const SubmissionAgreement = ({ validate }: { validate: (isValid: boolean) => voi
                         </Typography>
                         <Typography sx={{ fontSize: 12 }} align='left' gutterBottom>
                             This is an agreement between BC's Digital Archives and the Ministry, <br />
-                            for the Transfer of government records under Application # ________ and Accession # ________.
+                            for the Transfer of government records under Application # {excelData?.applicationNumber} and Accession # {excelData?.accessionNumber}.
                         </Typography>
                         <br />
                         <Typography sx={{ fontSize: 12 }} align='left' gutterBottom>

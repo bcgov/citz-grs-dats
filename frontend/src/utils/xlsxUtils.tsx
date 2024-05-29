@@ -5,12 +5,17 @@ export interface ExcelData {
   value: string;
 }
 
+export interface DatsExcelModel
+{
+  applicationNumber: string;
+  accessionNumber: string;
+}
 /**
  * Helper function to read an Excel file and extract data for given keys.
  * @param file - The Excel file object to read from.
  * @returns A promise that resolves to an array of key-value pairs.
  */
-export const extractExcelData = (file: File): Promise<ExcelData[]> => {
+export const extractExcelData = (file: File): Promise<DatsExcelModel> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
@@ -22,13 +27,17 @@ export const extractExcelData = (file: File): Promise<ExcelData[]> => {
         const sheet = workbook.Sheets[sheetName];
         const sheetData = XLSX.utils.sheet_to_json<{ [key: string]: string }>(sheet, { header: 1 });
 
-        const extractedData: ExcelData[] = [];
+        let appNumber = '';
+        let accessionNumber = '';
         sheetData.forEach((row) => {
-          if (row[0] === 'Accession #' || row[0] === 'Application #') {
-            extractedData.push({ key: row[0], value: row[1] });
+          if (row[0] === 'Accession #') {
+            accessionNumber = row[1];
+          }
+          if (row[0] === 'Application #') {
+            appNumber = row[1];
           }
         });
-
+        const extractedData : DatsExcelModel = { accessionNumber : accessionNumber, applicationNumber : appNumber};
         resolve(extractedData);
       } else {
         reject(new Error('Failed to read the file.'));
