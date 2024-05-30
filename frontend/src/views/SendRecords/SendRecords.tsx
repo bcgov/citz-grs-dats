@@ -50,8 +50,8 @@ export const SendRecords = () => {
     }, beforeNextCompleted: false, content: <Aris66xDropZone validate={(isValid) => handleValidationChange(0,isValid)} setFile={(file) => updateFile(file) } setExcelData={setexcelData} />, validate: () => isValid },
     { label: 'Upload approved Transfer form', content: <Aris617DropZone />, validate: () => true  },
     { label: 'Accept Terms.', content: <SubmissionAgreement validate={(isValid) => handleValidation(isValid)} excelData={excelData} />, validate: () => isValid  },
-    { label: 'Review and Uplaod', content: <Typography>Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.  </Typography>, validate: () => true  },
-    { label: 'Download Files', content: <Typography>Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros, vitae egestas augue. Duis vel est augue.  </Typography>,validate: () => true  },
+    { label: 'Review and Upload', content: <Typography>DATS will display the list of folders from the 'Folder' column in the Digital file list tab along with the 'Size' of the folder. </Typography>, validate: () => true  },
+    { label: 'Download Files', content: <Typography>DATS will display a  “Transfer complete message” and a “Thanks Message or text”  at this last step and a link to download the new Digital File List (ARS 66X)  </Typography>,validate: () => true  },
   ];
   const showSnackbar = (message: string, severity: 'success' | 'error') => {
     setSnackbarMessage(message);
