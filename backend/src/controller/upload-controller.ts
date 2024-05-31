@@ -36,8 +36,14 @@ export default class UploadController {
       const newTransfer=await this.transferService.createTransferMetaData(uploadedFile.path);
       const newTransferId=newTransfer?._id || new mongoose.mongo.ObjectId(0);
       const hashDigitalFileList=await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
-      const newDigitalFile=await this.digitalFileService.createDigitalFileMetaData(hashDigitalFileList, uploadedFile.path);
+      const newDigitalFiles=await this.digitalFileService.createDigitalFileMetaData(hashDigitalFileList, uploadedFile.path);
 
+
+      const newDigitalFileList: any[] = [];
+      hashDigitalFileList.forEach((value: any, key: string) => {
+           newDigitalFileList.push(value);
+      });
+      
       res.status(201).json({
         message: "Upload ARIS 66x successful",
         accession: transferData?.accession,
@@ -45,6 +51,9 @@ export default class UploadController {
         ministry: transferData?.ministry,
         branch: transferData?.branch,
         folders: transferData?.folders,
+        transfer: newTransfer,
+        digitalFileLists: newDigitalFileList,
+        digitalFiles: newDigitalFiles,
       });
     } catch (error) {
       console.log(error);

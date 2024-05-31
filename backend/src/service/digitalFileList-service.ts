@@ -20,7 +20,6 @@ export default class DigitalFileListService {
     transferId: string,
     filePath: string
   ) {
-      console.log("---------------------Create Digital File List--------------------------------");
       const digitalFileListData = await extractsDigitalFileList(filePath);
       const folders = digitalFileListData?.folders || [];
       const schedules = digitalFileListData?.schedules || [];
@@ -33,7 +32,7 @@ export default class DigitalFileListService {
       const soDates = digitalFileListData?.soDates|| [];
       const finalDispositionDates = digitalFileListData?.finalDispositionDates|| [];
 
-      let hashDigitalFileList = new Map<string, string>();
+      let hashDigitalFileList = new Map<string, any>();
       for(let i=0; i<folders.length; i++) {
             var digitalFileListMetaData = {
               "primarySecondary": primaries[i],
@@ -50,7 +49,8 @@ export default class DigitalFileListService {
 
             const newDigitalFileList =await this.createDigitalFileListByTransferId(transferId,digitalFileListMetaData);
             let key: string = newDigitalFileList?.folder || " ";
-            let content: string = newDigitalFileList?._id.toString() || " ";
+            let content = newDigitalFileList;
+            //let content: string = newDigitalFileList?._id.toString() || " ";
             hashDigitalFileList.set(key,content)
       }
       
