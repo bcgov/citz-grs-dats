@@ -18,7 +18,7 @@ import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
 import { TransferStatus } from "../../types/Enums/TransferStatus"
 
 const TransferViewEdit: React.FC = () => {
-  const { transferId } = useParams();
+  const { id } = useParams();
   const [transfer, setTransfer] = useState<ITransferDTO | any>(null);
   const [isTransferEditing, setIsTransferEditing] = useState(false);
 
@@ -40,9 +40,9 @@ const TransferViewEdit: React.FC = () => {
 
   useEffect(() => {
     const fetchTransfer = async () => {
-      if (transferId) {
+      if (id) {
         try {
-          const transfer = await transferService.getTransfer(transferId);
+          const transfer = await transferService.getTransfer(id);
           setTransfer(transfer);
         } catch (error) {
           console.error("Error:", error);
@@ -52,7 +52,7 @@ const TransferViewEdit: React.FC = () => {
 
     fetchTransfer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transferId]);
+  }, [id]);
 
   if (!transfer) {
     return <div>Loading...</div>;
@@ -138,7 +138,7 @@ const TransferViewEdit: React.FC = () => {
                 disabled={!isTransferEditing}
                 onChange={handleInputChange}
                 value={transfer.status}
-                
+
               >
                 {Object.values(TransferStatus).map((status) => (
                   <MenuItem key={status} value={status}>
