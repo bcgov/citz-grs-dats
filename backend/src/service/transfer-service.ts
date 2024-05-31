@@ -66,7 +66,6 @@ export default class TransferService {
   async createTransferMetaData(
        filePath: string
   ) {
-        console.log("---------------------Create Transfer--------------------------------");
         const transferData = await extractsFromAra66x(filePath);
         const accessionNumber = transferData?.accession || " ";
         const applicationNumber = transferData?.application || " ";

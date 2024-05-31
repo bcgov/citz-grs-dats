@@ -36,7 +36,7 @@ export default class DigitalFileListRepository {
     digitalFileListInput: any
   ): Promise<IDigitalFileList | null> {
     try {
-      console.log(digitalFileListInput);
+      //console.log(digitalFileListInput);
       const newdigitalFileList = new DigitalFileListModel({
         primarySecondary: digitalFileListInput.primarySecondary,
         schedule: digitalFileListInput.schedule,

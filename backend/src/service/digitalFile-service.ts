@@ -17,7 +17,7 @@ export default class DigitalFileService {
   }
 
   async createDigitalFileMetaData(
-    hashDigtialFileList: Map<string, string>,
+    hashDigtialFileList: Map<string, any>,
     filePath: string
   ) {
       const digitalFileListData = await extractsDigitalFile(filePath);
@@ -26,9 +26,6 @@ export default class DigitalFileService {
       let folders = digitalFileListData?.folders || [];
       let paths = digitalFileListData?.objectPaths|| [];
 
-      console.log("---------------------Create Mapping---------------------");
-      console.log("folders.length="+folders.length);
-      console.log("paths.length="+paths.length);
       for(let i=0; i<folders.length; i++) {
             let value: string = folders[i];
             for(let j=0; j<paths.length; j++) {
@@ -39,12 +36,6 @@ export default class DigitalFileService {
             }
       }
 
-      //console.log("---------------------Print Mapping---------------------");
-      //hash.forEach((value: string, key: string) => {
-        //console.log(key, value);
-      //});
-
-      console.log("---------------------Create Digital File--------------------------------");
       let fileNames = digitalFileListData?.fileNames|| [];
       let sha256Checusums = digitalFileListData?.sha256Checusums|| [];
       let createdDates = digitalFileListData?.createdDates|| [];
@@ -59,13 +50,13 @@ export default class DigitalFileService {
       let sizes = digitalFileListData?.sizes|| [];
       let revisionNumbers = digitalFileListData?.revisionNumbers|| [];
 
-      let newDigitalFile;
+      let newDigitalFiles: any[] = [];
       for(let i=0; i<paths.length; i++) {
           
           let path = paths[i];
           let folder = hash.get(path) || "0";
-          let digitalFileListId = hashDigtialFileList.get(folder) || "0";
-          console.log("path="+path+", folder="+folder+", digitalFileListId="+digitalFileListId);
+          let digitalFileList = hashDigtialFileList.get(folder);
+          let digitalFileListId = digitalFileList?._id|| "0";
           
           const digitalFileMetaData = {
             checksum_SHA_256: sha256Checusums[i],
@@ -84,11 +75,11 @@ export default class DigitalFileService {
             version: revisionNumbers[i]
           };
 
-          newDigitalFile =await this.createDigitalFileByDigitalFileListId(digitalFileListId,digitalFileMetaData);
-          console.log("newDigitalFile.id"+newDigitalFile?._id);
+          const newDigitalFile =await this.createDigitalFileByDigitalFileListId(digitalFileListId,digitalFileMetaData);
+          newDigitalFiles.push(newDigitalFile);
       }
       
-      return newDigitalFile;
+      return newDigitalFiles;
   }
 
   async createDigitalFileByDigitalFileListId(
