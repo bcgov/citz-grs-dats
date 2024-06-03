@@ -59,6 +59,8 @@ export default class TransferService {
       const application_num=transferData?.application;
       const subFolderPath = folderPath+accession_num+"-"+application_num+"/";
       createFolder(subFolderPath);
+      const subDocFolderPath = folderPath+accession_num+"-"+application_num+"/Documents/";
+      createFolder(subDocFolderPath);
 
       return transferData;
   }

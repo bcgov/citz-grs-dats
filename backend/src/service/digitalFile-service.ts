@@ -1,6 +1,7 @@
 import DigitalFileRepository from "../repository/digitalList-repository";
 import { IDigitalFile } from "../models/interfaces/IDigitalFile";
 import extractsDigitalFile from "../utils/extractsDigitalFile";
+import logger from '../config/logs/winston-config';
 
 export default class DigitalFileService {
   private digitalFileRepository: DigitalFileRepository;
@@ -75,8 +76,12 @@ export default class DigitalFileService {
             version: revisionNumbers[i]
           };
 
-          const newDigitalFile =await this.createDigitalFileByDigitalFileListId(digitalFileListId,digitalFileMetaData);
-          newDigitalFiles.push(newDigitalFile);
+          if(digitalFileListId!="0") {
+              const newDigitalFile =await this.createDigitalFileByDigitalFileListId(digitalFileListId,digitalFileMetaData);
+              newDigitalFiles.push(newDigitalFile);
+          } else {
+              logger.info("digitalFileListId for "+path);
+          }
       }
       
       return newDigitalFiles;
