@@ -80,7 +80,14 @@ export default class TransferService {
           "producerMinistry": producerMinistry,
           "producerBranch": producerBranch
         }
-
+        //check if the transfer exists before creating one
+        var transfer = await this.getTransferByKeysNumbers(accessionNumber, applicationNumber);
+        if(transfer && transfer._id)
+          {
+            transfer.producerMinistry = producerMinistry;
+            transfer.producerBranch = producerBranch;
+            this.updateTransfer(transfer._id?.toString() , transfer);
+          }
         const newTransfer =await this.createTransfer(transferMetaData);
         return newTransfer;
   }
