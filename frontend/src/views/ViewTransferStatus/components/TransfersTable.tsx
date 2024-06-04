@@ -24,6 +24,7 @@ interface TransfersTableComponentProps {
 }
 
 const TransfersTable: React.FC<TransfersTableComponentProps> = ({ transfers, loading }) => {
+  console.log(transfers);
   return (
     <Paper sx={{ width: "100%", overflow: "hidden" }}>
       {loading ? (
@@ -50,7 +51,7 @@ const TransfersTable: React.FC<TransfersTableComponentProps> = ({ transfers, loa
                   <TableCell>{transfer.description}</TableCell>
                   <TableCell>{transfer.producerMinistry}</TableCell>
                   <TableCell>{transfer.producerBranch}</TableCell>
-                  <TableCell>{transfer.status}</TableCell>
+                  <TableCell>{transfer.transferStatus}</TableCell>
                   <TableCell>
                     <Link className="btn btn-light" to={`/edit-transfer/${transfer._id}`}>
                       View
