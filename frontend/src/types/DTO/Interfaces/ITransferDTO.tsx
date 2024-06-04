@@ -5,13 +5,13 @@ export default interface ITransferDTO {
   accessionNumber: string;
   applicationNumber: string;
   description?: string;
-  status?: status;
+  transferStatus?: status;
   producerMinistry?: string;
   producerBranch?: string;
   isNew?: boolean;
-  digitalFileLists?: string[]; // You can use an empty array or set a default value as needed
-  createDate?: Date; // You can set a default date if needed
-  updatedDate?: Date; // You can set a default date if needed
+  digitalFileLists?: string[];
+  createDate?: Date;
+  updatedDate?: Date;
   createdBy?: string;
   updatedBy?: string;
   timestamps?: {};

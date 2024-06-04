@@ -16,7 +16,7 @@ export default function TransferStatusView() {
       const filteredTransfers = transfers.filter((transfer) =>
         (applicationNumber === "" || transfer.applicationNumber.includes(applicationNumber)) &&
         (accessionNumber === "" || transfer.accessionNumber.includes(accessionNumber)) &&
-        (status === "" || transfer.status === status)
+        (status === "" || transfer.transferStatus === status)
       );
       setTransfers(filteredTransfers);
     } catch (error) {
