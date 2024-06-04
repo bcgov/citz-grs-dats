@@ -1,7 +1,6 @@
-// DropzoneComponent.tsx
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Box, Typography, List, ListItem, ListItemIcon, ListItemText, IconButton, Paper, Snackbar, Alert } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemIcon, ListItemText, IconButton, Paper, Snackbar, Alert, Button } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilePdf, faFileExcel, faFileImage, faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -12,20 +11,34 @@ interface DropzoneComponentProps {
   };
   onFilesAccepted: (files: File[]) => void;
   allowFolders?: boolean; // Optional prop to allow folders
+  onDeleteFile?: (file: File) => void; // Prop for deleting individual files
+  onClearAllFiles?: () => void; // Prop for clearing all files
+  clearFilesSignal?: boolean; // Signal from parent to clear files
+  maxFiles?: number; // Maximum number of files allowed
 }
 
-const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ accept, onFilesAccepted, allowFolders = false }) => {
+const DropzoneComponent: React.FC<DropzoneComponentProps> = ({
+  accept,
+  onFilesAccepted,
+  allowFolders = false,
+  onDeleteFile,
+  onClearAllFiles,
+  clearFilesSignal,
+  maxFiles = 1 // Default to 1 file if not specified
+}) => {
   const [files, setFiles] = useState<File[]>([]);
   const [isInvalidDrop, setIsInvalidDrop] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles = [...files, ...acceptedFiles];
-    debugger;
+    let newFiles = [...files, ...acceptedFiles];
+    if (newFiles.length > maxFiles) {
+      newFiles = newFiles.slice(0, maxFiles);
+    }
     setFiles(newFiles);
     onFilesAccepted(newFiles);
     setIsInvalidDrop(false);
-  }, [files, onFilesAccepted]);
+  }, [files, maxFiles, onFilesAccepted]);
 
   const onDropRejected = useCallback(() => {
     setIsInvalidDrop(false);
@@ -38,8 +51,7 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ accept, onFilesAc
       const fileType = item.type;
       return Object.keys(accept).some(type => fileType === type || fileType.startsWith(type));
     });
-    //setIsInvalidDrop(!isValid);
-    setIsInvalidDrop(false);
+    setIsInvalidDrop(!isValid);
   }, [accept]);
 
   const onDragLeave = useCallback(() => {
@@ -55,7 +67,24 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ accept, onFilesAc
     const newFiles = files.filter(f => f !== file);
     setFiles(newFiles);
     onFilesAccepted(newFiles);
+    if (onDeleteFile) {
+      onDeleteFile(file);
+    }
   };
+
+  const clearAllFiles = () => {
+    setFiles([]);
+    onFilesAccepted([]);
+    if (onClearAllFiles) {
+      onClearAllFiles();
+    }
+  };
+
+  useEffect(() => {
+    if (clearFilesSignal) {
+      clearAllFiles();
+    }
+  }, [clearFilesSignal]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -64,6 +93,7 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ accept, onFilesAc
     onDragLeave,
     accept,
     noDragEventsBubbling: !allowFolders,
+    multiple: maxFiles > 1
   });
 
   const getIcon = (mimeType: string) => {

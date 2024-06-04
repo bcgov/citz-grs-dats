@@ -21,4 +21,6 @@ router
   .get(transferController.getSearchTransfers)
   .post(transferController.getSearchTransfers);
 
+  router.get('/transfer/:accessionNumber/:applicationNumber', (req, res) => transferController.getTransferByKeysNumbers(req, res));
+
 export default router;

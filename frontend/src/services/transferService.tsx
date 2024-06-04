@@ -5,6 +5,31 @@ import { IDigitalFileListDTO } from "../types/DTO/Interfaces/IDigitalFileListDTO
 const API_URL = "http://localhost:5000/api"; // Replace with your API endpoint URL
 
 export class TransferService {
+
+  public async getTransferByApplicationAccessionNumber(
+    accessionNumber:string,
+    applicationNumber: string,
+    onResponse: (data: ITransferDTO) => void,
+    onError: (error: any) => void,
+    onFinally?: () => void
+  ) : Promise<void>
+{
+  var response =  await axios
+              .get<ITransferDTO>(`${API_URL}/transfer/${accessionNumber}/${applicationNumber}`)
+              .then((response) => {
+                onResponse(response.data);
+              })
+              .catch((error) => {
+                onError(error);
+              })
+              .finally(() => {
+                if(onFinally)
+                  {
+                    onFinally();
+                  }
+              })
+}
+
   public async getTransfers(): Promise<ITransferDTO[]> {
     return await axios
       .get<ITransferDTO[]>(`${API_URL}/transfers`)

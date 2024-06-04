@@ -14,15 +14,15 @@ const Item = styled(Paper)(({ theme }) => ({
     textAlign: 'center',
     color: theme.palette.text.secondary,
 }));
-const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: boolean) => void, excelData: DatsExcelModel | null }) => {
+const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: boolean, errorMsg: string) => void, excelData: DatsExcelModel | null }) => {
     const [value, setValue] = React.useState('');
-    React.useEffect(() => { validate(false); }, []);
+    React.useEffect(() => { validate(false,''); }, []);
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const agreed = event.target.value === 'agree';
       setValue(event.target.value);
       console.log(event.target.value);
-      validate(agreed);
+      validate(agreed, !agreed ? 'Please accept the submission agreement': '');
     };
   
     return (
