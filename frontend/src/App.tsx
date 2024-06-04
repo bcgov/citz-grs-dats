@@ -15,7 +15,10 @@ import PrivateRoute from "./auth/PrivateRoute";
 import Dashboard from "./views/Dashboard/Dashboard";
 import CreateDigitalFileList from "./views/CreateDigitalFileList/CreateDigitalFileList";
 import TransferViewEdit from "./views/ViewTransferStatus/TransferViewEdit";
-import { SendRecords } from "./views/SendRecords/SendRecords";
+import SendRecords from "./views/SendRecords/SendRecords";
+import { SendRecordsEDRMS } from "./views/SendRecords/SendRecordsEDRMS";
+import { SendRecordsLAN } from "./views/SendRecords/SendRecordsLAN";
+
 //import { bcGovTheme } from "./assets/themes/bcGovTheme";
 
 
@@ -34,6 +37,8 @@ const App: React.FC = () => {
               <Route path="/send" element={<SendRecords />} />
               <Route path="/transfer-status" element={<TransferViewStatus />} />
               <Route path="/edit-transfer/:id" element={<TransferViewEdit />} />
+              <Route path="/send-edrms" element={<SendRecordsEDRMS />} />
+              <Route path="/send-lan" element={<SendRecordsLAN />} />
             </Route>
           </Routes>
         </Router>

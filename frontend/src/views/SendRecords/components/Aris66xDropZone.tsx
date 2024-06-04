@@ -3,33 +3,71 @@ import React, { useState } from "react";
 import DropZoneComponent from "../../../components/DropZoneComponent";
 import { DatsExcelModel, ExcelData, extractExcelData } from "../../../utils/xlsxUtils";
 import { Box, Checkbox, FormControlLabel, FormLabel, Grid, List, ListItem, ListItemText, Radio, RadioGroup, Typography } from "@mui/material";
+import { TransferService } from "../../../services/transferService";
 
 const acceptedFileTypes = {
   'application/vnd.ms-excel': ['.xls'],
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
 };
-
-export const Aris66xDropZone =({ validate, setFile, setExcelData }: { validate: (isValid: boolean) => void, setFile: (file: File | null) => void,  setExcelData: (data: DatsExcelModel | null) => void })  => {
+interface Aris66xDropZoneProps {
+  validate: (isValid: boolean, errorMessage: string) => void;
+  setFile: (file: File | null) => void;
+  setExcelData: (data: any) => void;
+}
+export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({ validate, setFile, setExcelData })  => {
+  const [acceptedFiles, setAcceptedFiles] = useState<File[]>([]);
   const [data, setData] = useState<DatsExcelModel | null>(null);
   const [isCheckboxChecked, setIsCheckboxChecked] = useState(false);
-
+  const [clearFilesSignal,setClearFilesSignal] = useState(false);
+  const transferService = new TransferService();
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsCheckboxChecked(event.target.checked);
-    validate(event.target.checked);
+    validate(event.target.checked,'');
   };
 
   const handleFilesAccepted = async (files: File[]) => {
+    setClearFilesSignal(false);
     const file = files[0];
     if (file) {
       try {
         const extractedData = await extractExcelData(file);
-        console.log('extractedData' + JSON.stringify(extractedData));
-        setData(extractedData);
-        setExcelData(extractedData);
-        console.log('Aris66xDropZone' + file);  // This is the file that was uploaded
-        setFile(file);
-        validate(isCheckboxChecked);
-        console.log('validated');
+        if(extractedData)
+        { 
+          transferService
+                    .getTransferByApplicationAccessionNumber(
+                      extractedData.accessionNumber,
+                      extractedData.applicationNumber,
+                      (response) => {
+                        debugger;
+                        if(response)
+                          {
+                            console.log('validation failed for duplicate transfer');
+                            validate(false, `A transfer with Acc # ${extractedData.accessionNumber} and App # ${extractedData.applicationNumber} has already been submitted. Please contact the Government Information Management Branch for more information.`);
+                      setIsCheckboxChecked(false);
+                      setExcelData(null);
+                      setData(null);
+                      setFile(null);
+                      setAcceptedFiles([]);
+                      setClearFilesSignal(true);
+                          }
+                          else
+{
+  setData(extractedData);
+                      setExcelData(extractedData);
+                      console.log('Aris66xDropZone' + file);  // This is the file that was uploaded
+                      setFile(file);
+                      validate(isCheckboxChecked,'');
+}
+
+                      },
+                    (error) => {
+                      validate(false, error);
+                      setIsCheckboxChecked(false);
+                      setExcelData(null);
+                      setData(null);
+                      setFile(null);
+                    });
+         }
       } catch (error) {
         console.error(error);
       }
@@ -43,6 +81,19 @@ export const Aris66xDropZone =({ validate, setFile, setExcelData }: { validate: 
       setFile(null);
     }
   };
+  const handleDeleteFile = (file: File) => {
+    const newFiles = acceptedFiles.filter(f => f !== file);
+    setAcceptedFiles(newFiles);
+  };
+
+  const handleClearAllFiles = () => {
+    setAcceptedFiles([]);
+    setClearFilesSignal(true);
+  };
+
+  const handleClearFilesSignalReset = () => {
+    setClearFilesSignal(false);
+  };
   return (
     <Box sx={{ flexGrow: 1, padding: 2 }}>
       <Grid container spacing={2}>
@@ -50,6 +101,9 @@ export const Aris66xDropZone =({ validate, setFile, setExcelData }: { validate: 
              <DropZoneComponent 
       accept={acceptedFileTypes}
       onFilesAccepted={handleFilesAccepted}
+      onDeleteFile={handleDeleteFile}
+        onClearAllFiles={handleClearAllFiles}
+        clearFilesSignal={clearFilesSignal}
     />
         </Grid>
         <Grid item xs={12} md={5}>
