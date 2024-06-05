@@ -8,6 +8,7 @@ import extractsFromAra66x from "../utils/extractsFromAra66x";
 import extractsTransferInfo from "../utils/extractsTransferInfo";
 import createFolder from "../utils/createFolder";
 import extractsDigitalFileList from "../utils/extractsDigitalFileList";
+import multer from "multer";
 
 export default class TransferService {
   private transferRepository: TransferRepository;
@@ -48,19 +49,35 @@ export default class TransferService {
   }
 
   async createFolder(
-    filePath: string
+    uploadedFile: any,
+    hashDigitalFileList: Map<string, any>
   ) {
-      const transferData = await extractsFromAra66x(filePath);
+      const transferData = await extractsFromAra66x(uploadedFile.path);
 
       const folderPath = process.env.TRANSFER_FOLDER ||"Transfer/";
       createFolder(folderPath);
 
       const accession_num=transferData?.accession;
       const application_num=transferData?.application;
-      const subFolderPath = folderPath+accession_num+"-"+application_num+"/";
-      createFolder(subFolderPath);
-      const subDocFolderPath = folderPath+accession_num+"-"+application_num+"/Documents/";
-      createFolder(subDocFolderPath);
+      const subApplicationPath = folderPath+accession_num+"-"+application_num+"/";
+      createFolder(subApplicationPath);
+      const subDocPath = subApplicationPath+"Documentation/";
+      createFolder(subDocPath);
+
+      hashDigitalFileList.forEach((value: any, key: string) => {
+           const primarySecondary=value?.primarySecondary;
+           if (primarySecondary) {
+                const subPrimaryPath=subApplicationPath+primarySecondary+"/";
+                var folder=value?.folder;
+                if(folder) {
+                        folder=folder.replace(":\\","-");
+                        folder=folder.replace("\\","/");
+                        const subPrimaryFolderPath=subPrimaryPath+folder+"/";
+                        createFolder(subPrimaryPath);
+                        createFolder(subPrimaryFolderPath);
+                }
+            }
+      });
 
       return transferData;
   }
