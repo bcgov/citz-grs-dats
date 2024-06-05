@@ -2,7 +2,7 @@
 FROM node:18-alpine
 WORKDIR /frontend
 COPY package*.json /frontend/
-RUN yarn install
+RUN npm install
 COPY . /frontend/
 EXPOSE 3000
-CMD ["yarn", "start"]
+CMD ["npm", "start"]

@@ -24,10 +24,9 @@ const TransferViewEdit: React.FC = () => {
 
   const transferService = new TransferService();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
-    setTransfer({ ...transfer, [name]: value });
-    console.log(name + ":" + value);
+    setTransfer({ ...transfer, [name!]: value });
   };
 
   const handleUpdateTransfer = async () => {
@@ -137,12 +136,12 @@ const TransferViewEdit: React.FC = () => {
                 label="Select"
                 disabled={!isTransferEditing}
                 onChange={handleInputChange}
-                value={transfer.status}
+                value={transfer.transferStatus}
 
               >
-                {Object.values(TransferStatus).map((status) => (
-                  <MenuItem key={status} value={status}>
-                    {status}
+                {Object.values(TransferStatus).map((transferStatus) => (
+                  <MenuItem key={transferStatus} value={transferStatus}>
+                    {transferStatus}
                   </MenuItem>
                 ))}
               </TextField>
