@@ -1,11 +1,11 @@
-import { TransferStatus as status } from "../../Enums/TransferStatus";
+import { TransferStatus } from "../../Enums/TransferStatus";
 
 export default interface ITransferDTO {
   _id: string;
   accessionNumber: string;
   applicationNumber: string;
   description?: string;
-  transferStatus?: status;
+  transferStatus?: TransferStatus;
   producerMinistry?: string;
   producerBranch?: string;
   isNew?: boolean;
