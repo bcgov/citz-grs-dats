@@ -80,7 +80,7 @@ export default class DigitalFileService {
               const newDigitalFile =await this.createDigitalFileByDigitalFileListId(digitalFileListId,digitalFileMetaData);
               newDigitalFiles.push(newDigitalFile);
           } else {
-              logger.info("digitalFileListId for "+path);
+              logger.info("digitalFileListId is 0 for "+path);
           }
       }
       

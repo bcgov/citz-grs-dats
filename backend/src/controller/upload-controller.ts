@@ -32,12 +32,12 @@ export default class UploadController {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const transferData = await this.transferService.createFolder(uploadedFile.path);
       const newTransfer=await this.transferService.createTransferMetaData(uploadedFile.path);
       const newTransferId=newTransfer?._id || new mongoose.mongo.ObjectId(0);
       const hashDigitalFileList=await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
       const newDigitalFiles=await this.digitalFileService.createDigitalFileMetaData(hashDigitalFileList, uploadedFile.path);
 
+      const transferData = await this.transferService.createFolder(uploadedFile,hashDigitalFileList);
 
       const newDigitalFileList: any[] = [];
       hashDigitalFileList.forEach((value: any, key: string) => {
