@@ -31,9 +31,9 @@ export default class DigitalFileController {
   async createDigitalFileByDigitalFileListId(req: Request, res: Response) {
     try {
       const digitalFileListId = req.params.digitalFileListId;
-      console.log("digitalFileLidt Id : " + digitalFileListId);
+      //console.log("digitalFileList Id : " + digitalFileListId);
       const digitalFile = req.body; // Assuming the transfer data is in the request body
-      console.log(digitalFile);
+      //console.log(digitalFile);
       const createdDigitalFile =
         await this.digitalFileService.createDigitalFileByDigitalFileListId(
           digitalFileListId,
