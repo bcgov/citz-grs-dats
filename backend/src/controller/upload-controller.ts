@@ -71,7 +71,7 @@ export default class UploadController {
       }
 
       const transferData = await this.transferService.extractsTransferInfo(aris66xFile.path);
-      console.log(transferData?.application + " " + transferData?.accession);
+      //console.log(transferData?.application + " " + transferData?.accession);
 
       res.status(201).json({
         accession: transferData?.accession,

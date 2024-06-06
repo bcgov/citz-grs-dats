@@ -39,7 +39,7 @@ export default class DigitalFileRepository {
     digitalFileInput: any
   ): Promise<IDigitalFile | null> {
     try {
-      console.log(digitalFileLisId);
+      //console.log(digitalFileLisId);
       const newdigitalfile = new DigitalFileModel({
         checksum_MD5: digitalFileInput.checksum_MD5,
         checksum_SHA_1: digitalFileInput.checksum_SHA_1,
@@ -68,7 +68,7 @@ export default class DigitalFileRepository {
         finalDispositionDate: digitalFileInput.finalDispositionDate,
         digitalFileList: digitalFileLisId,
       });
-      console.log(newdigitalfile);
+      //console.log(newdigitalfile);
       const digitalFile = await DigitalFileModel.create(newdigitalfile);
 
       const digitalFileList = await DigitalFileListModel.findById({

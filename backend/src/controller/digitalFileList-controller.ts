@@ -39,9 +39,9 @@ export default class DigitalFileListController {
     try {
       //   console.log(req.body);
       const transferId = req.params.transferId;
-      console.log("Transfer Id : " + transferId);
+      //console.log("Transfer Id : " + transferId);
       const digitalFileList = req.body; // Assuming the transfer data is in the request body
-      console.log(digitalFileList);
+      //console.log(digitalFileList);
       const createdDigitalFileList =
         await this.digitalFileListService.createDigitalFileListByTransferId(
           transferId,
