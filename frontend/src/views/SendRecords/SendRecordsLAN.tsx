@@ -23,6 +23,8 @@ import ErrorIcon from "@mui/icons-material/Error";
 import { Aris66xDropZone } from "./components/Aris66xDropZone";
 import { DatsExcelModel } from "../../utils/xlsxUtils";
 import TransferComponent from "./components/TransferComponent";
+import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
+import { Aris66UploadResponse } from "../../types/DTO/Interfaces/Aris66UploadResponse";
 
 export const SendRecordsLAN = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -39,7 +41,7 @@ export const SendRecordsLAN = () => {
   const [file, setFile] = useState<File | null>(null);
   const [excelData, setexcelData] = useState<DatsExcelModel | null>(null);
   const [nextButtonLabel, setNextButtonLabel] = useState("Upload 66x file"); //because the first step is to upload the 66x file
-
+  const [arisTransferDetails,setArisTransferDetails] = useState<ITransferDTO | null>(null);
   const uploadService = new UploadService();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -53,6 +55,8 @@ export const SendRecordsLAN = () => {
           const formData = new FormData();
           formData.append("uploadARIS66xfile", file!);
           var res = await uploadService.upload66xFile(formData);
+          console.log(res);
+          setArisTransferDetails(res.transfer);
           setIsUploading(false);
           showSnackbar("Upload successful", "success");
           setNextButtonLabel("Next");
@@ -99,9 +103,7 @@ export const SendRecordsLAN = () => {
     {
       label: "Review and Upload",
       content: (
-        <TransferComponent
-          accessionNumber={excelData?.accessionNumber}
-          applicationNumber={excelData?.applicationNumber}
+        <TransferComponent transfer={arisTransferDetails!!}
         />
       ),
       validate: () => true,

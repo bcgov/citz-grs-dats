@@ -1,59 +1,115 @@
-// src/TransferComponent.tsx
-
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Container, Paper, Typography, List, ListItem, ListItemText, CircularProgress, Link, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import React from 'react';
+import {
+    Box,
+    Typography,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemIcon,
+    Collapse,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper
+} from '@mui/material';
+import FolderIcon from '@mui/icons-material/Folder';
+import DescriptionIcon from '@mui/icons-material/Description';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 import ITransferDTO from '../../../types/DTO/Interfaces/ITransferDTO';
-import { TransferService } from '../../../services/transferService';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFilePdf, faFileExcel, faFileWord, faFileImage, faFileAlt } from '@fortawesome/free-solid-svg-icons';
 
-const TransferComponent: React.FC<{ accessionNumber: string | undefined; applicationNumber: string | undefined}> = ({ accessionNumber, applicationNumber }) => {
-  const [transfer, setTransfer] = useState<ITransferDTO | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const transferService = new TransferService();
+type Props = {
+    transfer: ITransferDTO;
+};
 
-  useEffect(() => {
-    const fetchTransfer = async () => {
-        if(!accessionNumber || !applicationNumber)
-            {
-                console.log('Accession Number and Application Number is empty')
-                return;
-            }
-        transferService
-            .getTransferByApplicationAccessionNumber(
-                accessionNumber,
-                applicationNumber,
-                (response) => {
-                    setTransfer(response);
-                },
-                (error)=> {
-                    console.error("Error fetching the transfer data:", error);
-                },
-                () => {
-                    setLoading(false);
-                }
-
-            )
+const TransferComponent: React.FC<Props> = ({ transfer }) => {
+    const [open, setOpen] = React.useState<{ [key: string]: boolean }>({});
+    const getFileIcon = (fileName: string) => {
+      const extension = fileName.split('.').pop()?.toLowerCase();
+      switch (extension) {
+          case 'pdf':
+              return faFilePdf;
+          case 'xlsx':
+          case 'xls':
+              return faFileExcel;
+          case 'doc':
+          case 'docx':
+              return faFileWord;
+          case 'jpg':
+          case 'jpeg':
+          case 'png':
+          case 'gif':
+              return faFileImage;
+          default:
+              return faFileAlt;
+      }
+  };
+    const handleClick = (folder: string) => {
+        setOpen(prevState => ({
+            ...prevState,
+            [folder]: !prevState[folder]
+        }));
     };
 
-    fetchTransfer();
-  }, [accessionNumber, applicationNumber]);
+    return (
+        <Box sx={{ p: 2 }}>
+            <Typography variant="h6">Transfer Details</Typography>
+            <Typography variant="body1">Accession Number: {transfer.accessionNumber}</Typography>
+            <Typography variant="body1">Application Number: {transfer.applicationNumber}</Typography>
+            <Typography variant="body1">Transfer Status: {transfer.transferStatus}</Typography>
+            <Typography variant="body1">Producer Ministry: {transfer.producerMinistry}</Typography>
+            <Typography variant="body1">Producer Branch: {transfer.producerBranch}</Typography>
 
-  if (loading) {
-    return <CircularProgress />;
-  }
-
-  if (!transfer) {
-    return <Typography variant="h6">No data found</Typography>;
-  }
-
-  return (
-    <Container>
-      <Paper elevation={3} style={{ padding: '16px', marginTop: '16px' }}>
-        <Typography variant="h5">Transfer Details</Typography>
-        
-      </Paper>
-    </Container>
-  );
+            {transfer.digitalFileLists?.map((fileList, index) => (
+                <Box key={index} sx={{ mt: 2 }}>
+                    <ListItem button onClick={() => handleClick(fileList.folder)}>
+                        <ListItemIcon>
+                            <FolderIcon />
+                        </ListItemIcon>
+                        <ListItemText primary={`Folder: ${fileList.folder}`} />
+                        {open[fileList.folder] ? <ExpandLess /> : <ExpandMore />}
+                    </ListItem>
+                    <Collapse in={open[fileList.folder]} timeout="auto" unmountOnExit>
+                        <TableContainer component={Paper} sx={{ pl: 4, mt: 1 }}>
+                            <Table aria-label="files table">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>File Name</TableCell>
+                                        <TableCell>Type</TableCell>
+                                        <TableCell>Size</TableCell>
+                                        <TableCell>Created</TableCell>
+                                        <TableCell>Modified</TableCell>
+                                        <TableCell>Accessed</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {fileList.digitalFiles?.map((file) => (
+                                        <TableRow key={file.filePath}>
+                                            <TableCell>
+                                            <ListItemIcon>
+                                                    <FontAwesomeIcon icon={getFileIcon(file.fileName)} size="lg"/>
+                                                </ListItemIcon>
+                                              {file.fileName}</TableCell>
+                                            <TableCell>{file.contenType}</TableCell>
+                                            <TableCell>{file.size}</TableCell>
+                                            <TableCell>{new Date(file.objectCreateDate).toLocaleString()}</TableCell>
+                                            <TableCell>{new Date(file.lastModifiedDate).toLocaleString()}</TableCell>
+                                            <TableCell>{new Date(file.lastAccessDate).toLocaleString()}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Collapse>
+                </Box>
+            ))}
+        </Box>
+    );
 };
 
 export default TransferComponent;

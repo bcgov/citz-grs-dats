@@ -51,7 +51,7 @@ export const SendRecordsEDRMS = () => {
     }, beforeNextCompleted: false, content: <Aris66xDropZone validate={(isValid) => handleValidationChange(0,isValid)} setFile={(file) => updateFile(file) } setExcelData={setexcelData} />, validate: () => isValid },
     { label: 'Upload approved Transfer form', content: <Aris617DropZone />, validate: () => true  },
     { label: 'Accept Terms.', content: <SubmissionAgreement validate={(isValid) => handleValidation(isValid)} excelData={excelData} />, validate: () => isValid  },
-    { label: 'Review and Upload', content: <TransferComponent accessionNumber={excelData?.accessionNumber} applicationNumber={excelData?.applicationNumber} />, validate: () => true  },
+    // { label: 'Review and Upload', content: <TransferComponent accessionNumber={excelData?.accessionNumber} applicationNumber={excelData?.applicationNumber} />, validate: () => true  },
     { label: 'Download Files', content: <Typography>DATS will display a  “Transfer complete message” and a “Thanks Message or text”  at this last step and a link to download the new Digital File List (ARS 66X)  </Typography>,validate: () => true  },
   ];
   const showSnackbar = (message: string, severity: 'success' | 'error') => {

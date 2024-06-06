@@ -125,7 +125,7 @@ export default class TransferController {
       );
 
       if (!transfer) {
-        res.status(404).json({ error: "Transfer not found" });
+        return res.status(404).json({ error: "Transfer not found" });
       }
 
       res.status(200).json(transfer);
