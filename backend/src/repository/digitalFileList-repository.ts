@@ -50,7 +50,7 @@ export default class DigitalFileListRepository {
         endtDate: digitalFileListInput.endtDate,
         finalDispositionDate: digitalFileListInput.finalDispositionDate,
       });
-      console.log(newdigitalFileList);
+      //console.log(newdigitalFileList);
       const digitalFileList = await DigitalFileListModel.create(
         newdigitalFileList
       );

@@ -4,6 +4,7 @@ import DigitalFileListService from "../service/digitalFileList-service";
 import DigitalFileService from "../service/digitalFile-service";
 import { RequestHandler } from "express";
 import fs from "fs";
+import multer from "multer";
 import mongoose from "mongoose";
 
 export default class UploadController {
@@ -25,7 +26,7 @@ export default class UploadController {
 
   handleARIS66xUpload: RequestHandler = async (req, res, next) => {
     try {
-
+      
       const uploadedFile = req.file;
 
       if (!uploadedFile) {
@@ -71,7 +72,7 @@ export default class UploadController {
       }
 
       const transferData = await this.transferService.extractsTransferInfo(aris66xFile.path);
-      console.log(transferData?.application + " " + transferData?.accession);
+      //console.log(transferData?.application + " " + transferData?.accession);
 
       res.status(201).json({
         accession: transferData?.accession,

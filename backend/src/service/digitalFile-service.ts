@@ -92,7 +92,7 @@ export default class DigitalFileService {
     digitalFile: any
   ): Promise<IDigitalFile | null> {
     try {
-      console.log("DigitalFileLis Id Service : " + digitalFileListId);
+      //console.log("DigitalFileLis Id Service : " + digitalFileListId);
       return await this.digitalFileRepository.createDigitalFileByDigitalFileListId(
         digitalFileListId,
         digitalFile

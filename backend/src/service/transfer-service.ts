@@ -52,7 +52,11 @@ export default class TransferService {
     uploadedFile: any,
     hashDigitalFileList: Map<string, any>
   ) {
-      const transferData = await extractsFromAra66x(uploadedFile.path);
+      const uploadedFilePath = uploadedFile.path;
+      const startIndex=uploadedFilePath.indexOf("-");
+      const originalFileName=uploadedFilePath.substring(startIndex+1);
+
+      let transferData = await extractsFromAra66x(uploadedFile.path);
 
       const folderPath = process.env.TRANSFER_FOLDER ||"Transfer/";
       createFolder(folderPath);
@@ -63,6 +67,11 @@ export default class TransferService {
       createFolder(subApplicationPath);
       const subDocPath = subApplicationPath+"Documentation/";
       createFolder(subDocPath);
+      const targetFilePath=subDocPath+originalFileName;
+      console.log("source: "+uploadedFilePath+";target: "+targetFilePath);
+      fs.copyFile(uploadedFilePath, targetFilePath, (err) => {
+        console.log(err);
+      });
 
       hashDigitalFileList.forEach((value: any, key: string) => {
            const primarySecondary=value?.primarySecondary;

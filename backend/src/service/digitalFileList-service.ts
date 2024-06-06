@@ -63,7 +63,7 @@ export default class DigitalFileListService {
     digitalFileList: any
   ): Promise<IDigitalFileList | null> {
     try {
-      console.log("Transfer Id Service : " + transferId);
+      //console.log("Transfer Id Service : " + transferId);
       return await this.digitalFileListRepository.createDigitalFileListByTransferId(
         transferId,
         digitalFileList
