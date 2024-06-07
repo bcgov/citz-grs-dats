@@ -6,7 +6,7 @@ export default interface ITransferDTO {
   accessionNumber: string;
   applicationNumber: string;
   description?: string;
-  transferStatus?: string;
+  transferStatus?: TransferStatus;
   producerMinistry?: string;
   producerBranch?: string;
   isNew?: boolean;

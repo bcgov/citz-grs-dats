@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
 import { TransferService } from "../../services/transferService";
 import TransferSearchBar from "./components/TransferSearchBar";
-import TransfersTable from "./components/TransfersTable"; // Adjust the import path as necessary
+import TransfersGrid from "./components/TransfersGrid"; // Adjust the import path as necessary
 
 export default function TransferStatusView() {
   const [transfers, setTransfers] = useState<ITransferDTO[]>([]);
@@ -39,7 +39,7 @@ export default function TransferStatusView() {
   return (
     <>
       <TransferSearchBar onSearch={handleSearch} onBrowseAll={handleBrowseAll} />
-      <TransfersTable transfers={transfers} loading={loading} />
+      <TransfersGrid transfers={transfers} loading={loading} />
     </>
   );
 }
