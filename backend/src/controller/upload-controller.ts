@@ -45,15 +45,18 @@ export default class UploadController {
       });
       
       res.status(201).json({
-        message: "Upload ARIS 66x successful",
-        accession: transferData?.accession,
-        application: transferData?.application,
-        ministry: transferData?.ministry,
-        branch: transferData?.branch,
-        folders: transferData?.folders,
-        transfer: newTransfer,
-        digitalFileLists: newDigitalFileList,
-        digitalFiles: newDigitalFiles,
+        "message": "Upload ARIS 66x successful",
+        "transfer": {
+            "accessionNumber": newTransfer?.accessionNumber,
+            "applicationNumber": newTransfer?.applicationNumber,
+            "transferStatus": newTransfer?.transferStatus,
+            "digitalFileLists": newDigitalFileList,
+            "producerMinistry": newTransfer?.producerMinistry,
+            "producerBranch": newTransfer?.producerBranch,
+            "_id": newTransfer?._id,
+            "createDate": newTransfer?.createDate,
+            "updatedDate": newTransfer?.updatedDate,
+         }
       });
     } catch (error) {
       console.log(error);
