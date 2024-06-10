@@ -17,6 +17,8 @@ export interface IDigitalFileListDTO {
   digitalFiles?: IDigitalFileDTO[];
   createdBy?: string;
   updatedBy?: string;
+  fileCount: Number;
+  size: Number;
   timestamps?: {};
 }
 
