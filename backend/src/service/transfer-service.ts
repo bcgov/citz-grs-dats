@@ -48,9 +48,11 @@ export default class TransferService {
     );
   }
 
-  async createFolder(
+  /*async createFolder(
     uploadedFile: any,
-    hashDigitalFileList: Map<string, any>
+    hashDigitalFileList: Map<string, any>*/
+  async createFolder(
+      uploadedFile: any  
   ) {
       const uploadedFilePath = uploadedFile.path;
       const startIndex=uploadedFilePath.indexOf("-");
@@ -73,6 +75,7 @@ export default class TransferService {
         console.log(err);
       });
 
+      /*
       hashDigitalFileList.forEach((value: any, key: string) => {
            const primarySecondary=value?.primarySecondary;
            if (primarySecondary) {
@@ -86,7 +89,7 @@ export default class TransferService {
                         createFolder(subPrimaryFolderPath);
                 }
             }
-      });
+      });*/
 
       return transferData;
   }
