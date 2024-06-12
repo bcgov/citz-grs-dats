@@ -30,6 +30,7 @@ export const uploadARIS66xMiddleware = (
     }
 
     // Additional validation or processing if needed
+    console.log("uploadARIS66xfile");
 
     // Proceed to the next middleware or route handler
     next();

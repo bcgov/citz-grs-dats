@@ -91,7 +91,7 @@ export default class TransferService {
             }
       });*/
 
-      return transferData;
+      return subDocPath;
   }
 
   async createTransferMetaData(
@@ -128,15 +128,24 @@ export default class TransferService {
       return transferData;
   }
 
-  async upload(
-    filePath: string
+  async uploadARIS617(
+    filePath: string,
+    documentationPath: string
   ) {
-      // Your upload service logic
-      // const transferData = await extractsFromAra66x(filePath);
+    //console.log("uploadARIS617.filePath="+filePath);
+    const uploadedFilePath = filePath;
+    const startIndex=uploadedFilePath.indexOf("-");
+    const originalFileName=uploadedFilePath.substring(startIndex+1);
 
-      // Need to check if the transfer is new
+    const subDocPath = documentationPath;
+    console.log("documentationPath: "+documentationPath);
+    const targetFilePath=subDocPath+originalFileName;
+    console.log("source: "+uploadedFilePath+";target: "+targetFilePath);
+    fs.copyFile(uploadedFilePath, targetFilePath, (err) => {
+      console.log(err);
+    });
 
-      // Respond with the extracted data
+    return subDocPath;
   }
 
   async createTransfer(transfer: ITransfer): Promise<ITransfer | null> {
