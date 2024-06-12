@@ -57,6 +57,9 @@ const SelectFolder: FC<SelectFolderProps> = ({
       onFolderSelect(folderPaths, fileList);
     }
   };
+  const openDesktopApp = (browseType: string) => {
+    window.location.href = `citz-grs-dats://open?browse=${browseType}`;
+};
   const onFolderSelect = (folderPaths: string[], files: string[]) => {
     console.log(folderPaths);
     const foldersWithFiles: FolderWithFiles[] = organizeFilesByFolder(folderPaths, files);
@@ -121,6 +124,11 @@ const SelectFolder: FC<SelectFolderProps> = ({
           webkitdirectory={supportsDirectoryAttribute ? "" : undefined}
         />
       </label>
+      <button onClick={() => openDesktopApp('folder')}>Open Folder Browser</button>
+            <button onClick={() => openDesktopApp('file')}>Open File Browser</button>
+            <button onClick={() => openDesktopApp('singlefolder')}>Open Single Folder Browser</button>
+            <button onClick={() => openDesktopApp('singlefile')}>Open Single File Browser</button>
+
     </div>
   );
 };
