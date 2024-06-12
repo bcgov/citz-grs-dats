@@ -24,6 +24,8 @@ export interface IDigitalFileList extends Document {
       ref: "DigitalFile";
     }
   ];
+  fileCount?: Number;
+  size?: Number;
 
   createdBy?: string;
   updatedBy?: string;

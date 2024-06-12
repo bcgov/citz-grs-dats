@@ -23,6 +23,8 @@ const DigitalFileListSchema: Schema = new Schema<IDigitalFileList>({
   endtDate: { type: Date },
   finalDispositionDate: { type: Date },
   soDate: { type: Date },
+  fileCount: { type: Number, required: false },
+  size: { type: Number, required: false },
   createDate: { type: Date, default: Date.now },
   updatedDate: { type: Date, default: Date.now },
   createdBy: { type: String, required: false },
