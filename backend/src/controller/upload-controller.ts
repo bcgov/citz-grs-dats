@@ -12,6 +12,7 @@ export default class UploadController {
   private digitalFileListService: DigitalFileListService;
   private digitalFileService: DigitalFileService;
   private fileService: FileService;
+  private documentationPath: string;
 
   constructor() {
     // Initialize any properties or perform setup here if needed
@@ -21,6 +22,7 @@ export default class UploadController {
     this.fileService = new FileService();
     this.getMetadatas = this.getMetadatas.bind(this);
     this.getFilesinFolder = this.getFilesinFolder.bind(this);
+    this.documentationPath="";
   }
 
   handleARIS66xUpload: RequestHandler = async (req, res, next) => {
@@ -38,7 +40,8 @@ export default class UploadController {
       //const newDigitalFiles=await this.digitalFileService.createDigitalFileMetaData(hashDigitalFileList, uploadedFile.path);
 
       //const transferData = await this.transferService.createFolder(uploadedFile,hashDigitalFileList);
-      const transferData = await this.transferService.createFolder(uploadedFile);
+      this.documentationPath = await this.transferService.createFolder(uploadedFile);
+      //console.log("documentationPath="+this.documentationPath);
 
       const newDigitalFileList: any[] = [];
       hashDigitalFileList.forEach((value: any, key: string) => {
@@ -94,11 +97,13 @@ export default class UploadController {
 
       const uploadedFile = req.file;
 
+      //console.log("handleARIS617Upload, uploadedFile"+uploadedFile);
+
       if (!uploadedFile) {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      //const transferData = await this.transferService.upload(uploadedFile.path);
+      const documentationPath = await this.transferService.uploadARIS617(uploadedFile.path, this.documentationPath);
 
       res.status(201).json({
         message: "Upload ARIS 617 successful",
