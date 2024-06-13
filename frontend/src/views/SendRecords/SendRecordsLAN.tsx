@@ -41,7 +41,7 @@ export const SendRecordsLAN = () => {
   const [file, setFile] = useState<File | null>(null);
   const [excelData, setexcelData] = useState<DatsExcelModel | null>(null);
   const [nextButtonLabel, setNextButtonLabel] = useState("Upload 66x file"); //because the first step is to upload the 66x file
-  const [arisTransferDetails,setArisTransferDetails] = useState<ITransferDTO | null>(null);
+  const [arisTransferDetails, setArisTransferDetails] = useState<ITransferDTO | null>(null);
   const uploadService = new UploadService();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -84,7 +84,7 @@ export const SendRecordsLAN = () => {
       validate: () => isValid,
     },
     {
-      label: "Upload approved Transfer form",
+      label: "Upload approved 617 Transfer form ",
       content: <Aris617DropZone />,
       validate: () => true,
     },
@@ -225,10 +225,10 @@ export const SendRecordsLAN = () => {
           {...(!isInErrorState
             ? { variant: "contained" }
             : {
-                variant: "outlined",
-                color: "error",
-                startIcon: <ErrorIcon />,
-              })}
+              variant: "outlined",
+              color: "error",
+              startIcon: <ErrorIcon />,
+            })}
           onClick={activeStep === steps.length - 1 ? handleReset : handleNext}
         >
           {nextButtonLabel}
