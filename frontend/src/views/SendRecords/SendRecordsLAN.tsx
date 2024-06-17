@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { useCallback, useState } from "react";
 import Typography from "@mui/material/Typography";
@@ -46,6 +47,22 @@ export const SendRecordsLAN = () => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
+  const handle617FileUpload = useCallback((file: File) => {
+    console.log("-------------------------------handle617FileUpload.useCallback")
+    const formData = new FormData();
+    formData.append("uploadARIS617file", file);
+
+    // Assuming uploadService.upload66xFile returns a Promise
+    uploadService
+      .upload617File(formData)
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error("Upload error:", error);
+        // Handle the error as needed
+      });
+  }, []);
   let steps = [
     {
       label: "Upload 66x file",
@@ -85,7 +102,9 @@ export const SendRecordsLAN = () => {
     },
     {
       label: "Upload approved 617 Transfer form ",
-      content: <Aris617DropZone />,
+      content: (
+        <Aris617DropZone handleFileUpload={handle617FileUpload} />
+      ),
       validate: () => true,
     },
     {

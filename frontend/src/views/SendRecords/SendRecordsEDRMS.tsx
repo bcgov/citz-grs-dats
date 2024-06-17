@@ -28,6 +28,23 @@ export const SendRecordsEDRMS = () => {
   const uploadService = new UploadService();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const handle617FileUpload = useCallback((file: File) => {
+    const formData = new FormData();
+    formData.append("uploadARIS617file", file);
+
+    // Assuming uploadService.upload66xFile returns a Promise
+    uploadService
+      .upload617File(formData)
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error("Upload error:", error);
+        // Handle the error as needed
+      });
+  }, []);
+
   let steps = [
     { label: 'Upload 66x file', beforeNext:async () => {
       setIsUploading(true);
@@ -49,7 +66,7 @@ export const SendRecordsEDRMS = () => {
         return;
       }
     }, beforeNextCompleted: false, content: <Aris66xDropZone validate={(isValid) => handleValidationChange(0,isValid)} setFile={(file) => updateFile(file) } setExcelData={setexcelData} />, validate: () => isValid },
-    { label: 'Upload approved Transfer form', content: <Aris617DropZone />, validate: () => true  },
+    { label: 'Upload approved Transfer form', content: <Aris617DropZone handleFileUpload={handle617FileUpload} />, validate: () => true  },
     { label: 'Accept Terms.', content: <SubmissionAgreement validate={(isValid) => handleValidation(isValid)} excelData={excelData} />, validate: () => isValid  },
     // { label: 'Review and Upload', content: <TransferComponent accessionNumber={excelData?.accessionNumber} applicationNumber={excelData?.applicationNumber} />, validate: () => true  },
     { label: 'Download Files', content: <Typography>DATS will display a  “Transfer complete message” and a “Thanks Message or text”  at this last step and a link to download the new Digital File List (ARS 66X)  </Typography>,validate: () => true  },
