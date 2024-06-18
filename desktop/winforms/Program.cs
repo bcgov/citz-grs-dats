@@ -1,3 +1,4 @@
+using DATSCompanion.Shared.Models;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
 
