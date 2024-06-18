@@ -1,4 +1,4 @@
-import React, { FC, ReactElement, useRef, useState } from "react";
+import React, { FC, ReactElement, useEffect, useRef, useState } from "react";
 // import calculateHash from "../../../utils/calculateHash";
 
 interface SelectFolderProps {
@@ -31,7 +31,43 @@ const SelectFolder: FC<SelectFolderProps> = ({
   const folderInput = useRef<HTMLInputElement>(null);
   const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [message, setMessage] = useState('');
+  const [progress, setProgress] = useState(0);
 
+  useEffect(() => {
+      const ws = new WebSocket('ws://localhost:50504/ws/react');
+
+ws.onopen = () => {
+  console.log('WebSocket connection established');
+};
+ws.onerror = (error) => {
+  console.error('WebSocket error:', error);
+};
+
+ws.onclose = () => {
+  console.log('WebSocket connection closed');
+};
+      ws.onmessage = (event) => {
+        console.log(event.data);
+          const data = JSON.parse(event.data);
+          if (data.path) {
+            console.log(data);
+              setMessage(`Selected Path: ${data.path}`);
+          } else if (data.error) {
+            console.log(data);
+              setMessage(`Error: ${data.error}`);
+          } else if (data.canceled) {
+            console.log(data);
+              setMessage('User canceled the dialog.');
+          } else if (data.progress !== undefined) {
+              setProgress(data.progress);
+          }
+      };
+
+      return () => {
+          ws.close();
+      };
+  }, []);
   const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
 

@@ -1,15 +1,21 @@
+using DATSCompanion.Shared.Models;
 using System.Collections.Specialized;
+using System.IO;
+using System.Security.Policy;
+using System.Text.Json;
 using System.Web;
+using System.Windows.Forms;
 
 namespace DATSCompanionApp
 {
     public partial class MainForm : Form
     {
+        private readonly IServiceCommunicator serviceCommunicator;
         public MainForm(string[] args)
         {
             InitializeComponent();
             this.Text = Constants.ApplicationWindowTitle;
-
+            this.serviceCommunicator = new WebSocketServiceCommunicator();
             if (args.Length > 0)
             {
                 string protocolArgument = args[0];
@@ -20,9 +26,9 @@ namespace DATSCompanionApp
         public void ProcessCommandLineArgs(string args)
         {
             NameValueCollection queryParameters = ParseQueryString(args);
-            if (queryParameters["browse"] != null)
+            if (queryParameters[Constants.BrowseQueryParameter] != null)
             {
-                OpenDialog(queryParameters["browse"]);
+                OpenDialog(queryParameters[Constants.BrowseQueryParameter]);
             }
         }
 
@@ -36,42 +42,44 @@ namespace DATSCompanionApp
         {
             switch (browseType)
             {
-                case "folder":
+                case Constants.BrowseTypeFolder:
                     using (var folderDialog = new FolderBrowserDialog())
                     {
                         if (folderDialog.ShowDialog() == DialogResult.OK)
                         {
-                            MessageBox.Show($"Selected Folder: {folderDialog.SelectedPath}");
+                            var selectedPath = folderDialog.SelectedPath;
+                            this.serviceCommunicator.PostMessage(JsonSerializer.Serialize(new MessageContract<string>
+                            {
+                                Action = DATSActions.FolderSelected,
+                                Source = DATSSource.Desktop,
+                                Payload = selectedPath
+                            }));
                         }
-                    }
-                    break;
-                case "file":
-                    using (var fileDialog = new OpenFileDialog())
-                    {
-                        if (fileDialog.ShowDialog() == DialogResult.OK)
+                        else
                         {
-                            MessageBox.Show($"Selected File: {fileDialog.FileName}");
-                        }
-                    }
-                    break;
-                case "singlefolder":
-                    // Implement single folder browser dialog if different from FolderBrowserDialog
-                    break;
-                case "singlefile":
-                    using (var singleFileDialog = new OpenFileDialog())
-                    {
-                        singleFileDialog.Multiselect = false;
-                        if (singleFileDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            MessageBox.Show($"Selected File: {singleFileDialog.FileName}");
+                            this.serviceCommunicator.PostMessage(JsonSerializer.Serialize(new MessageContract<string>
+                            {
+                                Action = DATSActions.Cancelled,
+                                Source = DATSSource.Desktop
+                            }));
                         }
                     }
                     break;
                 default:
-                    MessageBox.Show("Unknown browse type.");
+                    this.serviceCommunicator.PostMessage(JsonSerializer.Serialize(new MessageContract<string>
+                    {
+                        Action = DATSActions.Error,
+                        Source = DATSSource.Desktop,
+                        Payload = $"Unknown browse type: {browseType}"
+                    }));
                     break;
             }
             Close();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.serviceCommunicator.PostMessage("test pipe communication");
         }
     }
 }
