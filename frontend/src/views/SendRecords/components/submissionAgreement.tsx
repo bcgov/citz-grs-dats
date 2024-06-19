@@ -1,11 +1,13 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
-import { FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material';
+import { FormControlLabel, FormLabel, Radio, RadioGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
 import { DatsExcelModel } from '../../../utils/xlsxUtils';
+import { useAuth } from '../../../auth/AuthContext';
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -65,21 +67,53 @@ const agreementTextSections = [
         id: 10,
         content: `6. The Digital Archives will protect personal information and provide access to the government records in accordance with the Information Management Act (IMA), the Freedom of Information and Protection of Privacy Act, and other relevant legislation.`,
         isTitle: false
+    },
+    {
+        id: 11,
+        content: ` [idir]  [date].`,
+        isTitle: false
     }
 ];
-
+const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    }).format(date);
+};
 const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: boolean, errorMsg: string) => void, excelData: DatsExcelModel | null }) => {
     const [value, setValue] = React.useState('');
+    const [dialogOpen, setDialogOpen] = React.useState<boolean>(false);
+    const [tempValue, setTempValue] = React.useState<string>('');
+    const { user } = useAuth();
+    const navigate = useNavigate();
     React.useEffect(() => { validate(false, ''); }, []);
     const applicationNumber = excelData?.applicationNumber ?? '';
     const accessionNumber = excelData?.accessionNumber ?? '';
+    const userDisplayName = user?.display_name ?? '';
+    const formattedDate = formatDate(new Date());
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const agreed = event.target.value === 'agree';
-        setValue(event.target.value);
-        console.log(event.target.value);
-        validate(agreed, !agreed ? 'Please accept the submission agreement' : '');
+        const newValue = event.target.value;
+        if (newValue === 'disagree') {
+            setTempValue(newValue);
+            setDialogOpen(true);
+        } else {
+            setValue(newValue);
+            validate(newValue === 'agree', newValue === 'agree' ? '' : 'Please accept the submission agreement');
+        }
     };
+    const handleDialogClose = (confirm: boolean) => {
+        setDialogOpen(false);
+        if (confirm) {
+            setValue(tempValue);
+            navigate('/dashboard');
+            //validate(false, 'Please accept the submission agreement');
+        }
+    };
+
+
+
 
     return (
         <Box sx={{ flexGrow: 1 }}>
@@ -96,7 +130,9 @@ const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: bool
                             >
                                 {section.content
                                     .replace('[ApplicationNumber]', applicationNumber)
-                                    .replace('[AccessionNumber]', accessionNumber)}
+                                    .replace('[AccessionNumber]', accessionNumber)
+                                    .replace('[idir]', userDisplayName)
+                                    .replace('[date]', formattedDate)}
                             </Typography>
                         ))}
                     </Item>
@@ -110,8 +146,26 @@ const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: bool
                         <FormControlLabel value="agree" control={<Radio />} label="Agree" />
                         <FormControlLabel value="disagree" control={<Radio />} label="Reject" />
                     </RadioGroup>
+
                 </Grid>
             </Grid>
+            <Dialog
+                open={dialogOpen}
+                onClose={() => handleDialogClose(false)}
+            >
+                <DialogTitle>Confirm Rejection</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to reject the submission agreement? You can go back and change your mind.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => handleDialogClose(false)}>Go Back</Button>
+                    <Button onClick={() => handleDialogClose(true)} color="primary" autoFocus>
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
