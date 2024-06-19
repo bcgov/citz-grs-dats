@@ -40,6 +40,7 @@ export const SendRecordsLAN = () => {
   const [snackbarSeverity, setSnackbarSeverity] =
     useState<AlertColor>("success");
   const [file, setFile] = useState<File | null>(null);
+  const [aris617File, setAris617File] = useState<File | null>(null);
   const [excelData, setexcelData] = useState<DatsExcelModel | null>(null);
   const [nextButtonLabel, setNextButtonLabel] = useState("Upload 66x file"); //because the first step is to upload the 66x file
   const [arisTransferDetails, setArisTransferDetails] = useState<ITransferDTO | null>(null);
@@ -102,8 +103,35 @@ export const SendRecordsLAN = () => {
     },
     {
       label: "Upload approved 617 Transfer form ",
+      beforeNext: async () =>{
+        //add your update logic here
+        setIsUploading(true);
+        try {
+          const formData = new FormData();
+          formData.append("upload617File", file!);
+          var res = await uploadService.upload617File(formData);
+          console.log(res);
+          //setArisTransferDetails(res.transfer);
+          setIsUploading(false);
+          showSnackbar("Upload successful", "success");
+          setNextButtonLabel("Next");
+          setBeforeNextCompleted(true);
+        } catch (error) {
+          console.error("Upload failed", error);
+          showSnackbar("Upload failed", "error");
+          setIsUploading(false);
+          setIsValid(false);
+          setErrors((prev) => [...prev, activeStep]);
+          setNextButtonLabel("Upload 617 file");
+          return;
+        }
+      },
+      beforeNextCompleted: false,
       content: (
-        <Aris617DropZone handleFileUpload={handle617FileUpload} />
+        <Aris617DropZone validate={(isValid, errorMessage) =>
+          handleValidationChange(0, isValid, errorMessage)
+        }
+        setFile={(file) => updateAris617File(file)} />
       ),
       validate: () => true,
     },
@@ -151,6 +179,12 @@ export const SendRecordsLAN = () => {
   const updateFile = (file: File | null) => {
     setFile(file);
   };
+
+  const updateAris617File = (file: File | null) => {
+    setAris617File(file);
+  };
+  
+
   const handleNext = async () => {
     var step = steps[activeStep];
     const validate = step.validate;
