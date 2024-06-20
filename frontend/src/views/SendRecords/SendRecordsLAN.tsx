@@ -43,27 +43,12 @@ export const SendRecordsLAN = () => {
   const [aris617File, setAris617File] = useState<File | null>(null);
   const [excelData, setexcelData] = useState<DatsExcelModel | null>(null);
   const [nextButtonLabel, setNextButtonLabel] = useState("Upload 66x file"); //because the first step is to upload the 66x file
+  
   const [arisTransferDetails, setArisTransferDetails] = useState<ITransferDTO | null>(null);
   const uploadService = new UploadService();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const handle617FileUpload = useCallback((file: File) => {
-    console.log("-------------------------------handle617FileUpload.useCallback")
-    const formData = new FormData();
-    formData.append("uploadARIS617file", file);
-
-    // Assuming uploadService.upload66xFile returns a Promise
-    uploadService
-      .upload617File(formData)
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((error) => {
-        console.error("Upload error:", error);
-        // Handle the error as needed
-      });
-  }, []);
+  
   let steps = [
     {
       label: "Upload 66x file",
@@ -108,10 +93,10 @@ export const SendRecordsLAN = () => {
         setIsUploading(true);
         try {
           const formData = new FormData();
-          formData.append("upload617File", file!);
+          formData.append("uploadARIS617file", aris617File!);
           var res = await uploadService.upload617File(formData);
           console.log(res);
-          //setArisTransferDetails(res.transfer);
+          setArisTransferDetails(res.transfer);
           setIsUploading(false);
           showSnackbar("Upload successful", "success");
           setNextButtonLabel("Next");
@@ -131,9 +116,9 @@ export const SendRecordsLAN = () => {
         <Aris617DropZone validate={(isValid, errorMessage) =>
           handleValidationChange(0, isValid, errorMessage)
         }
-        setFile={(file) => updateAris617File(file)} />
+        setFile={(aris617File) => updateAris617File(aris617File)} />
       ),
-      validate: () => true,
+      validate: () => isValid,
     },
     {
       label: "Accept Terms.",
@@ -184,8 +169,8 @@ export const SendRecordsLAN = () => {
     setAris617File(file);
   };
   
-
   const handleNext = async () => {
+    console.log("--------------------------------------handleNext");
     var step = steps[activeStep];
     const validate = step.validate;
     const isValid = validate();
