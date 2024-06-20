@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import { FormControlLabel, FormLabel, Radio, RadioGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
 import { DatsExcelModel } from '../../../utils/xlsxUtils';
 import { useAuth } from '../../../auth/AuthContext';
+import UploadService from '../../../services/uploadService'
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -92,6 +93,7 @@ const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: bool
     const accessionNumber = excelData?.accessionNumber ?? '';
     const userDisplayName = user?.display_name ?? '';
     const formattedDate = formatDate(new Date());
+    const uploadService = new UploadService();
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = event.target.value;
@@ -101,19 +103,36 @@ const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: bool
         } else {
             setValue(newValue);
             validate(newValue === 'agree', newValue === 'agree' ? '' : 'Please accept the submission agreement');
+            saveAgreement(newValue, 'Accepted');
         }
+
     };
     const handleDialogClose = (confirm: boolean) => {
         setDialogOpen(false);
         if (confirm) {
             setValue(tempValue);
+            saveAgreement(tempValue, 'Rejected');
             navigate('/dashboard');
             //validate(false, 'Please accept the submission agreement');
         }
     };
 
 
+    const saveAgreement = async (status: string, decision: string) => {
+        const agreementText = agreementTextSections.map(section =>
+            section.content
+                .replace('[ApplicationNumber]', applicationNumber)
+                .replace('[AccessionNumber]', accessionNumber)
+                .replace('[idir]', userDisplayName)
+                .replace('[date]', formattedDate)
+        ).join('\n');
 
+        try {
+            await uploadService.saveAgreementToDats(agreementText, status, decision);
+        } catch (error) {
+            console.error('Error submitting agreement:', error);
+        }
+    };
 
     return (
         <Box sx={{ flexGrow: 1 }}>
