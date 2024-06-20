@@ -7,6 +7,9 @@ import { transferCreateValidation, transferUpdateValidation } from "../validator
 
 
 export default class TransferController {
+  saveSubmitAgreement(saveSubmitAgreement: any) {
+    throw new Error("Method not implemented.");
+  }
   private transferService: TransferService;
 
   constructor() {
