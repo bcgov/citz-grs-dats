@@ -1,38 +1,64 @@
+import { Box, Button, Checkbox, CircularProgress, Container, Grid, IconButton, Paper, TextField, Typography } from "@mui/material";
 import React, { FC, ReactElement, useEffect, useRef, useState } from "react";
-// import calculateHash from "../../../utils/calculateHash";
-
-interface SelectFolderProps {
-  
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+interface Folder {
+  name: string;
+  schedule: string;
+  primarySecondary: string;
+  fileId: string;
+  opr: boolean;
+  startDate: Date | null;
+  endDate: Date | null;
+  soDate: Date | null;
+  fdDate: Date | null;
+  payload: string;
 }
+enum DATSActions
+    {
+        FolderSelected,
+        FileSelected,
+        MultipleFilesSelected,
+        FileInformation,
+        Cancelled,
+        Progress,
+        Error,
+        Completed
+    }
+    const initialFolders: Folder[] = [
+      {
+        name: 'c:folder1',
+        schedule: '164437',
+        primarySecondary: '29900-05',
+        fileId: '72653',
+        opr: false,
+        startDate: new Date('2000-01-02'),
+    endDate: new Date('2009-12-22'),
+    soDate: new Date('2009-12-31'),
+    fdDate: new Date('2009-12-31'),
+        payload: ''
+      },
+      {
+        name: 'Z:Folders2',
+        schedule: '164437',
+        primarySecondary: '29920-30',
+        fileId: '',
+        opr: false,
+        startDate: new Date('2000-01-02'),
+        endDate: new Date('2009-12-22'),
+        soDate: new Date('2009-12-31'),
+        fdDate: new Date('2009-12-31'),
+        payload: ''
 
-interface FileListProps {
-  files: string[];
-}
-interface FolderWithFiles {
-  folderPath: string;
-  files: string[];
-}
-const FileList: FC<FileListProps> = ({ files }): ReactElement => {
-  return (
-    <div>
-      <h3>Files in Selected Folders:</h3>
-      <ul>
-        {files.map((file, index) => (
-          <li key={index}>{file}</li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-const SelectFolder: FC<SelectFolderProps> = ({
-  
-}): ReactElement => {
-  const folderInput = useRef<HTMLInputElement>(null);
-  const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+      },
+    ];
+const SelectFolder: FC = () => {
   const [message, setMessage] = useState('');
   const [progress, setProgress] = useState(0);
+  const [folders, setFolders] = React.useState<Folder[]>([]);
 
   useEffect(() => {
       const ws = new WebSocket('ws://localhost:50504/ws/react');
@@ -50,6 +76,32 @@ ws.onclose = () => {
       ws.onmessage = (event) => {
         console.log(event.data);
           const data = JSON.parse(event.data);
+          switch(data.Action)
+          {
+            case DATSActions.Progress:
+              console.log('setting progress');
+              setProgress(data.Payload.Progress);
+              setMessage(data.Payload.Message);
+              break;
+              case DATSActions.Completed:
+                setProgress(data.Payload.Progress);
+              setMessage(data.Payload.Message);
+              break;
+              case DATSActions.FileInformation:
+                setFolders(prevFolders => [...prevFolders, {
+                  name: data.Payload.Path,
+                  schedule: '164437',
+                  primarySecondary: '29900-05',
+                  fileId: '72653',
+                  opr: false,
+                  startDate: new Date('2000-01-02'),
+                  endDate: new Date('2009-12-22'),
+                  soDate: new Date('2009-12-31'),
+                  fdDate: new Date('2009-12-31'),
+                  payload: event.data
+                }]);
+                break;
+          }
           if (data.path) {
             console.log(data);
               setMessage(`Selected Path: ${data.path}`);
@@ -68,104 +120,157 @@ ws.onclose = () => {
           ws.close();
       };
   }, []);
-  const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-
-    if (files && files.length > 0) {
-      const folderPaths: string[] = [];
-      const fileList: string[] = [];
-
-      Array.from(files).forEach((file) => {
-        const folderPath = file.webkitRelativePath
-          ? file.webkitRelativePath.split("/").slice(0, -1).join("/")
-          : undefined;
-
-        if (folderPath && !folderPaths.includes(folderPath)) {
-          folderPaths.push(folderPath);
-        }
-        // const filePathWhitFile = folderPath + "/" + file.name
-        // const sha256HashPromise = calculateHash(filePathWhitFile, 'sha256');
-        fileList.push(folderPath + "/" + file.name);
-      });
-
-      setSelectedFolders(folderPaths);
-      setSelectedFiles(fileList);
-      onFolderSelect(folderPaths, fileList);
-    }
-  };
-  const openDesktopApp = (browseType: string) => {
-    window.location.href = `citz-grs-dats://open?browse=${browseType}`;
+  const openDesktopApp = () => {
+    window.location.href = `citz-grs-dats://open?browse=folder`;
 };
-  const onFolderSelect = (folderPaths: string[], files: string[]) => {
-    console.log(folderPaths);
-    const foldersWithFiles: FolderWithFiles[] = organizeFilesByFolder(folderPaths, files);
-    console.log(foldersWithFiles);
-  };
-
-  const organizeFilesByFolder = (folderPaths: string[], files: string[]): FolderWithFiles[] => {
-    const folders: FolderWithFiles[] = [];
-    const mainFolder = findCommonPrefix(folderPaths);
-    console.log(mainFolder);
-
-    // Iterate through each folder path
-    folderPaths.forEach((folderPath) => {
-      // Filter files that belong to the current folder
-      const filesInFolder = files.filter((file) => file.startsWith(folderPath));
-
-      // Remove folder path from file names
-      const formattedFiles = filesInFolder.map((file) => file.replace(`${folderPath}/`, ''));
-
-      // Add folder with formatted files to the array
-      folders.push({
-        folderPath,
-        files: formattedFiles,
-      });
-    });
-
-    return folders;
-  };
-
-  // Function to find the common prefix among strings
-  const findCommonPrefix = (strings: string[]): string => {
-    if (!strings || strings.length === 0) {
-      return '';
-    }
-
-    let prefix = strings[0];
-    for (let i = 1; i < strings.length; i++) {
-      while (strings[i].indexOf(prefix) !== 0) {
-        prefix = prefix.substring(0, prefix.length - 1);
-      }
-    }
-
-    return prefix;
-  };
-  const supportsDirectoryAttribute =
-    typeof document.createElement("input").webkitdirectory !== "undefined";
+const handleDeleteFolder = (index: number) => {
+  const newFolders = folders.filter((_, i) => i !== index);
+  setFolders(newFolders);
+};
+const handleChange = (index: number, field: keyof Folder, value: any) => {
+  setFolders((prevFolders) =>
+    prevFolders.map((folder, i) =>
+      i === index ? { ...folder, [field]: value } : folder
+    )
+  );
+};
   return (
-    <div>
-      <FileList files={selectedFiles} />
-      <label htmlFor="folderInput">
-        Select Folder
-        <input
-          id="folderInput"
-          type="file"
-          onChange={handleFolderSelect}
-          className="form-control"
-          ref={(folderInput as unknown) as React.RefObject<HTMLInputElement>}
-          multiple
-          // @ts-ignore
-          directory={supportsDirectoryAttribute ? "" : undefined}
-          // @ts-ignore
-          webkitdirectory={supportsDirectoryAttribute ? "" : undefined}
-        />
-      </label>
-      <button onClick={() => openDesktopApp('folder')}>Open Folder Browser</button>
-            <button onClick={() => openDesktopApp('file')}>Open File Browser</button>
-            <button onClick={() => openDesktopApp('singlefolder')}>Open Single Folder Browser</button>
-            <button onClick={() => openDesktopApp('singlefile')}>Open Single File Browser</button>
-
-    </div>
+    <Box sx={{ flexGrow: 1, padding: 2 }}>
+      <Typography variant="h6">List of selected folders</Typography>
+      <Box display="flex" alignItems="center">
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={openDesktopApp}
+          disabled={progress > 0} // Disable button while progress is active
+        >
+          Add Folder
+        </Button>
+        {progress > 0 && (
+          <Box ml={2}>
+            <CircularProgress size={24} />
+          </Box>
+        )}
+      </Box>
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Grid container spacing={1} alignItems="center">
+          <Grid item xs={12} sm={1.5}>
+            <Typography variant="subtitle2">Folder</Typography>
+          </Grid>
+          <Grid item xs={12} sm={1}>
+            <Typography variant="subtitle2">Schedule</Typography>
+          </Grid>
+          <Grid item xs={12} sm={1}>
+            <Typography variant="subtitle2">Primary/Secondary</Typography>
+          </Grid>
+          <Grid item xs={12} sm={1}>
+            <Typography variant="subtitle2">FILE</Typography>
+          </Grid>
+          <Grid item xs={12} sm={0.5}>
+            <Typography variant="subtitle2">OPR</Typography>
+          </Grid>
+          <Grid item xs={12} sm={1.5}>
+            <Typography variant="subtitle2">Start Date</Typography>
+          </Grid>
+          <Grid item xs={12} sm={1.5}>
+            <Typography variant="subtitle2">End Date</Typography>
+          </Grid>
+          <Grid item xs={12} sm={1.5}>
+            <Typography variant="subtitle2">SO Date</Typography>
+          </Grid>
+          <Grid item xs={12} sm={1.5}>
+            <Typography variant="subtitle2">FD Date</Typography>
+          </Grid>
+          <Grid item xs={12} sm={0.5}>
+            <Typography variant="subtitle2">Actions</Typography>
+          </Grid>
+        </Grid>
+      </Paper>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        {folders.map((folder, index) => (
+          <Paper elevation={0} key={index} sx={{ p: 2, mb: 2 }}>
+            <Grid container spacing={1} alignItems="center">
+              <Grid item xs={12} sm={1.5}>
+                <TextField
+                  value={folder.name}
+                  onChange={(e) => handleChange(index, 'name', e.target.value)}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={1}>
+                <TextField
+                  value={folder.schedule}
+                  onChange={(e) =>
+                    handleChange(index, 'schedule', e.target.value)
+                  }
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={1}>
+                <TextField
+                  value={folder.primarySecondary}
+                  onChange={(e) =>
+                    handleChange(index, 'primarySecondary', e.target.value)
+                  }
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={1}>
+                <TextField
+                  value={folder.fileId}
+                  onChange={(e) => handleChange(index, 'fileId', e.target.value)}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={0.5}>
+                <Checkbox
+                  checked={folder.opr}
+                  onChange={(e) =>
+                    handleChange(index, 'opr', e.target.checked)
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <DatePicker
+                  value={folder.startDate}
+                  onChange={(date) => handleChange(index, 'startDate', date)}
+                 
+                />
+              </Grid>
+              <Grid item xs={12} sm={1.5}>
+                <DatePicker
+                  value={folder.endDate}
+                  onChange={(date) => handleChange(index, 'endDate', date)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={1.5}>
+                <DatePicker
+                  value={folder.soDate}
+                  onChange={(date) => handleChange(index, 'soDate', date)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={1.5}>
+                <DatePicker
+                  value={folder.fdDate}
+                  onChange={(date) => handleChange(index, 'fdDate', date)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={0.5}>
+                <IconButton onClick={() => handleDeleteFolder(index)}>
+                  <DeleteIcon />
+                </IconButton>
+              </Grid>
+            </Grid>
+          </Paper>
+        ))}
+      </LocalizationProvider>
+      <Box my={2}>
+        <Button variant="contained" color="secondary">
+          Generate Digital File List
+        </Button>
+      </Box>
+    </Box>
   );
 };
 
