@@ -52,14 +52,18 @@ export default class UploadService {
 
 
 
-  public async saveAgreementToDats(agreementText: string, status: string, decision: string): Promise<any> {
+  public async saveAgreementToDats(agreementText: Array<any>, applicationNumber: string, accessionNumber: string, userDisplayName: string, formattedDate: string, status: string, decision: string): Promise<any> {
     try {
-      const response = await axios.post(`${API_URL}/submitAgreement`, {
+      const response = await axios.post(`${API_URL}transfer/:6675dcb8e77efc674c5f9627/submitAgreement`, {
         agreementText,
+        applicationNumber,
+        accessionNumber,
+        userDisplayName,
+        formattedDate,
         status,
         decision
       });
-
+      console.log("saveAgreementToDats resp" + response.data);
       return response.data;
     } catch (error) {
       console.error('Error submitting agreement:', error);

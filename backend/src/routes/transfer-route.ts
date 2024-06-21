@@ -24,7 +24,7 @@ router
 router.get('/transfer/:accessionNumber/:applicationNumber', (req, res) => transferController.getTransferByKeysNumbers(req, res));
 
 router
-  .route("/transfers/:transferId/submitAgreement")
+  .route("/transfer/:transferId/submitAgreement")
   .post(transferController.saveSubmitAgreement);
 
 export default router;

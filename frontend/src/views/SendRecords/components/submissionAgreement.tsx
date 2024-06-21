@@ -119,16 +119,10 @@ const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: bool
 
 
     const saveAgreement = async (status: string, decision: string) => {
-        const agreementText = agreementTextSections.map(section =>
-            section.content
-                .replace('[ApplicationNumber]', applicationNumber)
-                .replace('[AccessionNumber]', accessionNumber)
-                .replace('[idir]', userDisplayName)
-                .replace('[date]', formattedDate)
-        ).join('\n');
+
 
         try {
-            await uploadService.saveAgreementToDats(agreementText, status, decision);
+            await uploadService.saveAgreementToDats(agreementTextSections, applicationNumber, accessionNumber, userDisplayName, formattedDate, status, decision);
         } catch (error) {
             console.error('Error submitting agreement:', error);
         }
