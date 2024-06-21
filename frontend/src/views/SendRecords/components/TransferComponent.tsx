@@ -53,6 +53,7 @@ const TransferComponent: React.FC<Props> = ({ transfer }) => {
         });
     }, [transfer.digitalFileLists]);
 
+
     const handleUploadAll = () => {
         setUploading(true);
         const folders = transfer.digitalFileLists?.map(fileList => fileList.folder);

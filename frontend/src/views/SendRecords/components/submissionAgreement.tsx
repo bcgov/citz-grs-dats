@@ -103,7 +103,7 @@ const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: bool
         } else {
             setValue(newValue);
             validate(newValue === 'agree', newValue === 'agree' ? '' : 'Please accept the submission agreement');
-            //saveAgreement(newValue, 'Accepted');
+            saveAgreement(newValue, 'Accepted');
         }
 
     };
