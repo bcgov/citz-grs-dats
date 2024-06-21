@@ -257,13 +257,21 @@ export default class TransferController {
 
   async saveSubmitAgreement(req: Request, res: Response) {
     try {
-      const { agreementText, status, decision } = req.body;
+      const { agreementText, applicationNumber, accessionNumber, userDisplayName, formattedDate, status, decision } = req.body;
       const transferId = req.params.transferId;
+      // Define the placeholders
+      const placeholders = {
+        ApplicationNumber: applicationNumber || '',
+        AccessionNumber: accessionNumber || '',
+        idir: userDisplayName || '',
+        date: formattedDate || ''
+      };
 
       const soumissionAgrement = await createAgreementPDF(
         agreementText,
         status,
         decision,
+        placeholders
       );
       res.status(200).json(soumissionAgrement);
     } catch (error) {
