@@ -103,7 +103,7 @@ const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: bool
         } else {
             setValue(newValue);
             validate(newValue === 'agree', newValue === 'agree' ? '' : 'Please accept the submission agreement');
-            saveAgreement(newValue, 'Accepted');
+            //saveAgreement(newValue, 'Accepted');
         }
 
     };
@@ -111,7 +111,7 @@ const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: bool
         setDialogOpen(false);
         if (confirm) {
             setValue(tempValue);
-            saveAgreement(tempValue, 'Rejected');
+            //saveAgreement(tempValue, 'Rejected');
             navigate('/dashboard');
             //validate(false, 'Please accept the submission agreement');
         }

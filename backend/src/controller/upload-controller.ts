@@ -1,4 +1,3 @@
-import FileService from "../service/File-service";
 import TransferService from "../service/transfer-service";
 import DigitalFileListService from "../service/digitalFileList-service";
 import DigitalFileService from "../service/digitalFile-service";
@@ -11,7 +10,6 @@ export default class UploadController {
   private transferService: TransferService;
   private digitalFileListService: DigitalFileListService;
   private digitalFileService: DigitalFileService;
-  private fileService: FileService;
   private documentationPath: string;
 
   constructor() {
@@ -19,10 +17,7 @@ export default class UploadController {
     this.transferService = new TransferService();
     this.digitalFileListService = new DigitalFileListService();
     this.digitalFileService = new DigitalFileService();
-    this.fileService = new FileService();
-    this.getMetadatas = this.getMetadatas.bind(this);
-    this.getFilesinFolder = this.getFilesinFolder.bind(this);
-    this.documentationPath="";
+    this.documentationPath = "";
   }
 
   handleARIS66xUpload: RequestHandler = async (req, res, next) => {
@@ -34,9 +29,9 @@ export default class UploadController {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const newTransfer=await this.transferService.createTransferMetaData(uploadedFile.path);
-      const newTransferId=newTransfer?._id || new mongoose.mongo.ObjectId(0);
-      const hashDigitalFileList=await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
+      const newTransfer = await this.transferService.createTransferMetaData(uploadedFile.path);
+      const newTransferId = newTransfer?._id || new mongoose.mongo.ObjectId(0);
+      const hashDigitalFileList = await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
       //const newDigitalFiles=await this.digitalFileService.createDigitalFileMetaData(hashDigitalFileList, uploadedFile.path);
 
       //const transferData = await this.transferService.createFolder(uploadedFile,hashDigitalFileList);
@@ -45,22 +40,22 @@ export default class UploadController {
 
       const newDigitalFileList: any[] = [];
       hashDigitalFileList.forEach((value: any, key: string) => {
-           newDigitalFileList.push(value);
+        newDigitalFileList.push(value);
       });
-      
+
       res.status(201).json({
         "message": "Upload ARIS 66x successful",
         "transfer": {
-            "accessionNumber": newTransfer?.accessionNumber,
-            "applicationNumber": newTransfer?.applicationNumber,
-            "transferStatus": newTransfer?.transferStatus,
-            "digitalFileLists": newDigitalFileList,
-            "producerMinistry": newTransfer?.producerMinistry,
-            "producerBranch": newTransfer?.producerBranch,
-            "_id": newTransfer?._id,
-            "createDate": newTransfer?.createDate,
-            "updatedDate": newTransfer?.updatedDate,
-         }
+          "accessionNumber": newTransfer?.accessionNumber,
+          "applicationNumber": newTransfer?.applicationNumber,
+          "transferStatus": newTransfer?.transferStatus,
+          "digitalFileLists": newDigitalFileList,
+          "producerMinistry": newTransfer?.producerMinistry,
+          "producerBranch": newTransfer?.producerBranch,
+          "_id": newTransfer?._id,
+          "createDate": newTransfer?.createDate,
+          "updatedDate": newTransfer?.updatedDate,
+        }
       });
     } catch (error) {
       console.log(error);
@@ -132,28 +127,7 @@ export default class UploadController {
     });
   };
 
-  getMetadatas: RequestHandler = async (req, res, next) => {
-    // Get the file path from the query parameter
-    try {
-      // Get the file path from the query parameter
-      const filePath = req.query.path;
-      const response = await FileService.getMetadatas(filePath);
-      res.status(200).json(response);
-    } catch (error) {
-      res.status(500).json({ error: "An error occurred" });
-    }
-  }
 
-  getFilesinFolder: RequestHandler = async (req, res, next) => {
-    // Get the file path from the query parameter
-    try {
-      // Get the file path from the query parameter
-      const filePath = req.query.path;
-      const response = await FileService.getMetadatas(filePath);
-      res.status(200).json(response);
-    } catch (error) {
-      res.status(500).json({ error: "An error occurred" });
-    }
-  }
+
 
 };

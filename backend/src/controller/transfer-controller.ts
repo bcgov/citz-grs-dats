@@ -2,14 +2,14 @@
 import { Request, Response } from "express";
 import { validationResult, param } from "express-validator";
 import { TransferService } from "../service";
+import createAgreementPDF from "../service/File-service";
+
 import { transferCreateValidation, transferUpdateValidation } from "../validators/transfer-validators";
 
 
 
 export default class TransferController {
-  saveSubmitAgreement(saveSubmitAgreement: any) {
-    throw new Error("Method not implemented.");
-  }
+
   private transferService: TransferService;
 
   constructor() {
@@ -21,6 +21,7 @@ export default class TransferController {
     this.deleteTransfer = this.deleteTransfer.bind(this);
     this.getTransferByKeysNumbers = this.getTransferByKeysNumbers.bind(this);
     this.getSearchTransfers = this.getSearchTransfers.bind(this);
+    this.saveSubmitAgreement = this.saveSubmitAgreement.bind(this);
 
     // Bind the function to the current instance
   }
@@ -223,7 +224,7 @@ export default class TransferController {
         return res.status(400).json({ errors: errors.array() });
       }
       const transferId = req.params.transferId;
-      const updatedTransferData = req.body; // Assuming the updated data is in the request body
+      const updatedTransferData = req.body;
       console.log(transferId);
       console.log(updatedTransferData);
       const updatedTransfer = await this.transferService.updateTransfer(
@@ -249,6 +250,22 @@ export default class TransferController {
         return res.status(404).json({ error: "Transfer not found" });
       }
       res.status(200).json({ message: "Transfer deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "An error occurred" });
+    }
+  }
+
+  async saveSubmitAgreement(req: Request, res: Response) {
+    try {
+      const { agreementText, status, decision } = req.body;
+      const transferId = req.params.transferId;
+
+      const soumissionAgrement = await createAgreementPDF(
+        agreementText,
+        status,
+        decision,
+      );
+      res.status(200).json(soumissionAgrement);
     } catch (error) {
       res.status(500).json({ error: "An error occurred" });
     }

@@ -26,8 +26,5 @@ router.post(
 
 router.get("/checkAccessibility", uploadController.checkAccessibility);
 
-router.get("/metadatas", uploadController.getMetadatas);
-
-router.get("/files", uploadController.getFilesinFolder);
 
 export default router;
