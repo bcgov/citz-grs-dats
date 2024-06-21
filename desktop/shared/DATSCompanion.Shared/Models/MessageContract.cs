@@ -1,4 +1,7 @@
-﻿namespace DATSCompanion.Shared.Models
+﻿using System;
+using System.Collections.Generic;
+
+namespace DATSCompanion.Shared.Models
 {
     public class MessageContract<T>
     {
@@ -9,7 +12,29 @@
         public T Payload { get; set; }
     }
 
+    public class ReportProgress
+    {
+        public double Progress { get; set; }
+
+        public string Message { get; set; }
+    }
     public class DATSFileInformation
+    {
+        public string Path { get; set; }
+        public string FileName { get; set; }
+        public string Checksum { get; set; }
+        public DateTime DateCreated { get; set; }
+        public DateTime DateModified { get; set; }
+        public DateTime DateAccessed { get; set; }
+        public DateTime DateLastSaved { get; set; }
+        public string AssociatedProgramName { get; set; }
+        public string Owner { get; set; }
+        public string Computer { get; set; }
+        public string ContentType { get; set; }
+
+        public long SizeInBytes { get; set; }
+    }
+    public class DATSFileDetails
     {
         public string Path { get; set; }
 
@@ -17,7 +42,8 @@
 
         public int FolderCount { get; set; }
         public long SizeInBytes { get; set; }
-
+       
+        public List<DATSFileInformation> Files { get; set; } = new List<DATSFileInformation>();
     }
 
     public class Error
@@ -39,7 +65,9 @@
         MultipleFilesSelected,
         FileInformation,
         Cancelled,
-        Error
+        Progress,
+        Error,
+        Completed
     }
 
 }
