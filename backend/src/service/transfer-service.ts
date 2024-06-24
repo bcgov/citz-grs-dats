@@ -48,52 +48,6 @@ export default class TransferService {
     );
   }
 
-  /*async createFolder(
-    uploadedFile: any,
-    hashDigitalFileList: Map<string, any>*/
-  async createFolder(
-      uploadedFile: any  
-  ) {
-      const uploadedFilePath = uploadedFile.path;
-      const startIndex=uploadedFilePath.indexOf("-");
-      const originalFileName=uploadedFilePath.substring(startIndex+1);
-
-      let transferData = await extractsFromAra66x(uploadedFile.path);
-
-      const folderPath = process.env.TRANSFER_FOLDER ||"Transfer/";
-      createFolder(folderPath);
-
-      const accession_num=transferData?.accession;
-      const application_num=transferData?.application;
-      const subApplicationPath = folderPath+accession_num+"-"+application_num+"/";
-      createFolder(subApplicationPath);
-      const subDocPath = subApplicationPath+"Documentation/";
-      createFolder(subDocPath);
-      const targetFilePath=subDocPath+originalFileName;
-      console.log("source: "+uploadedFilePath+";target: "+targetFilePath);
-      fs.copyFile(uploadedFilePath, targetFilePath, (err) => {
-        console.log(err);
-      });
-
-      /*
-      hashDigitalFileList.forEach((value: any, key: string) => {
-           const primarySecondary=value?.primarySecondary;
-           if (primarySecondary) {
-                const subPrimaryPath=subApplicationPath+primarySecondary+"/";
-                var folder=value?.folder;
-                if(folder) {
-                        folder=folder.replace(":\\","-");
-                        folder=folder.replace("\\","/");
-                        const subPrimaryFolderPath=subPrimaryPath+folder+"/";
-                        createFolder(subPrimaryPath);
-                        createFolder(subPrimaryFolderPath);
-                }
-            }
-      });*/
-
-      return subDocPath;
-  }
-
   async createTransferMetaData(
        filePath: string
   ) {
@@ -126,26 +80,6 @@ export default class TransferService {
   ) {
       const transferData = await extractsTransferInfo(filePath);
       return transferData;
-  }
-
-  async uploadARIS617(
-    filePath: string,
-    documentationPath: string
-  ) {
-    //console.log("uploadARIS617.filePath="+filePath);
-    const uploadedFilePath = filePath;
-    const startIndex=uploadedFilePath.indexOf("-");
-    const originalFileName=uploadedFilePath.substring(startIndex+1);
-
-    const subDocPath = documentationPath;
-    console.log("documentationPath: "+documentationPath);
-    const targetFilePath=subDocPath+originalFileName;
-    console.log("source: "+uploadedFilePath+";target: "+targetFilePath);
-    fs.copyFile(uploadedFilePath, targetFilePath, (err) => {
-      console.log(err);
-    });
-
-    return subDocPath;
   }
 
   async createTransfer(transfer: ITransfer): Promise<ITransfer | null> {
