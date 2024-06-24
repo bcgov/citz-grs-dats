@@ -1,4 +1,5 @@
 import TransferService from "../service/transfer-service";
+import S3ClientService from "../service/s3Client-service";
 import DigitalFileListService from "../service/digitalFileList-service";
 import DigitalFileService from "../service/digitalFile-service";
 import { RequestHandler } from "express";
@@ -8,6 +9,7 @@ import mongoose from "mongoose";
 export default class UploadController {
   // Constructor to initialize any properties or perform setup
   private transferService: TransferService;
+  private s3ClientService: S3ClientService;
   private digitalFileListService: DigitalFileListService;
   private digitalFileService: DigitalFileService;
   private documentationPath: string;
@@ -15,6 +17,7 @@ export default class UploadController {
   constructor() {
     // Initialize any properties or perform setup here if needed
     this.transferService = new TransferService();
+    this.s3ClientService = new  S3ClientService();
     this.digitalFileListService = new DigitalFileListService();
     this.digitalFileService = new DigitalFileService();
     this.documentationPath = "";
@@ -29,14 +32,10 @@ export default class UploadController {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const newTransfer = await this.transferService.createTransferMetaData(uploadedFile.path);
-      const newTransferId = newTransfer?._id || new mongoose.mongo.ObjectId(0);
-      const hashDigitalFileList = await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
-      //const newDigitalFiles=await this.digitalFileService.createDigitalFileMetaData(hashDigitalFileList, uploadedFile.path);
-
-      //const transferData = await this.transferService.createFolder(uploadedFile,hashDigitalFileList);
-      this.documentationPath = await this.transferService.createFolder(uploadedFile);
-      //console.log("documentationPath="+this.documentationPath);
+      const newTransfer=await this.transferService.createTransferMetaData(uploadedFile.path);
+      const newTransferId=newTransfer?._id || new mongoose.mongo.ObjectId(0);
+      const hashDigitalFileList=await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
+      this.documentationPath = await this.s3ClientService.uploadAra66xFile(uploadedFile);
 
       const newDigitalFileList: any[] = [];
       hashDigitalFileList.forEach((value: any, key: string) => {
@@ -97,8 +96,8 @@ export default class UploadController {
       if (!uploadedFile) {
         return res.status(400).json({ error: "No file uploaded" });
       }
-
-      const documentationPath = await this.transferService.uploadARIS617(uploadedFile.path, this.documentationPath);
+      
+      const documentationPath = await this.s3ClientService.uploadARIS617File(uploadedFile, this.documentationPath);
 
       res.status(201).json({
         message: "Upload ARIS 617 successful",

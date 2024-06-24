@@ -13,12 +13,14 @@
     "prod-build": "ENVIRONMENT='production' gulp"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.598.0",
     "@types/cors": "^2.8.13",
     "@types/keycloak-connect": "^7.0.0",
     "@types/mime-types": "^2.1.4",
     "@types/mongoose": "^5.11.97",
     "@types/multer": "^1.4.11",
     "@types/swagger-schema-official": "^2.0.23",
+    "aws-sdk": "^2.1643.0",
     "body-parser": "^1.20.2",
     "connect-mongo": "^5.0.0",
     "cookie-parser": "^1.4.6",
