@@ -80,7 +80,6 @@ export default class S3ClientService {
         this.createFolder(subDocPath);
 
         const targetFilePath=subDocPath+uploadedFile.originalname;
-        console.log("target: "+targetFilePath);
 
         try {
             const uploadFilecommand = new PutObjectCommand({
@@ -90,6 +89,7 @@ export default class S3ClientService {
             });
      
             const data = await this.s3Client.send(uploadFilecommand);
+            fs.unlinkSync(uploadedFilePath);
 
         } catch (error) {
             console.error('Error uploading file', error);
@@ -106,7 +106,6 @@ export default class S3ClientService {
         const fileContent = fs.readFileSync(uploadedFilePath);
 
         const targetFilePath=documentationPath+uploadedFile.originalname;
-        console.log("target: "+targetFilePath);
         
         try {
             const uploadFilecommand = new PutObjectCommand({
@@ -116,6 +115,7 @@ export default class S3ClientService {
             });
      
             const data = await this.s3Client.send(uploadFilecommand);
+            fs.unlinkSync(uploadedFilePath);
 
         } catch (error) {
             console.error('Error uploading file', error);
