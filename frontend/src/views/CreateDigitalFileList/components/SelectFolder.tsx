@@ -5,18 +5,8 @@ import AddIcon from '@mui/icons-material/Add';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-interface Folder {
-  name: string;
-  schedule: string;
-  primarySecondary: string;
-  fileId: string;
-  opr: boolean;
-  startDate: Date | null;
-  endDate: Date | null;
-  soDate: Date | null;
-  fdDate: Date | null;
-  payload: string;
-}
+import { IFolderInformation, IFileInformation } from "../../../types/DTO/Interfaces/IFolderInformation";
+import { generateExcel} from "../../../utils/xlsxUtils";
 enum DATSActions
     {
         FolderSelected,
@@ -28,37 +18,11 @@ enum DATSActions
         Error,
         Completed
     }
-    const initialFolders: Folder[] = [
-      {
-        name: 'c:folder1',
-        schedule: '164437',
-        primarySecondary: '29900-05',
-        fileId: '72653',
-        opr: false,
-        startDate: new Date('2000-01-02'),
-    endDate: new Date('2009-12-22'),
-    soDate: new Date('2009-12-31'),
-    fdDate: new Date('2009-12-31'),
-        payload: ''
-      },
-      {
-        name: 'Z:Folders2',
-        schedule: '164437',
-        primarySecondary: '29920-30',
-        fileId: '',
-        opr: false,
-        startDate: new Date('2000-01-02'),
-        endDate: new Date('2009-12-22'),
-        soDate: new Date('2009-12-31'),
-        fdDate: new Date('2009-12-31'),
-        payload: ''
-
-      },
-    ];
+    
 const SelectFolder: FC = () => {
   const [message, setMessage] = useState('');
   const [progress, setProgress] = useState(0);
-  const [folders, setFolders] = React.useState<Folder[]>([]);
+  const [folders, setFolders] = React.useState<IFolderInformation[]>([]);
 
   useEffect(() => {
       const ws = new WebSocket('ws://localhost:50504/ws/react');
@@ -88,17 +52,35 @@ ws.onclose = () => {
               setMessage(data.Payload.Message);
               break;
               case DATSActions.FileInformation:
+                debugger;
                 setFolders(prevFolders => [...prevFolders, {
-                  name: data.Payload.Path,
-                  schedule: '164437',
-                  primarySecondary: '29900-05',
-                  fileId: '72653',
+                  path: data.Payload.Path,
+                  schedule: '',
+                  primarySecondary: '',
+                  fileId: '',
                   opr: false,
-                  startDate: new Date('2000-01-02'),
-                  endDate: new Date('2009-12-22'),
-                  soDate: new Date('2009-12-31'),
-                  fdDate: new Date('2009-12-31'),
-                  payload: event.data
+                  startDate: null,
+                  endDate: null,
+                  soDate: null,
+                  fdDate: null,
+                  files: data.Payload.Files.map((obj: any) => ({
+                    path: obj.Path,
+    checksum:  obj.Checksum,
+    dateCreated: obj.DateCreated,
+    dateModified:obj.DateModified,
+    dateAccessed: obj.DateAccessed,
+    dateLastSaved: obj.DateLastSaved,
+    programName: obj.ProgramName,
+    owner: obj.Owner,
+    computer:obj.Computer,
+    contentType:obj.ContentType,
+    sizeInBytes: obj.SizeInBytes,
+    company: obj.Company,
+    revisionNumber: '',
+    fileId: '',
+    name: obj.FileName
+
+                }))
                 }]);
                 break;
           }
@@ -123,11 +105,14 @@ ws.onclose = () => {
   const openDesktopApp = () => {
     window.location.href = `citz-grs-dats://open?browse=folder`;
 };
+
+
 const handleDeleteFolder = (index: number) => {
   const newFolders = folders.filter((_, i) => i !== index);
   setFolders(newFolders);
 };
-const handleChange = (index: number, field: keyof Folder, value: any) => {
+const handleChange = (index: number, field: keyof IFolderInformation, value: any) => {
+  debugger;
   setFolders((prevFolders) =>
     prevFolders.map((folder, i) =>
       i === index ? { ...folder, [field]: value } : folder
@@ -193,8 +178,8 @@ const handleChange = (index: number, field: keyof Folder, value: any) => {
             <Grid container spacing={1} alignItems="center">
               <Grid item xs={12} sm={1.5}>
                 <TextField
-                  value={folder.name}
-                  onChange={(e) => handleChange(index, 'name', e.target.value)}
+                  value={folder.path}
+                  onChange={(e) => handleChange(index, 'path', e.target.value)}
                   fullWidth
                 />
               </Grid>
@@ -266,7 +251,7 @@ const handleChange = (index: number, field: keyof Folder, value: any) => {
         ))}
       </LocalizationProvider>
       <Box my={2}>
-        <Button variant="contained" color="secondary">
+        <Button variant="contained" color="secondary" onClick={() => generateExcel(folders)}>
           Generate Digital File List
         </Button>
       </Box>

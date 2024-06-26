@@ -13,7 +13,11 @@ import { authenticateJWT } from "./middleware/auth-middleware";
 import * as sessionTypes from "./types/custom-types";
 import logger from "./config/logs/winston-config";
 import cookieParser from "cookie-parser";
+import path from "path";
 const app = express();
+
+// Middleware to serve static files
+
 const corsOptions = {
   origin: 'http://localhost:3000',
   credentials: true
@@ -22,6 +26,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   session({
     secret: process.env.SESSION_SECRET!, // Change this to your own secret

@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import { IFolderInformation } from "../types/DTO/Interfaces/IFolderInformation";
 
 export interface ExcelData {
   key: string;
@@ -9,6 +10,8 @@ export interface DatsExcelModel {
   applicationNumber: string;
   accessionNumber: string;
 }
+
+
 /**
  * Helper function to read an Excel file and extract data for given keys.
  * @param file - The Excel file object to read from.
@@ -72,7 +75,6 @@ export const extractDataport = (file: File): Promise<DatsExcelModel> => {
 
       // Extract header columns
       const headers = rows[0].split("\t");
-debugger;
       // Find index of Accession Number and Consignment (Application)
       const accessionIndex = headers.indexOf("Accession Number");
       const consignmentIndex = headers.indexOf("Consignment (Application)");
@@ -98,4 +100,58 @@ debugger;
     };
     reader.readAsText(file);
   });
+};
+
+export const generateExcel = async (folders: IFolderInformation[]) => {
+  debugger;
+  const response = await fetch('http://localhost:5000/digital-file-list-template.xlsx'); // Adjust the path to your template file
+  const arrayBuffer = await response.arrayBuffer();
+  const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+
+  // Assuming the template has 'Files' and 'Objects' sheets
+  const filesSheet = workbook.Sheets[workbook.SheetNames[1]];
+  const objectsSheet = workbook.Sheets[workbook.SheetNames[2]];
+  
+  
+  const filesData = folders.map(folder => [
+    folder.path,
+    folder.schedule,
+    folder.primarySecondary,
+    folder.fileId,
+    null,//file title
+    folder.opr ? 'Y' : 'N',
+    folder.startDate ?{ v: folder.startDate, t: 's' } : null,
+    folder.endDate ?{ v: folder.endDate, t: 's' }: null,
+    folder.soDate ? { v: folder.soDate, t: 's' } : null,
+    null
+  ]);
+  XLSX.utils.sheet_add_aoa(filesSheet, filesData, { origin: 'A2' }); // Add data starting from row 2 to leave headers intact
+
+
+  const objectsData = folders.flatMap(folder => 
+    folder.files.map(obj => [
+      obj.fileId,
+      obj.checksum,
+      obj.name,
+      obj.dateCreated ? { v: obj.dateCreated, t: 's' } : null,
+      obj.dateModified ? { v: obj.dateModified, t: 's' }: null,
+      obj.dateAccessed ? { v: obj.dateAccessed, t: 's' }: null,
+      obj.dateLastSaved ? { v: obj.dateLastSaved, t: 's' }: null,
+      obj.owner,
+      obj.owner,
+      obj.owner,
+      obj.company,
+      obj.computer,
+      obj.contentType,
+      obj.programName,
+      obj.sizeInBytes,
+      obj.revisionNumber,
+    ])
+  );
+
+  XLSX.utils.sheet_add_aoa(objectsSheet, objectsData, { origin: 'A2' }); // Add data starting from row 2 to leave headers intact
+
+
+  // Write to file
+  XLSX.writeFile(workbook, 'Workbook.xlsx');
 };
