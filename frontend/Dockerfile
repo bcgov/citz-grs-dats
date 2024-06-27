@@ -1,23 +1,24 @@
 # Use the official Node.js image
-FROM node:14 as build
+FROM node:14
 
-# Create and change to the app directory
+# Create app directory
 WORKDIR /usr/src/app
 
-# Copy application dependency manifests to the container image.
-COPY package*.json ./
+# Copy dependency definitions
+COPY package.json /usr/src/app
+COPY package-lock.json /usr/src/app
 
-# Install dependencies
-RUN npm install
+# Install dependecies
+#RUN npm set progress=false \
+#    && npm config set depth 0 \
+#    && npm i install
+RUN npm ci
 
-# Copy local code to the container image and build it
-COPY . .
-RUN npm run build
+# Get all the code needed to run the app
+COPY . /usr/src/app
 
-# Use nginx to serve the build files
-FROM nginx:alpine
-COPY --from=build /usr/src/app/build /usr/share/nginx/html
-
+# Expose the port the app runs in
 EXPOSE 3000
 
-CMD ["nginx", "-g", "daemon off;"]
+# Serve the app
+CMD ["npm", "start"]
