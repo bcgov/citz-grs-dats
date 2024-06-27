@@ -1,0 +1,45 @@
+# GitHub Actions workflow for building and tagging the API image on PR
+name: GRS DATS Frontend - Image Build, Tag and Push
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review] # Triggered by opened or changed pull requests.
+    branches: [main]
+    paths:
+      - 'frontend/**' # Triggers on changes to files in the express-api/ directory.
+  workflow_dispatch:
+
+jobs:
+  GRS-DATS-FRONTEND-Build-Tag-Push:
+    environment: dev
+    runs-on: ubuntu-latest
+    steps:
+    
+      # check out the repo
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # login to the Openshift Cluster
+      - name: Login to Openshift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_URL }}
+          openshift_token: ${{ secrets.OPENSHIFT_SA_TOOLS_TOKEN }}
+          namespace: ${{ secrets.OPENSHIFT_TOOLS_NAMESPACE }}
+
+      # Login to BCGov Artifactory 
+      - name: Login to BCGov Artifactory 
+        run: |
+          docker login image-registry.apps.silver.devops.gov.bc.ca -u default -p ${{ secrets.OPENSHIFT_SA_TOOLS_TOKEN }}
+
+      # Build the GRS DATS Image 
+      - name: Build GRS DATS API Image
+        run: |
+          docker build -t image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-frontend:blah -f frontend/Dockerfile .
+
+      # Push the GRS DATS API Image to Artifactory
+      - name: Push the CoCo API Image to Artifactory
+        run: |
+          docker push image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-frontend:blah
