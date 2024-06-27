@@ -10,12 +10,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  CoCo-API-Build-Tag-Push:
+  GRS-DATS-API-Build-Tag-Push:
     environment: dev
     runs-on: ubuntu-latest
-    env:
-      NODE_IMAGE_TAG: ${{ vars.NODE_IMAGE_TAG }}
     steps:
+    
       # check out the repo
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,17 +32,17 @@ jobs:
       # Login to BCGov Artifactory 
       - name: Login to BCGov Artifactory 
         run: |
-          docker login artifacts.developer.gov.bc.ca/tec1-citz-imb-coco -u ${{ secrets.ARTIFACTORY_SA_USERNAME }} -p ${{ secrets.ARTIFACTORY_SA_PASSWORD }}
+          docker login image-registry.apps.silver.devops.gov.bc.ca -u default -p ${{ secrets.OPENSHIFT_SA_TOOLS_TOKEN }}
 
-      # Build the CoCo API Image 
-      - name: Build CoCo API Image
+      # Build the GRS DATS Image 
+      - name: Build GRS DATS API Image
         run: |
-          docker build --build-arg NODE_IMAGE_TAG=${NODE_IMAGE_TAG} -t artifacts.developer.gov.bc.ca/tec1-citz-imb-coco/coco-api:${{github.event.pull_request.number}} -f backend/.docker/Dockerfile.prod .
+          docker build -t image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-api:${{github.event.pull_request.number}} -f backend/Dockerfile
 
-      # Push the Coco API Image to Artifactory
+      # Push the GRS DATS API Image to Artifactory
       - name: Push the CoCo API Image to Artifactory
         run: |
-          docker push artifacts.developer.gov.bc.ca/tec1-citz-imb-coco/coco-api:${{github.event.pull_request.number}}
+          docker push image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-api:${{github.event.pull_request.number}}
 
   Update_Wiki_Tags:
     needs: [CoCo-API-Build-Tag-Push]
