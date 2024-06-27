@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 
 COPY ./backend .
 
-RUN npm ci
+RUN npm i
 
 COPY . /usr/src/app
 
