@@ -5,8 +5,10 @@ import fs from "fs";
 export default class S3ClientService {
 
     private s3Client: S3Client;
+    private documentationPath: string;
 
     constructor() {
+        this.documentationPath="";
         // Create an S3 client
         this.s3Client=new S3Client({
             region: 'us-east-1',
@@ -58,6 +60,7 @@ export default class S3ClientService {
         uploadedFile: any 
     ) {
         const uploadedFilePath = uploadedFile.path;
+        console.log("---------->uploadAra66xFilePath="+uploadedFilePath);
         const fileContent = fs.readFileSync(uploadedFilePath);
 
         //Create the Transfer Root Folder
@@ -75,6 +78,7 @@ export default class S3ClientService {
         const subApplicationPath = transferFolderPath+accession_num+"-"+application_num+"/";
         this.createFolder(subApplicationPath);
 
+        
         //Create the Documentation folder
         const subDocPath = subApplicationPath+"Documentation/";
         this.createFolder(subDocPath);
@@ -95,6 +99,7 @@ export default class S3ClientService {
             console.error('Error uploading file', error);
         } 
 
+        this.documentationPath=subDocPath;
         return subDocPath;
     }
 
@@ -103,6 +108,7 @@ export default class S3ClientService {
          documentationPath: string
     ) {
         const uploadedFilePath = uploadedFile.path;
+        console.log("---------->uploadARIS617FilePath="+uploadedFilePath);
         const fileContent = fs.readFileSync(uploadedFilePath);
 
         const targetFilePath=documentationPath+uploadedFile.originalname;
@@ -123,5 +129,32 @@ export default class S3ClientService {
 
         return documentationPath;
     }
+
+    async uploadAgreementPDF(
+        pdfFilePath: string,  
+        targetPdfFilePath: string
+   ) {
+       console.log("---------->pdfFilePath="+pdfFilePath);
+       const fileContent = fs.readFileSync(pdfFilePath);
+
+       console.log("--------->targetPdfFilePath="+targetPdfFilePath);
+       const targetFilePath=targetPdfFilePath;
+       
+       try {
+           const uploadFilecommand = new PutObjectCommand({
+               Bucket: process.env.BUCKET_NAME||'dats-bucket-dev',
+               Key: targetFilePath, // File path within the folder
+               Body: fileContent, //uploadedFile.buffer, //file.buffer, // File content
+           });
+    
+           const data = await this.s3Client.send(uploadFilecommand);
+           //fs.unlinkSync(pdfFilePath);
+
+       } catch (error) {
+           console.error('Error uploading file', error);
+       } 
+   }
+
+
 
 }
