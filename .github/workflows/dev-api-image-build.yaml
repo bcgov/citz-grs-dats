@@ -37,10 +37,10 @@ jobs:
       # Build the GRS DATS Image 
       - name: Build GRS DATS API Image
         run: |
-          docker build -t image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-api:${{github.event.pull_request.number}} -f backend/Dockerfile
+          docker build -t image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-api:blah -f backend/Dockerfile
 
       # Push the GRS DATS API Image to Artifactory
       - name: Push the CoCo API Image to Artifactory
         run: |
-          docker push image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-api:${{github.event.pull_request.number}}
+          docker push image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-api:blah
 
