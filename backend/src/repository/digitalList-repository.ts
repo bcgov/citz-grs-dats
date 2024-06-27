@@ -39,12 +39,13 @@ export default class DigitalFileRepository {
     digitalFileInput: any
   ): Promise<IDigitalFile | null> {
     try {
-      console.log(digitalFileLisId);
+      //console.log(digitalFileLisId);
       const newdigitalfile = new DigitalFileModel({
         checksum_MD5: digitalFileInput.checksum_MD5,
         checksum_SHA_1: digitalFileInput.checksum_SHA_1,
         checksum_SHA_256: digitalFileInput.checksum_SHA_256,
         checksum_SHA_512: digitalFileInput.checksum_SHA_512,
+        filePath: digitalFileInput.filePath,
         fileName: digitalFileInput.fileName,
         objectCreateDate: digitalFileInput.objectCreateDate,
         lastModifiedDate: digitalFileInput.lastModifiedDate,
@@ -53,7 +54,7 @@ export default class DigitalFileRepository {
         lastSaveBy: digitalFileInput.lastSaveBy,
         authors: digitalFileInput.authors,
         owners: digitalFileInput.owners,
-        compagny: digitalFileInput.compagny,
+        company: digitalFileInput.company,
         computer: digitalFileInput.computer,
         contenType: digitalFileInput.contenType,
         programType: digitalFileInput.programType,
@@ -67,7 +68,7 @@ export default class DigitalFileRepository {
         finalDispositionDate: digitalFileInput.finalDispositionDate,
         digitalFileList: digitalFileLisId,
       });
-      console.log(newdigitalfile);
+      //console.log(newdigitalfile);
       const digitalFile = await DigitalFileModel.create(newdigitalfile);
 
       const digitalFileList = await DigitalFileListModel.findById({

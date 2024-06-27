@@ -1,8 +1,24 @@
-# Development
-FROM node:18-alpine
-WORKDIR /frontend
-COPY package*.json /frontend/
-RUN yarn install
-COPY . /frontend/
+# Use the official Node.js image
+FROM node:14
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy dependency definitions
+COPY package.json /usr/src/app
+COPY package-lock.json /usr/src/app
+
+# Install dependecies
+#RUN npm set progress=false \
+#    && npm config set depth 0 \
+#    && npm i install
+RUN npm ci
+
+# Get all the code needed to run the app
+COPY . /usr/src/app
+
+# Expose the port the app runs in
 EXPOSE 3000
-CMD ["yarn", "start"]
+
+# Serve the app
+CMD ["npm", "start"]

@@ -45,17 +45,17 @@ const useStyles = makeStyles((theme: Theme) => ({
 );
 
 interface FoldersValidationProps {
-  folders: string[];
   onValidation?: () => void;
 }
 
-const FoldersValidation: React.FC<FoldersValidationProps> = ({
-  folders,
-  onValidation,
-}) => {
+const FoldersValidation: React.FC<FoldersValidationProps> = ({}) => {
+  const [folders] = useState<string[]>([]);
   const classes = useStyles();
   const uploadService = new UploadService();
+  const handleValidation = () => {
 
+    console.log("Validating folders");
+  };
   return (
     <Card>
       <Typography sx={{ mt: 4, mb: 2 }} variant="h6" component="div">
@@ -101,7 +101,7 @@ const FoldersValidation: React.FC<FoldersValidationProps> = ({
         </Grid>
         <Grid item xs={12}>
           {/* Add any additional buttons or actions related to folder validation */}
-          <Button variant="contained" color="primary" onClick={onValidation}>
+          <Button variant="contained" color="primary" onClick={handleValidation}>
             Validate Folders
           </Button>
         </Grid>

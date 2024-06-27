@@ -1,158 +1,174 @@
-import React, { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
-import { makeStyles } from "@mui/styles";
+import React, { useState } from "react";
+
+import DropZoneComponent from "../../../components/DropZoneComponent";
 import {
-  Card,
-  Divider,
-  Typography,
+  DatsExcelModel,
+  ExcelData,
+  extractExcelData,
+} from "../../../utils/xlsxUtils";
+import {
   Box,
-  Button,
+  Checkbox,
+  FormControlLabel,
+  FormLabel,
   Grid,
-  Paper,
-  Theme,
+  List,
+  ListItem,
+  ListItemText,
+  Radio,
+  RadioGroup,
+  Typography,
 } from "@mui/material";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import ExcelImg from "../../../assets/images/Microsoft_Office_Excel_(2019–present).svg.png";
-import UploadService from "../../../services/uploadService";
+import { TransferService } from "../../../services/transferService";
 
-const useStyles = makeStyles((theme: Theme) => ({
-  container: {
-    display: "flex",
-    flexWrap: "nowrap",
-    "& > :not(style)": {
-      margin: theme.spacing(1),
-      width: "80%",
-      height: "auto",
-    },
-  },
-  dropzone: {
-    marginTop: theme.spacing(2),
-    border: "3px dashed #513dd4",
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(2),
-    textAlign: "center",
-    cursor: "pointer",
-  },
-  uploadButton: {
-    marginTop: theme.spacing(4),
-    marginLeft: theme.spacing(4),
-    variant: "contained",
-    color: "primary",
-  },
-  fileList: {
-    marginTop: theme.spacing(2),
-    maxHeight: "150px",
-    overflowY: "auto",
-  },
-  infoBox: {
-    marginTop: theme.spacing(2),
-    marginLeft: theme.spacing(2),
-    height: "80%",
-    padding: theme.spacing(2),
-  },
-  fileDisplay: {
-    display: "flex",
-    alignItems: "center",
-    padding: theme.spacing(2),
-  },
-  fileIcon: {
-    marginRight: theme.spacing(1),
-  },
-}));
-
+const acceptedFileTypes = {
+  "application/vnd.ms-excel": [".xls"],
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+    ".xlsx",
+  ],
+};
 interface Aris66xDropZoneProps {
-  onFileChange?: (file: File) => void;
-  onUpload?: () => void;
-  handleFileUpload: (file: File) => void;
+  validate: (isValid: boolean, errorMessage: string) => void;
+  setFile: (file: File | null) => void;
+  setExcelData: (data: any) => void;
 }
-
-const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
-  onFileChange,
-  onUpload,
-  handleFileUpload,
+export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
+  validate,
+  setFile,
+  setExcelData,
 }) => {
-  const classes = useStyles();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const uploadService = new UploadService();
+  const [acceptedFiles, setAcceptedFiles] = useState<File[]>([]);
+  const [data, setData] = useState<DatsExcelModel | null>(null);
+  const [isCheckboxChecked, setIsCheckboxChecked] = useState(false);
+  const [clearFilesSignal, setClearFilesSignal] = useState(false);
+  const transferService = new TransferService();
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsCheckboxChecked(event.target.checked);
+    validate(event.target.checked, "");
+  };
 
-  const handleDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      // Only accept the first file if multiple are dropped
-      const file = acceptedFiles[0];
-      setSelectedFile(file);
-      // If an external callback is provided, call it
-      if (onFileChange) {
-        onFileChange(file);
+  const handleFilesAccepted = async (files: File[]) => {
+    setClearFilesSignal(false);
+    const file = files[0];
+    if (file) {
+      try {
+        const extractedData = await extractExcelData(file);
+        if (extractedData) {
+          transferService.getTransferByApplicationAccessionNumber(
+            extractedData.accessionNumber,
+            extractedData.applicationNumber,
+            (response) => {
+              debugger;
+              if (response) {
+                console.log("validation failed for duplicate transfer");
+                validate(
+                  false,
+                  `A transfer with Acc # ${extractedData.accessionNumber} and App # ${extractedData.applicationNumber} has already been submitted. Please contact the Government Information Management Branch for more information.`
+                );
+                setIsCheckboxChecked(false);
+                setExcelData(null);
+                setData(null);
+                setFile(null);
+                setAcceptedFiles([]);
+                setClearFilesSignal(true);
+              } 
+            },
+            (error) => {
+              if(error.response.status == 404) //transfer not found
+              {
+                setData(extractedData);
+                setExcelData(extractedData);
+                console.log("Aris66xDropZone" + file); // This is the file that was uploaded
+                setFile(file);
+                validate(isCheckboxChecked, "");
+              }
+              else
+              {
+                //anyother error
+                debugger;
+              console.log('404 transfer not found')
+              validate(false, error);
+              setIsCheckboxChecked(false);
+              setExcelData(null);
+              setData(null);
+              setFile(null);
+              }
+            }
+          );
+        }
+      } catch (error) {
+        console.error(error);
       }
-    },
-    [onFileChange]
-  );
-
-  const handleUpload = useCallback(() => {
-    if (onUpload) {
-      onUpload();
+    } else {
+      //clear validations
+      setIsCheckboxChecked(false);
+      setExcelData(null);
+      setData(null);
+      setFile(null);
     }
-  }, [onUpload]);
+  };
+  const handleDeleteFile = (file: File) => {
+    const newFiles = acceptedFiles.filter((f) => f !== file);
+    setAcceptedFiles(newFiles);
+  };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: handleDrop,
-    multiple: false,
-  });
+  const handleClearAllFiles = () => {
+    setAcceptedFiles([]);
+    setClearFilesSignal(true);
+  };
 
+  const handleClearFilesSignalReset = () => {
+    setClearFilesSignal(false);
+  };
   return (
-    <Card>
-      <Box p={3}>
-        <Typography variant="subtitle2">
-          Select a file from your computer or drop it here to upload.
-        </Typography>
-      </Box>
-      <Divider />
-
-      <Grid container spacing={2} direction="row" sx={{ marginBottom: 4 }}>
-        <Grid item xs={12}>
-          <Box className={classes.container}>
-            <Paper elevation={1}>
-              {selectedFile ? (
-                <div className={classes.fileDisplay}>
-                  <img
-                    src={ExcelImg}
-                    alt="Excel Icon"
-                    style={{ width: 48, height: 48 }}
-                    className={classes.fileIcon}
-                  />
-                  <Typography>{selectedFile.name}</Typography>
-                </div>
-              ) : (
-                <div
-                  {...getRootProps()}
-                  className={`${classes.dropzone} ${isDragActive ? "active" : ""
-                    }`}
-                >
-                  <input {...getInputProps()} />
-                  <p>Drag 'n' drop a file here, or click to select a file</p>
-                </div>
-              )}
-            </Paper>
-            <Grid item xs={3}>
-              <Paper elevation={4} className={classes.infoBox}>
-                <Typography variant="body2">
-                  Additional information goes here...
-                </Typography>
-              </Paper>
-            </Grid>
-          </Box>
-
-          <Button
-            className={classes.uploadButton}
-            onClick={() => handleFileUpload(selectedFile!)}
+    <Box sx={{ flexGrow: 1, padding: 2 }}>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={7}>
+          <DropZoneComponent
+            accept={acceptedFileTypes}
+            onFilesAccepted={handleFilesAccepted}
+            onDeleteFile={handleDeleteFile}
+            onClearAllFiles={handleClearAllFiles}
+            clearFilesSignal={clearFilesSignal}
+          />
+        </Grid>
+        <Grid item xs={12} md={5}>
+          <Box
+            sx={{
+              padding: 2,
+              maxHeight: "80vh",
+              overflowY: "auto",
+              border: "1px solid #ccc",
+            }}
           >
-            Upload
-          </Button>
+            <Typography variant="h6" gutterBottom>
+              Extracted Data
+            </Typography>
+            <List hidden={!data}>
+              <ListItem>
+                <ListItemText
+                  primary={`Accession #: ${data?.accessionNumber}`}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary={`Application #: ${data?.applicationNumber}`}
+                />
+              </ListItem>
+            </List>
+          </Box>
         </Grid>
       </Grid>
-    </Card>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={isCheckboxChecked}
+            onChange={handleCheckboxChange}
+            disabled={!data}
+          />
+        }
+        label="I confirm the Accession # and the Application number"
+      />
+    </Box>
   );
 };
-
-export default Aris66xDropZone;

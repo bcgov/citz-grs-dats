@@ -13,9 +13,31 @@ export interface IDigitalFileListDTO {
   finalDispositionDate?: Date;
   createDate?: Date;
   updatedDate?: Date;
-  transfer: any[];
-  digitalFiles?: any[];
+  transfer: string;
+  digitalFiles?: IDigitalFileDTO[];
   createdBy?: string;
   updatedBy?: string;
+  fileCount: Number;
+  size: Number;
   timestamps?: {};
+}
+
+export interface IDigitalFileDTO {
+  checksum_SHA_256: string
+  filePath: string
+  fileName: string
+  objectCreateDate: string
+  lastModifiedDate: string
+  lastAccessDate: string
+  authors: string
+  owners: string
+  company: string
+  computer: string
+  contenType: string
+  programType: string
+  size: string
+  version: string
+  digitalFileList: string
+  digitalObject: string[]
+  _id: string
 }

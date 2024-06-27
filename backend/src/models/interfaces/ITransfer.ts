@@ -2,11 +2,11 @@ import { Types } from "mongoose";
 // import { TransferStatus as status } from "dats_shared/Types/Enums/TransferStatus";
 
 export interface ITransfer {
-  _id: Types.ObjectId;
+  _id?: Types.ObjectId;
   accessionNumber: string;
   applicationNumber: string;
   description?: string;
-  transferStatus: string;
+  transferStatus?: string;
   producerMinistry?: String;
   producerBranch?: String;
   digitalFileLists?: [

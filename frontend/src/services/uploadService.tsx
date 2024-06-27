@@ -1,9 +1,9 @@
 import axios from "axios";
-
+import { Aris66UploadResponse } from "../types/DTO/Interfaces/Aris66UploadResponse"
 const API_URL = "http://localhost:5000/api/"; // Replace with your API endpoint URL
 
 export default class UploadService {
-  public async upload66xFile(formData: any): Promise<any> {
+  public async upload66xFile(formData: any): Promise<Aris66UploadResponse> {
     return await axios
       .post(`${API_URL}uploadfileARIS66x`, formData, {
         headers: {
@@ -11,11 +11,10 @@ export default class UploadService {
         },
       })
       .then((response) => {
+        // const jsonString = JSON.stringify(jsonResponse);
+        // const resTest: Aris66UploadResponse = JSON.parse(jsonString);
+        // return resTest;
         return response.data;
-      })
-      .catch((error) => {
-        console.error(error);
-        return error;
       });
   }
 
@@ -50,18 +49,25 @@ export default class UploadService {
         return error;
       });
   }
-  public async checkFolderAccessibility(folderPath: string): Promise<boolean> {
-    try {
-      // Make an API call or any other method to check folder accessibility
-      const response = await axios.get(
-        `/api/check-accessibility?folder=${folderPath}`
-      );
 
-      // Assuming the API responds with a boolean indicating accessibility
-      return response.data.accessible;
+
+
+  public async saveAgreementToDats(agreementText: Array<any>, applicationNumber: string, accessionNumber: string, userDisplayName: string, formattedDate: string, status: string, decision: string): Promise<any> {
+    try {
+      const response = await axios.post(`${API_URL}transfer/:6675dcb8e77efc674c5f9627/submitAgreement`, {
+        agreementText,
+        applicationNumber,
+        accessionNumber,
+        userDisplayName,
+        formattedDate,
+        status,
+        decision
+      });
+      console.log("saveAgreementToDats resp" + response.data);
+      return response.data;
     } catch (error) {
-      console.error("Error checking folder accessibility:", error);
-      return false; // Handle error as needed
+      console.error('Error submitting agreement:', error);
+      throw error;
     }
   }
 }

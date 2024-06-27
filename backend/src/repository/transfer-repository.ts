@@ -45,6 +45,11 @@ export default class TransferRepository {
       return await TransferModel.findOne({
         accessionNumber,
         applicationNumber,
+      }).populate({
+        'path': 'digitalFileLists',
+        'populate':{
+          'path':'digitalFiles'
+        }
       });
     } catch (error) {
       throw error;

@@ -1,24 +1,21 @@
-import { Request, Response, NextFunction } from 'express';
-import { setupKeycloak } from '../auth/keycloak-config';
-import * as sessionTypes from '../types/custom-types'
-let client;
+import logger from '../config/logs/winston-config';
+import { verifyToken } from '../utils/jwt-utils';
 
-(async () => {
-  client = await setupKeycloak();
-})();
-
-export async function authenticate(req: Request, res: Response, next: NextFunction) {
-  if (!req.session.tokenSet) {
-    const authUrl = client.authorizationUrl({ scope: 'openid profile email' });
-    res.redirect(authUrl);
+export const authenticateJWT = (req: any, res: any, next: any) => {
+  logger.info('Authenticating JWT');
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const token = authHeader.split(' ')[1];
+    try {
+      req.user = verifyToken(token);
+      logger.debug(`JWT token is valid ${JSON.stringify(req.user)}`);
+      next();
+    } catch {
+      logger.error('Invalid JWT token');
+      res.sendStatus(403);
+    }
   } else {
-    next();
+    logger.error('No authorization header');
+    res.sendStatus(401);
   }
-}
-
-export async function handleCallback(req: Request, res: Response) {
-  const params = client.callbackParams(req);
-  const tokenSet = await client.callback(process.env.BASE_URL + '/callback', params);
-  req.session.tokenSet = tokenSet;
-  res.redirect('/'); 
-}
+};
