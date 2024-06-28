@@ -12,23 +12,43 @@ const replacePlaceholders = (text: string, placeholders: { [key: string]: string
     return replacedText;
 };
 
-
-const createAgreementPDF = async (agreementText: any[], status: string, decision: string, placeholders: { [key: string]: string }): Promise<string> => {
+const createAgreementPDF = async (
+    agreementText: any[],
+    status: string,
+    decision: string,
+    placeholders: { [key: string]: string }
+): Promise<string> => {
     return new Promise((resolve, reject) => {
         const doc = new PDFDocument();
-        const pdfFileName = `agreement_${Date.now()}.pdf`;
-        console.log("pdfFileName=" + pdfFileName);
+        const buffers: Buffer[] = [];
 
-        var folderPath = process.env.UPLOAD_AGREEMENTS_FOLDER || "Agreements/";
-        createFolder(folderPath);
-        const pdfPath = path.join(folderPath, pdfFileName);
+        doc.on('data', buffers.push.bind(buffers));
+        doc.on('end', async () => {
+            const pdfBuffer = Buffer.concat(buffers);
 
-        // Ensure the directory exists
-        //fs.mkdirSync(path.dirname(pdfPath), { recursive: true });
+            const accession_num = placeholders["AccessionNumber"];
+            const application_num = placeholders["ApplicationNumber"];
 
-        const writeStream = fs.createWriteStream(pdfPath);
-        doc.pipe(writeStream);
+            const transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+            const targetPdfPath = `${transferFolderPath}/${accession_num}-${application_num}/Documentation/agreement_${Date.now()}.pdf`;
 
+            try {
+                let s3ClientService = new S3ClientService();
+                await s3ClientService.uploadAgreementPDF(pdfBuffer, targetPdfPath);
+                resolve(targetPdfPath);
+            } catch (error) {
+                reject(error);
+            }
+        });
+
+        // Add your logo
+        // doc.image('backend/src/utils/BClogo/BCID_H_rgb_rev.e68ccb04.png', {
+        //     fit: [250, 250],
+        //     align: 'center',
+        //     valign: 'top'
+        // }).moveDown();
+
+        // Add agreement text sections
         agreementText.forEach(section => {
             const replacedContent = replacePlaceholders(section.content, placeholders);
             doc.fontSize(section.isTitle ? 14 : 12)
@@ -42,23 +62,54 @@ const createAgreementPDF = async (agreementText: any[], status: string, decision
         doc.fontSize(12).text(`Decision: ${decision}`, { align: 'left' });
 
         doc.end();
-
-        writeStream.on('finish', () => resolve(pdfPath));
-        writeStream.on('error', (error) => reject(error));
-
-        const accession_num = placeholders["AccessionNumber"];
-        const application_num = placeholders["ApplicationNumber"];
-
-        var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
-        const subApplicationPath = transferFolderPath + "/" + accession_num + "-" + application_num + "/";
-        const subDocPath = subApplicationPath + "Documentation/";
-        const targetPdfPath = subDocPath + pdfFileName;
-
-        let s3ClientService = new S3ClientService();
-        s3ClientService.uploadAgreementPDF(pdfPath, targetPdfPath);
-
-
     });
 };
+// const createAgreementPDF = async (agreementText: any[], status: string, decision: string, placeholders: { [key: string]: string }): Promise<string> => {
+//     return new Promise((resolve, reject) => {
+//         const doc = new PDFDocument();
+//         const pdfFileName = `agreement_${Date.now()}.pdf`;
+//         console.log("pdfFileName=" + pdfFileName);
+
+//         var folderPath = process.env.UPLOAD_AGREEMENTS_FOLDER || "Agreements/";
+//         createFolder(folderPath);
+//         const pdfPath = path.join(folderPath, pdfFileName);
+
+//         // Ensure the directory exists
+//         //fs.mkdirSync(path.dirname(pdfPath), { recursive: true });
+
+//         const writeStream = fs.createWriteStream(pdfPath);
+//         doc.pipe(writeStream);
+
+//         agreementText.forEach(section => {
+//             const replacedContent = replacePlaceholders(section.content, placeholders);
+//             doc.fontSize(section.isTitle ? 14 : 12)
+//                 .font(section.isTitle ? 'Helvetica-Bold' : 'Helvetica')
+//                 .text(replacedContent, { align: section.isTitle ? 'center' : 'left' })
+//                 .moveDown();
+//         });
+
+//         doc.fontSize(12).text(`Status: ${status}`, { align: 'left' });
+//         doc.moveDown();
+//         doc.fontSize(12).text(`Decision: ${decision}`, { align: 'left' });
+
+//         doc.end();
+
+//         writeStream.on('finish', () => resolve(pdfPath));
+//         writeStream.on('error', (error) => reject(error));
+
+//         const accession_num = placeholders["AccessionNumber"];
+//         const application_num = placeholders["ApplicationNumber"];
+
+//         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+//         const subApplicationPath = transferFolderPath + "/" + accession_num + "-" + application_num + "/";
+//         const subDocPath = subApplicationPath + "Documentation/";
+//         const targetPdfPath = subDocPath + pdfFileName;
+
+//         let s3ClientService = new S3ClientService();
+//         s3ClientService.uploadAgreementPDF(pdfPath, targetPdfPath);
+
+
+//     });
+// };
 
 export default createAgreementPDF;
