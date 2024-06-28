@@ -16,8 +16,8 @@ const replacePlaceholders = (text: string, placeholders: { [key: string]: string
 const createAgreementPDF = async (agreementText: any[], status: string, decision: string, placeholders: { [key: string]: string }): Promise<string> => {
     return new Promise((resolve, reject) => {
         const doc = new PDFDocument();
-        const pdfFileName =`agreement_${Date.now()}.pdf`;
-        console.log("pdfFileName="+pdfFileName);
+        const pdfFileName = `agreement_${Date.now()}.pdf`;
+        console.log("pdfFileName=" + pdfFileName);
 
         var folderPath = process.env.UPLOAD_AGREEMENTS_FOLDER || "Agreements/";
         createFolder(folderPath);
@@ -45,16 +45,16 @@ const createAgreementPDF = async (agreementText: any[], status: string, decision
 
         writeStream.on('finish', () => resolve(pdfPath));
         writeStream.on('error', (error) => reject(error));
-        
+
         const accession_num = placeholders["AccessionNumber"];
         const application_num = placeholders["ApplicationNumber"];
 
-        var transferFolderPath=process.env.TRANSFER_FOLDER_NAME||'Transfers';
-        const subApplicationPath = transferFolderPath+"/"+accession_num+"-"+application_num+"/";
-        const subDocPath = subApplicationPath+"Documentation/";
-        const targetPdfPath=subDocPath+pdfFileName;
+        var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+        const subApplicationPath = transferFolderPath + "/" + accession_num + "-" + application_num + "/";
+        const subDocPath = subApplicationPath + "Documentation/";
+        const targetPdfPath = subDocPath + pdfFileName;
 
-        let s3ClientService= new S3ClientService();
+        let s3ClientService = new S3ClientService();
         s3ClientService.uploadAgreementPDF(pdfPath, targetPdfPath);
 
 
