@@ -17,7 +17,7 @@ export default class UploadController {
   constructor() {
     // Initialize any properties or perform setup here if needed
     this.transferService = new TransferService();
-    this.s3ClientService = new  S3ClientService();
+    this.s3ClientService = new S3ClientService();
     this.digitalFileListService = new DigitalFileListService();
     this.digitalFileService = new DigitalFileService();
     this.documentationPath = "";
@@ -32,9 +32,9 @@ export default class UploadController {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const newTransfer=await this.transferService.createTransferMetaData(uploadedFile.path);
-      const newTransferId=newTransfer?._id || new mongoose.mongo.ObjectId(0);
-      const hashDigitalFileList=await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
+      const newTransfer = await this.transferService.createTransferMetaData(uploadedFile.path);
+      const newTransferId = newTransfer?._id || new mongoose.mongo.ObjectId(0);
+      const hashDigitalFileList = await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
       this.documentationPath = await this.s3ClientService.uploadAra66xFile(uploadedFile);
 
       const newDigitalFileList: any[] = [];
@@ -96,7 +96,7 @@ export default class UploadController {
       if (!uploadedFile) {
         return res.status(400).json({ error: "No file uploaded" });
       }
-      
+      console.log("in handleARIS617Upload " + uploadedFile.filename);
       const documentationPath = await this.s3ClientService.uploadARIS617File(uploadedFile, this.documentationPath);
 
       res.status(201).json({
