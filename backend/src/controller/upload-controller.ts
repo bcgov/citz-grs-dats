@@ -3,7 +3,6 @@ import S3ClientService from "../service/s3Client-service";
 import DigitalFileListService from "../service/digitalFileList-service";
 import DigitalFileService from "../service/digitalFile-service";
 import { RequestHandler } from "express";
-import fs from "fs";
 import mongoose from "mongoose";
 
 export default class UploadController {
@@ -17,7 +16,7 @@ export default class UploadController {
   constructor() {
     // Initialize any properties or perform setup here if needed
     this.transferService = new TransferService();
-    this.s3ClientService = new  S3ClientService();
+    this.s3ClientService = new S3ClientService();
     this.digitalFileListService = new DigitalFileListService();
     this.digitalFileService = new DigitalFileService();
     this.documentationPath = "";
@@ -32,9 +31,9 @@ export default class UploadController {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const newTransfer=await this.transferService.createTransferMetaData(uploadedFile.path);
-      const newTransferId=newTransfer?._id || new mongoose.mongo.ObjectId(0);
-      const hashDigitalFileList=await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
+      const newTransfer = await this.transferService.createTransferMetaData(uploadedFile.path);
+      const newTransferId = newTransfer?._id || new mongoose.mongo.ObjectId(0);
+      const hashDigitalFileList = await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
       this.documentationPath = await this.s3ClientService.uploadAra66xFile(uploadedFile);
 
       const newDigitalFileList: any[] = [];
@@ -96,7 +95,6 @@ export default class UploadController {
       if (!uploadedFile) {
         return res.status(400).json({ error: "No file uploaded" });
       }
-      
       const documentationPath = await this.s3ClientService.uploadARIS617File(uploadedFile, this.documentationPath);
 
       res.status(201).json({
@@ -107,26 +105,5 @@ export default class UploadController {
       res.status(500).json({ error: "An error occurred" });
     }
   };
-
-  checkAccessibility: RequestHandler = (req, res, next) => {
-    const { folder } = req.query;
-
-    if (typeof folder !== "string") {
-      // Invalid or missing folder parameter
-      return res.status(400).json({ error: "Invalid folder parameter" });
-    }
-    // Attempt to read the folder to check accessibility
-    fs.readdir(folder, (error, files) => {
-      if (error) {
-        console.error("Error checking folder accessibility:", error);
-        res.status(500).json({ accessible: false });
-      } else {
-        res.json({ accessible: true });
-      }
-    });
-  };
-
-
-
 
 };
