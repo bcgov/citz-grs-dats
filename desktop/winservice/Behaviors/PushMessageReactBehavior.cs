@@ -6,13 +6,20 @@ using System.Text;
 using System.Threading.Tasks;
 using WebSocketSharp.Server;
 using WebSocketSharp;
+using DATSCompanion.Shared.Models;
+using System.IO.Compression;
+using System.IO;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text.Json;
+using DATSCompanionService.Interfaces;
 
 namespace DATSCompanionService.Behaviors
 {
-    public class PushMessageToReactBehavior : WebSocketBehavior
+    public class PushMessageReactBehavior : WebSocketBehavior
     {
         public EventLog Logger { get; set; }
-
+        public IBroadcastService Broadcast { get; set; }
         protected override void OnOpen()
         {
             base.OnOpen();

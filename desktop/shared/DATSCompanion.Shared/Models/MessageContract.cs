@@ -46,6 +46,17 @@ namespace DATSCompanion.Shared.Models
         public List<DATSFileInformation> Files { get; set; } = new List<DATSFileInformation>();
     }
 
+    public class DATSFileToUpload
+    {
+        public string TransferId { get; set; }
+
+        public string Id { get; set; }
+
+        public string[] Paths { get; set; }
+
+        public string UploadUrl { get; set; }
+    }
+
     public class Error
     {
         public string Message { get; set; }
@@ -67,7 +78,11 @@ namespace DATSCompanion.Shared.Models
         Cancelled,
         Progress,
         Error,
-        Completed
+        Completed,
+        FolderUpload,
+        CheckFolder,
+        FileFolderExists,
+        FileFolderNotExists
     }
 
 }

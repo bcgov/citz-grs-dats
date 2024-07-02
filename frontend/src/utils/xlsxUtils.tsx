@@ -130,7 +130,7 @@ export const generateExcel = async (folders: IFolderInformation[]) => {
 
   const objectsData = folders.flatMap(folder => 
     folder.files.map(obj => [
-      obj.fileId,
+      obj.path,
       obj.checksum,
       obj.name,
       obj.dateCreated ? { v: obj.dateCreated, t: 's' } : null,

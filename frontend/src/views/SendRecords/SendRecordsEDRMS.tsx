@@ -134,14 +134,14 @@ export const SendRecordsEDRMS = () => {
       ),
       validate: () => isValid,
     },
-    {
-      label: "Review and Upload",
-      content: (
-        <TransferComponent transfer={arisTransferDetails!!}
-        />
-      ),
-      validate: () => true,
-    },
+    // {
+    //   label: "Review and Upload",
+    //   content: (
+    //     <TransferComponent transfer={arisTransferDetails!!}
+    //     />
+    //   ),
+    //   validate: () => true,
+    // },
     {
       label: "Download Files",
       content: (

@@ -33,9 +33,15 @@ namespace DATSCompanionService
                 b.Broadcast = this;
                 b.Logger = eventLog;
             });
-            wss.AddWebSocketService<PushMessageToReactBehavior>(Constants.ReactSocketEndpoint, (b) => {
+            wss.AddWebSocketService<PushMessageReactBehavior>(Constants.ReactSocketEndpoint, (b) => {
+                b.Broadcast = this;
                 b.Logger = eventLog;
             });
+            wss.AddWebSocketService<ReceiveMessageFromReactBehavior>(Constants.ReactReceiveSocketEndpoint, (b) => {
+                b.Broadcast = this;
+                b.Logger = eventLog;
+            });
+
             wss.Start();
             eventLog.WriteEntry($"Service started successfully. Socket listening on {Constants.WebSocketListener}");
         }
