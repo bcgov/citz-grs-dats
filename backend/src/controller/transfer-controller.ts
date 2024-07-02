@@ -256,9 +256,11 @@ export default class TransferController {
   }
 
   async saveSubmitAgreement(req: Request, res: Response) {
+
     try {
       const { agreementText, applicationNumber, accessionNumber, userDisplayName, formattedDate, status, decision } = req.body;
       const transferId = req.params.transferId;
+
       // Define the placeholders
       const placeholders = {
         ApplicationNumber: applicationNumber || '',

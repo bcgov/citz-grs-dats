@@ -24,7 +24,4 @@ router.post(
   uploadController.handleARIS617Upload
 );
 
-router.get("/checkAccessibility", uploadController.checkAccessibility);
-
-
 export default router;
