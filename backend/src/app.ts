@@ -41,12 +41,12 @@ app.use(authRoutes);
 app.use(express.json());
 
 
-
-app.get("/" ,(req, res) => {
-  res.send("hello world from HR management App Backend");
+// Healt check 
+app.get("/", (req, res) => {
+  res.status(200).json("API Is Healthy");
 });
 
-app.get('/dashboard', authenticateJWT, (req : any, res) => {
+app.get('/dashboard', authenticateJWT, (req: any, res) => {
   logger.info('Dashboard route called');
   res.json({ message: 'This is a protected route', user: req.user });
 });
