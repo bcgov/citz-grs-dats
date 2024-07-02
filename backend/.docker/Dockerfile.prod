@@ -28,6 +28,12 @@ RUN chgrp -R 0 /.npm && chmod -R g=u /.npm
 RUN mkdir ./logs
 RUN chgrp -R 0 ./logs && chmod -R g=u ./logs
 
+RUN mkdir ./Upload66x
+RUN chgrp -R 0 ./Upload66x && chmod -R g=u ./Upload66x
+
+RUN mkdir ./Upload617
+RUN chgrp -R 0 ./Upload617 && chmod -R g=u ./Upload617
+
 # Expose your application port
 EXPOSE 5000
 
