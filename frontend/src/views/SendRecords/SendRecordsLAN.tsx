@@ -1,6 +1,5 @@
-
 import * as React from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Typography from "@mui/material/Typography";
 import Aris617DropZone from "./components/Aris617DropZone";
 import SubmissionAgreement from "./components/submissionAgreement";
@@ -10,6 +9,7 @@ import {
   AlertColor,
   Box,
   Button,
+  CircularProgress,
   Grid,
   Paper,
   Snackbar,
@@ -42,13 +42,31 @@ export const SendRecordsLAN = () => {
   const [file, setFile] = useState<File | null>(null);
   const [aris617File, setAris617File] = useState<File | null>(null);
   const [excelData, setexcelData] = useState<DatsExcelModel | null>(null);
-  const [nextButtonLabel, setNextButtonLabel] = useState("Upload 66x file"); //because the first step is to upload the 66x file
-  
-  const [arisTransferDetails, setArisTransferDetails] = useState<ITransferDTO | null>(null);
+  const [nextButtonLabel, setNextButtonLabel] = useState("Next");
+
+  const [arisTransferDetails, setArisTransferDetails] =
+    useState<ITransferDTO | null>(null);
+    const childRef = useRef<any>(null); // Define a ref for ChildComponent
   const uploadService = new UploadService();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  
+  React.useEffect(() => {
+    // This code runs before rendering the current step
+    switch (activeStep) {
+      case 0:
+        setNextButtonLabel("Upload 66x file");
+        break;
+      case 1:
+        setNextButtonLabel("Upload 617 file");
+        break;
+      case 2:
+        setNextButtonLabel("Next");
+        break;
+      case 3:
+        setNextButtonLabel("Upload All");
+        break;
+    }
+  }, [activeStep]);
   let steps = [
     {
       label: "Upload 66x file",
@@ -88,7 +106,7 @@ export const SendRecordsLAN = () => {
     },
     {
       label: "Upload approved 617 Transfer form ",
-      beforeNext: async () =>{
+      beforeNext: async () => {
         //add your update logic here
         setIsUploading(true);
         try {
@@ -96,7 +114,6 @@ export const SendRecordsLAN = () => {
           formData.append("uploadARIS617file", aris617File!);
           var res = await uploadService.upload617File(formData);
           console.log(res);
-          setArisTransferDetails(res.transfer);
           setIsUploading(false);
           showSnackbar("Upload successful", "success");
           setNextButtonLabel("Next");
@@ -113,10 +130,12 @@ export const SendRecordsLAN = () => {
       },
       beforeNextCompleted: false,
       content: (
-        <Aris617DropZone validate={(isValid, errorMessage) =>
-          handleValidationChange(0, isValid, errorMessage)
-        }
-        setFile={(aris617File) => updateAris617File(aris617File)} />
+        <Aris617DropZone
+          validate={(isValid, errorMessage) =>
+            handleValidationChange(0, isValid, errorMessage)
+          }
+          setFile={(aris617File) => updateAris617File(aris617File)}
+        />
       ),
       validate: () => isValid,
     },
@@ -134,11 +153,20 @@ export const SendRecordsLAN = () => {
     },
     {
       label: "Review and Upload",
-      content: (
-        <TransferComponent transfer={arisTransferDetails!!}
-        />
-      ),
-      validate: () => true,
+      beforeNext: async () => {
+        if (childRef.current) {
+          setIsUploading(true);
+          childRef.current.uploadAllFolders();
+          setIsUploading(false);
+          showSnackbar("Upload successful", "success");
+          setNextButtonLabel("Next");
+          setBeforeNextCompleted(true);
+        }
+      },
+      content: <TransferComponent ref={childRef} transfer={arisTransferDetails!!} validate={(isValid, errorMessage) => {
+        handleValidationChange(3, isValid, errorMessage);
+      }} />,
+      validate: () => isValid,
     },
     {
       label: "Download Files",
@@ -168,7 +196,7 @@ export const SendRecordsLAN = () => {
   const updateAris617File = (file: File | null) => {
     setAris617File(file);
   };
-  
+
   const handleNext = async () => {
     console.log("--------------------------------------handleNext");
     var step = steps[activeStep];
@@ -259,18 +287,32 @@ export const SendRecordsLAN = () => {
           Back
         </Button>
         <Box sx={{ flex: "1 1 auto" }} />
-        <Button
+        <Box sx={{ m: 1, position: 'relative' }}>
+        <Button disabled={isUploading}
           {...(!isInErrorState
             ? { variant: "contained" }
             : {
-              variant: "outlined",
-              color: "error",
-              startIcon: <ErrorIcon />,
-            })}
+                variant: "outlined",
+                color: "error",
+                startIcon: <ErrorIcon />,
+              })}
           onClick={activeStep === steps.length - 1 ? handleReset : handleNext}
         >
           {nextButtonLabel}
         </Button>
+        {isUploading && (
+          <CircularProgress
+            size={24}
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              marginTop: '-12px',
+              marginLeft: '-12px',
+            }}
+          />
+        )}
+        </Box>
       </Box>
       <Snackbar
         open={snackbarOpen}
@@ -286,35 +328,5 @@ export const SendRecordsLAN = () => {
         </Alert>
       </Snackbar>
     </Box>
-
-    //     <Grid container justifyContent="center" spacing={2}>
-    //     <Grid item xs={12}>
-    //     <Stepper activeStep={activeStep} alternativeLabel sx={{ width: '100%' }}>
-    //         {steps.map((step) => (
-    //             <Step key={step.label}>
-    //                 <StepLabel>{step.label}</StepLabel>
-    //             </Step>
-    //         ))}
-    //     </Stepper>
-    //    </Grid>
-    //    <Grid item xs={11}>
-    //    <Paper elevation={2} sx={{ width: '100%', minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '10px' }}>
-    //         {steps[activeStep].content}
-    //     </Paper>
-    //     </Grid>
-    //     <Grid item xs={11} sx={{ display: 'flex', justifyContent: 'space-between', pt: 2 }}>
-    //         <Button disabled={activeStep === 0} onClick={handleBack}>
-    //             Back
-    //         </Button>
-    //         <Button variant="contained" onClick={handleNext}>
-    //             {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-    //         </Button>
-    //         {activeStep === steps.length && (
-    //             <Button onClick={handleReset}>
-    //                 Reset
-    //             </Button>
-    //         )}
-    //     </Grid>
-    // </Grid>
   );
 };
