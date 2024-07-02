@@ -26,7 +26,7 @@ RUN mkdir /.npm
 RUN chgrp -R 0 /.npm && chmod -R g=u /.npm
 
 RUN mkdir /logs
-RUN chgrp -R 0 /logs && chmod -R g=u /logs
+RUN chgrp -R 0 ./logs && chmod -R g=u ./logs
 
 # Expose your application port
 EXPOSE 5000
