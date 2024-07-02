@@ -20,7 +20,7 @@ COPY ./backend/package.json .
 RUN npm i
 
 # Copy only the necessary files from the previous stage
-COPY --from=build /app/build ./build
+COPY --from=build /app/dist ./build
 
 RUN mkdir /.npm
 RUN chgrp -R 0 /.npm && chmod -R g=u /.npm
