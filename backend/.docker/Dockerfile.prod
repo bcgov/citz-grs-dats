@@ -25,7 +25,7 @@ COPY --from=build /app/dist ./build
 RUN mkdir /.npm
 RUN chgrp -R 0 /.npm && chmod -R g=u /.npm
 
-RUN mkkdir /logs
+RUN mkdir /logs
 RUN chgrp -R 0 /logs && chmod -R g=u /logs
 
 # Expose your application port
