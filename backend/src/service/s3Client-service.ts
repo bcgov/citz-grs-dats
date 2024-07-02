@@ -140,19 +140,6 @@ export default class S3ClientService {
         console.log("--------->targetPdfFilePath=" + targetPdfFilePath);
         const targetFilePath = targetPdfFilePath;
 
-        //    try {
-        //        const uploadFilecommand = new PutObjectCommand({
-        //            Bucket: process.env.BUCKET_NAME||'dats-bucket-dev',
-        //            Key: targetFilePath, // File path within the folder
-        //            Body: fileContent, //uploadedFile.buffer, //file.buffer, // File content
-        //        });
-
-        //        const data = await this.s3Client.send(uploadFilecommand);
-        //        //fs.unlinkSync(pdfFilePath);
-
-        //    } catch (error) {
-        //        console.error('Error uploading file', error);
-        //    }
         try {
             const uploadFilecommand = new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
