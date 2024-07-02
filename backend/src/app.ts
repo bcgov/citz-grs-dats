@@ -81,25 +81,9 @@ app.post('/upload-files',upload.single('file'),  (req, res) => {
   const receivedChecksum = req.body.checksum;
   const transferId = req.body.transferId;
 console.log('post-files called');
-//   if (!file || !receivedChecksum || !transferId) {
-// console.log('something is missing');
-//       return res.status(400).send('File, checksum or transferId missing');
-//   }
-
-  if (!file ) {
-    console.log('file is missing');
-          return res.status(400).send('File, checksum or transferId missing');
-      }
-
-      if (!receivedChecksum) {
-        console.log('receivedChecksum is missing');
-              return res.status(400).send('File, checksum or transferId missing');
-          }
-
-          if (!transferId) {
-            console.log('transferId is missing');
-                  return res.status(400).send('File, checksum or transferId missing');
-              }
+  if (!file || !receivedChecksum || !transferId) {
+      return res.status(400).send('File, checksum or transferId missing');
+  }
 
   // Calculate the SHA-1 checksum of the uploaded file
  
@@ -109,7 +93,6 @@ console.log('post-files called');
 
   // Compare checksums
   if (calculatedChecksum === receivedChecksum) {
-      // Save the file with the transfer ID
       //upload to s3 bucket
       console.log('all good');
       res.status(200).send('File uploaded and checksum verified');
