@@ -29,4 +29,4 @@ RUN chgrp -R 0 /.npm && chmod -R g=u /.npm
 EXPOSE 5000
 
 # Start the application
-CMD ["node", "./build/src/index.js"]
+CMD ["node", "./build/index.js"]
