@@ -20,8 +20,12 @@ router.get(
 
 router.post(
   "/uploadfileARIS617",
-  uploadARIS617Middleware,
+  //uploadARIS617Middleware,
   uploadController.handleARIS617Upload
 );
+
+router
+  .route("/submitAgreement")
+  .post(uploadController.saveSubmitAgreement);
 
 export default router;

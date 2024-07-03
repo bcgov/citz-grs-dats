@@ -31,7 +31,7 @@ const createAgreementPDF = async (
 
             const transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
             const targetPdfPath = `${transferFolderPath}/${accession_num}-${application_num}/Documentation/agreement_${Date.now()}.pdf`;
-
+            console.log("in createAgreementPDF" + targetPdfPath)
             try {
                 let s3ClientService = new S3ClientService();
                 await s3ClientService.uploadAgreementPDF(pdfBuffer, targetPdfPath);
