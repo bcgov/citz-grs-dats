@@ -1,4 +1,5 @@
 import TransferService from "../service/transfer-service";
+import createAgreementPDF from "../service/File-service";
 import S3ClientService from "../service/s3Client-service";
 import DigitalFileListService from "../service/digitalFileList-service";
 import DigitalFileService from "../service/digitalFile-service";
@@ -105,5 +106,29 @@ export default class UploadController {
       res.status(500).json({ error: "An error occurred" });
     }
   };
+  saveSubmitAgreement: RequestHandler = async (req, res, next) => {
+    try {
+      const { agreementText, applicationNumber, accessionNumber, userDisplayName, formattedDate, status, decision } = req.body;
+      const transferId = req.params.transferId;
 
+      // Define the placeholders
+      const placeholders = {
+        ApplicationNumber: applicationNumber || '',
+        AccessionNumber: accessionNumber || '',
+        idir: userDisplayName || '',
+        date: formattedDate || ''
+      };
+
+      const soumissionAgrement = await createAgreementPDF(
+        agreementText,
+        status,
+        decision,
+        placeholders
+      );
+      res.status(200).json(soumissionAgrement);
+    } catch (error) {
+      res.status(500).json({ error: "An error occurred" });
+    }
+  }
 };
+
