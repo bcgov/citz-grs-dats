@@ -16,7 +16,7 @@ export default class S3ClientService {
                 accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'AKIA1DCC49EEEA5B8094',
                 secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'hL2ZqW2+0poPdw2FABeKy9ux4iSMTqceEQ+8JNxr',
             },
-            endpoint: 'https://citz-grs-dats.objectstore.gov.bc.ca', // Custom endpoint
+            endpoint: process.env.AWS_ENDPOINT || 'https://citz-grs-dats.objectstore.gov.bc.ca', // Custom endpoint
             forcePathStyle: true, // Use path-style URLs (required for some custom S3 providers)
         });
     }

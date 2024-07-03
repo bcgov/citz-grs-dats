@@ -32,7 +32,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   session({
-    secret: process.env.SESSION_SECRET!, // Change this to your own secret
+    secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: process.env.NODE_ENV === 'production' },
@@ -76,30 +76,30 @@ app.use(function (req: Request, res: Response, next: NextFunction) {
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-app.post('/upload-files',upload.single('file'),  (req, res) => {
+app.post('/upload-files', upload.single('file'), (req, res) => {
   const file = req.file;
   const receivedChecksum = req.body.checksum;
   const transferId = req.body.transferId;
-console.log('post-files called');
+  console.log('post-files called');
   if (!file || !receivedChecksum || !transferId) {
-      return res.status(400).send('File, checksum or transferId missing');
+    return res.status(400).send('File, checksum or transferId missing');
   }
 
   // Calculate the SHA-1 checksum of the uploaded file
- 
+
   const hash = crypto.createHash('sha1');
   hash.update(file.buffer);
   const calculatedChecksum = hash.digest('hex');
 
   // Compare checksums
   if (calculatedChecksum === receivedChecksum) {
-      //upload to s3 bucket
-      console.log('all good');
-      res.status(200).send('File uploaded and checksum verified');
+    //upload to s3 bucket
+    console.log('all good');
+    res.status(200).send('File uploaded and checksum verified');
   } else {
-      // Handle checksum mismatch
-      console.log('checksum mismatch');
-      res.status(400).send('Checksum mismatch');
+    // Handle checksum mismatch
+    console.log('checksum mismatch');
+    res.status(400).send('Checksum mismatch');
   }
 });
 
