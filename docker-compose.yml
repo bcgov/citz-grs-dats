@@ -9,8 +9,8 @@ services:
       - mern-stack-net
     volumes:
       - mongo-data:/data/db
-  backend:
-    container_name: backend
+  citz-grs-dats-api:
+    container_name: citz-grs-dats-api
     build:
       context: ./backend
     ports:
