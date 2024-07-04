@@ -20,7 +20,7 @@ router.get(
 
 router.post(
   "/uploadfileARIS617",
-  //uploadARIS617Middleware,
+  uploadARIS617Middleware,
   uploadController.handleARIS617Upload
 );
 

@@ -10,7 +10,7 @@ const TransferSchema: Schema = new Schema<ITransfer>({
   transferStatus: {
     type: String,
     enum: status,
-    default: status.Draft,
+    default: status.TrIncomplete,
   },
   digitalFileLists: [
     {
