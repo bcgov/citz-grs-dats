@@ -153,5 +153,26 @@ export default class S3ClientService {
     }
 
 
+    async uploadZipFile(
+        uploadedZipFile: Express.Multer.File,
+        targetZipFilePath: string
+    ) {
+        console.log("---------->targetZipFilePath=" + targetZipFilePath);
+
+        try {
+            const uploadFilecommand = new PutObjectCommand({
+                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Key: targetZipFilePath, // File path within the folder
+                Body: uploadedZipFile.buffer,
+            });
+            
+            const data = await this.s3Client.send(uploadFilecommand);
+
+        } catch (error) {
+            console.error('Error uploading file', error);
+        }
+
+        return targetZipFilePath;
+    }
 
 }
