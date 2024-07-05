@@ -5,6 +5,7 @@ import transferRouter from "./routes/transfer-route";
 import digitalFileListRoute from "./routes/digital-file-list-route";
 import digitalFileRoute from "./routes/digital-file-route";
 import uploadFilesRoute from "./routes/upload-files-route";
+import S3ClientService from "./service/s3Client-service";
 import { specs, swaggerUi } from "./config/swagger/swagger-config";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -79,8 +80,13 @@ const upload = multer({ storage: storage });
 app.post('/upload-files', upload.single('file'), (req, res) => {
   const file = req.file;
   const receivedChecksum = req.body.checksum;
-  const transferId = req.body.transferId;
-  console.log('post-files called');
+  const transferId = req.body.transferId; 
+  const applicationNumber = req.body.applicationNumber;
+  const accessNumber = req.body.accessNumber;
+  const primarySecondary = req.body.primarySecondary;
+
+  //folderPath  validation
+console.log('post-files called');
   if (!file || !receivedChecksum || !transferId) {
     return res.status(400).send('File, checksum or transferId missing');
   }
@@ -93,9 +99,16 @@ app.post('/upload-files', upload.single('file'), (req, res) => {
 
   // Compare checksums
   if (calculatedChecksum === receivedChecksum) {
-    //upload to s3 bucket
-    console.log('all good');
-    res.status(200).send('File uploaded and checksum verified');
+      const s3ClientService = new S3ClientService();
+      var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+      transferFolderPath = transferFolderPath + "/" + applicationNumber + "-" + accessNumber + "/"+primarySecondary;
+      s3ClientService.createFolder(transferFolderPath);
+      const zipFilePath = transferFolderPath+"/"+file.originalname;
+      s3ClientService.uploadZipFile(file,zipFilePath);
+
+      console.log('all good');
+      res.status(200).send('File uploaded and checksum verified');
+
   } else {
     // Handle checksum mismatch
     console.log('checksum mismatch');
