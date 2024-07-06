@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useImperativeHandle, ForwardRefRenderFunction, forwardRef, FC } from "react";
+import React, {
+  useState,
+  useEffect,
+  useImperativeHandle,
+  ForwardRefRenderFunction,
+  forwardRef,
+  FC,
+} from "react";
 import {
   Box,
   Typography,
@@ -14,6 +21,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
 import ITransferDTO from "../../../types/DTO/Interfaces/ITransferDTO";
 enum DATSActions {
   FolderSelected,
@@ -30,23 +38,57 @@ enum DATSActions {
   FileFolderNotExists,
 }
 type Props = {
-  transfer: ITransferDTO;
+  initialTransfer: ITransferDTO;
   validate: (isValid: boolean, errorMessage: string) => void;
 };
 
-;
-
-const TransferComponent: ForwardRefRenderFunction<unknown, Props> = ({ transfer, validate }, ref) => {
+type EditableFields = {
+  [key: string]: boolean;
+};
+type FolderValues = {
+  [key: string]: string;
+};
+const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
+  { initialTransfer, validate },
+  ref
+) => {
+  const [makeFieldsDisable,setMakeFieldsDisable] = useState<boolean>(false);
+   const [transfer, setTransfer] = useState<ITransferDTO>(initialTransfer);
+  const [editableFields, setEditableFields] = useState<EditableFields>({});
+  const [folderValues, setFolderValues] = useState<FolderValues>(
+    transfer.digitalFileLists!!.reduce((acc, fileList) => {
+      acc[fileList.folder] = fileList.folder;
+      return acc;
+    }, {} as FolderValues)
+  );
   const [uploadStatus, setUploadStatus] = useState<{ [key: string]: Number }>(
     {}
   );
   const [thirdPartyStatus, setThirdPartyStatus] = useState<{
     [key: string]: Number;
   }>({});
-
   const SUCCESS: Number = 1;
   const FAIL: Number = 2;
-const PROGRESS: Number = 0;
+  const PROGRESS: Number = 0;
+
+  useEffect(() => {
+    const statusEntries = Object.entries(thirdPartyStatus);
+    const hasFailedStatus = statusEntries.some(
+      ([key, status]) => status === FAIL
+    );
+
+    if (hasFailedStatus) {
+      validate(
+        false,
+        `unable to find ${
+          statusEntries.find(([key, status]) => status === FAIL)?.[0]
+        }`
+      );
+    } else {
+      validate(true, "");
+    }
+  }, [thirdPartyStatus]);
+
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:50504/ws/react");
 
@@ -75,25 +117,24 @@ const PROGRESS: Number = 0;
             ...prevState,
             [data.Payload.Message]: FAIL,
           }));
-          validate(false,`unable to find ${data.Payload.Message}`);
+          // validate(false,`unable to find ${data.Payload.Message}`);
           break;
-          case DATSActions.Progress:
-            setUploadStatus((prevState) => ({
-                ...prevState,
-                [data.Payload.Message]: SUCCESS
-            }));
-            break;
-            case DATSActions.Error:
-                setUploadStatus((prevState) => ({
-                    ...prevState,
-                    [data.Payload.Message]: FAIL
-                }));
-          validate(false,`upload failed for ${data.Payload.Message}`);
-                break;
-
+        case DATSActions.Progress:
+          setUploadStatus((prevState) => ({
+            ...prevState,
+            [data.Payload.Message]: SUCCESS,
+          }));
+          break;
+        case DATSActions.Error:
+          setUploadStatus((prevState) => ({
+            ...prevState,
+            [data.Payload.Message]: FAIL,
+          }));
+          validate(false, `upload failed for ${data.Payload.Message}`);
+          break;
       }
     };
-
+    setThirdPartyStatus({});
     sendMessageToService(
       JSON.stringify({
         Action: DATSActions.CheckFolder,
@@ -110,34 +151,35 @@ const PROGRESS: Number = 0;
 
   useImperativeHandle(ref, () => ({
     uploadAllFolders,
-}));
-// Function to update the status of all folders to PROGRESS
-const setAllProgress = (transfer: ITransferDTO) => {
+  }));
+  // Function to update the status of all folders to PROGRESS
+  const setAllProgress = (transfer: ITransferDTO) => {
     setUploadStatus((prevState) => {
       // Create a new state object
       const newState = { ...prevState };
-  
+
       // Iterate over each file and set the status to PROGRESS
       transfer.digitalFileLists?.forEach((file) => {
         newState[file.folder] = PROGRESS;
       });
-  
+
       return newState;
     });
   };
-  const uploadAllFolders = () : void => {
+  const uploadAllFolders = (): void => {
     //report(true, '');
     setAllProgress(transfer);
+    setMakeFieldsDisable(true);
     sendMessageToService(
-        JSON.stringify({
-          Action: DATSActions.FolderUpload,
-          Payload: {
-            Paths: transfer.digitalFileLists?.map((file) => file.folder),
-            TransferId: 'testId',
-            UploadUrl: 'http://localhost:5000/upload-files'
-          },
-        })
-      );
+      JSON.stringify({
+        Action: DATSActions.FolderUpload,
+        Payload: {
+          Paths: transfer.digitalFileLists?.map((file) => file.folder),
+          TransferId: "testId",
+          UploadUrl: "http://localhost:5000/upload-files",
+        },
+      })
+    );
   };
 
   const sendMessageToService = (message: any) => {
@@ -153,27 +195,49 @@ const setAllProgress = (transfer: ITransferDTO) => {
       console.error("Log WebSocket error", error);
     };
   };
-//   const handleUploadAll = () => {
-//     setUploading(true);
-//     const folders = transfer.digitalFileLists?.map(
-//       (fileList) => fileList.folder
-//     );
-
-//     uploadAllFolders(folders!!).then((status) => {
-//       setUploadStatus(status);
-//       setUploading(false);
-//     });
-//   };
-
   const handleDelete = (folder: string) => {
-    alert(`Delete folder: ${folder}`);
+    setTransfer((prev) => ({
+      ...prev,
+      digitalFileLists: prev.digitalFileLists!!.filter((fileList) => fileList.folder !== folder),
+    }));
+  };
+  const handleValueChange = (
+    folder: string,
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const newValue = event.target.value;
+    setFolderValues((prev) => ({
+      ...prev,
+      [folder]: newValue,
+    }));
+  };
+  const handleSaveClick = (folder: string) => {
+    // Update the actual transfer.digitalFileLists value
+    transfer.digitalFileLists = transfer.digitalFileLists!!.map((fileList) =>
+      fileList.folder === folder
+        ? { ...fileList, folder: folderValues[folder] }
+        : fileList
+    );
+
+    // Toggle the editable state back
+    setEditableFields((prev) => ({
+      ...prev,
+      [folder]: false,
+    }));
   };
 
+  const handleEditClick = (folder: string) => {
+    console.log(folder);
+    setEditableFields((prev) => ({
+      ...prev,
+      [folder]: !prev[folder],
+    }));
+  };
   const getStatusIcon = (status?: Number) => {
     if (status === undefined) return null;
-    if(status === FAIL) return <ErrorIcon color="error" />;
-    if(status === SUCCESS) return <CheckCircleIcon color="success" />
-    if(status === PROGRESS) return <CircularProgress size={24} />
+    if (status === FAIL) return <ErrorIcon color="error" />;
+    if (status === SUCCESS) return <CheckCircleIcon color="success" />;
+    if (status === PROGRESS) return <CircularProgress size={24} />;
     return status ? (
       <CheckCircleIcon color="success" />
     ) : (
@@ -247,20 +311,31 @@ const setAllProgress = (transfer: ITransferDTO) => {
           <Grid container spacing={2} key={index} alignItems="center">
             <Grid item xs={5} sx={{ display: "flex", alignItems: "center" }}>
               <TextField
-                value={fileList.folder}
+              disabled={makeFieldsDisable}
+                onChange={(event) => handleValueChange(fileList.folder, event)}
+                value={folderValues[fileList.folder]}
                 fullWidth
                 InputProps={{
-                  readOnly: true,
+                  readOnly: !editableFields[fileList.folder],
                   endAdornment: (
                     <InputAdornment position="end">
                       {thirdPartyStatus[fileList.folder] === FAIL ? (
                         <>
                           <ErrorIcon color="error" />
                           <IconButton
+                          disabled={makeFieldsDisable}
                             size="small"
-                            onClick={() => alert("Edit clicked")}
+                            onClick={() =>
+                              editableFields[fileList.folder]
+                                ? handleSaveClick(fileList.folder)
+                                : handleEditClick(fileList.folder)
+                            }
                           >
-                            <EditIcon fontSize="small" />
+                            {editableFields[fileList.folder] ? (
+                              <SaveIcon fontSize="small" />
+                            ) : (
+                              <EditIcon fontSize="small" />
+                            )}
                           </IconButton>
                         </>
                       ) : (
@@ -274,7 +349,7 @@ const setAllProgress = (transfer: ITransferDTO) => {
             </Grid>
             <Grid item xs={2}>
               <TextField
-                value={`1024 MB`}
+                value={fileList.size}
                 fullWidth
                 InputProps={{ readOnly: true }}
               />
@@ -291,6 +366,7 @@ const setAllProgress = (transfer: ITransferDTO) => {
             </Grid>
             <Grid item xs={1}>
               <IconButton
+              disabled={makeFieldsDisable}
                 color="secondary"
                 onClick={() => handleDelete(fileList.folder)}
               >

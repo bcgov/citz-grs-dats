@@ -58,7 +58,6 @@ export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
             extractedData.accessionNumber,
             extractedData.applicationNumber,
             (response) => {
-              debugger;
               if (response) {
                 console.log("validation failed for duplicate transfer");
                 validate(
@@ -71,33 +70,39 @@ export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
                 setFile(null);
                 setAcceptedFiles([]);
                 setClearFilesSignal(true);
-              } 
+              }
             },
             (error) => {
-              if(error.response.status == 404) //transfer not found
-              {
+              if (error.response.status == 404) {
+                //transfer not found
                 setData(extractedData);
                 setExcelData(extractedData);
                 console.log("Aris66xDropZone" + file); // This is the file that was uploaded
                 setFile(file);
                 validate(isCheckboxChecked, "");
-              }
-              else
-              {
+              } else {
                 //anyother error
-                debugger;
-              console.log('404 transfer not found')
-              validate(false, error);
-              setIsCheckboxChecked(false);
-              setExcelData(null);
-              setData(null);
-              setFile(null);
+                console.log("404 transfer not found");
+                validate(false, error);
+                setIsCheckboxChecked(false);
+                setExcelData(null);
+                setData(null);
+                setFile(null);
+                setAcceptedFiles([]);
+                setClearFilesSignal(true);
               }
             }
           );
         }
       } catch (error) {
-        console.error(error);
+        console.log(error);
+        validate(false, String(error));
+        setIsCheckboxChecked(false);
+        setExcelData(null);
+        setData(null);
+        setFile(null);
+        setAcceptedFiles([]);
+        setClearFilesSignal(true);
       }
     } else {
       //clear validations

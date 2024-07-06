@@ -52,7 +52,6 @@ ws.onclose = () => {
               setMessage(data.Payload.Message);
               break;
               case DATSActions.FileInformation:
-                debugger;
                 setFolders(prevFolders => [...prevFolders, {
                   path: data.Payload.Path,
                   schedule: '',
@@ -112,7 +111,6 @@ const handleDeleteFolder = (index: number) => {
   setFolders(newFolders);
 };
 const handleChange = (index: number, field: keyof IFolderInformation, value: any) => {
-  debugger;
   setFolders((prevFolders) =>
     prevFolders.map((folder, i) =>
       i === index ? { ...folder, [field]: value } : folder

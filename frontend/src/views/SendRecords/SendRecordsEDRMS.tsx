@@ -173,7 +173,6 @@ export const SendRecordsEDRMS = () => {
   
 
   const handleNext = async () => {
-    debugger;
     var step = steps[activeStep];
     const validate = step.validate;
     const isValid = validate();
