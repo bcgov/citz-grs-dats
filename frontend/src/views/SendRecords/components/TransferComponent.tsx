@@ -90,64 +90,84 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   }, [thirdPartyStatus]);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:50504/ws/react");
-
-    ws.onopen = () => {
-      console.log("WebSocket connection established");
-    };
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    ws.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
-    ws.onmessage = (event) => {
-      console.log(event.data);
+    let attempts = 0;
+    const maxAttempts = 3;
+  
+    const connectWebSocket = () => {
+      const ws = new WebSocket("ws://localhost:50504/ws/react");
+  
+      ws.onopen = () => {
+        console.log("WebSocket connection established");
+        setThirdPartyStatus({});
+        sendMessageToService(
+          JSON.stringify({
+            Action: DATSActions.CheckFolder,
+            Payload: {
+              Paths: transfer.digitalFileLists?.map((file) => file.folder),
+            },
+          })
+        );
+      };
+  
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        attempts += 1;
+        if (attempts < maxAttempts) {
+          console.log(`Retrying connection (${attempts}/${maxAttempts})...`);
+          setTimeout(connectWebSocket, 1000); // Retry after 1 second
+        } else {
+          console.error("Max retries reached. Unable to establish WebSocket connection.");
+          validate(false, 'unable to establish a connection to DATS Companion Service');
+        }
+      };
+  
+      ws.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+  
+      ws.onmessage = (event) => {
+        console.log(event.data);
       const data = JSON.parse(event.data);
-      switch (data.Action) {
-        case DATSActions.FileFolderExists:
-          setThirdPartyStatus((prevState) => ({
-            ...prevState,
-            [data.Payload.Message]: SUCCESS,
-          }));
-          break;
-        case DATSActions.FileFolderNotExists:
-          setThirdPartyStatus((prevState) => ({
-            ...prevState,
-            [data.Payload.Message]: FAIL,
-          }));
-          // validate(false,`unable to find ${data.Payload.Message}`);
-          break;
-        case DATSActions.Progress:
-          setUploadStatus((prevState) => ({
-            ...prevState,
-            [data.Payload.Message]: SUCCESS,
-          }));
-          break;
-        case DATSActions.Error:
-          setUploadStatus((prevState) => ({
-            ...prevState,
-            [data.Payload.Message]: FAIL,
-          }));
-          validate(false, `upload failed for ${data.Payload.Message}`);
-          break;
-      }
+        switch (data.Action) {
+          case DATSActions.FileFolderExists:
+            setThirdPartyStatus((prevState) => ({
+              ...prevState,
+              [data.Payload.Message]: SUCCESS,
+            }));
+            break;
+          case DATSActions.FileFolderNotExists:
+            setThirdPartyStatus((prevState) => ({
+              ...prevState,
+              [data.Payload.Message]: FAIL,
+            }));
+            // validate(false,`unable to find ${data.Payload.Message}`);
+            break;
+          case DATSActions.Progress:
+            setUploadStatus((prevState) => ({
+              ...prevState,
+              [data.Payload.Message]: SUCCESS,
+            }));
+            break;
+          case DATSActions.Error:
+            setUploadStatus((prevState) => ({
+              ...prevState,
+              [data.Payload.Message]: FAIL,
+            }));
+            validate(false, `upload failed for ${data.Payload.Message}`);
+            break;
+        }
+      };
+  
+      return ws;
     };
-    setThirdPartyStatus({});
-    sendMessageToService(
-      JSON.stringify({
-        Action: DATSActions.CheckFolder,
-        Payload: {
-          Paths: transfer.digitalFileLists?.map((file) => file.folder),
-        },
-      })
-    );
+  
+    const ws = connectWebSocket();
 
     return () => {
       ws.close();
     };
   }, [transfer.digitalFileLists]);
+  
 
   useImperativeHandle(ref, () => ({
     uploadAllFolders,
@@ -174,8 +194,13 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       JSON.stringify({
         Action: DATSActions.FolderUpload,
         Payload: {
-          Paths: transfer.digitalFileLists?.map((file) => file.folder),
-          TransferId: "testId",
+          Package: transfer.digitalFileLists?.map((file) => ({
+            Path: file.folder,
+            Classification: file.primarySecondary
+          })),
+          TransferId: transfer._id,
+          ApplicationNumber: transfer.applicationNumber,
+          AccessionNumber: transfer.accessionNumber,
           UploadUrl: "http://localhost:5000/upload-files",
         },
       })

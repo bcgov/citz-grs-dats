@@ -83,8 +83,8 @@ app.post('/upload-files', upload.single('file'), (req, res) => {
   const transferId = req.body.transferId; 
   const applicationNumber = req.body.applicationNumber;
   const accessNumber = req.body.accessNumber;
-  const primarySecondary = req.body.primarySecondary;
-
+  const primarySecondary = req.body.classification;
+const techMetadata = req.body.technicalV2;
   //folderPath  validation
 console.log('post-files called');
   if (!file || !receivedChecksum || !transferId|| !applicationNumber|| !accessNumber || !primarySecondary) {

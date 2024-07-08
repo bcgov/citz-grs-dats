@@ -65,6 +65,8 @@ export const SendRecordsLAN = () => {
       case 3:
         setNextButtonLabel("Upload All");
         break;
+        case 4:
+          setNextButtonLabel("Finish");
     }
   }, [activeStep]);
   let steps = [
@@ -277,7 +279,7 @@ export const SendRecordsLAN = () => {
           pt: 2,
         }}
       >
-        <Button
+        {/* <Button
           color="inherit"
           disabled={activeStep === 0}
           onClick={handleBack}
@@ -285,7 +287,7 @@ export const SendRecordsLAN = () => {
           sx={{ mr: isSmallScreen ? 0 : 1, mb: isSmallScreen ? 1 : 0 }}
         >
           Back
-        </Button>
+        </Button> */}
         <Box sx={{ flex: "1 1 auto" }} />
         <Box sx={{ m: 1, position: 'relative' }}>
         <Button disabled={isUploading}
