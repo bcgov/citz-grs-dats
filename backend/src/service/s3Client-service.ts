@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";;
+import { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand } from "@aws-sdk/client-s3";;
 import extractsFromAra66x from "../utils/extractsFromAra66x";
 import fs from "fs";
 
@@ -165,7 +165,7 @@ export default class S3ClientService {
                 Key: targetZipFilePath, // File path within the folder
                 Body: uploadedZipFile.buffer,
             });
-            
+
             const data = await this.s3Client.send(uploadFilecommand);
 
         } catch (error) {
@@ -174,5 +174,33 @@ export default class S3ClientService {
 
         return targetZipFilePath;
     }
+
+
+    async deleteFolder(folderPath: string) {
+        try {
+            // List all objects in the folder
+            const listObjectsCommand = new ListObjectsV2Command({
+                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Prefix: folderPath,
+            });
+            const data = await this.s3Client.send(listObjectsCommand);
+
+            // Delete each object in the folder
+            if (data.Contents) {
+                for (const object of data.Contents) {
+                    if (object.Key) {
+                        const deleteObjectCommand = new DeleteObjectCommand({
+                            Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                            Key: object.Key,
+                        });
+                        await this.s3Client.send(deleteObjectCommand);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting folder', error);
+        }
+    }
+
 
 }
