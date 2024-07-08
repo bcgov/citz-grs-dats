@@ -87,8 +87,8 @@ app.post('/upload-files', upload.single('file'), (req, res) => {
 
   //folderPath  validation
 console.log('post-files called');
-  if (!file || !receivedChecksum || !transferId) {
-    return res.status(400).send('File, checksum or transferId missing');
+  if (!file || !receivedChecksum || !transferId|| !applicationNumber|| !accessNumber || !primarySecondary) {
+    return res.status(400).send('File, checksum, transferId, applicationNumber, accessNumber or  primarySecondary missing');
   }
 
   // Calculate the SHA-1 checksum of the uploaded file
@@ -100,11 +100,8 @@ console.log('post-files called');
   // Compare checksums
   if (calculatedChecksum === receivedChecksum) {
       const s3ClientService = new S3ClientService();
-      var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
-      transferFolderPath = transferFolderPath + "/" + applicationNumber + "-" + accessNumber + "/"+primarySecondary;
-      s3ClientService.createFolder(transferFolderPath);
-      const zipFilePath = transferFolderPath+"/"+file.originalname;
-      s3ClientService.uploadZipFile(file,zipFilePath);
+      //const transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+      const zipFilePath=s3ClientService.uploadZipFile(file,applicationNumber, accessNumber, primarySecondary);
 
       console.log('all good');
       res.status(200).send('File uploaded and checksum verified');
