@@ -45,19 +45,16 @@ export const DataportTxtDropZone: React.FC<Aris66xDropZoneProps> = ({
   };
 
   const handleFilesAccepted = async (files: File[]) => {
-    debugger;
     setClearFilesSignal(false);
     const file = files[0];
     if (file) {
       try {
         const extractedData = await extractDataport(file);
         if (extractedData) {
-            debugger;
           transferService.getTransferByApplicationAccessionNumber(
             extractedData.accessionNumber,
             extractedData.applicationNumber,
             (response) => {
-              debugger;
               if (response) {
                 console.log("validation failed for duplicate transfer");
                 validate(
@@ -84,7 +81,6 @@ export const DataportTxtDropZone: React.FC<Aris66xDropZoneProps> = ({
               else
               {
                 //anyother error
-                debugger;
               console.log('404 transfer not found')
               validate(false, error);
               setIsCheckboxChecked(false);

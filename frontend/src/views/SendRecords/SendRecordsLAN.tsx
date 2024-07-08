@@ -132,7 +132,7 @@ export const SendRecordsLAN = () => {
       content: (
         <Aris617DropZone
           validate={(isValid, errorMessage) =>
-            handleValidationChange(0, isValid, errorMessage)
+            handleValidationChange(1, isValid, errorMessage)
           }
           setFile={(aris617File) => updateAris617File(aris617File)}
         />
@@ -158,12 +158,12 @@ export const SendRecordsLAN = () => {
           setIsUploading(true);
           childRef.current.uploadAllFolders();
           setIsUploading(false);
-          showSnackbar("Upload successful", "success");
+          showSnackbar("The Upload is initiated successfully and will continue in the background", "success");
           setNextButtonLabel("Next");
           setBeforeNextCompleted(true);
         }
       },
-      content: <TransferComponent ref={childRef} transfer={arisTransferDetails!!} validate={(isValid, errorMessage) => {
+      content: <TransferComponent ref={childRef} initialTransfer={arisTransferDetails!!} validate={(isValid, errorMessage) => {
         handleValidationChange(3, isValid, errorMessage);
       }} />,
       validate: () => isValid,
