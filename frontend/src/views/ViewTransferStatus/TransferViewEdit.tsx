@@ -15,7 +15,7 @@ import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
 import DoneTwoToneIcon from "@mui/icons-material/DoneTwoTone";
 import { TransferService } from "../../services/transferService";
 import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
-import { TransferStatus } from "../../types/Enums/TransferStatus"
+import { TransferStatus } from "../../types/Enums/TransferStatus";
 
 const TransferViewEdit: React.FC = () => {
   const { id } = useParams();
@@ -24,7 +24,9 @@ const TransferViewEdit: React.FC = () => {
 
   const transferService = new TransferService();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
+  ) => {
     const { name, value } = e.target;
     setTransfer({ ...transfer, [name!]: value });
   };
@@ -35,6 +37,19 @@ const TransferViewEdit: React.FC = () => {
     } catch (error) {
       console.error("Error updating transfer:", error);
     }
+  };
+
+  const handleDeleteTransfer = async () => {
+    try {
+      await transferService.deleteTransfer(id);
+    } catch (error) {
+      console.error("Error deleting transfer:", error);
+    }
+  };
+
+  const handleCreatePSP = async () => {
+    // Logic for creating PSP goes here
+    console.log("Logic for creating PSP goes here")
   };
 
   useEffect(() => {
@@ -50,15 +65,14 @@ const TransferViewEdit: React.FC = () => {
     };
 
     fetchTransfer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (!transfer) {
     return <div>Loading...</div>;
   }
+
   return (
     <>
-      {/* <Grid container spacing={1}> */}
       <Grid item xs={12} sx={{ marginBottom: 1 }}>
         <Card>
           <Box
@@ -72,20 +86,37 @@ const TransferViewEdit: React.FC = () => {
                 Transfer Informations
               </Typography>
             </Box>
-            <Button
-              variant="text"
-              startIcon={
-                isTransferEditing ? <DoneTwoToneIcon /> : <EditTwoToneIcon />
-              }
-              onClick={() => {
-                if (isTransferEditing) {
-                  handleUpdateTransfer();
+            <Box>
+              <Button
+                variant="text"
+                startIcon={
+                  isTransferEditing ? <DoneTwoToneIcon /> : <EditTwoToneIcon />
                 }
-                setIsTransferEditing(!isTransferEditing);
-              }}
-            >
-              {isTransferEditing ? "Done" : "Edit"}
-            </Button>
+                onClick={() => {
+                  if (isTransferEditing) {
+                    handleUpdateTransfer();
+                  }
+                  setIsTransferEditing(!isTransferEditing);
+                }}
+              >
+                {isTransferEditing ? "Done" : "Edit"}
+              </Button>
+              <Button
+                variant="text"
+                color="error"
+                onClick={handleDeleteTransfer}
+              >
+                Delete Transfer
+              </Button>
+              <Button
+                variant="text"
+                color="primary"
+                onClick={handleCreatePSP}
+                disabled={transfer.transferStatus !== TransferStatus.TrComplete}
+              >
+                Create PSP
+              </Button>
+            </Box>
           </Box>
           <Divider />
           <Grid
@@ -96,7 +127,7 @@ const TransferViewEdit: React.FC = () => {
           >
             <TextField
               disabled={!isTransferEditing}
-              sx={{ width: "20%", marginRight: "2%" }} // Adjust width here
+              sx={{ width: "20%", marginRight: "2%" }}
               name="accessionNumber"
               label="Accession Number"
               variant="outlined"
@@ -106,7 +137,7 @@ const TransferViewEdit: React.FC = () => {
 
             <TextField
               disabled={!isTransferEditing}
-              sx={{ width: "20%" }} // Adjust width here
+              sx={{ width: "20%" }}
               name="applicationNumber"
               label="Application Number"
               variant="outlined"
@@ -118,11 +149,10 @@ const TransferViewEdit: React.FC = () => {
             <TextField
               sx={{
                 width: "50%",
-                // marginTop: 2,
                 marginRight: 2,
                 marginLeft: 2,
                 marginBottom: 2,
-              }} // Set width to 100%
+              }}
               disabled={!isTransferEditing}
               label="Description"
               name="description"
@@ -137,7 +167,6 @@ const TransferViewEdit: React.FC = () => {
               disabled={!isTransferEditing}
               onChange={handleInputChange}
               value={transfer.transferStatus}
-
             >
               {Object.values(TransferStatus).map((transferStatus) => (
                 <MenuItem key={transferStatus} value={transferStatus}>
@@ -148,20 +177,12 @@ const TransferViewEdit: React.FC = () => {
           </Grid>
         </Card>
         <Card>
-          <Box
-            p={1}
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Box>
-              <Typography variant="h5" gutterBottom>
-                Producer Informations
-              </Typography>
-            </Box>
+          <Box p={1} display="flex" alignItems="center">
+            <Typography variant="h5" gutterBottom>
+              Producer Informations
+            </Typography>
           </Box>
           <Divider />
-
           <Grid
             container
             spacing={4}
@@ -170,7 +191,7 @@ const TransferViewEdit: React.FC = () => {
           >
             <TextField
               disabled={!isTransferEditing}
-              sx={{ width: "30%", marginRight: "2%" }} // Adjust width here
+              sx={{ width: "30%", marginRight: "2%" }}
               name="producerMinistry"
               label="Ministry"
               variant="outlined"
@@ -180,7 +201,7 @@ const TransferViewEdit: React.FC = () => {
 
             <TextField
               disabled={!isTransferEditing}
-              sx={{ width: "30%" }} // Adjust width here
+              sx={{ width: "30%" }}
               name="producerBranch"
               label="Branch"
               variant="outlined"
@@ -189,7 +210,7 @@ const TransferViewEdit: React.FC = () => {
             />
             <TextField
               disabled={!isTransferEditing}
-              sx={{ width: "30%", marginLeft: 2 }} // Adjust width here
+              sx={{ width: "30%", marginLeft: 2 }}
               name="producerOfficeName"
               label="Office"
               variant="outlined"
@@ -199,7 +220,6 @@ const TransferViewEdit: React.FC = () => {
           </Grid>
         </Card>
       </Grid>
-      {/* //</Grid> */}
     </>
   );
 };
