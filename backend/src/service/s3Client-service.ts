@@ -152,17 +152,22 @@ export default class S3ClientService {
         }
     }
 
-
     async uploadZipFile(
         uploadedZipFile: Express.Multer.File,
-        targetZipFilePath: string
+        applicationNumber: string,
+        accessNumber: string,
+        primarySecondary: string
     ) {
-        console.log("---------->targetZipFilePath=" + targetZipFilePath);
+        var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+        transferFolderPath = transferFolderPath + "/" + applicationNumber + "-" + accessNumber + "/"+primarySecondary;
+        this.createFolder(transferFolderPath);
+        const zipFilePath = transferFolderPath+"/"+uploadedZipFile.originalname;
+        console.log("----------->zipFilePath="+zipFilePath);
 
         try {
             const uploadFilecommand = new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
-                Key: targetZipFilePath, // File path within the folder
+                Key: zipFilePath, // File path within the folder
                 Body: uploadedZipFile.buffer,
             });
             
@@ -172,7 +177,7 @@ export default class S3ClientService {
             console.error('Error uploading file', error);
         }
 
-        return targetZipFilePath;
+        return zipFilePath;
     }
 
 }
