@@ -1,6 +1,8 @@
 # Setup Instructions
+## Step 1: Desktop Application
+Build the winforms application. Copy the path to the exe file.
 
-## Step 1: Update the Registry File
+## Step 2: Update the Registry File
 
 To enable the protocol handler for your desktop application, you need to update the registry file with the path to your application.
 
@@ -21,12 +23,12 @@ Windows Registry Editor Version 5.00
 @="\"C:\\Path\\To\\Your\\DesktopApp.exe\" \"%1\""
 ```
 
-## Step 2: Install the Registry File
+## Step 3: Install the Registry File
 Double click on the registry `myprotocol.reg` to install it.
 
 This can also be achieved by running `regedit /s myprotocol.reg` from an elevated command prompt.
 
-## Step 3: Install the Windows Service
+## Step 4: Install the Windows Service
 
  Step 1: Open Command Prompt as Administrator.
  
