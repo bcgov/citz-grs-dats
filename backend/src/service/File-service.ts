@@ -79,34 +79,36 @@ export default class FileService {
     async createPSPs(prefix: string): Promise<void> {
         try {
             const objects = await this.s3ClientService.listObjects(prefix);
-            console.log("createPSPs" + objects);
-            const docFolder = objects.filter((key) => key.includes('Documentation'));
-            const metaFolder = objects.filter((key) => key.includes('Metadatas'));
             const pspFolders = objects.filter((key) => key.includes('PSP-'));
-            console.log("createPSPs docFolder " + docFolder);
-            await Promise.all(
-                pspFolders.map(async (key) => {
-                    const folderPath = path.dirname(key);
-                    const fileName = path.basename(key);
-                    const localFolderPath = path.join(this.lanDrivePath, folderPath);
 
-                    // Create the destination folder
-                    this.createFolder(localFolderPath);
+            for (const key of pspFolders) {
+                const folderPath = path.dirname(key);
+                const fileName = path.basename(key);
+                const localFolderPath = path.join(this.lanDrivePath, folderPath);
 
-                    // Download the file
-                    const downloadPath = path.join(localFolderPath, fileName);
-                    await this.s3ClientService.downloadFile(key, downloadPath);
+                // Create the destination folder
+                this.createFolder(localFolderPath);
 
-                    // Copy Documentation and Metadata folders to the PSP folder
-                    const documentationSourcePrefix = `${prefix}Documentation/`;
-                    const metadataSourcePrefix = `${prefix}Metadatas/`;
-                    await this.copyFolder(documentationSourcePrefix, localFolderPath);
-                    await this.copyFolder(metadataSourcePrefix, localFolderPath);
+                // Download the file
+                const downloadPath = path.join(localFolderPath, fileName);
+                await this.s3ClientService.downloadFile(key, downloadPath);
 
-                    // Optionally, delete the file from S3
-                    //await this.s3ClientService.deleteObject(key);
-                })
-            );
+                // Optionally, delete the file from S3
+                //await this.s3ClientService.deleteObject(key);
+
+                // Copy Documentation and Metadata folders to the PSP folder
+                const documentationSourcePrefix = `${prefix}Documentation/`;
+                const metadataSourcePrefix = `${prefix}Metadatas/`;
+
+                // Calculate the new path within the PSP folder
+                const pspLocalFolderPath = path.join(localFolderPath, 'Documentation');
+                this.createFolder(pspLocalFolderPath);
+                await this.copyFolder(documentationSourcePrefix, pspLocalFolderPath);
+
+                const metadataLocalFolderPath = path.join(localFolderPath, 'Metadatas');
+                this.createFolder(metadataLocalFolderPath);
+                await this.copyFolder(metadataSourcePrefix, metadataLocalFolderPath);
+            }
 
             console.log('PSP folders moved successfully');
         } catch (error) {
@@ -123,19 +125,22 @@ export default class FileService {
     private async copyFolder(sourcePrefix: string, destinationPath: string): Promise<void> {
         const objects = await this.s3ClientService.listObjects(sourcePrefix);
 
-        await Promise.all(
-            objects.map(async (key) => {
-                const fileName = key.replace(sourcePrefix, '');
-                const downloadPath = path.join(destinationPath, fileName);
+        for (const key of objects) {
+            if (key.endsWith('/')) {
+                // Skip directories
+                continue;
+            }
 
-                // Create the destination folder
-                const folderPath = path.dirname(downloadPath);
-                this.createFolder(folderPath);
+            const fileName = key.replace(sourcePrefix, '');
+            const downloadPath = path.join(destinationPath, fileName);
 
-                // Download the file
-                await this.s3ClientService.downloadFile(key, downloadPath);
-            })
-        );
+            // Create the destination folder
+            const folderPath = path.dirname(downloadPath);
+            this.createFolder(folderPath);
+
+            // Download the file
+            await this.s3ClientService.downloadFile(key, downloadPath);
+        }
     }
 
 }
