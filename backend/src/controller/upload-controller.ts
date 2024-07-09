@@ -1,4 +1,5 @@
 import TransferService from "../service/transfer-service";
+import FileService from "../service/File-service";
 import createAgreementPDF from "../service/File-service";
 import S3ClientService from "../service/s3Client-service";
 import DigitalFileListService from "../service/digitalFileList-service";
@@ -10,6 +11,7 @@ export default class UploadController {
   // Constructor to initialize any properties or perform setup
   private transferService: TransferService;
   private s3ClientService: S3ClientService;
+  private fileService: FileService;
   private digitalFileListService: DigitalFileListService;
   private digitalFileService: DigitalFileService;
   private documentationPath: string;
@@ -18,6 +20,7 @@ export default class UploadController {
     // Initialize any properties or perform setup here if needed
     this.transferService = new TransferService();
     this.s3ClientService = new S3ClientService();
+    this.fileService = new FileService();
     this.digitalFileListService = new DigitalFileListService();
     this.digitalFileService = new DigitalFileService();
     this.documentationPath = "";
@@ -119,7 +122,7 @@ export default class UploadController {
         date: formattedDate || ''
       };
 
-      const soumissionAgrement = await createAgreementPDF(
+      const soumissionAgrement = await this.fileService.createAgreementPDF(
         agreementText,
         status,
         decision,

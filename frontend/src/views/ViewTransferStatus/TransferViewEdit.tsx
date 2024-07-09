@@ -48,8 +48,11 @@ const TransferViewEdit: React.FC = () => {
   };
 
   const handleCreatePSP = async () => {
-    // Logic for creating PSP goes here
-    console.log("Logic for creating PSP goes here")
+    try {
+      await transferService.createPSPs(id);
+    } catch (error) {
+      console.error("Error creating PSPs :", error);
+    }
   };
 
   useEffect(() => {
