@@ -23,6 +23,9 @@ router
 
 router.get('/transfer/:accessionNumber/:applicationNumber', (req, res) => transferController.getTransferByKeysNumbers(req, res));
 
+router
+  .route("/transfers/:transferId/createPSPs")
+  .post(transferController.createPSPsfortransfer)
 
 
 export default router;

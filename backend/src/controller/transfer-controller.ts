@@ -2,7 +2,8 @@
 import { Request, Response } from "express";
 import { validationResult, param } from "express-validator";
 import { TransferService } from "../service";
-import createAgreementPDF from "../service/File-service";
+import FileService from "../service/File-service";
+
 
 import { transferCreateValidation, transferUpdateValidation } from "../validators/transfer-validators";
 
@@ -11,9 +12,11 @@ import { transferCreateValidation, transferUpdateValidation } from "../validator
 export default class TransferController {
 
   private transferService: TransferService;
+  private fileService: FileService;
 
   constructor() {
     this.transferService = new TransferService();
+    this.fileService = new FileService();
     this.getTransfers = this.getTransfers.bind(this);
     this.getTransferById = this.getTransferById.bind(this);
     this.createTransfer = this.createTransfer.bind(this);
@@ -22,6 +25,7 @@ export default class TransferController {
     this.getTransferByKeysNumbers = this.getTransferByKeysNumbers.bind(this);
     this.getSearchTransfers = this.getSearchTransfers.bind(this);
     this.saveSubmitAgreement = this.saveSubmitAgreement.bind(this);
+    this.createPSPsfortransfer = this.createPSPsfortransfer.bind(this);
 
     // Bind the function to the current instance
   }
@@ -269,7 +273,7 @@ export default class TransferController {
         date: formattedDate || ''
       };
 
-      const soumissionAgrement = await createAgreementPDF(
+      const soumissionAgrement = await this.fileService.createAgreementPDF(
         agreementText,
         status,
         decision,
@@ -277,6 +281,22 @@ export default class TransferController {
       );
       res.status(200).json(soumissionAgrement);
     } catch (error) {
+      res.status(500).json({ error: "An error occurred" });
+    }
+  }
+
+  async createPSPsfortransfer(req: Request, res: Response) {
+    try {
+      // Check for validation errors
+      const transferId = req.params.transferId;
+
+      const prefix = "Transfers/55-1234-120000/";
+      const createPSPstr = await this.fileService.createPSPs(
+        prefix
+      );
+      res.status(201).json(createPSPstr);
+    } catch (error) {
+      console.log(error);
       res.status(500).json({ error: "An error occurred" });
     }
   }
