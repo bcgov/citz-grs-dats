@@ -60,7 +60,7 @@ namespace DATSCompanionService.Behaviors
         private void CheckIfFileFolderExist(MessageContract<dynamic> message)
         {
             Logger?.WriteEntry("Checking if folder exists");
-            var payload = JsonSerializer.Deserialize<DATSFileToUpload>(message.Payload);
+            DATSFileCheck payload = JsonSerializer.Deserialize<DATSFileCheck>(message.Payload);
             foreach (var path in payload.Paths)
             {
                 Logger?.WriteEntry($"{path} verified");
@@ -80,11 +80,12 @@ namespace DATSCompanionService.Behaviors
         private void UploadFolder(dynamic message)
         {
             var tempPath = GetTemporaryDirectory();
-            var payload = JsonSerializer.Deserialize<DATSFileToUpload>(message.Payload);
-            for(int i = 0; i <  payload.Paths.Length; i++) 
+            DATSFileToUpload payload = JsonSerializer.Deserialize<DATSFileToUpload>(message.Payload);
+            for(int i = 0; i <  payload.Package.Length; i++) 
             //foreach (var path in payload.Paths)
             {
-                var path = payload.Paths[i];
+                var path = payload.Package[i].Path;
+                var classification = payload.Package[i].Classification;
                 Logger?.WriteEntry($"uploading folder {path}");
                 try
                 {
@@ -122,6 +123,10 @@ namespace DATSCompanionService.Behaviors
                         // Add additional fields to the multipart content
                         content.Add(new StringContent(checksum), "checksum");
                         content.Add(new StringContent(payload.TransferId), "transferId");
+                        content.Add(new StringContent(payload.ApplicationNumber), "applicationNumber");
+                        content.Add(new StringContent(payload.AccessionNumber), "accessNumber");
+                        content.Add(new StringContent(classification), "classification");
+                        content.Add(new StringContent(JsonSerializer.Serialize(TechnicalMetadataGenerator.Generate(path))), "technicalV2");
 
                         // Post the content to the server
                         var result = client.PostAsync(payload.UploadUrl, content).Result;
@@ -134,7 +139,7 @@ namespace DATSCompanionService.Behaviors
                                 Source = DATSSource.Service,
                                 Payload = new ReportProgress
                                 {
-                                    Progress = 100.0 * i / payload.Paths.Length,
+                                    Progress = 100.0 * i / payload.Package.Length,
                                     Message = $"{path}"
                                 }
                             }));
