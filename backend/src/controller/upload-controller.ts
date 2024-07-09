@@ -38,6 +38,8 @@ export default class UploadController {
       const newTransfer = await this.transferService.createTransferMetaData(uploadedFile.path);
       const newTransferId = newTransfer?._id || new mongoose.mongo.ObjectId(0);
       const hashDigitalFileList = await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
+      // TODO Add the S3 PSP structure
+
       this.documentationPath = await this.s3ClientService.uploadAra66xFile(uploadedFile);
 
       const newDigitalFileList: any[] = [];

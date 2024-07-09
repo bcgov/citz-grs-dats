@@ -9,6 +9,11 @@ import {
   Grid,
   TextField,
   MenuItem,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 
 import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
@@ -21,6 +26,8 @@ const TransferViewEdit: React.FC = () => {
   const { id } = useParams();
   const [transfer, setTransfer] = useState<ITransferDTO | any>(null);
   const [isTransferEditing, setIsTransferEditing] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [openCreatePSP, setOpenCreatePSP] = useState(false);
 
   const transferService = new TransferService();
 
@@ -42,6 +49,7 @@ const TransferViewEdit: React.FC = () => {
   const handleDeleteTransfer = async () => {
     try {
       await transferService.deleteTransfer(id);
+      setOpenDelete(false);
     } catch (error) {
       console.error("Error deleting transfer:", error);
     }
@@ -50,9 +58,26 @@ const TransferViewEdit: React.FC = () => {
   const handleCreatePSP = async () => {
     try {
       await transferService.createPSPs(id);
+      setOpenCreatePSP(false);
     } catch (error) {
       console.error("Error creating PSPs :", error);
     }
+  };
+
+  const handleClickOpenDelete = () => {
+    setOpenDelete(true);
+  };
+
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
+  };
+
+  const handleClickOpenCreatePSP = () => {
+    setOpenCreatePSP(true);
+  };
+
+  const handleCloseCreatePSP = () => {
+    setOpenCreatePSP(false);
   };
 
   useEffect(() => {
@@ -107,14 +132,14 @@ const TransferViewEdit: React.FC = () => {
               <Button
                 variant="text"
                 color="error"
-                onClick={handleDeleteTransfer}
+                onClick={handleClickOpenDelete}
               >
                 Delete Transfer
               </Button>
               <Button
                 variant="text"
                 color="primary"
-                onClick={handleCreatePSP}
+                onClick={handleClickOpenCreatePSP}
                 disabled={transfer.transferStatus !== TransferStatus.TrComplete}
               >
                 Create PSP
@@ -129,22 +154,22 @@ const TransferViewEdit: React.FC = () => {
             sx={{ marginTop: 1, marginBottom: 2, marginLeft: 2 }}
           >
             <TextField
-              disabled={!isTransferEditing}
+              disabled
               sx={{ width: "20%", marginRight: "2%" }}
               name="accessionNumber"
               label="Accession Number"
               variant="outlined"
-              onChange={handleInputChange}
+              // onChange={handleInputChange}
               value={transfer.accessionNumber}
             />
 
             <TextField
-              disabled={!isTransferEditing}
+              disabled
               sx={{ width: "20%" }}
               name="applicationNumber"
               label="Application Number"
               variant="outlined"
-              onChange={handleInputChange}
+              // onChange={handleInputChange}
               value={transfer.applicationNumber}
             />
           </Grid>
@@ -223,6 +248,46 @@ const TransferViewEdit: React.FC = () => {
           </Grid>
         </Card>
       </Grid>
+
+      <Dialog
+        open={openDelete}
+        onClose={handleCloseDelete}
+      >
+        <DialogTitle>{"Delete Transfer"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this transfer?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteTransfer} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openCreatePSP}
+        onClose={handleCloseCreatePSP}
+      >
+        <DialogTitle>{"Create PSP"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to create a PSP for this transfer?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCreatePSP} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleCreatePSP} color="primary">
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
