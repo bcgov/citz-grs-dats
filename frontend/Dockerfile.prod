@@ -16,7 +16,7 @@ WORKDIR /usr/share/nginx/html
 
 RUN rm -rf ./*
 
-COPY --from=build /app/build .
+COPY --from=build /app/dist .
 
 RUN chmod g+rwx /var/cache/nginx /var/run /var/log/nginx
 
