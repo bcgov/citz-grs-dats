@@ -80,26 +80,16 @@ const upload = multer({ storage: storage });
 app.post('/upload-files', upload.single('file'), (req, res) => {
   const file = req.file;
   const receivedChecksum = req.body.checksum;
-  const transferId = req.body.transferId; 
   const applicationNumber = req.body.applicationNumber;
   const accessNumber = req.body.accessNumber;
   const primarySecondary = req.body.classification;
 const techMetadata = req.body.technicalV2;
   //folderPath  validation
-console.log('post-files called');
-  if (!file || !receivedChecksum || !transferId|| !applicationNumber|| !accessNumber || !primarySecondary) {
-    console.log(file);
-    console.log(receivedChecksum);
-    console.log(transferId);
-    console.log(applicationNumber);
-    console.log(accessNumber);
-    console.log(primarySecondary);
-    console.log(techMetadata);
-    return res.status(400).send('File, checksum, transferId, applicationNumber, accessNumber or  primarySecondary missing');
+  if (!file || !receivedChecksum || !applicationNumber|| !accessNumber || !primarySecondary) {
+    return res.status(400).send('File, checksum, transferId, applicationNumber, accessNumber or  classification missing');
   }
 
   // Calculate the SHA-1 checksum of the uploaded file
-
   const hash = crypto.createHash('sha1');
   hash.update(file.buffer);
   const calculatedChecksum = hash.digest('hex');
@@ -107,8 +97,14 @@ console.log('post-files called');
   // Compare checksums
   if (calculatedChecksum === receivedChecksum) {
       const s3ClientService = new S3ClientService();
-      //const transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
-      const zipFilePath=s3ClientService.uploadZipFile(file,applicationNumber, accessNumber, primarySecondary);
+      var obj = `{
+        "code" : "shah1",
+        "checksume" : receivedChecksum,
+      }`;
+
+      //convert object to json string
+      var checksumString = JSON.stringify(obj);
+      const zipFilePath=s3ClientService.uploadZipFile(file,applicationNumber, accessNumber, primarySecondary,checksumString);
 
       console.log('all good');
       res.status(200).send('File uploaded and checksum verified');
