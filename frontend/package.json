@@ -49,6 +49,7 @@
     "serve": "vite preview --port 3000",
     "build:dev": "vite build --mode dev",
     "build:staging": "vite build --mode staging",
+    "build:production": "npx vite build --mode production",
     "test": "react-scripts test",
     "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
     "prettier": "prettier --write ."
