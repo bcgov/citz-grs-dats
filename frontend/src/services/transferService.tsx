@@ -2,7 +2,7 @@ import axios from "axios";
 import ITransferDTO from "../types/DTO/Interfaces/ITransferDTO";
 import { IDigitalFileListDTO } from "../types/DTO/Interfaces/IDigitalFileListDTO";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api`; // Replace with your API endpoint URL
+const API_URL = `/api`; // Replace with your API endpoint URL
 
 export class TransferService {
 
