@@ -5,7 +5,7 @@ FROM node:14
 WORKDIR /usr/src/app
 
 # Copy dependency definitions
-COPY ./frontend .
+COPY . .
 
 # Install dependecies
 #RUN npm set progress=false \
@@ -20,4 +20,4 @@ COPY . /usr/src/app
 EXPOSE 3000
 
 # Serve the app
-CMD ["npm", "start"]
+CMD ["npm", "run", "serve"]
