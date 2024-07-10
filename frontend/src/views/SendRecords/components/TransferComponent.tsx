@@ -221,7 +221,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           TransferId: transfer._id,
           ApplicationNumber: transfer.applicationNumber,
           AccessionNumber: transfer.accessionNumber,
-          UploadUrl: `${import.meta.env.VITE_API_URL}/upload-files`,
+          UploadUrl: `/api/upload-files`,
         },
       })
     );

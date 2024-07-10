@@ -6,7 +6,7 @@ export const handleAuthentication = async () => {
   const code = urlParams.get('code');
   if (code) {
     console.log('code' + code);
-    await axios.post(`${import.meta.env.VITE_API_URL}/callback`, { code });
+    await axios.post(`/api/callback`, { code });
   }
 };
 

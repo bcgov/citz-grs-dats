@@ -33,12 +33,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const fetchAccessToken = async () => {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_API_URL}/refresh-token`, {}, { withCredentials: true });
+        const response = await axios.post(`/api/refresh-token`, {}, { withCredentials: true });
         if (response.data.accessToken) {
             setAccessToken(response.data.accessToken);
             setIsAuthenticated(true);
             // Fetch user information
-          const userInfo = await axios.get(`${import.meta.env.VITE_API_URL}/userinfo`, {
+          const userInfo = await axios.get(`/api/userinfo`, {
             headers: {
               Authorization: `Bearer ${response.data.accessToken}`,
             },
@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL}/login?returnUrl=${encodeURIComponent(window.location.href)}`;
+    window.location.href = `/api/login?returnUrl=${encodeURIComponent(window.location.href)}`;
   };
 
   const home = () => {
@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setAccessToken(null);
     setIsAuthenticated(false);
-    window.location.href = `${import.meta.env.VITE_API_URL}/logout`
+    window.location.href = `/api/logout`
   };
 
   return (
