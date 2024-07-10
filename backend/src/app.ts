@@ -88,6 +88,13 @@ const techMetadata = req.body.technicalV2;
   //folderPath  validation
 console.log('post-files called');
   if (!file || !receivedChecksum || !transferId|| !applicationNumber|| !accessNumber || !primarySecondary) {
+    console.log(file);
+    console.log(receivedChecksum);
+    console.log(transferId);
+    console.log(applicationNumber);
+    console.log(accessNumber);
+    console.log(primarySecondary);
+    console.log(techMetadata);
     return res.status(400).send('File, checksum, transferId, applicationNumber, accessNumber or  primarySecondary missing');
   }
 

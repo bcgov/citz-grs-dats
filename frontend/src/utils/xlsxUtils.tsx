@@ -117,7 +117,7 @@ export const extractDataport = (file: File): Promise<DatsExcelModel> => {
 };
 
 export const generateExcel = async (folders: IFolderInformation[]) => {
-  const response = await fetch('http://localhost:5000/digital-file-list-template.xlsx'); // Adjust the path to your template file
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/digital-file-list-template.xlsx`); // Adjust the path to your template file
   const arrayBuffer = await response.arrayBuffer();
   const workbook = XLSX.read(arrayBuffer, { type: 'array' });
 

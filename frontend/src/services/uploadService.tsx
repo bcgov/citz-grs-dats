@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Aris66UploadResponse } from "../types/DTO/Interfaces/Aris66UploadResponse"
-const API_URL = "http://localhost:5000/api/"; // Replace with your API endpoint URL
+const API_URL = `${import.meta.env.VITE_API_URL}/api/`; // Replace with your API endpoint URL
 
 export default class UploadService {
   public async upload66xFile(formData: any): Promise<Aris66UploadResponse> {

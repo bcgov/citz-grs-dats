@@ -18,6 +18,7 @@ import {
   LinearProgress,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -69,7 +70,8 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   }>({});
   const SUCCESS: Number = 1;
   const FAIL: Number = 2;
-  const PROGRESS: Number = 0;
+  const PROGRESS: Number = 3;
+  const UNKNOWN: Number = 0;
 
   useEffect(() => {
     const statusEntries = Object.entries(thirdPartyStatus);
@@ -153,7 +155,8 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
               ...prevState,
               [data.Payload.Message]: FAIL,
             }));
-            validate(false, `upload failed for ${data.Payload.Message}`);
+            validate(false, `upload failed for ${data.Payload.Message}. This transfer is rolled back, please contact administrator`);
+            cancelAllProgress(transfer);
             break;
         }
       };
@@ -186,6 +189,23 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       return newState;
     });
   };
+
+  const cancelAllProgress = (transfer: ITransferDTO) => {
+    setUploadStatus((prevState) => {
+      // Create a new state object
+      const newState = { ...prevState };
+  
+      // Iterate over each file and set the status to CANCEL if it's currently PROGRESS
+      transfer.digitalFileLists?.forEach((file) => {
+        if (newState[file.folder] === PROGRESS) {
+          newState[file.folder] = UNKNOWN;
+        }
+      });
+  
+      return newState;
+    });
+  };
+
   const uploadAllFolders = (): void => {
     //report(true, '');
     setAllProgress(transfer);
@@ -201,7 +221,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           TransferId: transfer._id,
           ApplicationNumber: transfer.applicationNumber,
           AccessionNumber: transfer.accessionNumber,
-          UploadUrl: "http://localhost:5000/upload-files",
+          UploadUrl: `${import.meta.env.VITE_API_URL}/upload-files`,
         },
       })
     );
@@ -260,6 +280,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   };
   const getStatusIcon = (status?: Number) => {
     if (status === undefined) return null;
+    if (status === UNKNOWN) return null;
     if (status === FAIL) return <ErrorIcon color="error" />;
     if (status === SUCCESS) return <CheckCircleIcon color="success" />;
     if (status === PROGRESS) return <CircularProgress size={24} />;
