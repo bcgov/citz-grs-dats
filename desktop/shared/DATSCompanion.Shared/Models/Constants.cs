@@ -9,6 +9,7 @@ namespace DATSCompanion.Shared.Models
         public const string WebSocketListener = "ws://localhost:50504";
         public const string DesktopSocketEndpoint = "/ws/desktop";
         public const string ReactSocketEndpoint = "/ws/react";
+        public const string ReactReceiveSocketEndpoint = "/ws/react/receive";
         public const string EventSourceName = "CitzGrsDatsEventSource";
         public const string EventLogName = "CitzGrsDatsServiceLog";
         public const string BrowseQueryParameter = "browse";

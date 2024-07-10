@@ -134,14 +134,14 @@ export const SendRecordsEDRMS = () => {
       ),
       validate: () => isValid,
     },
-    {
-      label: "Review and Upload",
-      content: (
-        <TransferComponent transfer={arisTransferDetails!!}
-        />
-      ),
-      validate: () => true,
-    },
+    // {
+    //   label: "Review and Upload",
+    //   content: (
+    //     <TransferComponent transfer={arisTransferDetails!!}
+    //     />
+    //   ),
+    //   validate: () => true,
+    // },
     {
       label: "Download Files",
       content: (
@@ -173,7 +173,6 @@ export const SendRecordsEDRMS = () => {
   
 
   const handleNext = async () => {
-    debugger;
     var step = steps[activeStep];
     const validate = step.validate;
     const isValid = validate();

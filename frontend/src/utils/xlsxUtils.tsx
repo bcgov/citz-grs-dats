@@ -25,6 +25,20 @@ export const extractExcelData = (file: File): Promise<DatsExcelModel> => {
       const binaryStr = e.target?.result;
       if (binaryStr) {
         const workbook = XLSX.read(binaryStr, { type: "binary" });
+        const secondSheetName = workbook.SheetNames[1]; // Get the second sheet
+        if (!secondSheetName) {
+          return reject('The second sheet does not exist.');
+        }
+        //ensure second column has value for every row
+        const secondSheet = workbook.Sheets[secondSheetName];
+        const jsonData = XLSX.utils.sheet_to_json<any[]>(secondSheet, { header: 1 });
+        for (const row of jsonData) {
+          if (row.length > 0 && (row[2] === undefined || row[2] === null || row[2] === '')) {
+            reject(new Error("Primary/Secondary value is missing"));
+            return;
+          }
+        }
+
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const sheetData = XLSX.utils.sheet_to_json<{ [key: string]: string }>(
@@ -46,6 +60,7 @@ export const extractExcelData = (file: File): Promise<DatsExcelModel> => {
           accessionNumber: accessionNumber,
           applicationNumber: appNumber,
         };
+
         resolve(extractedData);
       } else {
         reject(new Error("Failed to read the file."));
@@ -67,7 +82,6 @@ export const extractDataport = (file: File): Promise<DatsExcelModel> => {
       reject(new Error("Failed to read the file."));
     };
     reader.onload = (e) => {
-      debugger;
       const content = e.target?.result as string;
       const rows = content?.split("\n");
       let accessionNumber: string | null = null;
@@ -103,8 +117,7 @@ export const extractDataport = (file: File): Promise<DatsExcelModel> => {
 };
 
 export const generateExcel = async (folders: IFolderInformation[]) => {
-  debugger;
-  const response = await fetch('http://localhost:5000/digital-file-list-template.xlsx'); // Adjust the path to your template file
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/digital-file-list-template.xlsx`); // Adjust the path to your template file
   const arrayBuffer = await response.arrayBuffer();
   const workbook = XLSX.read(arrayBuffer, { type: 'array' });
 
@@ -130,7 +143,7 @@ export const generateExcel = async (folders: IFolderInformation[]) => {
 
   const objectsData = folders.flatMap(folder => 
     folder.files.map(obj => [
-      obj.fileId,
+      obj.path,
       obj.checksum,
       obj.name,
       obj.dateCreated ? { v: obj.dateCreated, t: 's' } : null,

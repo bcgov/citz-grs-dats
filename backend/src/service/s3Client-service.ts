@@ -1,6 +1,9 @@
-import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";;
+import { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";;
 import extractsFromAra66x from "../utils/extractsFromAra66x";
 import fs from "fs";
+import { Readable } from "stream";
+import { pipeline } from "stream/promises";
+import path from "path";
 
 export default class S3ClientService {
 
@@ -16,7 +19,7 @@ export default class S3ClientService {
                 accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'AKIA1DCC49EEEA5B8094',
                 secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'hL2ZqW2+0poPdw2FABeKy9ux4iSMTqceEQ+8JNxr',
             },
-            endpoint: 'https://citz-grs-dats.objectstore.gov.bc.ca', // Custom endpoint
+            endpoint: process.env.AWS_ENDPOINT || 'https://citz-grs-dats.objectstore.gov.bc.ca', // Custom endpoint
             forcePathStyle: true, // Use path-style URLs (required for some custom S3 providers)
         });
     }
@@ -152,6 +155,111 @@ export default class S3ClientService {
         }
     }
 
+    async uploadZipFile(
+        uploadedZipFile: Express.Multer.File,
+        applicationNumber: string,
+        accessNumber: string,
+        primarySecondary: string
+    ) {
+        var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+        transferFolderPath = transferFolderPath + "/" + applicationNumber + "-" + accessNumber + "/" + primarySecondary;
+        this.createFolder(transferFolderPath);
+        const zipFilePath = transferFolderPath + "/" + uploadedZipFile.originalname;
+        console.log("----------->zipFilePath=" + zipFilePath);
 
+        try {
+            const uploadFilecommand = new PutObjectCommand({
+                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Key: zipFilePath, // File path within the folder
+                Body: uploadedZipFile.buffer,
+            });
+
+            const data = await this.s3Client.send(uploadFilecommand);
+
+        } catch (error) {
+            console.error('Error uploading file', error);
+        }
+
+        return zipFilePath;
+    }
+
+
+    async deleteFolder(folderPath: string) {
+        try {
+            // List all objects in the folder
+            const listObjectsCommand = new ListObjectsV2Command({
+                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Prefix: folderPath,
+            });
+            const data = await this.s3Client.send(listObjectsCommand);
+
+            // Delete each object in the folder
+            if (data.Contents) {
+                for (const object of data.Contents) {
+                    if (object.Key) {
+                        const deleteObjectCommand = new DeleteObjectCommand({
+                            Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                            Key: object.Key,
+                        });
+                        await this.s3Client.send(deleteObjectCommand);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting folder', error);
+        }
+    }
+
+    async listObjects(prefix: string): Promise<string[]> {
+        const command = new ListObjectsV2Command({
+            Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+            Prefix: prefix,
+        });
+
+        try {
+            const response = await this.s3Client.send(command);
+            if (response.Contents) {
+                return response.Contents.map(obj => obj.Key || "");
+            }
+            return [];
+        } catch (error) {
+            console.error("Error listing objects:", error);
+            throw error;
+        }
+    }
+
+    async downloadFile(key: string, downloadPath: string): Promise<void> {
+        const command = new GetObjectCommand({
+            Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+            Key: key,
+        });
+
+        try {
+            const response = await this.s3Client.send(command);
+            if (response.Body) {
+                const nodeStream = response.Body as Readable;
+                const fileStream = fs.createWriteStream(downloadPath);
+                await pipeline(nodeStream, fileStream);
+            } else {
+                throw new Error("Body is undefined in S3 response.");
+            }
+        } catch (error) {
+            console.error("Error downloading file:", error);
+            throw error;
+        }
+    }
+    async deleteObject(key: string): Promise<void> {
+        const command = new DeleteObjectCommand({
+            Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+            Key: key,
+        });
+
+        try {
+            await this.s3Client.send(command);
+        } catch (error) {
+            console.error("Error deleting object:", error);
+            throw error;
+        }
+    }
 
 }

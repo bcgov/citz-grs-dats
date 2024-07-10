@@ -2,33 +2,31 @@ import axios from "axios";
 import ITransferDTO from "../types/DTO/Interfaces/ITransferDTO";
 import { IDigitalFileListDTO } from "../types/DTO/Interfaces/IDigitalFileListDTO";
 
-const API_URL = "http://localhost:5000/api"; // Replace with your API endpoint URL
+const API_URL = `${import.meta.env.VITE_API_URL}/api`; // Replace with your API endpoint URL
 
 export class TransferService {
 
   public async getTransferByApplicationAccessionNumber(
-    accessionNumber:string,
+    accessionNumber: string,
     applicationNumber: string,
     onResponse: (data: ITransferDTO) => void,
     onError: (error: any) => void,
     onFinally?: () => void
-  ) : Promise<void>
-{
-  var response =  await axios
-              .get<ITransferDTO>(`${API_URL}/transfer/${accessionNumber}/${applicationNumber}`)
-              .then((response) => {
-                onResponse(response.data);
-              })
-              .catch((error) => {
-                onError(error);
-              })
-              .finally(() => {
-                if(onFinally)
-                  {
-                    onFinally();
-                  }
-              })
-}
+  ): Promise<void> {
+    var response = await axios
+      .get<ITransferDTO>(`${API_URL}/transfer/${accessionNumber}/${applicationNumber}`)
+      .then((response) => {
+        onResponse(response.data);
+      })
+      .catch((error) => {
+        onError(error);
+      })
+      .finally(() => {
+        if (onFinally) {
+          onFinally();
+        }
+      })
+  }
 
   public async getTransfers(): Promise<ITransferDTO[]> {
     return await axios
@@ -147,6 +145,22 @@ export class TransferService {
     return await axios
       .delete(
         `${API_URL}/transfers/${transferId}/DigitalFileLists/${digitalFileListId}`
+      )
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.error(error);
+        return error;
+      });
+  }
+
+  public async createPSPs(
+    transferId: any,
+  ): Promise<any[]> {
+    return await axios
+      .post(
+        `${API_URL}/transfers/${transferId}/createPSPs`
       )
       .then((response) => {
         return response.data;

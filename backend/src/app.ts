@@ -5,6 +5,7 @@ import transferRouter from "./routes/transfer-route";
 import digitalFileListRoute from "./routes/digital-file-list-route";
 import digitalFileRoute from "./routes/digital-file-route";
 import uploadFilesRoute from "./routes/upload-files-route";
+import S3ClientService from "./service/s3Client-service";
 import { specs, swaggerUi } from "./config/swagger/swagger-config";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -14,6 +15,9 @@ import * as sessionTypes from "./types/custom-types";
 import logger from "./config/logs/winston-config";
 import cookieParser from "cookie-parser";
 import path from "path";
+import crypto from 'crypto';
+import fs from 'fs';
+import multer from "multer";
 const app = express();
 
 // Middleware to serve static files
@@ -29,7 +33,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   session({
-    secret: process.env.SESSION_SECRET!, // Change this to your own secret
+    secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: process.env.NODE_ENV === 'production' },
@@ -67,6 +71,53 @@ app.use(function (req: Request, res: Response, next: NextFunction) {
     )}`
   );
   next();
+});
+
+// Set up multer storage and file handling
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+app.post('/upload-files', upload.single('file'), (req, res) => {
+  const file = req.file;
+  const receivedChecksum = req.body.checksum;
+  const transferId = req.body.transferId; 
+  const applicationNumber = req.body.applicationNumber;
+  const accessNumber = req.body.accessNumber;
+  const primarySecondary = req.body.classification;
+const techMetadata = req.body.technicalV2;
+  //folderPath  validation
+console.log('post-files called');
+  if (!file || !receivedChecksum || !transferId|| !applicationNumber|| !accessNumber || !primarySecondary) {
+    console.log(file);
+    console.log(receivedChecksum);
+    console.log(transferId);
+    console.log(applicationNumber);
+    console.log(accessNumber);
+    console.log(primarySecondary);
+    console.log(techMetadata);
+    return res.status(400).send('File, checksum, transferId, applicationNumber, accessNumber or  primarySecondary missing');
+  }
+
+  // Calculate the SHA-1 checksum of the uploaded file
+
+  const hash = crypto.createHash('sha1');
+  hash.update(file.buffer);
+  const calculatedChecksum = hash.digest('hex');
+
+  // Compare checksums
+  if (calculatedChecksum === receivedChecksum) {
+      const s3ClientService = new S3ClientService();
+      //const transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+      const zipFilePath=s3ClientService.uploadZipFile(file,applicationNumber, accessNumber, primarySecondary);
+
+      console.log('all good');
+      res.status(200).send('File uploaded and checksum verified');
+
+  } else {
+    // Handle checksum mismatch
+    console.log('checksum mismatch');
+    res.status(400).send('Checksum mismatch');
+  }
 });
 
 export default app;

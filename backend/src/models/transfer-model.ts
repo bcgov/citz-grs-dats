@@ -10,7 +10,7 @@ const TransferSchema: Schema = new Schema<ITransfer>({
   transferStatus: {
     type: String,
     enum: status,
-    default: status.Draft,
+    default: status.TrIncomplete,
   },
   digitalFileLists: [
     {
@@ -25,6 +25,21 @@ const TransferSchema: Schema = new Schema<ITransfer>({
   createdBy: { type: String, required: false },
   updatedBy: { type: String, required: false },
   timestamps: { createDate: Date, updatedDate: Date },
+});
+
+
+// Import the DigitalFileList model
+import { DigitalFileListModel } from './digitalFileList-model'; // adjust this import according to your actual file structure
+
+TransferSchema.post('findOneAndDelete', async function (doc) {
+  if (doc) {
+    if (Array.isArray(doc.digitalFileLists)) {
+      // Delete associated digital file lists
+      for (const digitalFileListId of doc.digitalFileLists) {
+        await DigitalFileListModel.deleteOne({ _id: digitalFileListId });
+      }
+    }
+  }
 });
 
 export const TransferModel: Model<ITransfer> = model<ITransfer>(

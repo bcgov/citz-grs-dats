@@ -24,4 +24,8 @@ router.post(
   uploadController.handleARIS617Upload
 );
 
+router
+  .route("/submitAgreement")
+  .post(uploadController.saveSubmitAgreement);
+
 export default router;

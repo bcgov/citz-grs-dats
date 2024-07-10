@@ -47,8 +47,8 @@ export default class TransferRepository {
         applicationNumber,
       }).populate({
         'path': 'digitalFileLists',
-        'populate':{
-          'path':'digitalFiles'
+        'populate': {
+          'path': 'digitalFiles'
         }
       });
     } catch (error) {
@@ -89,7 +89,7 @@ export default class TransferRepository {
   async deleteTransfer(transferId: string) {
     let data: any = {};
     try {
-      data = await TransferModel.deleteOne({ _id: transferId });
+      data = await TransferModel.findOneAndDelete({ _id: transferId });
     } catch (err) {
       console.log("Error::" + err);
     }
