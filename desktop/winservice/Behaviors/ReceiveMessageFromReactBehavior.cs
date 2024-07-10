@@ -157,6 +157,7 @@ namespace DATSCompanionService.Behaviors
                                     Message = $"{path}"
                                 }
                             }));
+                            break; //stop all transfers even if one fails!!
                         }
                     }
                 }
