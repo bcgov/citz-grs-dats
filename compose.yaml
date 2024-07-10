@@ -1,10 +1,10 @@
 version: '3.7'
 services:
-  mongo_db:
+  mongo:
     image: mongo
     ports:
       - 27017:27017
-    container_name: mongodb
+    container_name: mongo
     networks:
       - mern-stack-net
     volumes:
@@ -13,14 +13,21 @@ services:
     container_name: citz-grs-dats-api
     build:
       context: ./backend
+      dockerfile: .docker/Dockerfile.prod
     ports:
       - "5000:5000"
+    healthcheck:
+      test: ["CMD","mongo","--eval","db.adminCommand('ping')"] # Check health endpoint for healthy service.
+      interval: 30s # Perform the health check every 30 seconds.
+      timeout: 10s # Consider the health check a failure if it takes more than 10 seconds.
+      retries: 5 # Retry the health check up to 5 times before considering the container unhealthy.
     environment:
       NODE_ENV: development
+    env_file: .env
+    depends_on: 
+      - mongo
     networks:
       - mern-stack-net
-    depends_on: 
-      - mongo_db
     volumes:
       - ./backend:/backend
       - /frontend/node_modules
@@ -28,6 +35,9 @@ services:
     container_name: frontend
     build:
       context: ./frontend
+      dockerfile: Dockerfile.prod
+    depends_on: 
+      - citz-grs-dats-api
     ports:
       - "3000:3000"
     networks:
