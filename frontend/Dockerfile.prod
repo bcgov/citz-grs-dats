@@ -2,7 +2,7 @@ FROM node:14 as build
 
 WORKDIR /app
 
-COPY ./frontend .
+COPY . .
 
 RUN npm install
 
