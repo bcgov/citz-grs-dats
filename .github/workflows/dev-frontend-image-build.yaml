@@ -35,11 +35,11 @@ jobs:
           docker login image-registry.apps.silver.devops.gov.bc.ca -u default -p ${{ secrets.OPENSHIFT_SA_TOOLS_TOKEN }}
 
       # Build the GRS DATS Image 
-      - name: Build GRS DATS API Image
+      - name: Build GRS DATS Frontend Image
         run: |
           docker build -t image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-frontend:blah -f frontend/Dockerfile.prod .
 
       # Push the GRS DATS API Image to Artifactory
-      - name: Push the CoCo API Image to Artifactory
+      - name: Push the CoCo Frontend Image to Artifactory
         run: |
           docker push image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-frontend:blah
