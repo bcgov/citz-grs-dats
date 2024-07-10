@@ -1,0 +1,12 @@
+{
+    "name": "@bcgov/citz-grs-dats",
+    "license": "Apache-2.0",
+    "//": "SEE README FOR INFORMATION ON SCRIPTS",
+    "scripts": {
+      "up": "docker compose -f compose.yaml up -d",
+      "down": "docker compose down",
+      "prune": "docker compose down --rmi all --volumes && npm run clear-docker-cache",
+      "rebuild": "npm run prune && npm run up -- --force-recreate",
+      "clear-docker-cache": "docker builder prune -f"
+    }
+  }

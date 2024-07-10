@@ -1,21 +1,21 @@
-FROM node:14 AS build
+FROM node:20 AS build
 
 WORKDIR /app
 
-COPY ./backend .
+COPY . .
 
 RUN npm i
 
 # Build application
 RUN npm run build
 
-FROM node:14 AS prod
+FROM node:20 AS prod
 
 WORKDIR /app
 
-ENV NODE_ENV=production
+#ENV NODE_ENV=production
 
-COPY ./backend/package.json .
+COPY . .
 
 RUN npm i
 
