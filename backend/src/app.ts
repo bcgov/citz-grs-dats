@@ -17,7 +17,7 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import crypto from 'crypto';
 import fs from 'fs';
-import { CORS_OPTIONS}from './config/cors';
+import { CORS_OPTIONS } from './config/cors/cors';
 import multer from "multer";
 const app = express();
 
@@ -80,9 +80,9 @@ app.post('/upload-files', upload.single('file'), (req, res) => {
   const applicationNumber = req.body.applicationNumber;
   const accessNumber = req.body.accessNumber;
   const primarySecondary = req.body.classification;
-const techMetadata = req.body.technicalV2;
+  const techMetadata = req.body.technicalV2;
   //folderPath  validation
-  if (!file || !receivedChecksum || !applicationNumber|| !accessNumber || !primarySecondary) {
+  if (!file || !receivedChecksum || !applicationNumber || !accessNumber || !primarySecondary) {
     return res.status(400).send('File, checksum, transferId, applicationNumber, accessNumber or  classification missing');
   }
 
@@ -93,18 +93,18 @@ const techMetadata = req.body.technicalV2;
 
   // Compare checksums
   if (calculatedChecksum === receivedChecksum) {
-      const s3ClientService = new S3ClientService();
-      var obj = `{
+    const s3ClientService = new S3ClientService();
+    var obj = `{
         "code" : "shah1",
         "checksume" : receivedChecksum,
       }`;
 
-      //convert object to json string
-      var checksumString = JSON.stringify(obj);
-      const zipFilePath=s3ClientService.uploadZipFile(file,applicationNumber, accessNumber, primarySecondary,checksumString);
+    //convert object to json string
+    var checksumString = JSON.stringify(obj);
+    const zipFilePath = s3ClientService.uploadZipFile(file, applicationNumber, accessNumber, primarySecondary, checksumString);
 
-      console.log('all good');
-      res.status(200).send('File uploaded and checksum verified');
+    console.log('all good');
+    res.status(200).send('File uploaded and checksum verified');
 
   } else {
     // Handle checksum mismatch

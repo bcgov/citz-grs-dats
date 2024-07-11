@@ -1,5 +1,6 @@
-import env from './env';
-const { FRONTEND_URL } = env;
+import dotenv from 'dotenv';
+
+dotenv.config();//import env from './env';
 
 /**
  * Middleware for enabling Cross-Origin Resource Sharing (CORS) on the server.
@@ -8,6 +9,6 @@ const { FRONTEND_URL } = env;
  * @property {boolean} credentials - Whether to allow credentials to be included in CORS requests.
  */
 export const CORS_OPTIONS = {
-  origin: FRONTEND_URL,
+  origin: process.env.FRONTEND_URL,
   credentials: true,
 };
