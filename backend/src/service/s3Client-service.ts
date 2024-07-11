@@ -157,16 +157,20 @@ export default class S3ClientService {
     async uploadZipFile(
         uploadedZipFile: Express.Multer.File,
         applicationNumber: string,
-        accessNumber: string,
+        accessionNumber: string,
         primarySecondary: string,
         checksumstring: string,
     ) {
         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
-        transferFolderPath = transferFolderPath + "/" + applicationNumber + "-" + accessNumber + "/"+primarySecondary;
+        transferFolderPath = transferFolderPath + "/" + applicationNumber + "-" + accessionNumber + "/"+primarySecondary;
         this.createFolder(transferFolderPath);
-        const zipFilePath = transferFolderPath+"/"+uploadedZipFile.originalname;
-        const checksumPath = transferFolderPath+"/checksum.json";
+        const orginalname=uploadedZipFile.originalname;
+        const zipFilePath = transferFolderPath+"/"+orginalname;
+        const filename=orginalname.substring(0,orginalname.indexOf(".zip"));
+        const jsonFileName=filename+"_checksum.json";
+        const checksumPath = transferFolderPath+"/"+jsonFileName;
         const jsonBuffer = JSON.stringify(checksumstring);
+        
         console.log("----------->zipFilePath="+zipFilePath);
         console.log("----------->checksumPath="+checksumPath);
 
