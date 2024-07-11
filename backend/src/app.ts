@@ -17,18 +17,14 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import crypto from 'crypto';
 import fs from 'fs';
-const { FRONTEND_URL } = env;
+import { CORS_OPTIONS}from './config/cors';
 import multer from "multer";
 const app = express();
 
 // Middleware to serve static files
 
-const corsOptions = {
-  origin:  FRONTEND_URL,
-  credentials: true
-};
 
-app.use(cors(corsOptions));
+app.use(cors(CORS_OPTIONS));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
