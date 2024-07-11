@@ -25,7 +25,7 @@ const app = express();
 // Middleware to serve static files
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: process.env.CLIENT_BASE_URL, // 'http://localhost:3000',
   credentials: true
 };
 
@@ -86,9 +86,9 @@ app.post('/upload-files', upload.single('file'), (req, res) => {
   const applicationNumber = req.body.applicationNumber;
   const accessionNumber = req.body.accessionNumber;
   const primarySecondary = req.body.classification;
-const techMetadata = req.body.technicalV2;
+  const techMetadata = req.body.technicalV2;
   //folderPath  validation
-  if (!file || !receivedChecksum || !applicationNumber|| !accessionNumber || !primarySecondary) {
+  if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
     return res.status(400).send('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
   }
 
@@ -99,23 +99,23 @@ const techMetadata = req.body.technicalV2;
 
   // Compare checksums
   if (calculatedChecksum === receivedChecksum) {
-      var obj = `{
+    var obj = `{
         "code" : "shah1",
         "checksume" : receivedChecksum,
       }`;
 
-      //convert object to json string
-      var checksumString = JSON.stringify(obj);
-      const s3ClientService=new S3ClientService();
-      const zipFilePath=s3ClientService.uploadZipFile(file,applicationNumber, accessionNumber, primarySecondary,checksumString);
+    //convert object to json string
+    var checksumString = JSON.stringify(obj);
+    const s3ClientService = new S3ClientService();
+    const zipFilePath = s3ClientService.uploadZipFile(file, applicationNumber, accessionNumber, primarySecondary, checksumString);
 
-      console.log('all good');
-      res.status(200).send('File uploaded and checksum verified');
+    console.log('all good');
+    res.status(200).send('File uploaded and checksum verified');
 
   } else {
     // Handle checksum mismatch
     console.log('checksum mismatch');
-    const transferService=new TransferService();
+    const transferService = new TransferService();
     transferService.deleteTransfer(transferId)
     res.status(400).send('Checksum mismatch');
   }
