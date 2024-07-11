@@ -6,6 +6,7 @@ import digitalFileListRoute from "./routes/digital-file-list-route";
 import digitalFileRoute from "./routes/digital-file-route";
 import uploadFilesRoute from "./routes/upload-files-route";
 import S3ClientService from "./service/s3Client-service";
+import TransferService from "./service/transfer-service";
 import { specs, swaggerUi } from "./config/swagger/swagger-config";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -17,14 +18,18 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import crypto from 'crypto';
 import fs from 'fs';
-import { CORS_OPTIONS } from './config/cors/cors';
 import multer from "multer";
+import { ITransfer } from "./models/interfaces/ITransfer";
 const app = express();
 
 // Middleware to serve static files
 
+const corsOptions = {
+  origin: process.env.CLIENT_BASE_URL, // 'http://localhost:3000',
+  credentials: true
+};
 
-app.use(cors(CORS_OPTIONS));
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -77,13 +82,14 @@ const upload = multer({ storage: storage });
 app.post('/upload-files', upload.single('file'), (req, res) => {
   const file = req.file;
   const receivedChecksum = req.body.checksum;
+  const transferId = req.body.transferId;
   const applicationNumber = req.body.applicationNumber;
-  const accessNumber = req.body.accessNumber;
+  const accessionNumber = req.body.accessionNumber;
   const primarySecondary = req.body.classification;
   const techMetadata = req.body.technicalV2;
   //folderPath  validation
-  if (!file || !receivedChecksum || !applicationNumber || !accessNumber || !primarySecondary) {
-    return res.status(400).send('File, checksum, transferId, applicationNumber, accessNumber or  classification missing');
+  if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
+    return res.status(400).send('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
   }
 
   // Calculate the SHA-1 checksum of the uploaded file
@@ -93,7 +99,6 @@ app.post('/upload-files', upload.single('file'), (req, res) => {
 
   // Compare checksums
   if (calculatedChecksum === receivedChecksum) {
-    const s3ClientService = new S3ClientService();
     var obj = `{
         "code" : "shah1",
         "checksume" : receivedChecksum,
@@ -101,7 +106,8 @@ app.post('/upload-files', upload.single('file'), (req, res) => {
 
     //convert object to json string
     var checksumString = JSON.stringify(obj);
-    const zipFilePath = s3ClientService.uploadZipFile(file, applicationNumber, accessNumber, primarySecondary, checksumString);
+    const s3ClientService = new S3ClientService();
+    const zipFilePath = s3ClientService.uploadZipFile(file, applicationNumber, accessionNumber, primarySecondary, checksumString);
 
     console.log('all good');
     res.status(200).send('File uploaded and checksum verified');
@@ -109,6 +115,8 @@ app.post('/upload-files', upload.single('file'), (req, res) => {
   } else {
     // Handle checksum mismatch
     console.log('checksum mismatch');
+    const transferService = new TransferService();
+    transferService.deleteTransfer(transferId)
     res.status(400).send('Checksum mismatch');
   }
 });
