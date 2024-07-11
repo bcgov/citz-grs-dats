@@ -157,12 +157,12 @@ export default class S3ClientService {
     async uploadZipFile(
         uploadedZipFile: Express.Multer.File,
         applicationNumber: string,
-        accessNumber: string,
+        accessionNumber: string,
         primarySecondary: string,
         checksumstring: string,
     ) {
         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
-        transferFolderPath = transferFolderPath + "/" + applicationNumber + "-" + accessNumber + "/"+primarySecondary;
+        transferFolderPath = transferFolderPath + "/" + applicationNumber + "-" + accessionNumber + "/"+primarySecondary;
         this.createFolder(transferFolderPath);
         const orginalname=uploadedZipFile.originalname;
         const zipFilePath = transferFolderPath+"/"+orginalname;
