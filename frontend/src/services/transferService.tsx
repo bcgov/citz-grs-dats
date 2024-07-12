@@ -14,7 +14,7 @@ export class TransferService {
     onFinally?: () => void
   ): Promise<void> {
     var response = await axios
-      .get<ITransferDTO>(`${API_URL}/transfer/${accessionNumber}/${applicationNumber}`)
+      .get<ITransferDTO>(`${API_URL}/api/transfer/${accessionNumber}/${applicationNumber}`)
       .then((response) => {
         onResponse(response.data);
       })
@@ -30,7 +30,7 @@ export class TransferService {
 
   public async getTransfers(): Promise<ITransferDTO[]> {
     return await axios
-      .get<ITransferDTO[]>(`${API_URL}/transfers`)
+      .get<ITransferDTO[]>(`${API_URL}/api/transfers`)
       .then((response) => {
         const transfers: ITransferDTO[] = response.data;
         return transfers;
@@ -43,7 +43,7 @@ export class TransferService {
 
   public async getTransfer(transferId: string): Promise<ITransferDTO> {
     return await axios
-      .get<ITransferDTO>(`${API_URL}/transfers/${transferId}`)
+      .get<ITransferDTO>(`${API_URL}/api/transfers/${transferId}`)
       .then((response) => {
         const transfer: ITransferDTO = response.data;
         return transfer;
@@ -69,7 +69,7 @@ export class TransferService {
 
   public async deleteTransfer(transferID: any): Promise<any> {
     return await axios
-      .delete<ITransferDTO[]>(`${API_URL}/transfers/${transferID}`)
+      .delete<ITransferDTO[]>(`${API_URL}/api/transfers/${transferID}`)
       .then((response) => {
         return response.data;
       })
@@ -81,7 +81,7 @@ export class TransferService {
 
   public async updateTransfer(transfer: any): Promise<ITransferDTO[]> {
     return await axios
-      .put<ITransferDTO[]>(`${API_URL}/transfers/${transfer._id}`, transfer)
+      .put<ITransferDTO[]>(`${API_URL}/api/transfers/${transfer._id}`, transfer)
       .then((response) => {
         return response.data;
       })
@@ -94,7 +94,7 @@ export class TransferService {
   // Digital File List Service function
   public async getDigitalFileListsFromTransfer(transferId: any): Promise<any> {
     return await axios
-      .get(`${API_URL}/transfers/${transferId}/digitalFileLists`)
+      .get(`${API_URL}/api/transfers/${transferId}/digitalFileLists`)
       .then((response) => {
         console.log("in frontEnd");
         //const digitalFileLists: IDigitalFileList[] = response.data;
@@ -113,7 +113,7 @@ export class TransferService {
   ): Promise<any> {
     try {
       const response = await axios.put(
-        `${API_URL}/transfers/${transferId}/digitalFileLists/${digitalFileListId}`,
+        `${API_URL}/api/transfers/${transferId}/digitalFileLists/${digitalFileListId}`,
         updatedData
       );
       return response.data;
@@ -128,7 +128,7 @@ export class TransferService {
   ): Promise<any> {
     try {
       const response = await axios.post(
-        `${API_URL}/transfers/${transferId}/digitalFileLists`,
+        `${API_URL}/api/transfers/${transferId}/digitalFileLists`,
         data
       );
       return response.data;
@@ -144,7 +144,7 @@ export class TransferService {
   ): Promise<any[]> {
     return await axios
       .delete(
-        `${API_URL}/transfers/${transferId}/DigitalFileLists/${digitalFileListId}`
+        `${API_URL}/api/transfers/${transferId}/DigitalFileLists/${digitalFileListId}`
       )
       .then((response) => {
         return response.data;
@@ -160,7 +160,7 @@ export class TransferService {
   ): Promise<any[]> {
     return await axios
       .post(
-        `${API_URL}/transfers/${transferId}/createPSPs`
+        `${API_URL}/api/transfers/${transferId}/createPSPs`
       )
       .then((response) => {
         return response.data;
