@@ -7,8 +7,8 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 import { FormControlLabel, FormLabel, Radio, RadioGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
 import { DatsExcelModel } from '../../../utils/xlsxUtils';
-import { useAuth } from '../../../auth/AuthContext';
 import UploadService from '../../../services/uploadService'
+import { useSSO } from '@bcgov/citz-imb-sso-react';
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -86,7 +86,7 @@ const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: bool
     const [value, setValue] = React.useState('');
     const [dialogOpen, setDialogOpen] = React.useState<boolean>(false);
     const [tempValue, setTempValue] = React.useState<string>('');
-    const { user } = useAuth();
+    const { user } = useSSO();
     const navigate = useNavigate();
     React.useEffect(() => { validate(false, ''); }, []);
     const applicationNumber = excelData?.applicationNumber ?? '';
