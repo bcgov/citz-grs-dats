@@ -84,6 +84,10 @@ export default class S3ClientService {
         //Create the Documentation folder
         const subDocPath = subApplicationPath + "Documentation/";
         this.createFolder(subDocPath);
+        const metaDataPath = subApplicationPath + "Metadata/";
+        this.createFolder(metaDataPath);
+        const contentsPath = subApplicationPath + "Contents/";
+        this.createFolder(contentsPath);
 
         const targetFilePath = subDocPath + uploadedFile.originalname;
 
