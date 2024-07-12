@@ -3,13 +3,16 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import { SSOProvider } from "@bcgov/citz-imb-sso-react";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <SSOProvider idpHint="idir">
+        <App />
+    </SSOProvider>
   </React.StrictMode>,
 );
 

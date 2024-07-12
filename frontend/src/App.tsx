@@ -9,15 +9,13 @@ import {
 import TransferViewStatus from "./views/ViewTransferStatus/TransferStatusView";
 import Landing from "./views/LandingPage/Landing";
 import MyAppBar from "./components/layout/AppBar";
-import axios from "axios";
-import { AuthProvider } from "./auth/AuthContext";
-import PrivateRoute from "./auth/PrivateRoute";
 import Dashboard from "./views/Dashboard/Dashboard";
 import CreateDigitalFileList from "./views/CreateDigitalFileList/CreateDigitalFileList";
 import TransferViewEdit from "./views/ViewTransferStatus/TransferViewEdit";
 import SendRecords from "./views/SendRecords/SendRecords";
 import { SendRecordsEDRMS } from "./views/SendRecords/SendRecordsEDRMS";
 import { SendRecordsLAN } from "./views/SendRecords/SendRecordsLAN";
+import PrivateRoute from "./auth/PrivateRoute";
 
 //import { bcGovTheme } from "./assets/themes/bcGovTheme";
 
@@ -25,7 +23,6 @@ import { SendRecordsLAN } from "./views/SendRecords/SendRecordsLAN";
 const App: React.FC = () => {
   return (
     <ThemeProvider theme={bcGovTheme}>
-      <AuthProvider>
         <CssBaseline />
         <Router>
           <MyAppBar />
@@ -42,7 +39,6 @@ const App: React.FC = () => {
             </Route>
           </Routes>
         </Router>
-      </AuthProvider>
     </ThemeProvider>
   );
 }

@@ -10,8 +10,6 @@ import TransferService from "./service/transfer-service";
 import { specs, swaggerUi } from "./config/swagger/swagger-config";
 import cors from "cors";
 import bodyParser from "body-parser";
-import authRoutes from "./routes/authRoutes";
-import { authenticateJWT } from "./middleware/auth-middleware";
 import * as sessionTypes from "./types/custom-types";
 import logger from "./config/logs/winston-config";
 import cookieParser from "cookie-parser";
@@ -19,8 +17,11 @@ import path from "path";
 import crypto from 'crypto';
 import fs from 'fs';
 import multer from "multer";
+import { protectedRoute, sso } from '@bcgov/citz-imb-sso-express';
+
 import { ITransfer } from "./models/interfaces/ITransfer";
 const app = express();
+sso(app);
 
 // Middleware to serve static files
 
@@ -43,7 +44,7 @@ app.use(
 );
 
 
-app.use(authRoutes);
+// app.use(authRoutes);
 app.use(express.json());
 
 
@@ -52,7 +53,7 @@ app.get("/", (req, res) => {
   res.status(200).json("API Is Healthy");
 });
 
-app.get('/dashboard', authenticateJWT, (req: any, res) => {
+app.get('/dashboard', protectedRoute(), (req: any, res) => {
   logger.info('Dashboard route called');
   res.json({ message: 'This is a protected route', user: req.user });
 });
@@ -61,10 +62,10 @@ app.use("/api", transferRouter);
 app.use("/api", digitalFileListRoute);
 app.use("/api", digitalFileRoute);
 app.use("/api", uploadFilesRoute);
-app.get('/userinfo', authenticateJWT, (req: any, res) => {
-  logger.info('Userinfo route called');
-  res.json(req.user.userinfo);
-});
+// app.get('/userinfo', authenticateJWT, (req: any, res) => {
+//   logger.info('Userinfo route called');
+//   res.json(req.user.userinfo);
+// });
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(function (req: Request, res: Response, next: NextFunction) {
   console.log(
