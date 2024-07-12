@@ -1,19 +1,12 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from './AuthContext';
 import { Box, CircularProgress } from '@mui/material';
+import { useSSO } from '@bcgov/citz-imb-sso-react';
 
 const PrivateRoute: React.FC = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated } = useSSO();
 console.log('is Authenticated in PrivateRourte ' + isAuthenticated);
     
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
   return isAuthenticated ? <Outlet /> : <Navigate to="/" />;
 };
 
