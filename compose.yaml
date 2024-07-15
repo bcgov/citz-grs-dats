@@ -32,7 +32,7 @@ services:
       - ./backend:/backend
       - /frontend/node_modules
   frontend:
-    container_name: frontend
+    container_name: citz-grs-dats-app
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
