@@ -58,7 +58,7 @@ jobs:
         git clone git@github.com:bcgov-c/tenant-gitops-ede503.git
         cd tenant-gitops-ede50e
 
-        FILE_PATH="common-code/values-dev.yaml"
+        FILE_PATH="grs-dats/values-dev.yaml"
         NEW_TAG="${{ steps.get-pr-number.outputs.result }}"
 
         yq e ".api.imageTag = \"$NEW_TAG\"" -i "$FILE_PATH"
