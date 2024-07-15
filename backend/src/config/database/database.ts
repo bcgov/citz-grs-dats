@@ -8,7 +8,7 @@ dotenv.config();
  */
 const connectDB = async () => {
   try {
-    logger.info('Connecting to MongoDB...');
+    logger.info('Connecting to MongoDB... at ' + process.env.MONGODB_URI);
     const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://dbuser:dbpass@localhost:27017/');
     logger.info(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
