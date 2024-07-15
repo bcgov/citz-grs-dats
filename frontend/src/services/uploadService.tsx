@@ -5,7 +5,7 @@ const API_URL = `/api`; // Replace with your API endpoint URL
 export default class UploadService {
   public async upload66xFile(formData: any): Promise<Aris66UploadResponse> {
     return await axios
-      .post(`${API_URL}/uploadfileARIS66x`, formData, {
+      .post(`${API_URL}/api/uploadfileARIS66x`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -20,7 +20,7 @@ export default class UploadService {
 
   public async get66xFileTransferInfos(formData: any): Promise<any> {
     return await axios
-      .post(`${API_URL}/get66xFileTransferInfos`, formData, {
+      .post(`${API_URL}/api/get66xFileTransferInfos`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -36,7 +36,7 @@ export default class UploadService {
 
   public async upload617File(formData: any): Promise<any> {
     return await axios
-      .post(`${API_URL}/uploadfileARIS617`, formData, {
+      .post(`${API_URL}/api/uploadfileARIS617`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -54,7 +54,7 @@ export default class UploadService {
 
   public async saveAgreementToDats(agreementText: Array<any>, applicationNumber: string, accessionNumber: string, userDisplayName: string, formattedDate: string, status: string, decision: string): Promise<any> {
     try {
-      const response = await axios.post(`${API_URL}/submitAgreement`, {
+      const response = await axios.post(`${API_URL}/api/submitAgreement`, {
         agreementText,
         applicationNumber,
         accessionNumber,
