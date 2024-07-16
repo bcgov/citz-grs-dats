@@ -21,6 +21,7 @@
     "@types/mongoose": "^5.11.97",
     "@types/multer": "^1.4.11",
     "@types/swagger-schema-official": "^2.0.23",
+    "@types/winston": "^2.4.4",
     "aws-sdk": "^2.1643.0",
     "body-parser": "^1.20.2",
     "connect-mongo": "^5.0.0",
@@ -48,6 +49,7 @@
     "swagger-ui-express": "^5.0.0",
     "ts-node": "^10.9.1",
     "winston": "^3.13.0",
+    "winston-mongodb": "^5.1.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
