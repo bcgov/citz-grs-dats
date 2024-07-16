@@ -164,17 +164,22 @@ export default class S3ClientService {
         accessionNumber: string,
         primarySecondary: string,
         checksumstring: string,
+        psppath: string,
     ) {
-        var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
-        transferFolderPath = transferFolderPath + "/" + accessionNumber + "-" + applicationNumber + "/Contents/" + primarySecondary;
-        this.createFolder(transferFolderPath);
+        //var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
         const orginalname = uploadedZipFile.originalname;
-        const zipFilePath = transferFolderPath + "/" + orginalname;
+
         const filename = orginalname.substring(0, orginalname.indexOf(".zip"));
+        const transferFolderPath = psppath + "Content/" + filename;
+        this.createFolder(transferFolderPath);
+        // transferFolderPath = psppath +"/Documentation/";
+        // this.createFolder(transferFolderPath);
+        const zipFilePath = transferFolderPath + "/" + orginalname;
+        //const filename = orginalname.substring(0, orginalname.indexOf(".zip"));
         const jsonFileName = filename + "_checksum.json";
         const checksumPath = transferFolderPath + "/" + jsonFileName;
         const jsonBuffer = JSON.stringify(checksumstring);
-
+        console.log("----------->transferFolderPath=" + transferFolderPath);
         console.log("----------->zipFilePath=" + zipFilePath);
         console.log("----------->checksumPath=" + checksumPath);
 
@@ -201,7 +206,29 @@ export default class S3ClientService {
 
         return zipFilePath;
     }
+    async uploadTechnicalV2File(techMetadatav2: any, psppath: string) {
+        const transferFolderPath = psppath + "Metadatas/";
+        this.createFolder(transferFolderPath);
+        console.log("----------->uploadTechnicalV2File=" + transferFolderPath);
+        const jsonBuffer = Buffer.from(JSON.stringify(techMetadatav2));
+        console.log("----------->uploadTechnicalV2File=" + jsonBuffer);
 
+        try {
+            const uploadJSONcommand = new PutObjectCommand({
+                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Key: transferFolderPath + 'techMetadatav2.json',
+                Body: jsonBuffer,
+                ContentType: 'application/json'
+            });
+            const jsonFileResponsedata = await this.s3Client.send(uploadJSONcommand);
+            console.log("----------->jsonFileResponsedata=" + jsonFileResponsedata);
+        } catch (error) {
+            console.error('Error uploading file', error);
+        }
+
+        return transferFolderPath;
+
+    }
 
     async deleteFolder(folderPath: string) {
         try {

@@ -76,6 +76,8 @@ export default class FileService {
             doc.end();
         });
     }
+
+    //async createPSPs(prefix: string): Promise<void> {
     async createPSPs(prefix: string): Promise<void> {
         try {
             const objects = await this.s3ClientService.listObjects(prefix);
