@@ -1,10 +1,10 @@
-opens# GitOpsTeam - create this CRD in your tools namespace in order to enable
+# GitOpsTeam - create this CRD in your tools namespace in order to enable
 # Argo CD for your project
 apiVersion: warden.devops.gov.bc.ca/v1alpha1
 kind: GitOpsTeam
 metadata:
-  name: gitopsteam-baf95e
-  namespace: baf95e-tools
+  name: gitopsteam-ede50e
+  namespace: ede50e-tools
 spec:
   # gitOpsMembers defines the git repo access (tenant-gitops-LICENSEPLATE)
   # Note that if users listed here are not already members of the GitHub
@@ -28,7 +28,6 @@ spec:
       - JlevesqueAtBC
     writers:
       - naveedsyedAtBC
-      - Victor3008
       - ManishSihag
       - Bottle7
 
