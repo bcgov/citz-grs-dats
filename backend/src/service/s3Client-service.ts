@@ -166,17 +166,17 @@ export default class S3ClientService {
         checksumstring: string,
     ) {
         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
-        transferFolderPath = transferFolderPath + "/" + applicationNumber + "-" + accessionNumber + "/"+primarySecondary;
+        transferFolderPath = transferFolderPath + "/" + accessionNumber + "-" + applicationNumber + "/Contents/" + primarySecondary;
         this.createFolder(transferFolderPath);
-        const orginalname=uploadedZipFile.originalname;
-        const zipFilePath = transferFolderPath+"/"+orginalname;
-        const filename=orginalname.substring(0,orginalname.indexOf(".zip"));
-        const jsonFileName=filename+"_checksum.json";
-        const checksumPath = transferFolderPath+"/"+jsonFileName;
+        const orginalname = uploadedZipFile.originalname;
+        const zipFilePath = transferFolderPath + "/" + orginalname;
+        const filename = orginalname.substring(0, orginalname.indexOf(".zip"));
+        const jsonFileName = filename + "_checksum.json";
+        const checksumPath = transferFolderPath + "/" + jsonFileName;
         const jsonBuffer = JSON.stringify(checksumstring);
-        
-        console.log("----------->zipFilePath="+zipFilePath);
-        console.log("----------->checksumPath="+checksumPath);
+
+        console.log("----------->zipFilePath=" + zipFilePath);
+        console.log("----------->checksumPath=" + checksumPath);
 
         try {
             const uploadFilecommand = new PutObjectCommand({
@@ -184,12 +184,12 @@ export default class S3ClientService {
                 Key: zipFilePath, // File path within the folder
                 Body: uploadedZipFile.buffer,
             });
-            
+
             const zipFileResponsedata = await this.s3Client.send(uploadFilecommand);
 
-            const uploadJSONcommand =  new PutObjectCommand({
+            const uploadJSONcommand = new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
-                Key: checksumPath, 
+                Key: checksumPath,
                 Body: jsonBuffer,
                 ContentType: 'application/json'
             });
