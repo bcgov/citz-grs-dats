@@ -3,6 +3,7 @@ import express from "express";
 import { uploadARIS66xMiddleware } from "../middleware/uploadARIS66xMiddleware";
 import { uploadARIS617Middleware } from "../middleware/uploadARIS617Middleware";
 import UploadController from "../controller/upload-controller";
+import { uploadFolderDetails } from "../middleware/uploadFolderDetails";
 
 const router = express.Router();
 const uploadController = new UploadController();
@@ -27,5 +28,10 @@ router.post(
 router
   .route("/submitAgreement")
   .post(uploadController.saveSubmitAgreement);
+
+router.post(
+  "/upload-files",
+  uploadFolderDetails,
+  uploadController.saveFolderDetails);
 
 export default router;

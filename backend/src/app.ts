@@ -5,8 +5,6 @@ import transferRouter from "./routes/transfer-route";
 import digitalFileListRoute from "./routes/digital-file-list-route";
 import digitalFileRoute from "./routes/digital-file-route";
 import uploadFilesRoute from "./routes/upload-files-route";
-import S3ClientService from "./service/s3Client-service";
-import TransferService from "./service/transfer-service";
 import { specs, swaggerUi } from "./config/swagger/swagger-config";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -14,13 +12,11 @@ import * as sessionTypes from "./types/custom-types";
 import logger, { auditor } from "./config/logs/winston-config";
 import cookieParser from "cookie-parser";
 import path from "path";
-import crypto from 'crypto';
-import fs from 'fs';
-import multer from "multer";
 import { protectedRoute, sso } from '@bcgov/citz-imb-sso-express';
 
 import { ITransfer } from "./models/interfaces/ITransfer";
 import connectDB from "./config/database/database";
+
 const app = express();
 sso(app);
 
