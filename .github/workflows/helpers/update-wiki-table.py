@@ -84,7 +84,7 @@ def update_json_data(md_file_path, target, column, value):
     # Update the JSON data based on user input
     for entry in data["data"]:
         if entry["Target"] == target:
-            entry[column] = f"[{value}](https://github.com/bcgov/citz-imb-common-code/pull/{value})<br>📅 `{formatted_date}`"
+            entry[column] = f"[{value}](https://github.com/bcgov/citz-grs-dats/pull/{value})<br>📅 `{formatted_date}`"
 
     return data
 
