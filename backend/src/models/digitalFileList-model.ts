@@ -12,12 +12,6 @@ const DigitalFileListSchema: Schema = new Schema<IDigitalFileList>({
     type: Schema.Types.ObjectId,
     ref: "Transfer",
   },
-  digitalFiles: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "DigitalFile",
-    },
-  ],
   isOPR: { type: Boolean, required: false },
   startDate: { type: Date },
   endtDate: { type: Date },

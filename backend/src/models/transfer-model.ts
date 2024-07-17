@@ -18,6 +18,12 @@ const TransferSchema: Schema = new Schema<ITransfer>({
       ref: "DigitalFileList",
     },
   ],
+  psps: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Psp",
+    }
+  ],
   producerMinistry: { type: String, required: false },
   producerBranch: { type: String, required: false },
   createDate: { type: Date, default: Date.now },
