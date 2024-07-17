@@ -5,6 +5,7 @@ import React, {
   ForwardRefRenderFunction,
   forwardRef,
   FC,
+  useRef,
 } from "react";
 import {
   Box,
@@ -24,6 +25,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import ITransferDTO from "../../../types/DTO/Interfaces/ITransferDTO";
+import { getApiBaseUrl } from "../../../services/serverUrlService";
 enum DATSActions {
   FolderSelected,
   FileSelected,
@@ -56,6 +58,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   const [makeFieldsDisable,setMakeFieldsDisable] = useState<boolean>(false);
    const [transfer, setTransfer] = useState<ITransferDTO>(initialTransfer);
   const [editableFields, setEditableFields] = useState<EditableFields>({});
+  const activeIndexRef = useRef<string | null>(null); 
   const [folderValues, setFolderValues] = useState<FolderValues>(
     transfer.digitalFileLists!!.reduce((acc, fileList) => {
       acc[fileList.folder] = fileList.folder;
@@ -131,6 +134,24 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         console.log(event.data);
       const data = JSON.parse(event.data);
         switch (data.Action) {
+          case DATSActions.Cancelled:
+            activeIndexRef.current = null;
+            break;
+            case DATSActions.FileInformation:
+              debugger;
+              console.log('activeIndex: -> ' +  activeIndexRef.current);
+              if ( activeIndexRef.current !== null) {
+                setTransfer((prev) => ({
+                  ...prev,
+                  digitalFileLists: transfer.digitalFileLists!!.map((fileList) =>
+                    fileList.folder ===  activeIndexRef.current
+                      ? { ...fileList, folder: data.Payload.Path }
+                      : fileList
+                  )
+                }));
+                activeIndexRef.current = null; // Reset the active index after update
+              }
+              break;
           case DATSActions.FileFolderExists:
             setThirdPartyStatus((prevState) => ({
               ...prevState,
@@ -206,7 +227,8 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     });
   };
 
-  const uploadAllFolders = (): void => {
+  const uploadAllFolders = async (): Promise<void> => {
+    const baseUrl = await getApiBaseUrl();
     //report(true, '');
     setAllProgress(transfer);
     setMakeFieldsDisable(true);
@@ -221,7 +243,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           TransferId: transfer._id,
           ApplicationNumber: transfer.applicationNumber,
           AccessionNumber: transfer.accessionNumber,
-          UploadUrl: `/api/upload-files`,
+          UploadUrl: `${baseUrl}/api/upload-files`,
         },
       })
     );
@@ -272,11 +294,10 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   };
 
   const handleEditClick = (folder: string) => {
-    console.log(folder);
-    setEditableFields((prev) => ({
-      ...prev,
-      [folder]: !prev[folder],
-    }));
+    console.log('folder: -> ' + folder);
+    activeIndexRef.current = folder;
+    window.location.href = `citz-grs-dats://open?browse=folder`;
+    console.log('activeIndex: -> ' +  activeIndexRef.current);
   };
   const getStatusIcon = (status?: Number) => {
     if (status === undefined) return null;
@@ -336,17 +357,27 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           Folders
         </Typography>
         <Grid container spacing={2}>
-          <Grid item xs={5}>
+          <Grid item xs={6}>
             <Typography variant="body2" color="textSecondary">
               Folder
             </Typography>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={1}>
             <Typography variant="body2" color="textSecondary">
               Size
             </Typography>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={1}>
+            <Typography variant="body2" color="textSecondary">
+              Schedule
+            </Typography>
+          </Grid>
+          <Grid item xs={1}>
+            <Typography variant="body2" color="textSecondary">
+              PrimarySecondary
+            </Typography>
+          </Grid>
+          <Grid item xs={1}>
             <Typography variant="body2" color="textSecondary">
               Number of Files
             </Typography>
@@ -355,11 +386,11 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         </Grid>
         {transfer.digitalFileLists?.map((fileList, index) => (
           <Grid container spacing={2} key={index} alignItems="center">
-            <Grid item xs={5} sx={{ display: "flex", alignItems: "center" }}>
+            <Grid item xs={6} sx={{ display: "flex", alignItems: "center" }}>
               <TextField
               disabled={makeFieldsDisable}
                 onChange={(event) => handleValueChange(fileList.folder, event)}
-                value={folderValues[fileList.folder]}
+                value={fileList.folder}
                 fullWidth
                 InputProps={{
                   readOnly: !editableFields[fileList.folder],
@@ -371,17 +402,9 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
                           <IconButton
                           disabled={makeFieldsDisable}
                             size="small"
-                            onClick={() =>
-                              editableFields[fileList.folder]
-                                ? handleSaveClick(fileList.folder)
-                                : handleEditClick(fileList.folder)
-                            }
+                            onClick={() => handleEditClick(fileList.folder)}
                           >
-                            {editableFields[fileList.folder] ? (
-                              <SaveIcon fontSize="small" />
-                            ) : (
-                              <EditIcon fontSize="small" />
-                            )}
+                            <EditIcon fontSize="small" />
                           </IconButton>
                         </>
                       ) : (
@@ -393,21 +416,35 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
                 error={thirdPartyStatus[fileList.folder] === FAIL}
               />
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={1}>
               <TextField
                 value={fileList.size}
                 fullWidth
                 InputProps={{ readOnly: true }}
               />
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={1}>
+              <TextField
+                value={fileList.schedule}
+                fullWidth
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+            <Grid item xs={1}>
+              <TextField
+                value={fileList.primarySecondary}
+                fullWidth
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+            <Grid item xs={1}>
               <TextField
                 value={fileList.fileCount}
                 fullWidth
                 InputProps={{ readOnly: true }}
               />
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={1}>
               {getStatusIcon(uploadStatus[fileList.folder])}
             </Grid>
             <Grid item xs={1}>

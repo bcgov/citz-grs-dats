@@ -26,6 +26,7 @@ import { DatsExcelModel } from "../../utils/xlsxUtils";
 import TransferComponent from "./components/TransferComponent";
 import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
 import { Aris66UploadResponse } from "../../types/DTO/Interfaces/Aris66UploadResponse";
+import { useNavigate } from "react-router-dom";
 
 export const SendRecordsLAN = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -46,6 +47,7 @@ export const SendRecordsLAN = () => {
 
   const [arisTransferDetails, setArisTransferDetails] =
     useState<ITransferDTO | null>(null);
+    const navigate = useNavigate();
     const childRef = useRef<any>(null); // Define a ref for ChildComponent
   const uploadService = new UploadService();
   const theme = useTheme();
@@ -235,6 +237,7 @@ export const SendRecordsLAN = () => {
     setActiveStep(0);
     setErrors([]);
     setIsValid(true);
+    navigate('/dashboard');
   };
 
   const handleValidationChange = (
