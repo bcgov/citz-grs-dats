@@ -14,8 +14,6 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import { protectedRoute, sso } from '@bcgov/citz-imb-sso-express';
 
-import { ITransfer } from "./models/interfaces/ITransfer";
-import connectDB from "./config/database/database";
 
 const app = express();
 sso(app);
@@ -77,56 +75,6 @@ app.use(function (req: Request, res: Response, next: NextFunction) {
     )}`
   );
   next();
-});
-
-// Set up multer storage and file handling
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
-
-app.post('/api/upload-files', upload.single('file'), (req, res) => {
-  console.log('req received to upload');
-  const file = req.file;
-  //do NOT the req params names as this has to match with the ones in windows service
-  const receivedChecksum = req.body.checksum;
-  const transferId = req.body.transferId;
-  const applicationNumber = req.body.applicationNumber;
-  const accessionNumber = req.body.accessNumber;
-  const primarySecondary = req.body.classification;
-  const techMetadata = req.body.technicalV2;
-  //folderPath  validation
-  if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
-    return res.status(400).send('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
-  }
-console.log('no validation issues');
-  // Calculate the SHA-1 checksum of the uploaded file
-  const hash = crypto.createHash('sha1');
-  hash.update(file.buffer);
-  const calculatedChecksum = hash.digest('hex');
-
-  // Compare checksums
-  if (calculatedChecksum === receivedChecksum) {
-    var obj = `{
-        "code" : "shah1",
-        "checksume" : receivedChecksum,
-      }`;
-
-    //convert object to json string
-    var checksumString = JSON.stringify(obj);
-    const s3ClientService = new S3ClientService();
-    console.log('uploading to s3 - started');
-    const zipFilePath = s3ClientService.uploadZipFile(file, applicationNumber, accessionNumber, primarySecondary, checksumString);
-    console.log('uploading to s3 - done');
-
-    console.log('all good');
-    res.status(200).send('File uploaded and checksum verified');
-
-  } else {
-    // Handle checksum mismatch
-    console.log('checksum mismatch');
-    const transferService = new TransferService();
-    transferService.deleteTransfer(transferId)
-    res.status(400).send('Checksum mismatch');
-  }
 });
 
 export default app;
