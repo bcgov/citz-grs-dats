@@ -1,0 +1,67 @@
+# GitOpsTeam - create this CRD in your tools namespace in order to enable
+# Argo CD for your project
+apiVersion: warden.devops.gov.bc.ca/v1alpha1
+kind: GitOpsTeam
+metadata:
+  name: gitopsteam-ede50e
+  namespace: ede50e-tools
+spec:
+  # gitOpsMembers defines the git repo access (tenant-gitops-LICENSEPLATE)
+  # Note that if users listed here are not already members of the GitHub
+  # 'bcgov-c' organization, they will have to accept an email invitation
+  # to join.
+  #
+  # Note:
+  #   GitHub IDs are case sensitive
+  #   Do not append "@github" to GitHub IDs in the gitOpsMembers section
+  #   This section is for GitHub repo access, so only GitHub IDs, no IDIRs
+  #   You may use GitHub teams in this section
+  # -----------------------------------------------------------------------
+  gitOpsMembers:
+
+    # Full admin access to the repo, including repo deletion, adding of users
+    # Recommended for people who need full access to the project, including
+    # sensitive and destructive actions like managing security or deleting a
+    # repository.
+    admins:
+      - akroon3r
+      - JlevesqueAtBC
+    writers:
+      - naveedsyedAtBC
+      - ManishSihag
+      - Bottle7
+
+    # Recommended for project managers who need to manage the repository without
+    # access to sensitive or destructive actions.
+    maintainers:
+
+    # Recommended for non-code contributors who want to view or discuss your
+    # project.
+    readers:
+
+    # Recommended for contributors who need to manage issues and pull requests
+    # without write access.
+    triage:
+
+  # projectMembers defines access to the Argo CD UI and is based on Keycloak
+  #   groups
+  #
+  # Note:
+  #   GitHub IDs must have "@github" appended to the ID
+  #   You may include IDIR email addresses (UPN) for IDIR-based access
+  #   GitHub IDs are not case sensitive in this section
+  #   Do not use GitHub teams here, just individual IDs
+  # ------------------------------------------------------------------------
+  projectMembers:
+
+    # Project Maintainers have full access to the Argo CD Project, including the
+    # ability create, edit, and delete Applications within the Project
+    maintainers:
+      - jacques.levesque@gov.bc.ca
+      - naveed.syed@gov.bc.ca
+      - manish.sihag@gov.bc.ca
+      - brandon.bouchard@gov.bc.ca
+      - adam.kroon@gov.bc.ca
+
+    # Project Readers have read-only access to the Project in the Argo CD UI
+    readers:

@@ -56,11 +56,7 @@ const logger = winston.createLogger({
       format: winston.format.combine(winston.format.simple()),
       handleExceptions: true,
     }),
-    new winston.transports.File({
-      level: logLevel,
-      filename: `${logDir}/app.log`,
-      handleExceptions: true,
-    }),
+  
     // MongoDB transport for 'audit' log level
     new MongoDB({
       level: "audit", // Will log only 'audit' level
