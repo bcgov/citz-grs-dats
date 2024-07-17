@@ -6,6 +6,7 @@ import DigitalFileListService from "../service/digitalFileList-service";
 import { RequestHandler } from "express";
 import crypto from 'crypto';
 import mongoose from "mongoose";
+import { IPsp } from "src/models/psp-model";
 
 
 export default class UploadController {
@@ -183,10 +184,60 @@ export default class UploadController {
 
         // store the zip and checksum
         const zipFilePath = s3ClientService.uploadZipFile(file, applicationNumber, accessionNumber, primarySecondary, checksumString, psppath);
+
+
+
+        const techMetadatav2test = [
+          {
+            "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\1-MB-DOC.doc",
+            "FileName": "1-MB-DOC.doc",
+            "Checksum": "88dc8b79636f7d5131d2446c6855ca956a176932",
+            "DateCreated": "2024-06-27T16:32:40.7403152-04:00",
+            "DateModified": "2024-06-27T16:32:43.6795841-04:00",
+            "DateAccessed": "2024-07-15T19:09:13.1135847-04:00",
+            "DateLastSaved": "2024-06-27T16:32:43.6795841-04:00",
+            "AssociatedProgramName": "Pick an application",
+            "Owner": "IDIR\\NSYED",
+            "Computer": "VIRTUAL-MIND",
+            "ContentType": "application/octet-stream",
+            "SizeInBytes": 1048576
+          },
+          {
+            "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\138-KB-XML-File.xml",
+            "FileName": "138-KB-XML-File.xml",
+            "Checksum": "abd4a088b49d9f9863be4f7fda45a0528f6a4af8",
+            "DateCreated": "2024-06-27T16:39:14.7746566-04:00",
+            "DateModified": "2024-06-27T16:39:19.0695192-04:00",
+            "DateAccessed": "2024-07-15T19:09:13.1193231-04:00",
+            "DateLastSaved": "2024-06-27T16:39:19.0695192-04:00",
+            "AssociatedProgramName": "Microsoft Edge",
+            "Owner": "IDIR\\NSYED",
+            "Computer": "VIRTUAL-MIND",
+            "ContentType": "application/octet-stream",
+            "SizeInBytes": 141317
+          }
+        ]
+
+
         // Upload the technical metadata v2
-        const jsonFileResponsedata = await s3ClientService.uploadTechnicalV2File(techMetadatav2, psppath);
+        const jsonFileResponsedata = await s3ClientService.uploadTechnicalV2File(techMetadatav2test, psppath);
 
 
+        const pspData: Partial<IPsp> = {
+          name: pspname,
+          pathToS3: psppath,
+          pathToLan: " ",
+          pspStatus: "To be Create"
+        };
+        // add the psp to the transfer
+
+        this.transferService.addPspToTransfer(transferId, pspData)
+          .then(updatedTransfer => {
+            console.log("Updated Transfer:", updatedTransfer);
+          })
+          .catch(error => {
+            console.error("Error adding PSP to Transfer:", error);
+          });
 
         console.log('all good');
         res.status(200).send('File uploaded and checksum verified');
@@ -194,8 +245,8 @@ export default class UploadController {
       } else {
         // Handle checksum mismatch
         console.log('checksum mismatch');
-        const transferService = new TransferService();
-        transferService.deleteTransfer(transferId)
+        // const transferService = new TransferService();
+        // transferService.deleteTransfer(transferId)
         res.status(400).send('Checksum mismatch');
       }
 
