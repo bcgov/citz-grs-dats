@@ -8,15 +8,20 @@ import uploadFilesRoute from "./routes/upload-files-route";
 import { specs, swaggerUi } from "./config/swagger/swagger-config";
 import cors from "cors";
 import bodyParser from "body-parser";
-import logger from "./config/logs/winston-config";
+import * as sessionTypes from "./types/custom-types";
+import logger, { auditor } from "./config/logs/winston-config";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { protectedRoute, sso } from '@bcgov/citz-imb-sso-express';
 
+
 const app = express();
 sso(app);
 
-// Middleware to serve static files
+logger.info('This is an info message');
+  logger.error('This is an error message');
+  auditor('test audit log', { event: 'user_login', username: 'johndoe' }); 
+
 
 const corsOptions = {
   origin: process.env.CLIENT_BASE_URL, // 'http://localhost:3000',
@@ -50,11 +55,14 @@ app.get('/dashboard', protectedRoute(), (req: any, res) => {
   logger.info('Dashboard route called');
   res.json({ message: 'This is a protected route', user: req.user });
 });
-
+app.get('/api/base-url', (req, res) => {
+  res.json({ baseUrl: `${process.env.BACKEND_URL}` });
+});
 app.use("/api", transferRouter);
 app.use("/api", digitalFileListRoute);
 app.use("/api", digitalFileRoute);
 app.use("/api", uploadFilesRoute);
+
 // app.get('/userinfo', authenticateJWT, (req: any, res) => {
 //   logger.info('Userinfo route called');
 //   res.json(req.user.userinfo);

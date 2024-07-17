@@ -10,9 +10,10 @@ const connectDB = async () => {
   try {
     logger.info('Connecting to MongoDB... at ' + process.env.MONGODB_URI);
     const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://dbuser:dbpass@localhost:27017/');
-    logger.info(`MongoDB Connected: ${conn.connection.host}`);
+    console.info(`MongoDB Connected: ${conn.connection.host}`);
+    return conn;
   } catch (error) {
-    logger.error(`Error: ${error}`);
+    console.error(`Error: ${error}`);
     process.exit(1);
   }
 };
