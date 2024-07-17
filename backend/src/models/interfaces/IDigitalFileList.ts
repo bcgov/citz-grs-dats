@@ -18,12 +18,6 @@ export interface IDigitalFileList extends Document {
     type: Schema.Types.ObjectId;
     ref: "Transfer";
   };
-  digitalFiles?: [
-    {
-      type: Schema.Types.ObjectId;
-      ref: "DigitalFile";
-    }
-  ];
   fileCount?: Number;
   size?: Number;
 

@@ -3,7 +3,6 @@ import session from "express-session";
 import { Response, Request, NextFunction } from "express";
 import transferRouter from "./routes/transfer-route";
 import digitalFileListRoute from "./routes/digital-file-list-route";
-import digitalFileRoute from "./routes/digital-file-route";
 import uploadFilesRoute from "./routes/upload-files-route";
 import { specs, swaggerUi } from "./config/swagger/swagger-config";
 import cors from "cors";
@@ -19,8 +18,8 @@ const app = express();
 sso(app);
 
 logger.info('This is an info message');
-  logger.error('This is an error message');
-  auditor('test audit log', { event: 'user_login', username: 'johndoe' }); 
+logger.error('This is an error message');
+auditor('test audit log', { event: 'user_login', username: 'johndoe' });
 
 
 const corsOptions = {
@@ -60,7 +59,6 @@ app.get('/api/base-url', (req, res) => {
 });
 app.use("/api", transferRouter);
 app.use("/api", digitalFileListRoute);
-app.use("/api", digitalFileRoute);
 app.use("/api", uploadFilesRoute);
 
 // app.get('/userinfo', authenticateJWT, (req: any, res) => {

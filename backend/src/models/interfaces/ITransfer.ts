@@ -15,6 +15,12 @@ export interface ITransfer {
       ref: "DigitalFileList";
     }
   ];
+  psps?: [
+    {
+      type: Types.ObjectId;
+      ref: "Psp";
+    }
+  ];
   createDate?: Date;
   updatedDate?: Date;
   createdBy?: string;

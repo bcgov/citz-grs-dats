@@ -3,7 +3,6 @@ import FileService from "../service/File-service";
 import createAgreementPDF from "../service/File-service";
 import S3ClientService from "../service/s3Client-service";
 import DigitalFileListService from "../service/digitalFileList-service";
-import DigitalFileService from "../service/digitalFile-service";
 import { RequestHandler } from "express";
 import crypto from 'crypto';
 import mongoose from "mongoose";
@@ -15,7 +14,6 @@ export default class UploadController {
   private s3ClientService: S3ClientService;
   private fileService: FileService;
   private digitalFileListService: DigitalFileListService;
-  private digitalFileService: DigitalFileService;
   private documentationPath: string;
 
   constructor() {
@@ -24,7 +22,6 @@ export default class UploadController {
     this.s3ClientService = new S3ClientService();
     this.fileService = new FileService();
     this.digitalFileListService = new DigitalFileListService();
-    this.digitalFileService = new DigitalFileService();
     this.documentationPath = "";
   }
 
