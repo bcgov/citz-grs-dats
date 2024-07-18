@@ -86,8 +86,8 @@ export default class S3ClientService {
         this.createFolder(subDocPath);
         const metaDataPath = subApplicationPath + "Metadata/";
         this.createFolder(metaDataPath);
-        const contentsPath = subApplicationPath + "Contents/";
-        this.createFolder(contentsPath);
+        // const contentsPath = subApplicationPath + "Contents/";
+        // this.createFolder(contentsPath);
 
         const targetFilePath = subDocPath + uploadedFile.originalname;
 
@@ -191,7 +191,7 @@ export default class S3ClientService {
             });
 
             const zipFileResponsedata = await this.s3Client.send(uploadFilecommand);
-
+            console.log("----------->zipFileResponsedata =" + zipFileResponsedata);
             const uploadJSONcommand = new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
                 Key: checksumPath,

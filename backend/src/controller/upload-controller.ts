@@ -1,11 +1,10 @@
 import TransferService from "../service/transfer-service";
 import FileService from "../service/File-service";
-import createAgreementPDF from "../service/File-service";
 import S3ClientService from "../service/s3Client-service";
 import DigitalFileListService from "../service/digitalFileList-service";
 import { RequestHandler } from "express";
-import crypto from 'crypto';
 import mongoose from "mongoose";
+
 
 
 export default class UploadController {
@@ -129,7 +128,9 @@ export default class UploadController {
         decision,
         placeholders
       );
-      res.status(200).json(soumissionAgrement);
+      res.status(201).json({
+        message: "Upload Soumission Agreement successful",
+      });
     } catch (error) {
       res.status(500).json({ error: "An error occurred" });
     }
@@ -138,72 +139,19 @@ export default class UploadController {
 
   saveFolderDetails: RequestHandler = async (req, res, next) => {
     try {
+      const { file, body } = req;
+      const { checksum: receivedChecksum, transferId, applicationNumber, accessNumber: accessionNumber, classification: primarySecondary, technicalV2: techMetadatav2 } = body;
 
-      const file = req.file;
-      const receivedChecksum = req.body.checksum;
-      const transferId = req.body.transferId;
-      const applicationNumber = req.body.applicationNumber;
-      const accessionNumber = req.body.accessNumber;
-      const primarySecondary = req.body.classification;
-      const techMetadatav2 = req.body.technicalV2;
-      //folderPath  validation
       if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
         return res.status(400).send('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
       }
-      // Calculate the SHA-1 checksum of the uploaded file
-      const hash = crypto.createHash('sha1');
-      hash.update(file.buffer);
-      const calculatedChecksum = hash.digest('hex');
-      // Compare checksums
-      if (calculatedChecksum === receivedChecksum) {
-        var obj = `{
-      "code" : "shah1",
-      "checksume" : receivedChecksum,
-     }`;
 
-        //convert object to json string
-        var checksumString = JSON.stringify(obj);
-
-        const s3ClientService = new S3ClientService();
-        var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
-
-        // Create the PSP structure per classification     ex. PSP-94-1434-749399-11000-20
-
-        const pspname = 'PSP-' + accessionNumber + "-" + applicationNumber + "-" + primarySecondary + "-01"
-        const psppath = transferFolderPath + "/" + accessionNumber + "-" + applicationNumber + "/" + pspname + "/";
-        s3ClientService.createFolder(psppath);
-
-        // Create the PSP entities in Transfer
-        //transferFolderPath = transferFolderPath + "/" + accessionNumber + "-" + applicationNumber + "/Contents/" + primarySecondary;
-
-        // Create the Folder
-
-
-
-
-        // store the zip and checksum
-        const zipFilePath = s3ClientService.uploadZipFile(file, applicationNumber, accessionNumber, primarySecondary, checksumString, psppath);
-        // Upload the technical metadata v2
-        const jsonFileResponsedata = await s3ClientService.uploadTechnicalV2File(techMetadatav2, psppath);
-
-
-
-        console.log('all good');
-        res.status(200).send('File uploaded and checksum verified');
-
-      } else {
-        // Handle checksum mismatch
-        console.log('checksum mismatch');
-        const transferService = new TransferService();
-        transferService.deleteTransfer(transferId)
-        res.status(400).send('Checksum mismatch');
-      }
-
+      await this.fileService.saveFolderDetails(req);
+      res.status(200).send('File uploaded and checksum verified');
     } catch (error) {
-      res.status(500).json({ error: "An error occurred" });
+      res.status(500).json({ error: "An error occurred in the saveFolderDetails Function" });
     }
   }
-
 }
 
 
