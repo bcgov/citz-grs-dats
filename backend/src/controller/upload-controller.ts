@@ -146,7 +146,8 @@ export default class UploadController {
         return res.status(400).send('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
       }
 
-      await this.fileService.saveFolderDetails(req);
+      await this.fileService.saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2);
+
       res.status(200).send('File uploaded and checksum verified');
     } catch (error) {
       res.status(500).json({ error: "An error occurred in the saveFolderDetails Function" });
