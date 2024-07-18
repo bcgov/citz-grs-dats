@@ -153,14 +153,7 @@ export default class FileService {
             await this.s3ClientService.downloadFile(key, downloadPath);
         }
     }
-    async saveFolderDetails(req: Request) {
-        const file = req.file;
-        const receivedChecksum = req.body.checksum;
-        const transferId = req.body.transferId;
-        const applicationNumber = req.body.applicationNumber;
-        const accessionNumber = req.body.accessNumber;
-        const primarySecondary = req.body.classification;
-        const techMetadatav2 = req.body.technicalV2;
+    async saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2) {
 
         if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
             throw new Error('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
