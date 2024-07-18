@@ -248,9 +248,6 @@ export default class FileService {
                 throw new Error("Error adding PSP to Transfer:");
             });
 
-
-        //       res.status(200).send('File uploaded and checksum verified');
-
     }
 
 }

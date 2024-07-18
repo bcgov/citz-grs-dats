@@ -137,6 +137,18 @@ export default class TransferService {
     if (!transfer) {
       throw new Error('Transfer not found');
     }
+    // Check if a PSP with the same name already exists in the transfer
+    if (transfer.psps) {
+      for (let i = 0; i < transfer.psps.length; i++) {
+        let pspIdString = transfer.psps[i].toString();
+        let psp = await this.pspRepository.getPspById(pspIdString);
+        if (psp && psp.name === pspData.name) {
+          console.log('A PSP with the same name already exists in the transfer');
+          return transfer; // Return the existing transfer without creating a new PSP
+        }
+      }
+    }
+
 
     // Create a new PSP or retrieve an existing one
     let psp = await this.pspRepository.createPsp(pspData);
