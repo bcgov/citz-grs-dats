@@ -2,7 +2,13 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import S3ClientService from "../service/s3Client-service";
+import TransferService from "../service/transfer-service";
+
+import crypto from 'crypto';
 import createFolder from "../utils/createFolder";
+import { Request, ParamsDictionary } from 'express-serve-static-core';
+import { ParsedQs } from 'qs';
+import { IPsp } from 'src/models/psp-model';
 
 const replacePlaceholders = (text: string, placeholders: { [key: string]: string }): string => {
     let replacedText = text;
@@ -17,11 +23,14 @@ interface Placeholder {
 }
 export default class FileService {
 
+
     private s3ClientService: S3ClientService;
+    private transferService: TransferService;
     private lanDrivePath: string;
 
     constructor() {
         this.s3ClientService = new S3ClientService();
+        this.transferService = new TransferService();
         this.lanDrivePath = "Upload617/";
     }
     async createAgreementPDF(
@@ -143,6 +152,102 @@ export default class FileService {
             // Download the file
             await this.s3ClientService.downloadFile(key, downloadPath);
         }
+    }
+    async saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2) {
+
+        if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
+            throw new Error('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
+        }
+
+        //Calculate the SHA-1 checksum of the uploaded file
+        const hash = crypto.createHash('sha1');
+        hash.update(file.buffer);
+        const calculatedChecksum = hash.digest('hex');
+
+        // Compare checksums
+        if (calculatedChecksum !== receivedChecksum) {
+            console.log('checksum mismatch');
+            // const transferService = new TransferService();
+            // transferService.deleteTransfer(transferId)
+            throw new Error('Checksum mismatch');
+        }
+
+        // Create the JSON object
+        const checksumData = {
+            code: "shah1",
+            checksum: receivedChecksum,
+        };
+
+        // Convert JSON object to string
+        const checksumString = JSON.stringify(checksumData, null, 2);
+
+
+        const s3ClientService = new S3ClientService();
+        var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+
+        // Create the PSP structure per classification     ex. PSP-94-1434-749399-11000-20
+
+        const pspname = 'PSP-' + accessionNumber + "-" + applicationNumber + "-" + primarySecondary + "-01"
+        const psppath = transferFolderPath + "/" + accessionNumber + "-" + applicationNumber + "/" + pspname + "/";
+        s3ClientService.createFolder(psppath);
+
+
+        // store the zip and checksum
+        const zipFilePath = s3ClientService.uploadZipFile(file, applicationNumber, accessionNumber, primarySecondary, checksumString, psppath);
+
+        const techMetadatav2test = [
+            {
+                "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\1-MB-DOC.doc",
+                "FileName": "1-MB-DOC.doc",
+                "Checksum": "88dc8b79636f7d5131d2446c6855ca956a176932",
+                "DateCreated": "2024-06-27T16:32:40.7403152-04:00",
+                "DateModified": "2024-06-27T16:32:43.6795841-04:00",
+                "DateAccessed": "2024-07-15T19:09:13.1135847-04:00",
+                "DateLastSaved": "2024-06-27T16:32:43.6795841-04:00",
+                "AssociatedProgramName": "Pick an application",
+                "Owner": "IDIR\\NSYED",
+                "Computer": "VIRTUAL-MIND",
+                "ContentType": "application/octet-stream",
+                "SizeInBytes": 1048576
+            },
+            {
+                "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\138-KB-XML-File.xml",
+                "FileName": "138-KB-XML-File.xml",
+                "Checksum": "abd4a088b49d9f9863be4f7fda45a0528f6a4af8",
+                "DateCreated": "2024-06-27T16:39:14.7746566-04:00",
+                "DateModified": "2024-06-27T16:39:19.0695192-04:00",
+                "DateAccessed": "2024-07-15T19:09:13.1193231-04:00",
+                "DateLastSaved": "2024-06-27T16:39:19.0695192-04:00",
+                "AssociatedProgramName": "Microsoft Edge",
+                "Owner": "IDIR\\NSYED",
+                "Computer": "VIRTUAL-MIND",
+                "ContentType": "application/octet-stream",
+                "SizeInBytes": 141317
+            }
+        ]
+
+
+        // Upload the technical metadata v2
+        const jsonFileResponsedata = await s3ClientService.uploadTechnicalV2File(techMetadatav2test, psppath);
+
+        // Prepared the Psp
+        const pspData: Partial<IPsp> = {
+            name: pspname,
+            pathToS3: psppath,
+            pathToLan: " ",
+            pspStatus: "To be Create"
+        };
+
+        // add the psp to the transfer
+
+        this.transferService.addPspToTransfer(transferId, pspData)
+            .then(updatedTransfer => {
+                console.log("Updated Transfer:", updatedTransfer);
+            })
+            .catch(error => {
+                throw new Error("Error adding PSP to Transfer:");
+            });
+
     }
 
 }

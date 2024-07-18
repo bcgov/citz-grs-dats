@@ -2,7 +2,7 @@ import { UserModel } from "../models/user-model";
 import { IUser } from "../models/interfaces/IUser";
 
 export default class UserRepository {
-  constructor() {}
+  constructor() { }
 
   async getUsers(): Promise<IUser[] | null> {
     const users = await UserModel.find({});

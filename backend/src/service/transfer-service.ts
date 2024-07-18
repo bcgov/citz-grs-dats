@@ -1,23 +1,21 @@
-import mongoose, { FilterQuery } from "mongoose";
+import { FilterQuery } from "mongoose";
 import TransferRepository from "../repository/transfer-repository";
+import PspRepository from "../repository/psp-repository";
 import { ITransfer } from "../models/interfaces/ITransfer";
-import { TransferStatus } from "../models/enums/TransferStatus";
-import { Express } from 'express';
-import fs from "fs";
 import extractsFromAra66x from "../utils/extractsFromAra66x";
 import extractsTransferInfo from "../utils/extractsTransferInfo";
-import createFolder from "../utils/createFolder";
-import extractsDigitalFileList from "../utils/extractsDigitalFileList";
-import multer from "multer";
 import S3ClientService from "./s3Client-service";
+import { IPsp } from "src/models/psp-model";
 
 export default class TransferService {
   private transferRepository: TransferRepository;
   private s3ClientService: S3ClientService;
+  private pspRepository: PspRepository;
 
   constructor() {
     this.transferRepository = new TransferRepository();
     this.s3ClientService = new S3ClientService();
+    this.pspRepository = new PspRepository();
   }
 
   async getTransfers(): Promise<ITransfer[] | null> {
@@ -129,5 +127,37 @@ export default class TransferService {
       throw new Error('Transfer not found');
     }
 
+  }
+
+  async addPspToTransfer(transferId: string, pspData: Partial<IPsp>): Promise<ITransfer | null> {
+    // Find the transfer
+
+
+    const transfer = await this.transferRepository.getTransfersById(transferId);
+    if (!transfer) {
+      throw new Error('Transfer not found');
+    }
+    // Check if a PSP with the same name already exists in the transfer
+    if (transfer.psps) {
+      for (let i = 0; i < transfer.psps.length; i++) {
+        let pspIdString = transfer.psps[i].toString();
+        let psp = await this.pspRepository.getPspById(pspIdString);
+        if (psp && psp.name === pspData.name) {
+          console.log('A PSP with the same name already exists in the transfer');
+          return transfer; // Return the existing transfer without creating a new PSP
+        }
+      }
+    }
+
+
+    // Create a new PSP or retrieve an existing one
+    let psp = await this.pspRepository.createPsp(pspData);
+
+    // Add the PSP to the transfer
+    transfer.psps?.push(psp._id);
+
+    // Save the updated transfer
+    const updatedTransfer = await this.transferRepository.updateTransfer(transferId, transfer);
+    return updatedTransfer;
   }
 }

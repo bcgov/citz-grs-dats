@@ -3,6 +3,7 @@ import extractsFromAra66x from "../utils/extractsFromAra66x";
 import fs from "fs";
 import { Readable } from "stream";
 import { pipeline } from "stream/promises";
+import extractTechnicalMetadataToJson from "../utils/exctractTechnicalV1DatafromExcel"
 import path from "path";
 
 export default class S3ClientService {
@@ -84,10 +85,6 @@ export default class S3ClientService {
         //Create the Documentation folder
         const subDocPath = subApplicationPath + "Documentation/";
         this.createFolder(subDocPath);
-        const metaDataPath = subApplicationPath + "Metadata/";
-        this.createFolder(metaDataPath);
-        const contentsPath = subApplicationPath + "Contents/";
-        this.createFolder(contentsPath);
 
         const targetFilePath = subDocPath + uploadedFile.originalname;
 
@@ -103,6 +100,30 @@ export default class S3ClientService {
 
         } catch (error) {
             console.error('Error uploading file', error);
+        }
+
+        try {
+            // Create folder if necessary (assume this.createFolder is defined elsewhere)
+            const metaDataPath = subApplicationPath + "Metadata/";
+            await this.createFolder(metaDataPath);
+
+            // Extract the technical metadata to JSON
+            const jsonData = await extractTechnicalMetadataToJson(fileContent);
+            const technicalv1 = JSON.stringify(jsonData, null, 2);
+            console.log("technicalv1------" + technicalv1);
+
+            // Upload the JSON data to S3
+            const uploadFilecommand2 = new PutObjectCommand({
+                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Key: metaDataPath + 'technicalv1.json', // File path within the folder
+                Body: technicalv1, // File content
+            });
+
+            const data = await this.s3Client.send(uploadFilecommand2);
+            console.log('Upload success', data);
+
+        } catch (error) {
+            console.error('Error uploading technical v1 file', error);
         }
 
         this.documentationPath = subDocPath;
@@ -191,7 +212,7 @@ export default class S3ClientService {
             });
 
             const zipFileResponsedata = await this.s3Client.send(uploadFilecommand);
-
+            console.log("----------->zipFileResponsedata =" + zipFileResponsedata);
             const uploadJSONcommand = new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
                 Key: checksumPath,
