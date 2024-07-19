@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import S3ClientService from "../service/s3Client-service";
 import TransferService from "../service/transfer-service";
+import validateFileChecksum from "../utils/validateFileChecksum"
 
 import crypto from 'crypto';
 import createFolder from "../utils/createFolder";
@@ -159,27 +160,14 @@ export default class FileService {
             throw new Error('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
         }
 
-        //Calculate the SHA-1 checksum of the uploaded file
-        const hash = crypto.createHash('sha1');
-        hash.update(file.buffer);
-        const calculatedChecksum = hash.digest('hex');
+        console.log(" In File saveFolderDetails  = ");
 
-        // Compare checksums
-        if (calculatedChecksum !== receivedChecksum) {
-            console.log('checksum mismatch');
-            // const transferService = new TransferService();
-            // transferService.deleteTransfer(transferId)
-            throw new Error('Checksum mismatch');
+        const isValid = await validateFileChecksum(file, receivedChecksum, 'sha1');
+        if (!isValid) {
+            console.log('Checksum mismatch. File validation failed.');
+            throw new Error('Checksum mismatch. File validation failed.')
         }
-
-        // Create the JSON object
-        const checksumData = {
-            code: "shah1",
-            checksum: receivedChecksum,
-        };
-
-        // Convert JSON object to string
-        const checksumString = JSON.stringify(checksumData, null, 2);
+        console.log("saveFolderDetails  = " + receivedChecksum);
 
 
         const s3ClientService = new S3ClientService();
@@ -193,7 +181,7 @@ export default class FileService {
 
 
         // store the zip and checksum
-        const zipFilePath = s3ClientService.uploadZipFile(file, applicationNumber, accessionNumber, primarySecondary, checksumString, psppath);
+        const zipFilePath = s3ClientService.uploadZipFile(file, receivedChecksum, psppath);
 
         const techMetadatav2test = [
             {
@@ -240,7 +228,7 @@ export default class FileService {
 
         // add the psp to the transfer
 
-        this.transferService.addPspToTransfer(transferId, pspData)
+        this.transferService.addPspToTransfer(accessionNumber, applicationNumber, pspData)
             .then(updatedTransfer => {
                 console.log("Updated Transfer:", updatedTransfer);
             })
@@ -251,6 +239,7 @@ export default class FileService {
     }
 
 }
+
 
 
 

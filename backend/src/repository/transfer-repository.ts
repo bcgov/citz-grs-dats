@@ -46,11 +46,10 @@ export default class TransferRepository {
         accessionNumber,
         applicationNumber,
       }).populate({
-        'path': 'digitalFileLists',
-        'populate': {
-          'path': 'digitalFiles'
-        }
-      });
+        'path': 'digitalFileLists'
+      }).populate({
+        'path': 'psps'
+      })
     } catch (error) {
       throw error;
     }
