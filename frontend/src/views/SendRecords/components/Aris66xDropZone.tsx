@@ -77,7 +77,6 @@ export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
                 //transfer not found
                 setData(extractedData);
                 setExcelData(extractedData);
-                console.log("Aris66xDropZone" + file); // This is the file that was uploaded
                 setFile(file);
                 validate(isCheckboxChecked, "");
               } else {

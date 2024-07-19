@@ -54,6 +54,7 @@ export default class TransferRepository {
       throw error;
     }
   }
+  
   async createTransfer(transferInput: ITransfer): Promise<ITransfer | null> {
     try {
       const newTransfer = await TransferModel.create(transferInput);

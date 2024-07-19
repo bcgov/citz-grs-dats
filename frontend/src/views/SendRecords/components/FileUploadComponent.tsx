@@ -18,7 +18,6 @@ const FileUploadComponent: React.FC = () => {
       const formData = new FormData();
       for (let i = 0; i < selectedFiles.length; i++) {
         formData.append("files", selectedFiles[i]);
-        console.log(selectedFiles[i].name);
       }
 
       // Clear the selected files after uploading

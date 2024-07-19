@@ -4,9 +4,7 @@ import { Box, CircularProgress } from '@mui/material';
 import { useSSO } from '@bcgov/citz-imb-sso-react';
 
 const PrivateRoute: React.FC = () => {
-  const { isAuthenticated } = useSSO();
-console.log('is Authenticated in PrivateRourte ' + isAuthenticated);
-    
+  const { isAuthenticated } = useSSO();    
   return isAuthenticated ? <Outlet /> : <Navigate to="/" />;
 };
 

@@ -138,8 +138,6 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             activeIndexRef.current = null;
             break;
             case DATSActions.FileInformation:
-              debugger;
-              console.log('activeIndex: -> ' +  activeIndexRef.current);
               if ( activeIndexRef.current !== null) {
                 setTransfer((prev) => ({
                   ...prev,

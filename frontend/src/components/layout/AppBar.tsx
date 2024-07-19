@@ -33,7 +33,6 @@ const MyAppBar: React.FC = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  console.log('isAuthenticated in Appbar: ' + isAuthenticated);
   return (
     <AppBar position="static" sx={{mb: 10}}>
       <Toolbar>
