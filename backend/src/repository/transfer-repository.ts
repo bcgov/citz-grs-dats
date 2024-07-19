@@ -47,11 +47,14 @@ export default class TransferRepository {
         applicationNumber,
       }).populate({
         'path': 'digitalFileLists'
-      });
+      }).populate({
+        'path': 'psps'
+      })
     } catch (error) {
       throw error;
     }
   }
+  
   async createTransfer(transferInput: ITransfer): Promise<ITransfer | null> {
     try {
       const newTransfer = await TransferModel.create(transferInput);
