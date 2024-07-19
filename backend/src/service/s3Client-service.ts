@@ -181,28 +181,18 @@ export default class S3ClientService {
 
     async uploadZipFile(
         uploadedZipFile: Express.Multer.File,
-        applicationNumber: string,
-        accessionNumber: string,
-        primarySecondary: string,
-        checksumstring: string,
+        checksumstring: any,
         psppath: string,
     ) {
-        //var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
         const orginalname = uploadedZipFile.originalname;
-
         const filename = orginalname.substring(0, orginalname.indexOf(".zip"));
         const transferFolderPath = psppath + "Content/" + filename;
-        this.createFolder(transferFolderPath);
-        // transferFolderPath = psppath +"/Documentation/";
-        // this.createFolder(transferFolderPath);
         const zipFilePath = transferFolderPath + "/" + orginalname;
-        //const filename = orginalname.substring(0, orginalname.indexOf(".zip"));
         const jsonFileName = filename + "_checksum.json";
         const checksumPath = transferFolderPath + "/" + jsonFileName;
         const jsonBuffer = JSON.stringify(checksumstring);
-        console.log("----------->transferFolderPath=" + transferFolderPath);
-        console.log("----------->zipFilePath=" + zipFilePath);
-        console.log("----------->checksumPath=" + checksumPath);
+
+        this.createFolder(transferFolderPath);
 
         try {
             const uploadFilecommand = new PutObjectCommand({
@@ -212,7 +202,6 @@ export default class S3ClientService {
             });
 
             const zipFileResponsedata = await this.s3Client.send(uploadFilecommand);
-            console.log("----------->zipFileResponsedata =" + zipFileResponsedata);
             const uploadJSONcommand = new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
                 Key: checksumPath,
