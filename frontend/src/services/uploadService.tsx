@@ -63,7 +63,6 @@ export default class UploadService {
         status,
         decision
       });
-      console.log("saveAgreementToDats resp" + response.data);
       return response.data;
     } catch (error) {
       console.error('Error submitting agreement:', error);

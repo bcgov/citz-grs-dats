@@ -96,7 +96,6 @@ export class TransferService {
     return await axios
       .get(`${API_URL}/api/transfers/${transferId}/digitalFileLists`)
       .then((response) => {
-        console.log("in frontEnd");
         //const digitalFileLists: IDigitalFileList[] = response.data;
         return response.data;
       })

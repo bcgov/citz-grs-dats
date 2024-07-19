@@ -46,10 +46,7 @@ export default class TransferRepository {
         accessionNumber,
         applicationNumber,
       }).populate({
-        'path': 'digitalFileLists',
-        'populate': {
-          'path': 'digitalFiles'
-        }
+        'path': 'digitalFileLists'
       });
     } catch (error) {
       throw error;
