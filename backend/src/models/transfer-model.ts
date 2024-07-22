@@ -2,6 +2,8 @@ import { model, Schema, Model, Document } from "mongoose";
 
 import { ITransfer } from "./interfaces/ITransfer";
 import { TransferStatus as status } from "./enums/TransferStatus";
+import { DigitalFileListModel } from './digitalFileList-model';
+import { PspModel } from './psp-model';
 
 const TransferSchema: Schema = new Schema<ITransfer>({
   accessionNumber: { type: String, required: true },
@@ -34,15 +36,20 @@ const TransferSchema: Schema = new Schema<ITransfer>({
 });
 
 
-// Import the DigitalFileList model
-import { DigitalFileListModel } from './digitalFileList-model'; // adjust this import according to your actual file structure
+
 
 TransferSchema.post('findOneAndDelete', async function (doc) {
   if (doc) {
+    // Delete associated digital file lists
     if (Array.isArray(doc.digitalFileLists)) {
-      // Delete associated digital file lists
       for (const digitalFileListId of doc.digitalFileLists) {
         await DigitalFileListModel.deleteOne({ _id: digitalFileListId });
+      }
+    }
+    // Delete associated PSPs
+    if (Array.isArray(doc.psps)) {
+      for (const pspId of doc.psps) {
+        await PspModel.deleteOne({ _id: pspId });
       }
     }
   }

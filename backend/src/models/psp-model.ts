@@ -16,5 +16,6 @@ const PspSchema: Schema = new Schema<IPsp>({
     },
 });
 
-export const IPspModel: Model<IPsp> = model<IPsp>("Psp", PspSchema);
+export const PspModel: Model<IPsp> = model<IPsp>("Psp", PspSchema);
 export { IPsp };
+

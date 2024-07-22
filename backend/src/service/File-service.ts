@@ -228,7 +228,7 @@ export default class FileService {
 
         // add the psp to the transfer
 
-        this.transferService.addPspToTransfer(accessionNumber, applicationNumber, pspData)
+        this.transferService.addPspToTransfer(accessionNumber, applicationNumber, pspname, pspData)
             .then(updatedTransfer => {
                 console.log("Updated Transfer:", updatedTransfer);
             })
