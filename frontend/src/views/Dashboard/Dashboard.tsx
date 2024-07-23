@@ -9,7 +9,7 @@ const Dashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={4}>
           <CardComponent
             title="Create a Digital File List"
-            content="Producer can create a Digital File list from a windows folder. The result will be a Excel sheets base on the Digital file list teamplate from GRS"
+            content="Create a file list for digital government information stored in a LAN drive. Provide a Windows folder address and some basic information, and DATS will create a list of every document in that folder for you. "
             buttonText="Start"
             link="/create"
           />
@@ -17,7 +17,7 @@ const Dashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={4}>
           <CardComponent
             title="Send Record to DATS"
-            content="Producer can transfer their digital records to DATS using the Send Records to DATS wizard Producers can send their content from LAN Drive or EDRMS"
+            content="Send digital Full Retention (FR) records to the Digital Archives, from either a LAN drive or EDRMS"
             buttonText="Start"
             link="/send"
           />
@@ -25,17 +25,9 @@ const Dashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={4}>
           <CardComponent
             title="View Transfer status"
-            content="Archivist can view and managed the information on PSPs processed and created by DATS in order to process the accession and create the SIP."
+            content="Digital Archives staff can view and manage transfers sent via DATS, in order to create Pre-Submission Packages (PSPs). The source of truth for approvals and client service history continues to be ARIS"
             buttonText="Start"
             link="/transfer-status"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <CardComponent
-            title="Title"
-            content="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-            buttonText="Start"
-            link="/route4"
           />
         </Grid>
       </Grid>

@@ -5,9 +5,12 @@ import {
   CircularProgress,
   Container,
   Grid,
+  Icon,
   IconButton,
   Paper,
   TextField,
+  TextFieldProps,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import React, { FC, ReactElement, useEffect, useRef, useState } from "react";
@@ -16,11 +19,15 @@ import AddIcon from "@mui/icons-material/Add";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+
 import {
   IFolderInformation,
   IFileInformation,
 } from "../../../types/DTO/Interfaces/IFolderInformation";
 import { generateExcel } from "../../../utils/xlsxUtils";
+import InfoIcon from '@mui/icons-material/Info';
+import { format } from "date-fns";
+
 enum DATSActions {
   FolderSelected,
   FileSelected,
@@ -36,6 +43,9 @@ const SelectFolder: FC = () => {
   const [message, setMessage] = useState("");
   const [progress, setProgress] = useState(0);
   const [folders, setFolders] = React.useState<IFolderInformation[]>([]);
+  const [tooltipOpen, setTooltipOpen] = useState<string | null>(null);
+  const leaveDelay: number = 300;
+  const enterDelay: number = 200;
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:50504/ws/react");
@@ -115,6 +125,7 @@ const SelectFolder: FC = () => {
       ws.close();
     };
   }, []);
+
   const openDesktopApp = () => {
     window.location.href = `citz-grs-dats://open?browse=folder`;
   };
@@ -123,6 +134,7 @@ const SelectFolder: FC = () => {
     const newFolders = folders.filter((_, i) => i !== index);
     setFolders(newFolders);
   };
+
   const handleChange = (
     index: number,
     field: keyof IFolderInformation,
@@ -134,10 +146,29 @@ const SelectFolder: FC = () => {
       )
     );
   };
+  const handleTooltipClick = (header: string) => {
+    setTooltipOpen((prev) => (prev === header ? null : header));
+  };
+
+  const headers = [
+    { title: "Folder", info: "Information about Folder", sm: 1.5 },
+    { title: "Schedule", info: "Information about Schedule", sm: 1 },
+    { title: "P/S", info: "Information about Primary/Secondary", sm: 1 },
+    { title: "FILE", info: "Information about File", sm: 1 },
+    { title: "OPR", info: "Information about OPR", sm: 0.5 },
+    { title: "Start Date", info: "Information about Start Date", sm: 1.5 },
+    { title: "End Date", info: "Information about End Date", sm: 1.5 },
+    { title: "SO Date", info: "Information about SO Date", sm: 1.5 },
+    { title: "FD Date", info: "Information about FD Date", sm: 1.5 },
+    { title: "Actions", info: "Information about Actions", sm: 0.5 },
+  ];
+
   return (
-    <Box sx={{ flexGrow: 1, padding: 2 }}>
-      <Typography variant="h6">List of selected folders</Typography>
-      <Box display="flex" alignItems="center">
+    <Box sx={{ padding: 2 }}>
+      <Typography variant="h6" gutterBottom>
+        List of selected folders
+      </Typography>
+      <Box display="flex" alignItems="center" mb={2}>
         <Button
           variant="contained"
           color="primary"
@@ -155,36 +186,32 @@ const SelectFolder: FC = () => {
       </Box>
       <Paper sx={{ p: 2, mb: 2 }}>
         <Grid container spacing={1} alignItems="center">
-          <Grid item xs={12} sm={1.5}>
-            <Typography variant="subtitle2">Folder</Typography>
-          </Grid>
-          <Grid item xs={12} sm={1}>
-            <Typography variant="subtitle2">Schedule</Typography>
-          </Grid>
-          <Grid item xs={12} sm={1}>
-            <Typography variant="subtitle2">Primary/Secondary</Typography>
-          </Grid>
-          <Grid item xs={12} sm={1}>
-            <Typography variant="subtitle2">FILE</Typography>
-          </Grid>
-          <Grid item xs={12} sm={0.5}>
-            <Typography variant="subtitle2">OPR</Typography>
-          </Grid>
-          <Grid item xs={12} sm={1.5}>
-            <Typography variant="subtitle2">Start Date</Typography>
-          </Grid>
-          <Grid item xs={12} sm={1.5}>
-            <Typography variant="subtitle2">End Date</Typography>
-          </Grid>
-          <Grid item xs={12} sm={1.5}>
-            <Typography variant="subtitle2">SO Date</Typography>
-          </Grid>
-          <Grid item xs={12} sm={1.5}>
-            <Typography variant="subtitle2">FD Date</Typography>
-          </Grid>
-          <Grid item xs={12} sm={0.5}>
-            <Typography variant="subtitle2">Actions</Typography>
-          </Grid>
+          {headers.map((header) => (
+            <Grid item xs={12} sm={header.sm} key={header.title}>
+              <Box
+                display="flex"
+                alignItems="center"
+                sx={{
+                  textDecoration: "underline dashed",
+                  cursor: "help",
+                }}
+                onClick={() => handleTooltipClick(header.title)}
+              >
+                <Typography variant="subtitle2">{header.title}</Typography>
+                <Tooltip
+                  title={header.info}
+                  enterDelay={enterDelay}
+                  leaveDelay={300}
+                  placement="top"
+                  arrow
+                  open={tooltipOpen === header.title}
+                  onClose={() => setTooltipOpen(null)}
+                >
+                  <span />
+                </Tooltip>
+              </Box>
+            </Grid>
+          ))}
         </Grid>
       </Paper>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -231,16 +258,18 @@ const SelectFolder: FC = () => {
                   onChange={(e) => handleChange(index, "opr", e.target.checked)}
                 />
               </Grid>
-              <Grid item xs={12} sm={2}>
+              <Grid item xs={12} sm={1.5}>
                 <DatePicker
                   value={folder.startDate}
                   onChange={(date) => handleChange(index, "startDate", date)}
+                  format="yyyy-MM-dd"
                 />
               </Grid>
               <Grid item xs={12} sm={1.5}>
                 <DatePicker
                   value={folder.endDate}
                   onChange={(date) => handleChange(index, "endDate", date)}
+                  format="yyyy-MM-dd"
                 />
               </Grid>
               <Grid item xs={12} sm={1.5}>

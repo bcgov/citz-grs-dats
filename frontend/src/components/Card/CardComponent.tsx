@@ -16,7 +16,7 @@ const CardComponent: React.FC<CardProps> = ({ title, content, buttonText, link }
         <Typography variant="h5" component="div">
           {title}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" sx={{minHeight: 130}}>
           {content}
         </Typography>
       </CardContent>

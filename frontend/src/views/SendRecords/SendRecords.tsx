@@ -8,16 +8,16 @@ const SendRecords: React.FC = () => {
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6} md={4}>
           <CardComponent
-            title="Send Records to DATS"
-            content="Transfer Digital FR Records from a lan drive ( Windows ) "
+            title="Send Records from LAN Drive"
+            content="Transfer approved records to the Digital Archives, from a LAN drive. "
             buttonText="Start"
             link="/send-lan"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
           <CardComponent
-            title="Send Record to DATS"
-            content="Transfer Digital FR Records from EDRMS"
+            title="Send Record from EDRMS"
+            content="Transfer approved records to the Digital Archive, from EDRMS."
             buttonText="Start"
             link="/send-edrms"
           />
