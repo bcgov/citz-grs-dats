@@ -202,6 +202,7 @@ export default class S3ClientService {
             });
 
             const zipFileResponsedata = await this.s3Client.send(uploadFilecommand);
+
             const uploadJSONcommand = new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
                 Key: checksumPath,
