@@ -4,11 +4,6 @@ import path from 'path';
 import S3ClientService from "../service/s3Client-service";
 import TransferService from "../service/transfer-service";
 import validateFileChecksum from "../utils/validateFileChecksum"
-
-import crypto from 'crypto';
-import createFolder from "../utils/createFolder";
-import { Request, ParamsDictionary } from 'express-serve-static-core';
-import { ParsedQs } from 'qs';
 import { IPsp } from 'src/models/psp-model';
 
 const replacePlaceholders = (text: string, placeholders: { [key: string]: string }): string => {
@@ -90,6 +85,18 @@ export default class FileService {
     //async createPSPs(prefix: string): Promise<void> {
     async createPSPs(prefix: string): Promise<void> {
         try {
+
+
+            // Get the Psps from Mongo db 
+            // for each PSP create a stream
+            // Download the the PSP per objects
+            // If it is a zip file , do a checksum again
+            // If checksum mistmatck error
+            // Ok continue
+            // once finished, add the Documentation and the Metadata folders
+            // Checksums the Zip file (PSP)
+            // send the PSP and the Zip file to the Land Drive
+
             const objects = await this.s3ClientService.listObjects(prefix);
             const pspFolders = objects.filter((key) => key.includes('PSP-'));
 
@@ -173,7 +180,6 @@ export default class FileService {
         const s3ClientService = new S3ClientService();
         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
 
-        // Create the PSP structure per classification     ex. PSP-94-1434-749399-11000-20
 
         const pspname = 'PSP-' + accessionNumber + "-" + applicationNumber + "-" + primarySecondary + "-01"
         const psppath = transferFolderPath + "/" + accessionNumber + "-" + applicationNumber + "/" + pspname + "/";
@@ -181,42 +187,42 @@ export default class FileService {
 
 
         // store the zip and checksum
-        const zipFilePath = s3ClientService.uploadZipFile(file, receivedChecksum, psppath);
+        const zipFilePath = await s3ClientService.uploadZipFile(file, receivedChecksum, psppath);
 
-        const techMetadatav2test = [
-            {
-                "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\1-MB-DOC.doc",
-                "FileName": "1-MB-DOC.doc",
-                "Checksum": "88dc8b79636f7d5131d2446c6855ca956a176932",
-                "DateCreated": "2024-06-27T16:32:40.7403152-04:00",
-                "DateModified": "2024-06-27T16:32:43.6795841-04:00",
-                "DateAccessed": "2024-07-15T19:09:13.1135847-04:00",
-                "DateLastSaved": "2024-06-27T16:32:43.6795841-04:00",
-                "AssociatedProgramName": "Pick an application",
-                "Owner": "IDIR\\NSYED",
-                "Computer": "VIRTUAL-MIND",
-                "ContentType": "application/octet-stream",
-                "SizeInBytes": 1048576
-            },
-            {
-                "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\138-KB-XML-File.xml",
-                "FileName": "138-KB-XML-File.xml",
-                "Checksum": "abd4a088b49d9f9863be4f7fda45a0528f6a4af8",
-                "DateCreated": "2024-06-27T16:39:14.7746566-04:00",
-                "DateModified": "2024-06-27T16:39:19.0695192-04:00",
-                "DateAccessed": "2024-07-15T19:09:13.1193231-04:00",
-                "DateLastSaved": "2024-06-27T16:39:19.0695192-04:00",
-                "AssociatedProgramName": "Microsoft Edge",
-                "Owner": "IDIR\\NSYED",
-                "Computer": "VIRTUAL-MIND",
-                "ContentType": "application/octet-stream",
-                "SizeInBytes": 141317
-            }
-        ]
+        // const techMetadatav2test = [
+        //     {
+        //         "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\1-MB-DOC.doc",
+        //         "FileName": "1-MB-DOC.doc",
+        //         "Checksum": "88dc8b79636f7d5131d2446c6855ca956a176932",
+        //         "DateCreated": "2024-06-27T16:32:40.7403152-04:00",
+        //         "DateModified": "2024-06-27T16:32:43.6795841-04:00",
+        //         "DateAccessed": "2024-07-15T19:09:13.1135847-04:00",
+        //         "DateLastSaved": "2024-06-27T16:32:43.6795841-04:00",
+        //         "AssociatedProgramName": "Pick an application",
+        //         "Owner": "IDIR\\NSYED",
+        //         "Computer": "VIRTUAL-MIND",
+        //         "ContentType": "application/octet-stream",
+        //         "SizeInBytes": 1048576
+        //     },
+        //     {
+        //         "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\138-KB-XML-File.xml",
+        //         "FileName": "138-KB-XML-File.xml",
+        //         "Checksum": "abd4a088b49d9f9863be4f7fda45a0528f6a4af8",
+        //         "DateCreated": "2024-06-27T16:39:14.7746566-04:00",
+        //         "DateModified": "2024-06-27T16:39:19.0695192-04:00",
+        //         "DateAccessed": "2024-07-15T19:09:13.1193231-04:00",
+        //         "DateLastSaved": "2024-06-27T16:39:19.0695192-04:00",
+        //         "AssociatedProgramName": "Microsoft Edge",
+        //         "Owner": "IDIR\\NSYED",
+        //         "Computer": "VIRTUAL-MIND",
+        //         "ContentType": "application/octet-stream",
+        //         "SizeInBytes": 141317
+        //     }
+        // ]
 
 
         // Upload the technical metadata v2
-        const jsonFileResponsedata = await s3ClientService.uploadTechnicalV2File(techMetadatav2test, psppath);
+        const jsonFileResponsedata = await s3ClientService.uploadTechnicalV2File(techMetadatav2, zipFilePath);
 
         // Prepared the Psp
         const pspData: Partial<IPsp> = {
