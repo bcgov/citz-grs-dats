@@ -6,8 +6,8 @@ const Landing: React.FC = () => {
     <div className="Landing">
       <main>
         <div className="content">
-          <h1>DATS Landing Page</h1>
-          <p>Some very cool and exciting content coming soon </p>
+          <h1>Digital Archives Transfer Services (DATS)</h1>
+          <p>This app helps you create digital file lists and transfer digital records as evidence. For more information reach out to the Government Information Management (GIM) Branch of CIRMO. </p>
         </div>
       </main>
     </div>

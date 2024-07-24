@@ -14,6 +14,7 @@ interface DropzoneComponentProps {
   onDeleteFile?: (file: File) => void; // Prop for deleting individual files
   onClearAllFiles?: () => void; // Prop for clearing all files
   clearFilesSignal?: boolean; // Signal from parent to clear files
+  placeHolder?: string;
   maxFiles?: number; // Maximum number of files allowed
 }
 
@@ -24,6 +25,7 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({
   onDeleteFile,
   onClearAllFiles,
   clearFilesSignal,
+  placeHolder = 'Drop your files here',
   maxFiles = 1 // Default to 1 file if not specified
 }) => {
   const [files, setFiles] = useState<File[]>([]);
@@ -127,7 +129,7 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({
       >
         <input {...getInputProps()} webkitdirectory={allowFolders ? "true" : undefined} directory={allowFolders ? "true" : undefined} />
         <Typography variant="h6">
-          Drop your {allowFolders ? 'files or folders' : 'files'} here
+          {placeHolder}
         </Typography>
         <List>
           {files.map((file, index) => (

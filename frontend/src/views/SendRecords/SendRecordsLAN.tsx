@@ -56,7 +56,7 @@ export const SendRecordsLAN = () => {
     // This code runs before rendering the current step
     switch (activeStep) {
       case 0:
-        setNextButtonLabel("Upload 66x file");
+        setNextButtonLabel("Upload File List");
         break;
       case 1:
         setNextButtonLabel("Upload 617 file");
@@ -73,7 +73,7 @@ export const SendRecordsLAN = () => {
   }, [activeStep]);
   let steps = [
     {
-      label: "Upload 66x file",
+      label: "Upload File List (ARS 662)",
       beforeNext: async () => {
         setIsUploading(true);
         try {
@@ -109,7 +109,7 @@ export const SendRecordsLAN = () => {
       validate: () => isValid,
     },
     {
-      label: "Upload approved 617 Transfer form ",
+      label: "Upload Transfer Form (ARS 617)",
       beforeNext: async () => {
         //add your update logic here
         setIsUploading(true);
@@ -144,7 +144,7 @@ export const SendRecordsLAN = () => {
       validate: () => isValid,
     },
     {
-      label: "Accept Terms.",
+      label: "Submission Agreement",
       content: (
         <SubmissionAgreement
           validate={(isValid, errorMessage) =>
@@ -156,7 +156,7 @@ export const SendRecordsLAN = () => {
       validate: () => isValid,
     },
     {
-      label: "Review and Upload",
+      label: "Confirmation & Receipt",
       beforeNext: async () => {
         if (childRef.current) {
           setIsUploading(true);
@@ -282,15 +282,6 @@ export const SendRecordsLAN = () => {
           pt: 2,
         }}
       >
-        {/* <Button
-          color="inherit"
-          disabled={activeStep === 0}
-          onClick={handleBack}
-          variant="outlined"
-          sx={{ mr: isSmallScreen ? 0 : 1, mb: isSmallScreen ? 1 : 0 }}
-        >
-          Back
-        </Button> */}
         <Box sx={{ flex: "1 1 auto" }} />
         <Box sx={{ m: 1, position: 'relative' }}>
         <Button disabled={isUploading}

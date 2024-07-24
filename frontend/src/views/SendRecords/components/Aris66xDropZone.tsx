@@ -134,10 +134,11 @@ export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
             onDeleteFile={handleDeleteFile}
             onClearAllFiles={handleClearAllFiles}
             clearFilesSignal={clearFilesSignal}
+            placeHolder="Drop File List (ARS 662)"
           />
         </Grid>
         <Grid item xs={12} md={5}>
-          <Box
+          <Box hidden={!data}
             sx={{
               padding: 2,
               maxHeight: "80vh",
@@ -148,7 +149,7 @@ export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
             <Typography variant="h6" gutterBottom>
               Extracted Data
             </Typography>
-            <List hidden={!data}>
+            <List>
               <ListItem>
                 <ListItemText
                   primary={`Accession #: ${data?.accessionNumber}`}
@@ -171,7 +172,7 @@ export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
             disabled={!data}
           />
         }
-        label="I confirm the Accession # and the Application number"
+        label="I confirm the Accession and Application numbers."
       />
     </Box>
   );
