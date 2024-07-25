@@ -90,7 +90,7 @@ jobs:
 
     # Run the update wiki Python script
     - name: Run update wiki Python script
-      run: python ./.github/helpers/update-wiki-table.py ./wiki/Image-tags.md "GRS-DATS API" "Deployed Image Tag in DEV" "${{ steps.get-pr-number.outputs.result }}"
+      run: python .github/workflows/helpers/update-wiki-table.py ./wiki/Image-tags.md "GRS-DATS API" "Deployed Image Tag in DEV" "${{ steps.get-pr-number.outputs.result }}"
 
     # Commit and push changes to the wiki
     - name: Commit and push changes to wiki
