@@ -1,0 +1,101 @@
+# GitHub Actions workflow for deploying Frontend image to PROD env
+name: Frontend - GitOps Update PROD Image
+
+on:
+  workflow_dispatch:
+      inputs:
+        image_tag:
+          description: 'Image Tag to deploy'
+          required: true
+
+env:
+  IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+  ENVIRONMENT: 'test'
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  update-gitops-image-tag:
+    runs-on: ubuntu-latest
+    steps:
+
+      # Install yaml parser
+    - name: Install yq
+      run: |
+        curl -Lo yq "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64"
+        chmod +x yq
+        mv yq /home/runner/bin
+
+      # Add deploy key to runner
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.GITOPS_REPO_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
+      # Make changes to image tag in values.yaml within GitOps repo
+    - name: Clone, Update, and Commit Changes
+      run: |
+        git clone git@github.com:bcgov-c/tenant-gitops-ede50e.git
+        cd tenant-gitops-ede50e
+
+        FILE_PATH="grs-dats/values-test.yaml"
+        NEW_TAG="${{ steps.get-pr-number.outputs.result }}"
+
+        yq e ".frontend.imageTag = \"${{ env.IMAGE_TAG }}\"" -i "$FILE_PATH"
+
+        git config user.email "adam.kroon@gov.bc.ca"
+        git config user.name "akroon3r"
+
+        git add "$FILE_PATH"
+
+        git commit -m "Update API image tag to ${{ env.IMAGE_TAG }}"
+
+        git push
+
+    # Checkout the repository
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Clone the wiki repository
+    - name: Clone wiki repository
+      run: |
+        echo "Cloning wiki repo https://github.com/$GITHUB_REPOSITORY.wiki.git"
+        git clone "https://$GITHUB_ACTOR:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.wiki.git" ./wiki
+        
+    # Setup Python
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10' 
+
+    # Run the update wiki Python script
+    - name: Run update wiki Python script
+      run: python ./.github/workflows/helpers/update-wiki-table.py ./wiki/Image-tags.md "GRS-DATS APP" "Deployed Image Tag in PROD" "${{ env.IMAGE_TAG }}"
+
+    # Commit and push changes to the wiki
+    - name: Commit and push changes to wiki
+      run: |
+        cd ./wiki
+        git config user.name "$GITHUB_ACTOR"
+        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+        git add .
+        if git diff-index --quiet HEAD; then
+          echo "Nothing changed"
+          exit 0
+        fi
+        echo "Pushing changes to wiki"
+        git commit -m "Value populated at APP deployed in PROD" && git push "https://$GITHUB_ACTOR:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.wiki.git"
+        
+    # Add comment to the PR
+    - name: Add Comment To the PR
+      if: github.event.action == 'opened'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: "🚀 **Deployment Information**\n\nThe GRS DATS Frontend Image has been deployed into PROD with the tag: **`${{ env.IMAGE_TAG }}`**. Please make sure to utilize this specific tag when promoting these changes to the TEST and PROD environments during the API deployment. For more updates please monitor [Image Tags](https://github.com/bcgov/citz-grs-dats/wiki/Image-tags) Page on Wiki."
+          })
