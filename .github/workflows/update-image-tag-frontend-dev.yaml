@@ -57,7 +57,7 @@ jobs:
     - name: Clone, Update, and Commit Changes
       run: |
         git clone git@github.com:bcgov-c/tenant-gitops-ede50e.git
-        cd tenant-gitops-ede503
+        cd tenant-gitops-ede50e
 
         FILE_PATH="grs-dats/values-dev.yaml"
         NEW_TAG="${{ steps.get-pr-number.outputs.result }}"
@@ -91,7 +91,7 @@ jobs:
 
     # Run the update wiki Python script
     - name: Run update wiki Python script
-      run: python ./.github/helpers/update-wiki-table.py ./wiki/Image-tags.md "GRS-DATS APP" "Deployed Image Tag in DEV" "${{ steps.get-pr-number.outputs.result }}"
+      run: python ./.github/workflows/helpers/update-wiki-table.py ./wiki/Image-tags.md "GRS-DATS APP" "Deployed Image Tag in DEV" "${{ steps.get-pr-number.outputs.result }}"
 
     # Commit and push changes to the wiki
     - name: Commit and push changes to wiki
