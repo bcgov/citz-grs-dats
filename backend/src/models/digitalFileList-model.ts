@@ -24,6 +24,7 @@ const DigitalFileListSchema: Schema = new Schema<IDigitalFileList>({
   createdBy: { type: String, required: false },
   updatedBy: { type: String, required: false },
   timestamps: { createDate: Date, updatedDate: Date },
+  note: {type: String, required: false},
 });
 
 export const DigitalFileListModel: Model<IDigitalFileList> =

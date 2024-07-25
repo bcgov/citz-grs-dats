@@ -4,6 +4,7 @@ import S3ClientService from "../service/s3Client-service";
 import DigitalFileListService from "../service/digitalFileList-service";
 import { RequestHandler } from "express";
 import mongoose from "mongoose";
+import logger from "../config/logs/winston-config";
 
 
 
@@ -140,12 +141,20 @@ export default class UploadController {
   saveFolderDetails: RequestHandler = async (req, res, next) => {
     try {
       const { file, body } = req;
-      const { checksum: receivedChecksum, transferId, applicationNumber, accessNumber: accessionNumber, classification: primarySecondary, technicalV2: techMetadatav2 } = body;
+      const { checksum: receivedChecksum, transferId, applicationNumber, accessNumber: accessionNumber, classification: primarySecondary, technicalV2: techMetadatav2, note: note } = body;
 
       if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
         return res.status(400).send('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
       }
-
+      if(note)
+      {
+        const placeholders = {
+          ApplicationNumber: applicationNumber || '',
+          AccessionNumber: accessionNumber || ''
+        };
+        logger.debug(`note received ${note}`);
+        await this.fileService.createNote(note,placeholders);
+      }
       await this.fileService.saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2);
 
       res.status(200).send('File uploaded and checksum verified');

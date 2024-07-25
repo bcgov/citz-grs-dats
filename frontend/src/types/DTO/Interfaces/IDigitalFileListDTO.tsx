@@ -20,6 +20,7 @@ export interface IDigitalFileListDTO {
   fileCount: Number;
   size: Number;
   timestamps?: {};
+  note?: string;
 }
 
 export interface IDigitalFileDTO {

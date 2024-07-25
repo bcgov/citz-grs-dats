@@ -17,6 +17,11 @@ import {
   IconButton,
   InputAdornment,
   LinearProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextareaAutosize,
+  DialogActions,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -58,7 +63,10 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   const [makeFieldsDisable,setMakeFieldsDisable] = useState<boolean>(false);
    const [transfer, setTransfer] = useState<ITransferDTO>(initialTransfer);
   const [editableFields, setEditableFields] = useState<EditableFields>({});
-  const activeIndexRef = useRef<string | null>(null); 
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const currentFolder = useRef<string | null>(null); 
+  const currentFolderNote = useRef<string | null>(null);
+  const [note,setNote] = useState(''); 
   const [folderValues, setFolderValues] = useState<FolderValues>(
     transfer.digitalFileLists!!.reduce((acc, fileList) => {
       acc[fileList.folder] = fileList.folder;
@@ -135,19 +143,21 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       const data = JSON.parse(event.data);
         switch (data.Action) {
           case DATSActions.Cancelled:
-            activeIndexRef.current = null;
+            currentFolder.current = null;
             break;
             case DATSActions.FileInformation:
-              if ( activeIndexRef.current !== null) {
+              if ( currentFolder.current !== null) {
+                console.log('note DATS Action' + currentFolderNote.current);
+                var note: string = currentFolderNote.current ?? '';
                 setTransfer((prev) => ({
                   ...prev,
                   digitalFileLists: transfer.digitalFileLists!!.map((fileList) =>
-                    fileList.folder ===  activeIndexRef.current
-                      ? { ...fileList, folder: data.Payload.Path }
+                    fileList.folder ===  currentFolder.current
+                      ? { ...fileList, folder: data.Payload.Path, note: note }
                       : fileList
                   )
                 }));
-                activeIndexRef.current = null; // Reset the active index after update
+                currentFolder.current = null; // Reset the active index after update
               }
               break;
           case DATSActions.FileFolderExists:
@@ -236,7 +246,8 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         Payload: {
           Package: transfer.digitalFileLists?.map((file) => ({
             Path: file.folder,
-            Classification: file.primarySecondary
+            Classification: file.primarySecondary,
+            Note: file.note
           })),
           TransferId: transfer._id,
           ApplicationNumber: transfer.applicationNumber,
@@ -276,26 +287,32 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       [folder]: newValue,
     }));
   };
-  const handleSaveClick = (folder: string) => {
-    // Update the actual transfer.digitalFileLists value
-    transfer.digitalFileLists = transfer.digitalFileLists!!.map((fileList) =>
-      fileList.folder === folder
-        ? { ...fileList, folder: folderValues[folder] }
-        : fileList
-    );
 
-    // Toggle the editable state back
-    setEditableFields((prev) => ({
-      ...prev,
-      [folder]: false,
-    }));
-  };
 
   const handleEditClick = (folder: string) => {
-    console.log('folder: -> ' + folder);
-    activeIndexRef.current = folder;
+    currentFolder.current = folder;
+    setIsPopupOpen(true);
+  };
+
+  // const handlePopupOpen = (folder: string) => {
+  //   const fileListItem = transfer.digitalFileLists!!.find((item) => item.folder === folder);
+  //   setNote(fileListItem?.note || '');
+  //   setIsPopupOpen(true);
+  // };
+
+  const handlePopupClose = () => {
+    setIsPopupOpen(false);
+    setNote('');
+  };
+  const handleNoteSubmit = () => {
+    setIsPopupOpen(false);
+    currentFolderNote.current = note;
+    console.log('note' + note);
+    console.log('note ref' + currentFolderNote.current);
     window.location.href = `citz-grs-dats://open?browse=folder`;
-    console.log('activeIndex: -> ' +  activeIndexRef.current);
+  };
+  const handleNoteChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNote(event.target.value);
   };
   const getStatusIcon = (status?: Number) => {
     if (status === undefined) return null;
@@ -457,6 +474,25 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           </Grid>
         ))}
       </Box>
+      <Dialog open={isPopupOpen} onClose={handlePopupClose}>
+        <DialogTitle>Edit Note</DialogTitle>
+        <DialogContent>
+          <TextareaAutosize
+            minRows={5}
+            value={note}
+            onChange={handleNoteChange}
+            style={{ width: '100%' }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handlePopupClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleNoteSubmit} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -157,18 +157,17 @@ export default class S3ClientService {
         return documentationPath;
     }
 
-    async uploadAgreementPDF(
-        pdfBuffer: Buffer,
-        targetPdfFilePath: string
+    async uploadDocumentationToS3(
+        buffer: Buffer,
+        targetFilePath: string
     ) {
-        console.log("--------->targetPdfFilePath=" + targetPdfFilePath);
-        const targetFilePath = targetPdfFilePath;
+        console.log("--------->targetPdfFilePath=" + targetFilePath);
 
         try {
             const uploadFilecommand = new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
-                Key: targetPdfFilePath, // File path within the folder
-                Body: pdfBuffer, // File content as buffer
+                Key: targetFilePath, // File path within the folder
+                Body: buffer, // File content as buffer
             });
 
             const data = await this.s3Client.send(uploadFilecommand);

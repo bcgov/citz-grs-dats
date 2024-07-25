@@ -6,6 +6,7 @@ import {
 
 export default class DigitalFileListRepository {
   constructor() {}
+
   async getDigitalFileListsByTransferId(
     transferId: any
   ): Promise<IDigitalFileList[] | null> {
