@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { forwardRef, useImperativeHandle, useState } from "react";
 import DropZoneComponent from "../../../components/DropZoneComponent";
 import {
   Box,
@@ -10,19 +10,26 @@ const acceptedFileTypes = {
 };
 
 interface Aris617DropZoneProps {
-  validate: (isValid: boolean, errorMessage: string) => void;
+  showValidationMessage: (isValid: boolean, errorMessage: string) => void;
   setFile: (file: File | null) => void;
 }
+const Aris617DropZone = forwardRef((props: Aris617DropZoneProps, ref) => {
 
-const Aris617DropZone: React.FC<Aris617DropZoneProps> = ({
-  validate,
-  setFile,
-}) => {
-  
+  const { showValidationMessage, setFile } = props;
   const [acceptedFiles, setAcceptedFiles] = useState<File[]>([]);
   const [clearFilesSignal, setClearFilesSignal] = useState(false);
+  const [isValid,setIsValid] = useState(false);
 
-
+  const validateInputs = ():boolean  => {
+    if(!isValid)
+    {
+      showValidationMessage(false, "Please upload Aris617 transfer file");
+    }
+    return isValid;
+  }
+  useImperativeHandle(ref, () => ({
+    validateInputs,
+  }));
   const handleFilesAccepted = async (files: File[]) => {
     setClearFilesSignal(false);
     const file = files[0];
@@ -30,7 +37,8 @@ const Aris617DropZone: React.FC<Aris617DropZoneProps> = ({
       try {
                 console.log("Aris617DropZone" + file); // This is the file that was uploaded
                 setFile(file);
-                validate(true, "");
+                setIsValid(true);
+                showValidationMessage(true, "");
       } catch (error) {
         console.error(error);
       }
@@ -65,6 +73,6 @@ const Aris617DropZone: React.FC<Aris617DropZoneProps> = ({
     </Grid>
   </Box>
   );
-};
+});
 
 export default Aris617DropZone;

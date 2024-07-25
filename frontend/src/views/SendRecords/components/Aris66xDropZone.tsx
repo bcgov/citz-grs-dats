@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { forwardRef, useImperativeHandle, useState } from "react";
 
 import DropZoneComponent from "../../../components/DropZoneComponent";
 import {
@@ -28,15 +28,14 @@ const acceptedFileTypes = {
   ],
 };
 interface Aris66xDropZoneProps {
-  validate: (isValid: boolean, errorMessage: string) => void;
+  showValidationMessage: (isValid: boolean, errorMessage: string) => void;
   setFile: (file: File | null) => void;
   setExcelData: (data: any) => void;
 }
-export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
-  validate,
-  setFile,
-  setExcelData,
-}) => {
+export const Aris66xDropZone = forwardRef((props: Aris66xDropZoneProps, ref) => {
+  const { showValidationMessage, setFile, setExcelData } = props;
+
+
   const [acceptedFiles, setAcceptedFiles] = useState<File[]>([]);
   const [data, setData] = useState<DatsExcelModel | null>(null);
   const [isCheckboxChecked, setIsCheckboxChecked] = useState(false);
@@ -44,9 +43,22 @@ export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
   const transferService = new TransferService();
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsCheckboxChecked(event.target.checked);
-    validate(event.target.checked, "");
+    showValidationMessage(event.target.checked,"");
   };
 
+  const validateInputs = ():boolean  => {
+    if(!isCheckboxChecked)
+    {
+      showValidationMessage(false, "Please check & confirm the applicaton and accession number");
+    }
+    return isCheckboxChecked;
+  }
+
+  useImperativeHandle(ref, () => ({
+    validateInputs,
+  }));
+
+  
   const handleFilesAccepted = async (files: File[]) => {
     setClearFilesSignal(false);
     const file = files[0];
@@ -60,7 +72,7 @@ export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
             (response) => {
               if (response) {
                 console.log("validation failed for duplicate transfer");
-                validate(
+                showValidationMessage(
                   false,
                   `A transfer with Acc # ${extractedData.accessionNumber} and App # ${extractedData.applicationNumber} has already been submitted. Please contact the Government Information Management Branch for more information.`
                 );
@@ -78,11 +90,11 @@ export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
                 setData(extractedData);
                 setExcelData(extractedData);
                 setFile(file);
-                validate(isCheckboxChecked, "");
+                showValidationMessage(isCheckboxChecked, "");
               } else {
                 //anyother error
                 console.log("404 transfer not found");
-                validate(false, error);
+                showValidationMessage(false, error);
                 setIsCheckboxChecked(false);
                 setExcelData(null);
                 setData(null);
@@ -95,7 +107,7 @@ export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
         }
       } catch (error) {
         console.log(error);
-        validate(false, String(error));
+        showValidationMessage(false, String(error));
         setIsCheckboxChecked(false);
         setExcelData(null);
         setData(null);
@@ -176,4 +188,4 @@ export const Aris66xDropZone: React.FC<Aris66xDropZoneProps> = ({
       />
     </Box>
   );
-};
+});

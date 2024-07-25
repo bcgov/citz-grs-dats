@@ -60,6 +60,10 @@ export const extractExcelData = (file: File): Promise<DatsExcelModel> => {
           accessionNumber: accessionNumber,
           applicationNumber: appNumber,
         };
+        if (accessionNumber === '' || appNumber === '' || accessionNumber === undefined || appNumber === undefined) {
+          reject(new Error("Accession Number and/or Application number is missing"));
+          return;
+        }
 
         resolve(extractedData);
       } else {

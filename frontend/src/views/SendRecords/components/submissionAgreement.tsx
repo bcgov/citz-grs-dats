@@ -82,7 +82,7 @@ const formatDate = (date: Date) => {
         day: 'numeric'
     }).format(date);
 };
-const SubmissionAgreement = ({ validate, excelData }: { validate: (isValid: boolean, errorMsg: string) => void, excelData: DatsExcelModel | null }) => {
+const SubmissionAgreement = ({ showValidationMessage: validate, excelData }: { showValidationMessage: (isValid: boolean, errorMsg: string) => void, excelData: DatsExcelModel | null }) => {
     const [value, setValue] = React.useState('');
     const [dialogOpen, setDialogOpen] = React.useState<boolean>(false);
     const [tempValue, setTempValue] = React.useState<string>('');

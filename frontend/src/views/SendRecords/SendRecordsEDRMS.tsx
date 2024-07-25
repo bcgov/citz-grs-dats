@@ -105,7 +105,7 @@ export const SendRecordsEDRMS = () => {
     {
       label: "Upload Digital file",
       content: (
-        <Aris617DropZone validate={(isValid, errorMessage) =>
+        <Aris617DropZone showValidationMessage={(isValid, errorMessage) =>
           handleValidationChange(0, isValid, errorMessage)
         }
         setFile={(file) => updateAris617File(file)} />
@@ -115,7 +115,7 @@ export const SendRecordsEDRMS = () => {
     {
       label: "Upload 617",
       content: (
-        <Aris617DropZone validate={(isValid, errorMessage) =>
+        <Aris617DropZone showValidationMessage={(isValid, errorMessage) =>
           handleValidationChange(0, isValid, errorMessage)
         }
         setFile={(file) => updateAris617File(file)} />
@@ -126,7 +126,7 @@ export const SendRecordsEDRMS = () => {
       label: "Accept Terms.",
       content: (
         <SubmissionAgreement
-          validate={(isValid, errorMessage) =>
+          showValidationMessage={(isValid, errorMessage) =>
             handleValidationChange(2, isValid, errorMessage)
           }
           excelData={excelData}
