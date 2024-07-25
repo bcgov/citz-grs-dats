@@ -26,6 +26,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import ITransferDTO from "../../../types/DTO/Interfaces/ITransferDTO";
 import { getApiBaseUrl } from "../../../services/serverUrlService";
+import { WEBSOCKET_PUSH_URL, WEBSOCKET_URL } from "../../../types/constants";
 enum DATSActions {
   FolderSelected,
   FileSelected,
@@ -99,7 +100,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     const maxAttempts = 3;
   
     const connectWebSocket = () => {
-      const ws = new WebSocket("ws://localhost:50504/ws/react");
+      const ws = new WebSocket(WEBSOCKET_URL);
   
       ws.onopen = () => {
         console.log("WebSocket connection established");
@@ -250,7 +251,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   const sendMessageToService = (message: any) => {
     console.log(message);
 
-    const logSocket = new WebSocket("ws://localhost:50504/ws/react/receive");
+    const logSocket = new WebSocket(WEBSOCKET_PUSH_URL);
     logSocket.onopen = () => {
       logSocket.send(message);
       logSocket.close();

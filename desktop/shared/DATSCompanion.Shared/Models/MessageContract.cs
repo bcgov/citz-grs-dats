@@ -93,7 +93,11 @@ namespace DATSCompanion.Shared.Models
         FolderUpload,
         CheckFolder,
         FileFolderExists,
-        FileFolderNotExists
+        FileFolderNotExists,
+        HealthCheck,
+        Healthy,
+        ErrorDesktop,
+
     }
 
 }
