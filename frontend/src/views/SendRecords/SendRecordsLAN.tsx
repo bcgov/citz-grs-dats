@@ -44,7 +44,8 @@ export const SendRecordsLAN = () => {
   const [aris617File, setAris617File] = useState<File | null>(null);
   const [excelData, setexcelData] = useState<DatsExcelModel | null>(null);
   const [nextButtonLabel, setNextButtonLabel] = useState("Next");
-
+  const aris66xComponent = useRef<{ validateInputs: () => boolean }>(null);
+  const aris617xComponent = useRef<{ validateInputs: () => boolean }>(null);
   const [arisTransferDetails, setArisTransferDetails] =
     useState<ITransferDTO | null>(null);
     const navigate = useNavigate();
@@ -98,15 +99,15 @@ export const SendRecordsLAN = () => {
       },
       beforeNextCompleted: false,
       content: (
-        <Aris66xDropZone
-          validate={(isValid, errorMessage) =>
+        <Aris66xDropZone ref={aris66xComponent}
+          showValidationMessage={(isValid, errorMessage) =>
             handleValidationChange(0, isValid, errorMessage)
           }
           setFile={(file) => updateFile(file)}
           setExcelData={setexcelData}
         />
       ),
-      validate: () => isValid,
+      validate: () => aris66xComponent.current!!.validateInputs(),
     },
     {
       label: "Upload Transfer Form (ARS 617)",
@@ -134,20 +135,20 @@ export const SendRecordsLAN = () => {
       },
       beforeNextCompleted: false,
       content: (
-        <Aris617DropZone
-          validate={(isValid, errorMessage) =>
+        <Aris617DropZone ref={aris617xComponent}
+          showValidationMessage={(isValid, errorMessage) =>
             handleValidationChange(1, isValid, errorMessage)
           }
           setFile={(aris617File) => updateAris617File(aris617File)}
         />
       ),
-      validate: () => isValid,
+      validate: () => aris617xComponent.current!!.validateInputs(),
     },
     {
       label: "Submission Agreement",
       content: (
         <SubmissionAgreement
-          validate={(isValid, errorMessage) =>
+          showValidationMessage={(isValid, errorMessage) =>
             handleValidationChange(2, isValid, errorMessage)
           }
           excelData={excelData}
@@ -167,7 +168,7 @@ export const SendRecordsLAN = () => {
           setBeforeNextCompleted(true);
         }
       },
-      content: <TransferComponent ref={childRef} initialTransfer={arisTransferDetails!!} validate={(isValid, errorMessage) => {
+      content: <TransferComponent ref={childRef} initialTransfer={arisTransferDetails!!} showValidationMessage={(isValid, errorMessage) => {
         handleValidationChange(3, isValid, errorMessage);
       }} />,
       validate: () => isValid,
@@ -202,7 +203,6 @@ export const SendRecordsLAN = () => {
   };
 
   const handleNext = async () => {
-    console.log("--------------------------------------handleNext");
     var step = steps[activeStep];
     const validate = step.validate;
     const isValid = validate();
@@ -245,6 +245,7 @@ export const SendRecordsLAN = () => {
     isValid: boolean,
     errorMessage: string
   ) => {
+    debugger;
     console.log("validation callback!!");
     steps[step].validate = () => isValid;
     setIsValid(isValid);
@@ -285,13 +286,7 @@ export const SendRecordsLAN = () => {
         <Box sx={{ flex: "1 1 auto" }} />
         <Box sx={{ m: 1, position: 'relative' }}>
         <Button disabled={isUploading}
-          {...(!isInErrorState
-            ? { variant: "contained" }
-            : {
-                variant: "outlined",
-                color: "error",
-                startIcon: <ErrorIcon />,
-              })}
+
           onClick={activeStep === steps.length - 1 ? handleReset : handleNext}
         >
           {nextButtonLabel}

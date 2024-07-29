@@ -42,7 +42,7 @@ enum DATSActions {
 }
 type Props = {
   initialTransfer: ITransferDTO;
-  validate: (isValid: boolean, errorMessage: string) => void;
+  showValidationMessage: (isValid: boolean, errorMessage: string) => void;
 };
 
 type EditableFields = {
@@ -52,7 +52,7 @@ type FolderValues = {
   [key: string]: string;
 };
 const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
-  { initialTransfer, validate },
+  { initialTransfer, showValidationMessage: validate },
   ref
 ) => {
   const [makeFieldsDisable,setMakeFieldsDisable] = useState<boolean>(false);
