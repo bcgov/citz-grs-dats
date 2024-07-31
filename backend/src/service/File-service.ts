@@ -1,10 +1,13 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
+import SMB2 from 'smb2';
 import S3ClientService from "../service/s3Client-service";
 import TransferService from "../service/transfer-service";
+import TransferRepository from "../repository/transfer-repository"
 import validateFileChecksum from "../utils/validateFileChecksum"
 import { IPsp } from 'src/models/psp-model';
+import { TransferStatus } from "../models/enums/TransferStatus"
 
 const replacePlaceholders = (text: string, placeholders: { [key: string]: string }): string => {
     let replacedText = text;
@@ -22,11 +25,13 @@ export default class FileService {
 
     private s3ClientService: S3ClientService;
     private transferService: TransferService;
+    private transferRepository: TransferRepository;
     private lanDrivePath: string;
 
     constructor() {
         this.s3ClientService = new S3ClientService();
         this.transferService = new TransferService();
+        this.transferRepository = new TransferRepository();
         this.lanDrivePath = "Upload617/";
     }
     async createAgreementPDF(
@@ -82,52 +87,54 @@ export default class FileService {
         });
     }
 
-    //async createPSPs(prefix: string): Promise<void> {
-    async createPSPs(prefix: string): Promise<void> {
+    async createPSPs(transferId: string): Promise<void> {
         try {
+            const transfer = await this.transferRepository.getTransferWithPsps(transferId);
 
-
-            // Get the Psps from Mongo db 
-            // for each PSP create a stream
-            // Download the the PSP per objects
-            // If it is a zip file , do a checksum again
-            // If checksum mistmatck error
-            // Ok continue
-            // once finished, add the Documentation and the Metadata folders
-            // Checksums the Zip file (PSP)
-            // send the PSP and the Zip file to the Land Drive
-
-            const objects = await this.s3ClientService.listObjects(prefix);
-            const pspFolders = objects.filter((key) => key.includes('PSP-'));
-
-            for (const key of pspFolders) {
-                const folderPath = path.dirname(key);
-                const fileName = path.basename(key);
-                const localFolderPath = path.join(this.lanDrivePath, folderPath);
-
-                // Create the destination folder
-                this.createFolder(localFolderPath);
-
-                // Download the file
-                const downloadPath = path.join(localFolderPath, fileName);
-                await this.s3ClientService.downloadFile(key, downloadPath);
-
-                // Optionally, delete the file from S3
-                //await this.s3ClientService.deleteObject(key);
-
-                // Copy Documentation and Metadata folders to the PSP folder
-                const documentationSourcePrefix = `${prefix}Documentation/`;
-                const metadataSourcePrefix = `${prefix}Metadatas/`;
-
-                // Calculate the new path within the PSP folder
-                const pspLocalFolderPath = path.join(localFolderPath, 'Documentation');
-                this.createFolder(pspLocalFolderPath);
-                await this.copyFolder(documentationSourcePrefix, pspLocalFolderPath);
-
-                const metadataLocalFolderPath = path.join(localFolderPath, 'Metadatas');
-                this.createFolder(metadataLocalFolderPath);
-                await this.copyFolder(metadataSourcePrefix, metadataLocalFolderPath);
+            if (!transfer) {
+                throw new Error('Transfer not found');
             }
+
+            const psps = (transfer.psps as unknown as IPsp[]) ?? [];
+
+            psps.map(async psp => {
+
+                if (psp.pathToS3) {
+                    const zipBuffer = await this.s3ClientService.copyPSPFolderFromS3ToZip(psp.pathToS3);
+                    if (zipBuffer) {
+                        const shareLanDrive = process.env.SHARE_LAN_DRIVE || 'C:\\TestDATS\\';
+                        const directoryName = 'Tr_' + transfer.accessionNumber + "_" + transfer.applicationNumber;
+                        const directoryPath = path.join(shareLanDrive, directoryName);
+
+                        if (!fs.existsSync(directoryPath)) {
+                            fs.mkdirSync(directoryPath, { recursive: true });
+                        }
+
+                        // Define the file path
+                        const filePath = path.join(directoryPath, `${psp.name}.zip`);
+
+                        // await this.sendBufferToSMBShare(zipBuffer, path.basename(filePath));
+
+                        fs.writeFile(filePath, zipBuffer, (err) => {
+                            if (err) {
+                                console.error('An error occurred:', err);
+                            } else {
+                                console.log('File saved successfully!');
+                            }
+                        });
+
+                        console.log('Zip buffer created successfully');
+                        // Proceed with sending zipBuffer to SMB share or other operations
+                    } else {
+                        console.log('No zip buffer created');
+                    }
+                    //TODO Mark the PSP created
+                }
+
+            });
+            //Mark the Transfer PSP create
+            transfer.transferStatus = TransferStatus.PSPcomplete
+            await this.transferRepository.updateTransfer(transferId, transfer);
 
             console.log('PSP folders moved successfully');
         } catch (error) {
@@ -135,6 +142,28 @@ export default class FileService {
             throw error;
         }
     }
+    private async sendBufferToSMBShare(buffer: Buffer, fileName: string) {
+        const smb2Client = new SMB2({
+            share: "\\\\CA-L19NW8G3\\TestDATS",
+            domain: "GROUPINFRA",
+            username: "jacques.levesque",
+            password: "!Zebra12344",
+        });
+
+        const remoteFilePath = `${fileName}`;
+
+        return new Promise<void>((resolve, reject) => {
+            smb2Client.writeFile(remoteFilePath, buffer, (err) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                console.log("File successfully sent to SMB share.");
+                resolve();
+            });
+        });
+    }
+
 
     private createFolder(localFolderPath: string): void {
         if (!fs.existsSync(localFolderPath)) {
@@ -189,40 +218,40 @@ export default class FileService {
         // store the zip and checksum
         const zipFilePath = await s3ClientService.uploadZipFile(file, receivedChecksum, psppath);
 
-        // const techMetadatav2test = [
-        //     {
-        //         "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\1-MB-DOC.doc",
-        //         "FileName": "1-MB-DOC.doc",
-        //         "Checksum": "88dc8b79636f7d5131d2446c6855ca956a176932",
-        //         "DateCreated": "2024-06-27T16:32:40.7403152-04:00",
-        //         "DateModified": "2024-06-27T16:32:43.6795841-04:00",
-        //         "DateAccessed": "2024-07-15T19:09:13.1135847-04:00",
-        //         "DateLastSaved": "2024-06-27T16:32:43.6795841-04:00",
-        //         "AssociatedProgramName": "Pick an application",
-        //         "Owner": "IDIR\\NSYED",
-        //         "Computer": "VIRTUAL-MIND",
-        //         "ContentType": "application/octet-stream",
-        //         "SizeInBytes": 1048576
-        //     },
-        //     {
-        //         "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\138-KB-XML-File.xml",
-        //         "FileName": "138-KB-XML-File.xml",
-        //         "Checksum": "abd4a088b49d9f9863be4f7fda45a0528f6a4af8",
-        //         "DateCreated": "2024-06-27T16:39:14.7746566-04:00",
-        //         "DateModified": "2024-06-27T16:39:19.0695192-04:00",
-        //         "DateAccessed": "2024-07-15T19:09:13.1193231-04:00",
-        //         "DateLastSaved": "2024-06-27T16:39:19.0695192-04:00",
-        //         "AssociatedProgramName": "Microsoft Edge",
-        //         "Owner": "IDIR\\NSYED",
-        //         "Computer": "VIRTUAL-MIND",
-        //         "ContentType": "application/octet-stream",
-        //         "SizeInBytes": 141317
-        //     }
-        // ]
+        const techMetadatav2test = [
+            {
+                "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\1-MB-DOC.doc",
+                "FileName": "1-MB-DOC.doc",
+                "Checksum": "88dc8b79636f7d5131d2446c6855ca956a176932",
+                "DateCreated": "2024-06-27T16:32:40.7403152-04:00",
+                "DateModified": "2024-06-27T16:32:43.6795841-04:00",
+                "DateAccessed": "2024-07-15T19:09:13.1135847-04:00",
+                "DateLastSaved": "2024-06-27T16:32:43.6795841-04:00",
+                "AssociatedProgramName": "Pick an application",
+                "Owner": "IDIR\\NSYED",
+                "Computer": "VIRTUAL-MIND",
+                "ContentType": "application/octet-stream",
+                "SizeInBytes": 1048576
+            },
+            {
+                "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\138-KB-XML-File.xml",
+                "FileName": "138-KB-XML-File.xml",
+                "Checksum": "abd4a088b49d9f9863be4f7fda45a0528f6a4af8",
+                "DateCreated": "2024-06-27T16:39:14.7746566-04:00",
+                "DateModified": "2024-06-27T16:39:19.0695192-04:00",
+                "DateAccessed": "2024-07-15T19:09:13.1193231-04:00",
+                "DateLastSaved": "2024-06-27T16:39:19.0695192-04:00",
+                "AssociatedProgramName": "Microsoft Edge",
+                "Owner": "IDIR\\NSYED",
+                "Computer": "VIRTUAL-MIND",
+                "ContentType": "application/octet-stream",
+                "SizeInBytes": 141317
+            }
+        ]
 
 
         // Upload the technical metadata v2
-        const jsonFileResponsedata = await s3ClientService.uploadTechnicalV2File(techMetadatav2, zipFilePath);
+        const jsonFileResponsedata = await s3ClientService.uploadTechnicalV2File(techMetadatav2test, zipFilePath);
 
         // Prepared the Psp
         const pspData: Partial<IPsp> = {

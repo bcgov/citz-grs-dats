@@ -287,12 +287,10 @@ export default class TransferController {
 
   async createPSPsfortransfer(req: Request, res: Response) {
     try {
-      // Check for validation errors
       const transferId = req.params.transferId;
 
-      const prefix = "Transfers/55-1234-120000/";
       const createPSPstr = await this.fileService.createPSPs(
-        prefix
+        transferId
       );
       res.status(201).json(createPSPstr);
     } catch (error) {

@@ -7,7 +7,7 @@ const PspSchema: Schema = new Schema<IPsp>({
     pathToLan: { type: String, required: false },
     pspStatus: {
         type: String,
-        enum: ['To be Create', 'Create'],
+        enum: ['To be Create', 'Created'],
         default: 'To be Create',
     },
     transfer: {
