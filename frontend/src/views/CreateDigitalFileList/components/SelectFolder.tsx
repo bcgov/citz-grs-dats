@@ -27,6 +27,7 @@ import {
 import { generateExcel } from "../../../utils/xlsxUtils";
 import InfoIcon from '@mui/icons-material/Info';
 import { format } from "date-fns";
+import { WEBSOCKET_URL } from "../../../types/constants";
 
 enum DATSActions {
   FolderSelected,
@@ -48,7 +49,7 @@ const SelectFolder: FC = () => {
   const enterDelay: number = 200;
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:50504/ws/react");
+    const ws = new WebSocket(WEBSOCKET_URL);
 
     ws.onopen = () => {
       console.log("WebSocket connection established");
