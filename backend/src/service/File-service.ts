@@ -87,62 +87,6 @@ export default class FileService {
         });
     }
 
-    // async createPSPs(transferId: string): Promise<void> {
-    //     try {
-    //         const transfer = await this.transferRepository.getTransferWithPsps(transferId);
-
-    //         if (!transfer) {
-    //             throw new Error('Transfer not found');
-    //         }
-
-    //         const psps = (transfer.psps as unknown as IPsp[]) ?? [];
-
-    //         psps.map(async psp => {
-
-    //             if (psp.pathToS3) {
-    //                 const zipBuffer = await this.s3ClientService.copyPSPFolderFromS3ToZip(psp.pathToS3);
-    //                 if (zipBuffer) {
-    //                     const shareLanDrive = process.env.SHARE_LAN_DRIVE || 'C:\\TestDATS\\';
-    //                     const directoryName = 'Tr_' + transfer.accessionNumber + "_" + transfer.applicationNumber;
-    //                     const directoryPath = path.join(shareLanDrive, directoryName);
-
-    //                     if (!fs.existsSync(directoryPath)) {
-    //                         fs.mkdirSync(directoryPath, { recursive: true });
-    //                     }
-
-    //                     // Define the file path
-    //                     const filePath = path.join(directoryPath, `${psp.name}.zip`);
-
-    //                     // await this.sendBufferToSMBShare(zipBuffer, path.basename(filePath));
-
-    //                     fs.writeFile(filePath, zipBuffer, (err) => {
-    //                         if (err) {
-    //                             console.error('An error occurred:', err);
-    //                         } else {
-    //                             console.log('File saved successfully!');
-    //                         }
-    //                     });
-
-    //                     console.log('Zip buffer created successfully');
-    //                     // Proceed with sending zipBuffer to SMB share or other operations
-    //                 } else {
-    //                     console.log('No zip buffer created');
-    //                 }
-    //                 //TODO Mark the PSP created
-    //             }
-
-    //         });
-    //         //Mark the Transfer PSP create
-    //         // transfer.transferStatus = TransferStatus.PSPcomplete
-    //         //await this.transferRepository.updateTransfer(transferId, transfer);
-
-    //         console.log('PSP folders moved successfully');
-    //     } catch (error) {
-    //         console.error('Error moving PSP folders:', error);
-    //         throw error;
-    //     }
-    // }
-
     async createPSPs(transferId: string): Promise<string> {
         try {
             const transfer = await this.transferRepository.getTransferWithPsps(transferId);

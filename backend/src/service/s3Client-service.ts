@@ -392,51 +392,6 @@ export default class S3ClientService {
             fs.rmSync(tempDir, { recursive: true, force: true });
         }
     }
-    // public async copyPSPFolderFromS3ToZip(folderKey: string): Promise<Buffer | null> {
-    //     const bucket = process.env.BUCKET_NAME || 'dats-bucket-dev';
-    //     const objects = await this.listObjectsForPSP(bucket, folderKey);
-
-    //     if (!objects) {
-    //         console.log("No objects found in the specified folder.");
-    //         return null;
-    //     }
-
-    //     const tempDir = path.join(os.tmpdir(), uuidv4());
-
-    //     await this.createDirectory(tempDir);
-
-    //     try {
-    //         await this.downloadObjects(bucket, objects, folderKey, tempDir);
-    //         await this.downloadAdditionalFolders(bucket, folderKey, tempDir);
-
-    //         const zipBuffer = await this.zipDirectory(tempDir);
-
-    //         return zipBuffer;
-    //     } finally {
-    //         fs.rmSync(tempDir, { recursive: true, force: true });
-    //     }
-    // }
-    // private async downloadObjects(bucket: string, objects: any[], folderKey: string, tempDir: string): Promise<void> {
-    //     for (const obj of objects) {
-    //         const fileKey = obj.Key as string;
-
-    //         if (fileKey.endsWith("/") || obj.Size === 0) {
-    //             continue;
-    //         }
-
-    //         const relativePath = fileKey.substring(folderKey.length);
-    //         const downloadPath = path.join(tempDir, relativePath);
-
-    //         this.createDirectory(path.dirname(downloadPath));
-
-    //         console.log(`Downloading ${fileKey} to ${downloadPath}`);
-    //         await this.downloadPSP(bucket, fileKey, downloadPath);
-
-    //         if (path.extname(downloadPath) === ".zip") {
-    //             await this.handleZipFile(bucket, fileKey, downloadPath);
-    //         }
-    //     }
-    // }
 
     private async downloadAdditionalFolders(bucket: string, folderKey: string, tempDir: string): Promise<void> {
         const additionalFolders = ["Documentation/", "Metadata/"];

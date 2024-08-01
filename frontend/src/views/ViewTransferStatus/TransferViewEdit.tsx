@@ -13,7 +13,9 @@ import {
   DialogContentText,
   DialogTitle,
   Snackbar,
-  Alert
+  Alert,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 
 import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
@@ -30,6 +32,7 @@ const TransferViewEdit: React.FC = () => {
   const [openCreatePSP, setOpenCreatePSP] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const transferService = new TransferService();
 
@@ -58,15 +61,18 @@ const TransferViewEdit: React.FC = () => {
   };
 
   const handleCreatePSP = async () => {
+    setOpenCreatePSP(false); // Close the dialog first
+    setLoading(true); // Start loading
     try {
       const response = await transferService.createPSPs(id);
       setMessage(response.message); // Set the success message
       setSnackbarOpen(true); // Show the Snackbar
-      setOpenCreatePSP(false);
     } catch (error) {
       console.error("Error creating PSPs:", error);
       setMessage("Error creating PSPs"); // Set the error message
       setSnackbarOpen(true); // Show the Snackbar
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -85,6 +91,7 @@ const TransferViewEdit: React.FC = () => {
   const handleCloseCreatePSP = () => {
     setOpenCreatePSP(false);
   };
+
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
     setMessage(null); // Reset the message
@@ -288,6 +295,10 @@ const TransferViewEdit: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Backdrop open={loading} style={{ zIndex: 1300, color: '#fff' }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
 
       <Snackbar
         open={snackbarOpen}
