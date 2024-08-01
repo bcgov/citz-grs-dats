@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  Card,
-  Divider,
   Typography,
   Box,
   Button,
@@ -14,6 +12,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Snackbar,
+  Alert
 } from "@mui/material";
 
 import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
@@ -28,6 +28,8 @@ const TransferViewEdit: React.FC = () => {
   const [isTransferEditing, setIsTransferEditing] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [openCreatePSP, setOpenCreatePSP] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const transferService = new TransferService();
 
@@ -57,10 +59,14 @@ const TransferViewEdit: React.FC = () => {
 
   const handleCreatePSP = async () => {
     try {
-      await transferService.createPSPs(id);
+      const response = await transferService.createPSPs(id);
+      setMessage(response.message); // Set the success message
+      setSnackbarOpen(true); // Show the Snackbar
       setOpenCreatePSP(false);
     } catch (error) {
-      console.error("Error creating PSPs :", error);
+      console.error("Error creating PSPs:", error);
+      setMessage("Error creating PSPs"); // Set the error message
+      setSnackbarOpen(true); // Show the Snackbar
     }
   };
 
@@ -78,6 +84,10 @@ const TransferViewEdit: React.FC = () => {
 
   const handleCloseCreatePSP = () => {
     setOpenCreatePSP(false);
+  };
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+    setMessage(null); // Reset the message
   };
 
   useEffect(() => {
@@ -101,8 +111,6 @@ const TransferViewEdit: React.FC = () => {
 
   return (
     <>
-      {/* <Grid item xs={12} sx={{ marginBottom: 1 }}>
-        <Card> */}
       <Box
         p={1}
         display="flex"
@@ -111,7 +119,7 @@ const TransferViewEdit: React.FC = () => {
       >
         <Box>
           <Typography variant="h5" gutterBottom>
-            Transfer Informations jl
+            Transfer Information
           </Typography>
         </Box>
         <Box>
@@ -146,7 +154,6 @@ const TransferViewEdit: React.FC = () => {
           </Button>
         </Box>
       </Box>
-      {/* <Divider /> */}
       <Grid
         container
         spacing={1}
@@ -159,7 +166,6 @@ const TransferViewEdit: React.FC = () => {
           name="accessionNumber"
           label="Accession Number"
           variant="outlined"
-          // onChange={handleInputChange}
           value={transfer.accessionNumber}
         />
 
@@ -169,7 +175,6 @@ const TransferViewEdit: React.FC = () => {
           name="applicationNumber"
           label="Application Number"
           variant="outlined"
-          // onChange={handleInputChange}
           value={transfer.applicationNumber}
         />
       </Grid>
@@ -203,14 +208,11 @@ const TransferViewEdit: React.FC = () => {
           ))}
         </TextField>
       </Grid>
-      {/* </Card> */}
-      {/* <Card> */}
       <Box p={1} display="flex" alignItems="center">
         <Typography variant="h5" gutterBottom>
-          Producer Informations
+          Producer Information
         </Typography>
       </Box>
-      {/* <Divider /> */}
       <Grid
         container
         spacing={4}
@@ -246,8 +248,6 @@ const TransferViewEdit: React.FC = () => {
           value={transfer.producerOfficeName}
         />
       </Grid>
-      {/* ? </Card> */}
-      {/* </Grid> */}
 
       <Dialog
         open={openDelete}
@@ -288,6 +288,17 @@ const TransferViewEdit: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={message?.includes("Error") ? "error" : "success"}>
+          {message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

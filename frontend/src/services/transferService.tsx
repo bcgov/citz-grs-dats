@@ -154,19 +154,15 @@ export class TransferService {
       });
   }
 
-  public async createPSPs(
-    transferId: any,
-  ): Promise<any[]> {
+  public async createPSPs(transferId: any): Promise<any> {
     return await axios
-      .post(
-        `${API_URL}/api/transfers/${transferId}/createPSPs`
-      )
+      .post(`${API_URL}/api/transfers/${transferId}/createPSPs`)
       .then((response) => {
         return response.data;
       })
       .catch((error) => {
         console.error(error);
-        return error;
+        throw error;
       });
   }
 }

@@ -8,7 +8,13 @@ import { pipeline } from "stream/promises";
 import AdmZip from "adm-zip";
 import extractTechnicalMetadataToJson from "../utils/exctractTechnicalV1DatafromExcel"
 import path from "path";
-import validateFileChecksum from "src/utils/validateFileChecksum";
+import crypto from 'crypto';
+import { promisify } from "util";
+
+const writeFileAsync = promisify(fs.writeFile);
+const mkdirAsync = promisify(fs.mkdir);
+const readFileAsync = promisify(fs.readFile);
+//import validateFileChecksum from "src/utils/validateFileChecksum";
 
 
 export default class S3ClientService {
@@ -206,7 +212,7 @@ export default class S3ClientService {
                 Body: uploadedZipFile.buffer,
             });
 
-            const zipFileResponsedata = await this.s3Client.send(uploadFilecommand);
+            await this.s3Client.send(uploadFilecommand);
 
             const uploadJSONcommand = new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
@@ -214,7 +220,7 @@ export default class S3ClientService {
                 Body: jsonBuffer,
                 ContentType: 'application/json'
             });
-            const jsonFileResponsedata = await this.s3Client.send(uploadJSONcommand);
+            await this.s3Client.send(uploadJSONcommand);
 
         } catch (error) {
             console.error('Error uploading file', error);
@@ -350,6 +356,7 @@ export default class S3ClientService {
         this.createDirectory(tempDir);
 
         try {
+            // await this.downloadObjects(bucket, objects, folderKey, tempDir);
             for (const obj of objects) {
                 const fileKey = obj.Key as string;
 
@@ -367,59 +374,15 @@ export default class S3ClientService {
                     await this.downloadPSP(bucket, fileKey, downloadPath);
 
                     if (path.extname(downloadPath) === ".zip") {
-                        console.log(`Handling zip file: ${downloadPath}`);
-                        const baseName = path.basename(downloadPath, ".zip");
-                        const checksumFilePath = path.join(
-                            path.dirname(downloadPath),
-                            `${baseName}_checksum.json`
-                        );
-                        const checksumFileKey = `${path.dirname(fileKey)}/${baseName}_checksum.json`;
-
-                        console.log(`Path to checksum file: ${checksumFileKey}`);
-
-                        const checksumData = await this.downloadAndParseJSON(bucket, checksumFileKey);
-                        console.log(`Checksum data:`, checksumData);
-
-                        if (fs.existsSync(checksumFilePath)) {
-                            console.log(`Found checksum file: ${checksumFilePath}`);
-                            // validateFileChecksum()
-                        }
+                        await this.handleZipFile(bucket, fileKey, downloadPath);
                     }
 
                     const basePath = this.extractBasePath(folderKey);
-                    console.log("Base path is: " + basePath);
                 } catch (error) {
                     console.error(`Error downloading file: ${fileKey}`, error);
                 }
             }
-
-            const additionalFolders = ["Documentation/", "Metadata/"];
-            for (const additionalFolder of additionalFolders) {
-                const additionalFolderKey = `${this.extractBasePath(folderKey)}${additionalFolder}`;
-                const additionalObjects = await this.listObjectsForPSP(bucket, additionalFolderKey);
-
-                if (additionalObjects) {
-                    for (const obj of additionalObjects) {
-                        const fileKey = obj.Key as string;
-
-                        if (fileKey.endsWith("/")) {
-                            continue;
-                        }
-
-                        const relativePath = fileKey.substring(additionalFolderKey.length);
-                        const downloadPath = path.join(tempDir, additionalFolder, relativePath);
-
-                        this.createDirectory(path.dirname(downloadPath));
-
-                        console.log(`Downloading ${fileKey} to ${downloadPath}`);
-                        try {
-                            await this.downloadPSP(bucket, fileKey, downloadPath);
-                        } catch (error) {
-                            console.error(`Error downloading file: ${fileKey}`, error);
-                        }
-                    }
-                }
-            }
+            await this.downloadAdditionalFolders(bucket, folderKey, tempDir);
 
             const zipBuffer = await this.zipDirectory(tempDir);
 
@@ -429,8 +392,98 @@ export default class S3ClientService {
             fs.rmSync(tempDir, { recursive: true, force: true });
         }
     }
+    // public async copyPSPFolderFromS3ToZip(folderKey: string): Promise<Buffer | null> {
+    //     const bucket = process.env.BUCKET_NAME || 'dats-bucket-dev';
+    //     const objects = await this.listObjectsForPSP(bucket, folderKey);
 
+    //     if (!objects) {
+    //         console.log("No objects found in the specified folder.");
+    //         return null;
+    //     }
 
+    //     const tempDir = path.join(os.tmpdir(), uuidv4());
+
+    //     await this.createDirectory(tempDir);
+
+    //     try {
+    //         await this.downloadObjects(bucket, objects, folderKey, tempDir);
+    //         await this.downloadAdditionalFolders(bucket, folderKey, tempDir);
+
+    //         const zipBuffer = await this.zipDirectory(tempDir);
+
+    //         return zipBuffer;
+    //     } finally {
+    //         fs.rmSync(tempDir, { recursive: true, force: true });
+    //     }
+    // }
+    // private async downloadObjects(bucket: string, objects: any[], folderKey: string, tempDir: string): Promise<void> {
+    //     for (const obj of objects) {
+    //         const fileKey = obj.Key as string;
+
+    //         if (fileKey.endsWith("/") || obj.Size === 0) {
+    //             continue;
+    //         }
+
+    //         const relativePath = fileKey.substring(folderKey.length);
+    //         const downloadPath = path.join(tempDir, relativePath);
+
+    //         this.createDirectory(path.dirname(downloadPath));
+
+    //         console.log(`Downloading ${fileKey} to ${downloadPath}`);
+    //         await this.downloadPSP(bucket, fileKey, downloadPath);
+
+    //         if (path.extname(downloadPath) === ".zip") {
+    //             await this.handleZipFile(bucket, fileKey, downloadPath);
+    //         }
+    //     }
+    // }
+
+    private async downloadAdditionalFolders(bucket: string, folderKey: string, tempDir: string): Promise<void> {
+        const additionalFolders = ["Documentation/", "Metadata/"];
+        for (const additionalFolder of additionalFolders) {
+            const additionalFolderKey = `${this.extractBasePath(folderKey)}${additionalFolder}`;
+            const additionalObjects = await this.listObjectsForPSP(bucket, additionalFolderKey);
+
+            if (additionalObjects) {
+                for (const obj of additionalObjects) {
+                    const fileKey = obj.Key as string;
+
+                    if (fileKey.endsWith("/")) {
+                        continue;
+                    }
+
+                    const relativePath = fileKey.substring(additionalFolderKey.length);
+                    const downloadPath = path.join(tempDir, additionalFolder, relativePath);
+
+                    await this.createDirectory(path.dirname(downloadPath));
+
+                    console.log(`Downloading ${fileKey} to ${downloadPath}`);
+                    await this.downloadPSP(bucket, fileKey, downloadPath);
+                }
+            }
+        }
+    }
+
+    private async handleZipFile(bucket: string, fileKey: string, downloadPath: string): Promise<void> {
+        console.log(`Handling zip file: ${downloadPath}`);
+        const baseName = path.basename(downloadPath, ".zip");
+        const checksumFileKey = `${path.dirname(fileKey)}/${baseName}_checksum.json`;
+
+        console.log(`Path to checksum file: ${checksumFileKey}`);
+
+        const checksumData = await this.downloadAndParseJSON(bucket, checksumFileKey);
+
+        if (checksumData) {
+            console.log(`Checksum data:`, checksumData);
+            const isValid = await this.validateFileChecksum(downloadPath, checksumData.sha1);
+            if (isValid) {
+                console.log(`Checksum validation passed for ${downloadPath}`);
+            } else {
+                console.error(`Checksum validation failed for ${downloadPath}`);
+                throw new Error(`Checksum validation failed for ${downloadPath}`);
+            }
+        }
+    }
     private createDirectory(dirPath: string): void {
         if (!fs.existsSync(dirPath)) {
             fs.mkdirSync(dirPath, { recursive: true });
@@ -491,6 +544,24 @@ export default class S3ClientService {
 
         await pipeline(bodyStream, fs.createWriteStream(downloadPath));
     }
+    private async validateFileChecksum(filePath: string, expectedChecksum: string): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            const hash = crypto.createHash('sha1');
+            const stream = fs.createReadStream(filePath);
+            console.log(`In validateFileChecksum ${filePath} `);
+            stream.on('data', (data) => {
+                hash.update(data);
+            });
 
+            stream.on('end', () => {
+                const calculatedChecksum = hash.digest('hex');
+                resolve(calculatedChecksum === expectedChecksum);
+            });
+
+            stream.on('error', (err) => {
+                reject(err);
+            });
+        });
+    }
 
 }

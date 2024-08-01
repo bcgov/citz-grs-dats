@@ -1,31 +1,23 @@
 import crypto from 'crypto';
+import fs from 'fs';
 
-function validateFileChecksum(file, receivedChecksum: string, algorithm: string = 'sha1'): Promise<boolean> {
+async function validateFileChecksum(filePath: string, expectedChecksum: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
-        try {
-            console.log('In validateFileChecksum');
+        const hash = crypto.createHash('sha1');
+        const stream = fs.createReadStream(filePath);
 
+        stream.on('data', (data) => {
+            hash.update(data);
+        });
 
-            // Calculate the checksum of the uploaded file
-            const hash = crypto.createHash(algorithm);
-            hash.update(file.buffer);
+        stream.on('end', () => {
             const calculatedChecksum = hash.digest('hex');
+            resolve(calculatedChecksum === expectedChecksum);
+        });
 
-            console.log('In validateFileChecksum receivedChecksum: ' + receivedChecksum);
-            console.log('In validateFileChecksum calculatedChecksum: ' + calculatedChecksum);
-
-            // Compare checksums
-            if (calculatedChecksum !== receivedChecksum) {
-                console.log('Checksum mismatch');
-                resolve(false);
-            } else {
-                resolve(true);
-            }
-        } catch (error) {
-            console.log(error);
-            reject(error);
-        }
+        stream.on('error', (err) => {
+            reject(err);
+        });
     });
 }
-
-export default validateFileChecksum;
+export default validateFileChecksum

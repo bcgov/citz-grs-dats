@@ -5,7 +5,7 @@ import SMB2 from 'smb2';
 import S3ClientService from "../service/s3Client-service";
 import TransferService from "../service/transfer-service";
 import TransferRepository from "../repository/transfer-repository"
-import validateFileChecksum from "../utils/validateFileChecksum"
+import validateBufferChecksum from "../utils/validateBufferChecksum"
 import { IPsp } from 'src/models/psp-model';
 import { TransferStatus } from "../models/enums/TransferStatus"
 
@@ -87,7 +87,63 @@ export default class FileService {
         });
     }
 
-    async createPSPs(transferId: string): Promise<void> {
+    // async createPSPs(transferId: string): Promise<void> {
+    //     try {
+    //         const transfer = await this.transferRepository.getTransferWithPsps(transferId);
+
+    //         if (!transfer) {
+    //             throw new Error('Transfer not found');
+    //         }
+
+    //         const psps = (transfer.psps as unknown as IPsp[]) ?? [];
+
+    //         psps.map(async psp => {
+
+    //             if (psp.pathToS3) {
+    //                 const zipBuffer = await this.s3ClientService.copyPSPFolderFromS3ToZip(psp.pathToS3);
+    //                 if (zipBuffer) {
+    //                     const shareLanDrive = process.env.SHARE_LAN_DRIVE || 'C:\\TestDATS\\';
+    //                     const directoryName = 'Tr_' + transfer.accessionNumber + "_" + transfer.applicationNumber;
+    //                     const directoryPath = path.join(shareLanDrive, directoryName);
+
+    //                     if (!fs.existsSync(directoryPath)) {
+    //                         fs.mkdirSync(directoryPath, { recursive: true });
+    //                     }
+
+    //                     // Define the file path
+    //                     const filePath = path.join(directoryPath, `${psp.name}.zip`);
+
+    //                     // await this.sendBufferToSMBShare(zipBuffer, path.basename(filePath));
+
+    //                     fs.writeFile(filePath, zipBuffer, (err) => {
+    //                         if (err) {
+    //                             console.error('An error occurred:', err);
+    //                         } else {
+    //                             console.log('File saved successfully!');
+    //                         }
+    //                     });
+
+    //                     console.log('Zip buffer created successfully');
+    //                     // Proceed with sending zipBuffer to SMB share or other operations
+    //                 } else {
+    //                     console.log('No zip buffer created');
+    //                 }
+    //                 //TODO Mark the PSP created
+    //             }
+
+    //         });
+    //         //Mark the Transfer PSP create
+    //         // transfer.transferStatus = TransferStatus.PSPcomplete
+    //         //await this.transferRepository.updateTransfer(transferId, transfer);
+
+    //         console.log('PSP folders moved successfully');
+    //     } catch (error) {
+    //         console.error('Error moving PSP folders:', error);
+    //         throw error;
+    //     }
+    // }
+
+    async createPSPs(transferId: string): Promise<string> {
         try {
             const transfer = await this.transferRepository.getTransferWithPsps(transferId);
 
@@ -97,8 +153,7 @@ export default class FileService {
 
             const psps = (transfer.psps as unknown as IPsp[]) ?? [];
 
-            psps.map(async psp => {
-
+            await Promise.all(psps.map(async (psp) => {
                 if (psp.pathToS3) {
                     const zipBuffer = await this.s3ClientService.copyPSPFolderFromS3ToZip(psp.pathToS3);
                     if (zipBuffer) {
@@ -110,38 +165,29 @@ export default class FileService {
                             fs.mkdirSync(directoryPath, { recursive: true });
                         }
 
-                        // Define the file path
                         const filePath = path.join(directoryPath, `${psp.name}.zip`);
 
-                        // await this.sendBufferToSMBShare(zipBuffer, path.basename(filePath));
+                        await fs.promises.writeFile(filePath, zipBuffer);
 
-                        fs.writeFile(filePath, zipBuffer, (err) => {
-                            if (err) {
-                                console.error('An error occurred:', err);
-                            } else {
-                                console.log('File saved successfully!');
-                            }
-                        });
-
-                        console.log('Zip buffer created successfully');
-                        // Proceed with sending zipBuffer to SMB share or other operations
+                        console.log('File saved successfully!');
                     } else {
                         console.log('No zip buffer created');
                     }
-                    //TODO Mark the PSP created
                 }
+            }));
 
-            });
-            //Mark the Transfer PSP create
-            transfer.transferStatus = TransferStatus.PSPcomplete
+            // Mark the Transfer PSP created
+            transfer.transferStatus = TransferStatus.PSPcomplete;
             await this.transferRepository.updateTransfer(transferId, transfer);
 
             console.log('PSP folders moved successfully');
+            return 'PSP folders created successfully';
         } catch (error) {
             console.error('Error moving PSP folders:', error);
             throw error;
         }
     }
+
     private async sendBufferToSMBShare(buffer: Buffer, fileName: string) {
         const smb2Client = new SMB2({
             share: "\\\\CA-L19NW8G3\\TestDATS",
@@ -170,26 +216,7 @@ export default class FileService {
             fs.mkdirSync(localFolderPath, { recursive: true });
         }
     }
-    private async copyFolder(sourcePrefix: string, destinationPath: string): Promise<void> {
-        const objects = await this.s3ClientService.listObjects(sourcePrefix);
 
-        for (const key of objects) {
-            if (key.endsWith('/')) {
-                // Skip directories
-                continue;
-            }
-
-            const fileName = key.replace(sourcePrefix, '');
-            const downloadPath = path.join(destinationPath, fileName);
-
-            // Create the destination folder
-            const folderPath = path.dirname(downloadPath);
-            this.createFolder(folderPath);
-
-            // Download the file
-            await this.s3ClientService.downloadFile(key, downloadPath);
-        }
-    }
     async saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2) {
 
         if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
@@ -198,13 +225,20 @@ export default class FileService {
 
         console.log(" In File saveFolderDetails  = ");
 
-        const isValid = await validateFileChecksum(file, receivedChecksum, 'sha1');
+        const isValid = await validateBufferChecksum(file, receivedChecksum, 'sha1');
         if (!isValid) {
             console.log('Checksum mismatch. File validation failed.');
             throw new Error('Checksum mismatch. File validation failed.')
         }
-        console.log("saveFolderDetails  = " + receivedChecksum);
+        // get the admin json
+        const transfer = await this.transferRepository.getTransferByKeysNumbers(accessionNumber, applicationNumber);
+        console.log(' in the transfer' + transfer);
+        if (!transfer) {
+            throw new Error('Transfer not found');
+        }
 
+        const transferAdminJson = JSON.stringify(transfer);
+        console.log(transferAdminJson)
 
         const s3ClientService = new S3ClientService();
         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';

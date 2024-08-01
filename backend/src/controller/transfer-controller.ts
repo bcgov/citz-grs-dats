@@ -288,14 +288,12 @@ export default class TransferController {
   async createPSPsfortransfer(req: Request, res: Response) {
     try {
       const transferId = req.params.transferId;
-
-      const createPSPstr = await this.fileService.createPSPs(
-        transferId
-      );
-      res.status(201).json(createPSPstr);
+      const message = await this.fileService.createPSPs(transferId);
+      res.status(201).json({ message });
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "An error occurred" });
     }
   }
+
 }
