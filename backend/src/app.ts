@@ -24,7 +24,7 @@ auditor('test audit log', { event: 'user_login', username: 'johndoe' });
 
 
 const corsOptions = {
-  origin: process.env.CLIENT_BASE_URL, // 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL, // 'http://localhost:3000',
   credentials: true
 };
 
