@@ -61,6 +61,8 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   { initialTransfer, showValidationMessage: validate },
   ref
 ) => {
+
+
   const [makeFieldsDisable,setMakeFieldsDisable] = useState<boolean>(false);
    const [transfer, setTransfer] = useState<ITransferDTO>(initialTransfer);
   const [editableFields, setEditableFields] = useState<EditableFields>({});
@@ -148,16 +150,33 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             break;
             case DATSActions.FileInformation:
               if ( currentFolder.current !== null) {
-                console.log('note DATS Action' + currentFolderNote.current);
-                var note: string = currentFolderNote.current ?? '';
-                setTransfer((prev) => ({
-                  ...prev,
-                  digitalFileLists: transfer.digitalFileLists!!.map((fileList) =>
-                    fileList.folder ===  currentFolder.current
-                      ? { ...fileList, folder: data.Payload.Path, note: note }
+                setTransfer((prev) => {
+                  const updatedFileLists = prev.digitalFileLists?.map((fileList) =>
+                    fileList.folder === currentFolder.current
+                      ? { ...fileList, folder: String(data.Payload.Path), note: note }  
                       : fileList
-                  )
-                }));
+                  ) || [];
+                
+                  // Check if any item matches the condition
+                  const hasMatchingFolder = prev.digitalFileLists?.some(
+                    (fileList) => fileList.folder === currentFolder.current
+                  );
+                
+                  // If no items match, add a new item to the array
+                  if (!hasMatchingFolder) {
+                    updatedFileLists.push({
+                      folder: String(data.Payload.Path), 
+                      _id: '',
+                      size: data.Payload.SizeInBytes,
+                      fileCount: data.Payload.FileCount,
+                      transfer: ''
+                    });
+                  }
+                  return {
+                    ...prev,
+                    digitalFileLists: updatedFileLists,
+                  };
+                });
                 currentFolder.current = null; // Reset the active index after update
               }
               break;
@@ -237,7 +256,15 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   };
 
   const uploadAllFolders = async (): Promise<void> => {
+    debugger;
+    if (!transfer.digitalFileLists || transfer.digitalFileLists.length === 0) {
+      debugger;
+      console.log('no folders to upload');
+      validate(false, 'Please add folders to upload');
+      return;
+    }
     const baseUrl = await getApiBaseUrl();
+
     //report(true, '');
     setAllProgress(transfer);
     setMakeFieldsDisable(true);
@@ -367,7 +394,13 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           />
         </Grid>
       </Grid>
-
+      {(!transfer.digitalFileLists || transfer.digitalFileLists.length === 0) && (
+        <Box sx={{ mt: 2 }}>
+          <Button variant="contained" color="primary"  onClick={() => handleEditClick('NEW_FOLDER')}>
+            Add Digital File
+          </Button>
+        </Box>
+      )}
       <Box mt={4}>
         <Typography variant="h6" gutterBottom>
           Folders
