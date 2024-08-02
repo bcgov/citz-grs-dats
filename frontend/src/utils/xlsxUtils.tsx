@@ -121,7 +121,7 @@ export const extractDataport = (file: File): Promise<DatsExcelModel> => {
 };
 
 export const generateExcel = async (folders: IFolderInformation[]) => {
-  const response = await fetch(`/api/api/digital-file-list-template.xlsx`); // Adjust the path to your template file
+  const response = await fetch(`/api/digital-file-list-template.xlsx`); // Adjust the path to your template file
   const arrayBuffer = await response.arrayBuffer();
   const workbook = XLSX.read(arrayBuffer, { type: 'array' });
 
