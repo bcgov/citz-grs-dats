@@ -1,10 +1,13 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
+import SMB2 from 'smb2';
 import S3ClientService from "../service/s3Client-service";
 import TransferService from "../service/transfer-service";
-import validateFileChecksum from "../utils/validateFileChecksum"
+import TransferRepository from "../repository/transfer-repository"
+import validateBufferChecksum from "../utils/validateBufferChecksum"
 import { IPsp } from 'src/models/psp-model';
+import { TransferStatus } from "../models/enums/TransferStatus"
 import logger from '../config/logs/winston-config';
 
 const replacePlaceholders = (text: string, placeholders: { [key: string]: string }): string => {
@@ -23,11 +26,13 @@ export default class FileService {
 
     private s3ClientService: S3ClientService;
     private transferService: TransferService;
+    private transferRepository: TransferRepository;
     private lanDrivePath: string;
 
     constructor() {
         this.s3ClientService = new S3ClientService();
         this.transferService = new TransferService();
+        this.transferRepository = new TransferRepository();
         this.lanDrivePath = "Upload617/";
     }
     async createNote(notes: string, placeholders: Placeholder) : Promise<string> 
@@ -95,85 +100,80 @@ export default class FileService {
         });
     }
 
-    //async createPSPs(prefix: string): Promise<void> {
-    async createPSPs(prefix: string): Promise<void> {
+    async createPSPs(transferId: string): Promise<string> {
         try {
+            const transfer = await this.transferRepository.getTransferWithPsps(transferId);
 
-
-            // Get the Psps from Mongo db 
-            // for each PSP create a stream
-            // Download the the PSP per objects
-            // If it is a zip file , do a checksum again
-            // If checksum mistmatck error
-            // Ok continue
-            // once finished, add the Documentation and the Metadata folders
-            // Checksums the Zip file (PSP)
-            // send the PSP and the Zip file to the Land Drive
-
-            const objects = await this.s3ClientService.listObjects(prefix);
-            const pspFolders = objects.filter((key) => key.includes('PSP-'));
-
-            for (const key of pspFolders) {
-                const folderPath = path.dirname(key);
-                const fileName = path.basename(key);
-                const localFolderPath = path.join(this.lanDrivePath, folderPath);
-
-                // Create the destination folder
-                this.createFolder(localFolderPath);
-
-                // Download the file
-                const downloadPath = path.join(localFolderPath, fileName);
-                await this.s3ClientService.downloadFile(key, downloadPath);
-
-                // Optionally, delete the file from S3
-                //await this.s3ClientService.deleteObject(key);
-
-                // Copy Documentation and Metadata folders to the PSP folder
-                const documentationSourcePrefix = `${prefix}Documentation/`;
-                const metadataSourcePrefix = `${prefix}Metadatas/`;
-
-                // Calculate the new path within the PSP folder
-                const pspLocalFolderPath = path.join(localFolderPath, 'Documentation');
-                this.createFolder(pspLocalFolderPath);
-                await this.copyFolder(documentationSourcePrefix, pspLocalFolderPath);
-
-                const metadataLocalFolderPath = path.join(localFolderPath, 'Metadatas');
-                this.createFolder(metadataLocalFolderPath);
-                await this.copyFolder(metadataSourcePrefix, metadataLocalFolderPath);
+            if (!transfer) {
+                throw new Error('Transfer not found');
             }
 
+            const psps = (transfer.psps as unknown as IPsp[]) ?? [];
+
+            await Promise.all(psps.map(async (psp) => {
+                if (psp.pathToS3) {
+                    const zipBuffer = await this.s3ClientService.copyPSPFolderFromS3ToZip(psp.pathToS3);
+                    if (zipBuffer) {
+                        const shareLanDrive = process.env.SHARE_LAN_DRIVE || 'C:\\TestDATS\\';
+                        const directoryName = 'Tr_' + transfer.accessionNumber + "_" + transfer.applicationNumber;
+                        const directoryPath = path.join(shareLanDrive, directoryName);
+
+                        if (!fs.existsSync(directoryPath)) {
+                            fs.mkdirSync(directoryPath, { recursive: true });
+                        }
+
+                        const filePath = path.join(directoryPath, `${psp.name}.zip`);
+
+                        await fs.promises.writeFile(filePath, zipBuffer);
+
+                        console.log('File saved successfully!');
+                    } else {
+                        console.log('No zip buffer created');
+                    }
+                }
+            }));
+
+            // Mark the Transfer PSP created
+            transfer.transferStatus = TransferStatus.PSPcomplete;
+            await this.transferRepository.updateTransfer(transferId, transfer);
+
             console.log('PSP folders moved successfully');
+            return 'PSP folders created successfully';
         } catch (error) {
             console.error('Error moving PSP folders:', error);
             throw error;
         }
     }
 
+    private async sendBufferToSMBShare(buffer: Buffer, fileName: string) {
+        const smb2Client = new SMB2({
+            share: "\\\\CA-L19NW8G3\\TestDATS",
+            domain: "GROUPINFRA",
+            username: "jacques.levesque",
+            password: "!Zebra12344",
+        });
+
+        const remoteFilePath = `${fileName}`;
+
+        return new Promise<void>((resolve, reject) => {
+            smb2Client.writeFile(remoteFilePath, buffer, (err) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                console.log("File successfully sent to SMB share.");
+                resolve();
+            });
+        });
+    }
+
+
     private createFolder(localFolderPath: string): void {
         if (!fs.existsSync(localFolderPath)) {
             fs.mkdirSync(localFolderPath, { recursive: true });
         }
     }
-    private async copyFolder(sourcePrefix: string, destinationPath: string): Promise<void> {
-        const objects = await this.s3ClientService.listObjects(sourcePrefix);
 
-        for (const key of objects) {
-            if (key.endsWith('/')) {
-                // Skip directories
-                continue;
-            }
-
-            const fileName = key.replace(sourcePrefix, '');
-            const downloadPath = path.join(destinationPath, fileName);
-
-            // Create the destination folder
-            const folderPath = path.dirname(downloadPath);
-            this.createFolder(folderPath);
-
-            // Download the file
-            await this.s3ClientService.downloadFile(key, downloadPath);
-        }
-    }
     async saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2) {
 
         if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
@@ -182,13 +182,20 @@ export default class FileService {
 
         console.log(" In File saveFolderDetails  = ");
 
-        const isValid = await validateFileChecksum(file, receivedChecksum, 'sha1');
+        const isValid = await validateBufferChecksum(file, receivedChecksum, 'sha1');
         if (!isValid) {
             console.log('Checksum mismatch. File validation failed.');
             throw new Error('Checksum mismatch. File validation failed.')
         }
-        console.log("saveFolderDetails  = " + receivedChecksum);
+        // get the admin json
+        const transfer = await this.transferRepository.getTransferByKeysNumbers(accessionNumber, applicationNumber);
+        console.log(' in the transfer' + transfer);
+        if (!transfer) {
+            throw new Error('Transfer not found');
+        }
 
+        const transferAdminJson = JSON.stringify(transfer);
+        console.log(transferAdminJson)
 
         const s3ClientService = new S3ClientService();
         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';

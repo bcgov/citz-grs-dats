@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  Card,
-  Divider,
   Typography,
   Box,
   Button,
@@ -14,6 +12,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Snackbar,
+  Alert,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 
 import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
@@ -28,6 +30,9 @@ const TransferViewEdit: React.FC = () => {
   const [isTransferEditing, setIsTransferEditing] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [openCreatePSP, setOpenCreatePSP] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const transferService = new TransferService();
 
@@ -56,11 +61,18 @@ const TransferViewEdit: React.FC = () => {
   };
 
   const handleCreatePSP = async () => {
+    setOpenCreatePSP(false); // Close the dialog first
+    setLoading(true); // Start loading
     try {
-      await transferService.createPSPs(id);
-      setOpenCreatePSP(false);
+      const response = await transferService.createPSPs(id);
+      setMessage(response.message); // Set the success message
+      setSnackbarOpen(true); // Show the Snackbar
     } catch (error) {
-      console.error("Error creating PSPs :", error);
+      console.error("Error creating PSPs:", error);
+      setMessage("Error creating PSPs"); // Set the error message
+      setSnackbarOpen(true); // Show the Snackbar
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -78,6 +90,11 @@ const TransferViewEdit: React.FC = () => {
 
   const handleCloseCreatePSP = () => {
     setOpenCreatePSP(false);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+    setMessage(null); // Reset the message
   };
 
   useEffect(() => {
@@ -101,152 +118,142 @@ const TransferViewEdit: React.FC = () => {
 
   return (
     <>
-      <Grid item xs={12} sx={{ marginBottom: 1 }}>
-        <Card>
-          <Box
-            p={1}
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
+      <Box
+        p={1}
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <Box>
+          <Typography variant="h5" gutterBottom>
+            Transfer Information
+          </Typography>
+        </Box>
+        <Box>
+          <Button
+            variant="text"
+            startIcon={
+              isTransferEditing ? <DoneTwoToneIcon /> : <EditTwoToneIcon />
+            }
+            onClick={() => {
+              if (isTransferEditing) {
+                handleUpdateTransfer();
+              }
+              setIsTransferEditing(!isTransferEditing);
+            }}
           >
-            <Box>
-              <Typography variant="h5" gutterBottom>
-                Transfer Informations
-              </Typography>
-            </Box>
-            <Box>
-              <Button
-                variant="text"
-                startIcon={
-                  isTransferEditing ? <DoneTwoToneIcon /> : <EditTwoToneIcon />
-                }
-                onClick={() => {
-                  if (isTransferEditing) {
-                    handleUpdateTransfer();
-                  }
-                  setIsTransferEditing(!isTransferEditing);
-                }}
-              >
-                {isTransferEditing ? "Done" : "Edit"}
-              </Button>
-              <Button
-                variant="text"
-                color="error"
-                onClick={handleClickOpenDelete}
-              >
-                Delete Transfer
-              </Button>
-              <Button
-                variant="text"
-                color="primary"
-                onClick={handleClickOpenCreatePSP}
-                disabled={transfer.transferStatus !== TransferStatus.TrComplete}
-              >
-                Create PSP
-              </Button>
-            </Box>
-          </Box>
-          <Divider />
-          <Grid
-            container
-            spacing={1}
-            direction="row"
-            sx={{ marginTop: 1, marginBottom: 2, marginLeft: 2 }}
+            {isTransferEditing ? "Done" : "Edit"}
+          </Button>
+          <Button
+            variant="text"
+            color="error"
+            onClick={handleClickOpenDelete}
           >
-            <TextField
-              disabled
-              sx={{ width: "20%", marginRight: "2%" }}
-              name="accessionNumber"
-              label="Accession Number"
-              variant="outlined"
-              // onChange={handleInputChange}
-              value={transfer.accessionNumber}
-            />
+            Delete Transfer
+          </Button>
+          <Button
+            variant="text"
+            color="primary"
+            onClick={handleClickOpenCreatePSP}
+            disabled={transfer.transferStatus !== TransferStatus.TrComplete}
+          >
+            Create PSP
+          </Button>
+        </Box>
+      </Box>
+      <Grid
+        container
+        spacing={1}
+        direction="row"
+        sx={{ marginTop: 1, marginBottom: 2, marginLeft: 2 }}
+      >
+        <TextField
+          disabled
+          sx={{ width: "20%", marginRight: "2%" }}
+          name="accessionNumber"
+          label="Accession Number"
+          variant="outlined"
+          value={transfer.accessionNumber}
+        />
 
-            <TextField
-              disabled
-              sx={{ width: "20%" }}
-              name="applicationNumber"
-              label="Application Number"
-              variant="outlined"
-              // onChange={handleInputChange}
-              value={transfer.applicationNumber}
-            />
-          </Grid>
-          <Grid>
-            <TextField
-              sx={{
-                width: "50%",
-                marginRight: 2,
-                marginLeft: 2,
-                marginBottom: 2,
-              }}
-              disabled={!isTransferEditing}
-              label="Description"
-              name="description"
-              variant="outlined"
-              onChange={handleInputChange}
-              value={transfer.description}
-            />
-            <TextField
-              id="outlined-select-currency"
-              select
-              label="Select"
-              disabled={!isTransferEditing}
-              onChange={handleInputChange}
-              value={transfer.transferStatus}
-            >
-              {Object.values(TransferStatus).map((transferStatus) => (
-                <MenuItem key={transferStatus} value={transferStatus}>
-                  {transferStatus}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-        </Card>
-        <Card>
-          <Box p={1} display="flex" alignItems="center">
-            <Typography variant="h5" gutterBottom>
-              Producer Informations
-            </Typography>
-          </Box>
-          <Divider />
-          <Grid
-            container
-            spacing={4}
-            direction="row"
-            sx={{ marginTop: 2, marginBottom: 2, marginLeft: 2 }}
-          >
-            <TextField
-              disabled={!isTransferEditing}
-              sx={{ width: "30%", marginRight: "2%" }}
-              name="producerMinistry"
-              label="Ministry"
-              variant="outlined"
-              onChange={handleInputChange}
-              value={transfer.producerMinistry}
-            />
+        <TextField
+          disabled
+          sx={{ width: "20%" }}
+          name="applicationNumber"
+          label="Application Number"
+          variant="outlined"
+          value={transfer.applicationNumber}
+        />
+      </Grid>
+      <Grid>
+        <TextField
+          sx={{
+            width: "50%",
+            marginRight: 2,
+            marginLeft: 2,
+            marginBottom: 2,
+          }}
+          disabled={!isTransferEditing}
+          label="Description"
+          name="description"
+          variant="outlined"
+          onChange={handleInputChange}
+          value={transfer.description}
+        />
+        <TextField
+          id="outlined-select-currency"
+          select
+          label="Select"
+          disabled={!isTransferEditing}
+          onChange={handleInputChange}
+          value={transfer.transferStatus}
+        >
+          {Object.values(TransferStatus).map((transferStatus) => (
+            <MenuItem key={transferStatus} value={transferStatus}>
+              {transferStatus}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Grid>
+      <Box p={1} display="flex" alignItems="center">
+        <Typography variant="h5" gutterBottom>
+          Producer Information
+        </Typography>
+      </Box>
+      <Grid
+        container
+        spacing={4}
+        direction="row"
+        sx={{ marginTop: 2, marginBottom: 2, marginLeft: 2 }}
+      >
+        <TextField
+          disabled={!isTransferEditing}
+          sx={{ width: "30%", marginRight: "2%" }}
+          name="producerMinistry"
+          label="Ministry"
+          variant="outlined"
+          onChange={handleInputChange}
+          value={transfer.producerMinistry}
+        />
 
-            <TextField
-              disabled={!isTransferEditing}
-              sx={{ width: "30%" }}
-              name="producerBranch"
-              label="Branch"
-              variant="outlined"
-              onChange={handleInputChange}
-              value={transfer.producerBranch}
-            />
-            <TextField
-              disabled={!isTransferEditing}
-              sx={{ width: "30%", marginLeft: 2 }}
-              name="producerOfficeName"
-              label="Office"
-              variant="outlined"
-              onChange={handleInputChange}
-              value={transfer.producerOfficeName}
-            />
-          </Grid>
-        </Card>
+        <TextField
+          disabled={!isTransferEditing}
+          sx={{ width: "30%" }}
+          name="producerBranch"
+          label="Branch"
+          variant="outlined"
+          onChange={handleInputChange}
+          value={transfer.producerBranch}
+        />
+        <TextField
+          disabled={!isTransferEditing}
+          sx={{ width: "30%", marginLeft: 2 }}
+          name="producerOfficeName"
+          label="Office"
+          variant="outlined"
+          onChange={handleInputChange}
+          value={transfer.producerOfficeName}
+        />
       </Grid>
 
       <Dialog
@@ -288,6 +295,21 @@ const TransferViewEdit: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Backdrop open={loading} style={{ zIndex: 1300, color: '#fff' }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={message?.includes("Error") ? "error" : "success"}>
+          {message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

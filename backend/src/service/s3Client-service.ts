@@ -1,10 +1,19 @@
-import { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";;
+import { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand, GetObjectCommand, GetObjectCommandOutput } from "@aws-sdk/client-s3";;
 import extractsFromAra66x from "../utils/extractsFromAra66x";
 import fs from "fs";
+import os from 'os';
+import { v4 as uuidv4 } from 'uuid';
 import { Readable } from "stream";
 import { pipeline } from "stream/promises";
+import AdmZip from "adm-zip";
 import extractTechnicalMetadataToJson from "../utils/exctractTechnicalV1DatafromExcel"
 import path from "path";
+import crypto from 'crypto';
+import { promisify } from "util";
+
+const writeFileAsync = promisify(fs.writeFile);
+const mkdirAsync = promisify(fs.mkdir);
+const readFileAsync = promisify(fs.readFile);
 import { ITransfer } from "src/models/interfaces/ITransfer";
 import { IDigitalFileList } from "src/models/interfaces/IDigitalFileList";
 
@@ -242,7 +251,7 @@ export default class S3ClientService {
                 Body: uploadedZipFile.buffer,
             });
 
-            const zipFileResponsedata = await this.s3Client.send(uploadFilecommand);
+            await this.s3Client.send(uploadFilecommand);
 
             const uploadJSONcommand = new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
@@ -250,7 +259,7 @@ export default class S3ClientService {
                 Body: jsonBuffer,
                 ContentType: 'application/json'
             });
-            const jsonFileResponsedata = await this.s3Client.send(uploadJSONcommand);
+            await this.s3Client.send(uploadJSONcommand);
 
         } catch (error) {
             console.error('Error uploading file', error);
@@ -325,6 +334,16 @@ export default class S3ClientService {
             throw error;
         }
     }
+    private async listObjectsForPSP(bucket: string, prefix: string) {
+        const params = {
+            Bucket: bucket,
+            Prefix: prefix,
+        };
+
+        const command = new ListObjectsV2Command(params);
+        const data = await this.s3Client.send(command);
+        return data.Contents;
+    }
 
     async downloadFile(key: string, downloadPath: string): Promise<void> {
         const command = new GetObjectCommand({
@@ -358,6 +377,185 @@ export default class S3ClientService {
             console.error("Error deleting object:", error);
             throw error;
         }
+    }
+
+
+
+    public async copyPSPFolderFromS3ToZip(folderKey: string): Promise<Buffer | null> {
+        const bucket = process.env.BUCKET_NAME || 'dats-bucket-dev';
+        const objects = await this.listObjectsForPSP(bucket, folderKey);
+
+        if (!objects) {
+            console.log("No objects found in the specified folder.");
+            return null;
+        }
+
+        const tempDir = path.join(os.tmpdir(), uuidv4());
+
+        this.createDirectory(tempDir);
+
+        try {
+            // await this.downloadObjects(bucket, objects, folderKey, tempDir);
+            for (const obj of objects) {
+                const fileKey = obj.Key as string;
+
+                if (fileKey.endsWith("/") || obj.Size === 0) {
+                    continue;
+                }
+
+                const relativePath = fileKey.substring(folderKey.length);
+                const downloadPath = path.join(tempDir, relativePath);
+
+                this.createDirectory(path.dirname(downloadPath));
+
+                console.log(`Downloading ${fileKey} to ${downloadPath}`);
+                try {
+                    await this.downloadPSP(bucket, fileKey, downloadPath);
+
+                    if (path.extname(downloadPath) === ".zip") {
+                        await this.handleZipFile(bucket, fileKey, downloadPath);
+                    }
+
+                    const basePath = this.extractBasePath(folderKey);
+                } catch (error) {
+                    console.error(`Error downloading file: ${fileKey}`, error);
+                }
+            }
+            await this.downloadAdditionalFolders(bucket, folderKey, tempDir);
+
+            const zipBuffer = await this.zipDirectory(tempDir);
+
+            return zipBuffer;
+        } finally {
+            // Clean up temp directory
+            fs.rmSync(tempDir, { recursive: true, force: true });
+        }
+    }
+
+    private async downloadAdditionalFolders(bucket: string, folderKey: string, tempDir: string): Promise<void> {
+        const additionalFolders = ["Documentation/", "Metadata/"];
+        for (const additionalFolder of additionalFolders) {
+            const additionalFolderKey = `${this.extractBasePath(folderKey)}${additionalFolder}`;
+            const additionalObjects = await this.listObjectsForPSP(bucket, additionalFolderKey);
+
+            if (additionalObjects) {
+                for (const obj of additionalObjects) {
+                    const fileKey = obj.Key as string;
+
+                    if (fileKey.endsWith("/")) {
+                        continue;
+                    }
+
+                    const relativePath = fileKey.substring(additionalFolderKey.length);
+                    const downloadPath = path.join(tempDir, additionalFolder, relativePath);
+
+                    await this.createDirectory(path.dirname(downloadPath));
+
+                    console.log(`Downloading ${fileKey} to ${downloadPath}`);
+                    await this.downloadPSP(bucket, fileKey, downloadPath);
+                }
+            }
+        }
+    }
+
+    private async handleZipFile(bucket: string, fileKey: string, downloadPath: string): Promise<void> {
+        console.log(`Handling zip file: ${downloadPath}`);
+        const baseName = path.basename(downloadPath, ".zip");
+        const checksumFileKey = `${path.dirname(fileKey)}/${baseName}_checksum.json`;
+
+        console.log(`Path to checksum file: ${checksumFileKey}`);
+
+        const checksumData = await this.downloadAndParseJSON(bucket, checksumFileKey);
+
+        if (checksumData) {
+            console.log(`Checksum data:`, checksumData);
+            const isValid = await this.validateFileChecksum(downloadPath, checksumData.sha1);
+            if (isValid) {
+                console.log(`Checksum validation passed for ${downloadPath}`);
+            } else {
+                console.error(`Checksum validation failed for ${downloadPath}`);
+                throw new Error(`Checksum validation failed for ${downloadPath}`);
+            }
+        }
+    }
+    private createDirectory(dirPath: string): void {
+        if (!fs.existsSync(dirPath)) {
+            fs.mkdirSync(dirPath, { recursive: true });
+        }
+    }
+    private extractBasePath(fullPath: string): string {
+        const firstSlashIndex = fullPath.indexOf("/");
+        const secondSlashIndex = fullPath.indexOf("/", firstSlashIndex + 1);
+        const basePath = fullPath.substring(0, secondSlashIndex + 1);
+        return basePath;
+    }
+
+    private async downloadAndParseJSON(bucket: string, key: string): Promise<any> {
+        const tempPath = path.join(__dirname, "_checksum.json");
+        await this.downloadPSP(bucket, key, tempPath);
+
+        const data = fs.readFileSync(tempPath, "utf8");
+        fs.unlinkSync(tempPath); // Cleanup the temporary file
+        return JSON.parse(data);
+    }
+
+    private async zipDirectory(sourceDir: string): Promise<Buffer> {
+        const archive = new AdmZip();
+
+        const addFilesToZip = (dirPath: string, zipPath: string) => {
+            const items = fs.readdirSync(dirPath);
+
+            for (const item of items) {
+                const itemPath = path.join(dirPath, item);
+                const itemZipPath = path.join(zipPath, item);
+
+                if (fs.statSync(itemPath).isDirectory()) {
+                    addFilesToZip(itemPath, itemZipPath);
+                } else {
+                    archive.addLocalFile(itemPath, path.dirname(itemZipPath));
+                }
+            }
+        };
+
+        addFilesToZip(sourceDir, "");
+        return archive.toBuffer();
+    }
+
+    private async downloadPSP(bucket: string, key: string, downloadPath: string): Promise<void> {
+        const params = {
+            Bucket: bucket,
+            Key: key,
+        };
+
+        const command = new GetObjectCommand(params);
+        const response: GetObjectCommandOutput = await this.s3Client.send(command);
+
+        if (!response.Body) {
+            throw new Error(`Could not retrieve file from S3: ${key}`);
+        }
+
+        const bodyStream = response.Body as NodeJS.ReadableStream;
+
+        await pipeline(bodyStream, fs.createWriteStream(downloadPath));
+    }
+    private async validateFileChecksum(filePath: string, expectedChecksum: string): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            const hash = crypto.createHash('sha1');
+            const stream = fs.createReadStream(filePath);
+            console.log(`In validateFileChecksum ${filePath} `);
+            stream.on('data', (data) => {
+                hash.update(data);
+            });
+
+            stream.on('end', () => {
+                const calculatedChecksum = hash.digest('hex');
+                resolve(calculatedChecksum === expectedChecksum);
+            });
+
+            stream.on('error', (err) => {
+                reject(err);
+            });
+        });
     }
 
 }

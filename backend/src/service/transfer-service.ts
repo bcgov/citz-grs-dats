@@ -166,14 +166,6 @@ async createTransferMetaDataV2(
     return await this.transferRepository.deleteTransfer(transferId);
   }
 
-  async createPSPs(transferId: any) {
-    const transfer = await this.transferRepository.getTransfersById(transferId);
-    if (!transfer) {
-      throw new Error('Transfer not found');
-    }
-
-  }
-
   async addPspToTransfer(accessionNumber: string, applicationNumber: string, pspname: string, pspData: Partial<IPsp>): Promise<void> {
     // Find the transfer
 
