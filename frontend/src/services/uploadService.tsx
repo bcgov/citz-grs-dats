@@ -17,6 +17,20 @@ export default class UploadService {
         return response.data;
       });
   }
+  public async uploadDataportFile(formData: any): Promise<Aris66UploadResponse> {
+    return await axios
+      .post(`${API_URL}/api/uploadDataportFile`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        // const jsonString = JSON.stringify(jsonResponse);
+        // const resTest: Aris66UploadResponse = JSON.parse(jsonString);
+        // return resTest;
+        return response.data;
+      });
+  }
 
   public async get66xFileTransferInfos(formData: any): Promise<any> {
     return await axios

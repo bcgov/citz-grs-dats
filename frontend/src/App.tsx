@@ -13,9 +13,9 @@ import Dashboard from "./views/Dashboard/Dashboard";
 import CreateDigitalFileList from "./views/CreateDigitalFileList/CreateDigitalFileList";
 import TransferViewEdit from "./views/ViewTransferStatus/TransferViewEdit";
 import SendRecords from "./views/SendRecords/SendRecords";
-import { SendRecordsEDRMS } from "./views/SendRecords/SendRecordsEDRMS";
 import { SendRecordsLAN } from "./views/SendRecords/SendRecordsLAN";
 import PrivateRoute from "./auth/PrivateRoute";
+import SendRecordsEDRMS from "./views/SendRecords/SendRecordsEDRMS";
 
 //import { bcGovTheme } from "./assets/themes/bcGovTheme";
 
