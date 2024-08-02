@@ -9,11 +9,11 @@ import AdmZip from "adm-zip";
 import extractTechnicalMetadataToJson from "../utils/exctractTechnicalV1DatafromExcel"
 import path from "path";
 import crypto from 'crypto';
-import { promisify } from "util";
+// import { promisify } from "util";
 
-const writeFileAsync = promisify(fs.writeFile);
-const mkdirAsync = promisify(fs.mkdir);
-const readFileAsync = promisify(fs.readFile);
+// const writeFileAsync = promisify(fs.writeFile);
+// const mkdirAsync = promisify(fs.mkdir);
+// const readFileAsync = promisify(fs.readFile);
 import { ITransfer } from "src/models/interfaces/ITransfer";
 import { IDigitalFileList } from "src/models/interfaces/IDigitalFileList";
 
@@ -63,7 +63,7 @@ export default class S3ClientService {
             if (allFolders.includes(folderPath)) return;
 
             const createFolderCommand = new PutObjectCommand({
-                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
                 Key: folderPath, // Folder key ends with '/'
             });
 
@@ -81,8 +81,7 @@ export default class S3ClientService {
      * @param file uploaded file
      * @param transferInfo 
      */
-    async uploadToS3(file: Express.Multer.File, transferInfo : {transfer: ITransfer | null,digitalFileList: IDigitalFileList[]})
-    {
+    async uploadToS3(file: Express.Multer.File, transferInfo: { transfer: ITransfer | null, digitalFileList: IDigitalFileList[] }) {
         var transferData = transferInfo.transfer;
         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
         transferFolderPath = transferFolderPath + "/";
@@ -101,7 +100,7 @@ export default class S3ClientService {
 
         try {
             const uploadFilecommand = new PutObjectCommand({
-                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
                 Key: targetFilePath, // File path within the folder
                 Body: file.buffer, //uploadedFile.buffer, //file.buffer, // File content
             });
@@ -141,7 +140,7 @@ export default class S3ClientService {
 
         try {
             const uploadFilecommand = new PutObjectCommand({
-                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
                 Key: targetFilePath, // File path within the folder
                 Body: fileContent, //uploadedFile.buffer, //file.buffer, // File content
             });
@@ -165,7 +164,7 @@ export default class S3ClientService {
 
             // Upload the JSON data to S3
             const uploadFilecommand2 = new PutObjectCommand({
-                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
                 Key: metaDataPath + 'technicalv1.json', // File path within the folder
                 Body: technicalv1, // File content
             });
@@ -193,7 +192,7 @@ export default class S3ClientService {
 
         try {
             const uploadFilecommand = new PutObjectCommand({
-                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
                 Key: targetFilePath, // File path within the folder
                 Body: fileContent, //uploadedFile.buffer, //file.buffer, // File content
             });
@@ -216,7 +215,7 @@ export default class S3ClientService {
 
         try {
             const uploadFilecommand = new PutObjectCommand({
-                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
                 Key: targetFilePath, // File path within the folder
                 Body: buffer, // File content as buffer
             });
@@ -246,15 +245,15 @@ export default class S3ClientService {
 
         try {
             const uploadFilecommand = new PutObjectCommand({
-                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
-                Key: zipFilePath, // File path within the folder
+                Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
+                Key: zipFilePath,
                 Body: uploadedZipFile.buffer,
             });
 
             await this.s3Client.send(uploadFilecommand);
 
             const uploadJSONcommand = new PutObjectCommand({
-                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
                 Key: checksumPath,
                 Body: jsonBuffer,
                 ContentType: 'application/json'
@@ -276,7 +275,7 @@ export default class S3ClientService {
 
         try {
             const uploadJSONcommand = new PutObjectCommand({
-                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
                 Key: transferFolderPath + 'techMetadatav2.json',
                 Body: jsonBuffer,
                 ContentType: 'application/json'
@@ -295,7 +294,7 @@ export default class S3ClientService {
         try {
             // List all objects in the folder
             const listObjectsCommand = new ListObjectsV2Command({
-                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
                 Prefix: folderPath,
             });
             const data = await this.s3Client.send(listObjectsCommand);
@@ -305,7 +304,7 @@ export default class S3ClientService {
                 for (const object of data.Contents) {
                     if (object.Key) {
                         const deleteObjectCommand = new DeleteObjectCommand({
-                            Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                            Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
                             Key: object.Key,
                         });
                         await this.s3Client.send(deleteObjectCommand);
@@ -319,7 +318,7 @@ export default class S3ClientService {
 
     async listObjects(prefix: string): Promise<string[]> {
         const command = new ListObjectsV2Command({
-            Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+            Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
             Prefix: prefix,
         });
 
@@ -347,7 +346,7 @@ export default class S3ClientService {
 
     async downloadFile(key: string, downloadPath: string): Promise<void> {
         const command = new GetObjectCommand({
-            Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+            Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
             Key: key,
         });
 
@@ -367,7 +366,7 @@ export default class S3ClientService {
     }
     async deleteObject(key: string): Promise<void> {
         const command = new DeleteObjectCommand({
-            Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+            Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
             Key: key,
         });
 
@@ -382,7 +381,7 @@ export default class S3ClientService {
 
 
     public async copyPSPFolderFromS3ToZip(folderKey: string): Promise<Buffer | null> {
-        const bucket = process.env.BUCKET_NAME || 'dats-bucket-dev';
+        const bucket = process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev';
         const objects = await this.listObjectsForPSP(bucket, folderKey);
 
         if (!objects) {

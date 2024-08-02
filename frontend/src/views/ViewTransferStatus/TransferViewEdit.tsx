@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Typography,
   Box,
@@ -33,6 +33,7 @@ const TransferViewEdit: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const transferService = new TransferService();
 
@@ -56,12 +57,15 @@ const TransferViewEdit: React.FC = () => {
     setLoading(true);
     try {
       const response = await transferService.deleteTransfer(id);
-      setMessage(response.message); // Set the success message
-      setSnackbarOpen(true); // Show the Snackbar
+      setMessage(response.message);
+      setSnackbarOpen(true);
+      setTimeout(() => {
+        navigate("/transfer-status");
+      }, 5000);
     } catch (error) {
       console.error("Error deleting the Transfer:", error);
-      setMessage("Error deleting the Transfer!"); // Set the error message
-      setSnackbarOpen(true); // Show the Snackbar
+      setMessage("Error deleting the Transfer!");
+      setSnackbarOpen(true);
     } finally {
       setLoading(false); // Stop loading
     }
