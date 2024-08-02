@@ -18,6 +18,7 @@ const app = express();
 sso(app);
 
 logger.info('This is an info message');
+logger.debug('This is an debug message');
 logger.error('This is an error message');
 auditor('test audit log', { event: 'user_login', username: 'johndoe' });
 

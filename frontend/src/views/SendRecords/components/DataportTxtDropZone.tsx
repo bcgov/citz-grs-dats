@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { forwardRef, useImperativeHandle, useState } from "react";
 
 import DropZoneComponent from "../../../components/DropZoneComponent";
 import {
@@ -29,11 +29,9 @@ interface Aris66xDropZoneProps {
   setFile: (file: File | null) => void;
   setExcelData: (data: any) => void;
 }
-export const DataportTxtDropZone: React.FC<Aris66xDropZoneProps> = ({
-  validate,
-  setFile,
-  setExcelData,
-}) => {
+export const DataportTxtDropZone = forwardRef((props: Aris66xDropZoneProps,ref) => {
+  
+ const {validate, setFile,  setExcelData} = props;
   const [acceptedFiles, setAcceptedFiles] = useState<File[]>([]);
   const [data, setData] = useState<DatsExcelModel | null>(null);
   const [isCheckboxChecked, setIsCheckboxChecked] = useState(false);
@@ -106,7 +104,17 @@ export const DataportTxtDropZone: React.FC<Aris66xDropZoneProps> = ({
     const newFiles = acceptedFiles.filter((f) => f !== file);
     setAcceptedFiles(newFiles);
   };
+  const validateInputs = ():boolean  => {
+    if(!isCheckboxChecked)
+    {
+      validate(false, "Please check & confirm the applicaton and accession number");
+    }
+    return isCheckboxChecked;
+  }
 
+  useImperativeHandle(ref, () => ({
+    validateInputs,
+  }));
   const handleClearAllFiles = () => {
     setAcceptedFiles([]);
     setClearFilesSignal(true);
@@ -166,4 +174,4 @@ export const DataportTxtDropZone: React.FC<Aris66xDropZoneProps> = ({
       />
     </Box>
   );
-};
+});

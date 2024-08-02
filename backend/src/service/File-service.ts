@@ -8,6 +8,7 @@ import TransferRepository from "../repository/transfer-repository"
 import validateBufferChecksum from "../utils/validateBufferChecksum"
 import { IPsp } from 'src/models/psp-model';
 import { TransferStatus } from "../models/enums/TransferStatus"
+import logger from '../config/logs/winston-config';
 
 const replacePlaceholders = (text: string, placeholders: { [key: string]: string }): string => {
     let replacedText = text;
@@ -34,6 +35,18 @@ export default class FileService {
         this.transferRepository = new TransferRepository();
         this.lanDrivePath = "Upload617/";
     }
+    async createNote(notes: string, placeholders: Placeholder) : Promise<string> 
+    {
+        const accession_num = placeholders['AccessionNumber'];
+        const application_num = placeholders['ApplicationNumber'];
+
+        const transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+        const targetNotePath = `${transferFolderPath}/${accession_num}-${application_num}/Documentation/note_${Date.now()}.txt`;
+        logger.debug(`uploaded note path ${targetNotePath}`);
+        await this.s3ClientService.uploadDocumentationToS3(Buffer.from(notes), targetNotePath);
+        return targetNotePath;
+    }
+
     async createAgreementPDF(
         agreementText: any[],
         status: string,
@@ -56,7 +69,7 @@ export default class FileService {
                 console.log('in createAgreementPDF ' + targetPdfPath);
 
                 try {
-                    await this.s3ClientService.uploadAgreementPDF(pdfBuffer, targetPdfPath);
+                    await this.s3ClientService.uploadDocumentationToS3(pdfBuffer, targetPdfPath);
                     resolve(targetPdfPath);
                 } catch (error) {
                     reject(error);

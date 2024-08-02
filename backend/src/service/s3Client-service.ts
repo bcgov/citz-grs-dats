@@ -14,8 +14,8 @@ import { promisify } from "util";
 const writeFileAsync = promisify(fs.writeFile);
 const mkdirAsync = promisify(fs.mkdir);
 const readFileAsync = promisify(fs.readFile);
-//import validateFileChecksum from "src/utils/validateFileChecksum";
-
+import { ITransfer } from "src/models/interfaces/ITransfer";
+import { IDigitalFileList } from "src/models/interfaces/IDigitalFileList";
 
 export default class S3ClientService {
 
@@ -72,6 +72,46 @@ export default class S3ClientService {
         } catch (error) {
             console.error('Error creating folder', error);
         }
+    }
+
+    /**
+     * A generic upload method to upload dataport (edrms) and ar66 excel document. this method is filetype agnostic
+     * TODO:: refactor code to uploadAra66xFile method and use this instead.
+     * TODO:: add logic to upload techmetadata
+     * @param file uploaded file
+     * @param transferInfo 
+     */
+    async uploadToS3(file: Express.Multer.File, transferInfo : {transfer: ITransfer | null,digitalFileList: IDigitalFileList[]})
+    {
+        var transferData = transferInfo.transfer;
+        var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+        transferFolderPath = transferFolderPath + "/";
+        this.createFolder(transferFolderPath);
+
+        const accession_num = transferData?.accessionNumber;
+        const application_num = transferData?.applicationNumber;
+        const subApplicationPath = transferFolderPath + accession_num + "-" + application_num + "/";
+        this.createFolder(subApplicationPath);
+
+
+        //Create the Documentation folder
+        const subDocPath = subApplicationPath + "Documentation/";
+        this.createFolder(subDocPath);
+        const targetFilePath = subDocPath + file.originalname;
+
+        try {
+            const uploadFilecommand = new PutObjectCommand({
+                Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
+                Key: targetFilePath, // File path within the folder
+                Body: file.buffer, //uploadedFile.buffer, //file.buffer, // File content
+            });
+
+            const data = await this.s3Client.send(uploadFilecommand);
+
+        } catch (error) {
+            console.error('Error uploading file', error);
+        }
+
     }
 
     async uploadAra66xFile(
@@ -168,18 +208,17 @@ export default class S3ClientService {
         return documentationPath;
     }
 
-    async uploadAgreementPDF(
-        pdfBuffer: Buffer,
-        targetPdfFilePath: string
+    async uploadDocumentationToS3(
+        buffer: Buffer,
+        targetFilePath: string
     ) {
-        console.log("--------->targetPdfFilePath=" + targetPdfFilePath);
-        const targetFilePath = targetPdfFilePath;
+        console.log("--------->targetPdfFilePath=" + targetFilePath);
 
         try {
             const uploadFilecommand = new PutObjectCommand({
                 Bucket: process.env.BUCKET_NAME || 'dats-bucket-dev',
-                Key: targetPdfFilePath, // File path within the folder
-                Body: pdfBuffer, // File content as buffer
+                Key: targetFilePath, // File path within the folder
+                Body: buffer, // File content as buffer
             });
 
             const data = await this.s3Client.send(uploadFilecommand);

@@ -17,6 +17,11 @@ import {
   IconButton,
   InputAdornment,
   LinearProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextareaAutosize,
+  DialogActions,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -26,6 +31,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import ITransferDTO from "../../../types/DTO/Interfaces/ITransferDTO";
 import { getApiBaseUrl } from "../../../services/serverUrlService";
+import { WEBSOCKET_PUSH_URL, WEBSOCKET_URL } from "../../../types/constants";
 enum DATSActions {
   FolderSelected,
   FileSelected,
@@ -55,10 +61,15 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   { initialTransfer, showValidationMessage: validate },
   ref
 ) => {
+
+
   const [makeFieldsDisable,setMakeFieldsDisable] = useState<boolean>(false);
    const [transfer, setTransfer] = useState<ITransferDTO>(initialTransfer);
   const [editableFields, setEditableFields] = useState<EditableFields>({});
-  const activeIndexRef = useRef<string | null>(null); 
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const currentFolder = useRef<string | null>(null); 
+  const currentFolderNote = useRef<string | null>(null);
+  const [note,setNote] = useState(''); 
   const [folderValues, setFolderValues] = useState<FolderValues>(
     transfer.digitalFileLists!!.reduce((acc, fileList) => {
       acc[fileList.folder] = fileList.folder;
@@ -99,7 +110,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     const maxAttempts = 3;
   
     const connectWebSocket = () => {
-      const ws = new WebSocket("ws://localhost:50504/ws/react");
+      const ws = new WebSocket(WEBSOCKET_URL);
   
       ws.onopen = () => {
         console.log("WebSocket connection established");
@@ -135,19 +146,38 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       const data = JSON.parse(event.data);
         switch (data.Action) {
           case DATSActions.Cancelled:
-            activeIndexRef.current = null;
+            currentFolder.current = null;
             break;
             case DATSActions.FileInformation:
-              if ( activeIndexRef.current !== null) {
-                setTransfer((prev) => ({
-                  ...prev,
-                  digitalFileLists: transfer.digitalFileLists!!.map((fileList) =>
-                    fileList.folder ===  activeIndexRef.current
-                      ? { ...fileList, folder: data.Payload.Path }
+              if ( currentFolder.current !== null) {
+                setTransfer((prev) => {
+                  const updatedFileLists = prev.digitalFileLists?.map((fileList) =>
+                    fileList.folder === currentFolder.current
+                      ? { ...fileList, folder: String(data.Payload.Path), note: note }  
                       : fileList
-                  )
-                }));
-                activeIndexRef.current = null; // Reset the active index after update
+                  ) || [];
+                
+                  // Check if any item matches the condition
+                  const hasMatchingFolder = prev.digitalFileLists?.some(
+                    (fileList) => fileList.folder === currentFolder.current
+                  );
+                
+                  // If no items match, add a new item to the array
+                  if (!hasMatchingFolder) {
+                    updatedFileLists.push({
+                      folder: String(data.Payload.Path), 
+                      _id: '',
+                      size: data.Payload.SizeInBytes,
+                      fileCount: data.Payload.FileCount,
+                      transfer: ''
+                    });
+                  }
+                  return {
+                    ...prev,
+                    digitalFileLists: updatedFileLists,
+                  };
+                });
+                currentFolder.current = null; // Reset the active index after update
               }
               break;
           case DATSActions.FileFolderExists:
@@ -226,7 +256,15 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   };
 
   const uploadAllFolders = async (): Promise<void> => {
+    debugger;
+    if (!transfer.digitalFileLists || transfer.digitalFileLists.length === 0) {
+      debugger;
+      console.log('no folders to upload');
+      validate(false, 'Please add folders to upload');
+      return;
+    }
     const baseUrl = await getApiBaseUrl();
+
     //report(true, '');
     setAllProgress(transfer);
     setMakeFieldsDisable(true);
@@ -236,7 +274,8 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         Payload: {
           Package: transfer.digitalFileLists?.map((file) => ({
             Path: file.folder,
-            Classification: file.primarySecondary
+            Classification: file.primarySecondary,
+            Note: file.note
           })),
           TransferId: transfer._id,
           ApplicationNumber: transfer.applicationNumber,
@@ -250,7 +289,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   const sendMessageToService = (message: any) => {
     console.log(message);
 
-    const logSocket = new WebSocket("ws://localhost:50504/ws/react/receive");
+    const logSocket = new WebSocket(WEBSOCKET_PUSH_URL);
     logSocket.onopen = () => {
       logSocket.send(message);
       logSocket.close();
@@ -276,26 +315,32 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       [folder]: newValue,
     }));
   };
-  const handleSaveClick = (folder: string) => {
-    // Update the actual transfer.digitalFileLists value
-    transfer.digitalFileLists = transfer.digitalFileLists!!.map((fileList) =>
-      fileList.folder === folder
-        ? { ...fileList, folder: folderValues[folder] }
-        : fileList
-    );
 
-    // Toggle the editable state back
-    setEditableFields((prev) => ({
-      ...prev,
-      [folder]: false,
-    }));
-  };
 
   const handleEditClick = (folder: string) => {
-    console.log('folder: -> ' + folder);
-    activeIndexRef.current = folder;
+    currentFolder.current = folder;
+    setIsPopupOpen(true);
+  };
+
+  // const handlePopupOpen = (folder: string) => {
+  //   const fileListItem = transfer.digitalFileLists!!.find((item) => item.folder === folder);
+  //   setNote(fileListItem?.note || '');
+  //   setIsPopupOpen(true);
+  // };
+
+  const handlePopupClose = () => {
+    setIsPopupOpen(false);
+    setNote('');
+  };
+  const handleNoteSubmit = () => {
+    setIsPopupOpen(false);
+    currentFolderNote.current = note;
+    console.log('note' + note);
+    console.log('note ref' + currentFolderNote.current);
     window.location.href = `citz-grs-dats://open?browse=folder`;
-    console.log('activeIndex: -> ' +  activeIndexRef.current);
+  };
+  const handleNoteChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNote(event.target.value);
   };
   const getStatusIcon = (status?: Number) => {
     if (status === undefined) return null;
@@ -349,7 +394,13 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           />
         </Grid>
       </Grid>
-
+      {(!transfer.digitalFileLists || transfer.digitalFileLists.length === 0) && (
+        <Box sx={{ mt: 2 }}>
+          <Button variant="contained" color="primary"  onClick={() => handleEditClick('NEW_FOLDER')}>
+            Add Digital File
+          </Button>
+        </Box>
+      )}
       <Box mt={4}>
         <Typography variant="h6" gutterBottom>
           Folders
@@ -457,6 +508,25 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           </Grid>
         ))}
       </Box>
+      <Dialog open={isPopupOpen} onClose={handlePopupClose}>
+        <DialogTitle>Edit Note</DialogTitle>
+        <DialogContent>
+          <TextareaAutosize
+            minRows={5}
+            value={note}
+            onChange={handleNoteChange}
+            style={{ width: '100%' }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handlePopupClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleNoteSubmit} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

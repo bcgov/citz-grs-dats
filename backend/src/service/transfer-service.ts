@@ -1,4 +1,4 @@
-import { FilterQuery } from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 import TransferRepository from "../repository/transfer-repository";
 import PspRepository from "../repository/psp-repository";
 import { ITransfer } from "../models/interfaces/ITransfer";
@@ -6,16 +6,22 @@ import extractsFromAra66x from "../utils/extractsFromAra66x";
 import extractsTransferInfo from "../utils/extractsTransferInfo";
 import S3ClientService from "./s3Client-service";
 import { IPsp } from "src/models/psp-model";
+import { IDataExtractor } from "./data-extractor-service";
+import DigitalFileListService from "./digitalFileList-service";
+import { IDigitalFileList } from "../models/digitalFileList-model";
+import logger from "../config/logs/winston-config";
 
 export default class TransferService {
   private transferRepository: TransferRepository;
   private s3ClientService: S3ClientService;
   private pspRepository: PspRepository;
+  private digitalFileService: DigitalFileListService;
 
   constructor() {
     this.transferRepository = new TransferRepository();
     this.s3ClientService = new S3ClientService();
     this.pspRepository = new PspRepository();
+    this.digitalFileService = new DigitalFileListService();
   }
 
   async getTransfers(): Promise<ITransfer[] | null> {
@@ -48,7 +54,46 @@ export default class TransferService {
       applicationNumber
     );
   }
+async createTransferMetaDataV2(
+  extractor: IDataExtractor,
+  buffer: Buffer
+) : Promise<{transfer: ITransfer | null,digitalFileList: IDigitalFileList[]} | null>
+{
+  logger.debug('parsing csv file');
+  const extractedData = await extractor.extractDigitalFileAndTransferData(buffer);
+  const accessionNumber = extractedData.transferData.accession;
+  const applicationNumber = extractedData.transferData.application;
+  const producerMinistry = extractedData.transferData.ministry;
+  const producerBranch = extractedData.transferData.branch;
+  logger.debug('parsing csv file - success');
 
+  var transfer = await this.getTransferByKeysNumbers(accessionNumber, applicationNumber);
+    if (transfer && transfer._id) {
+      transfer.producerMinistry = producerMinistry;
+      transfer.producerBranch = producerBranch;
+  logger.debug('duplicate transfer - updating...');
+      this.updateTransfer(transfer._id?.toString(), transfer);
+    }
+    else 
+    {
+      const transferMetaData: ITransfer = {
+        "accessionNumber": accessionNumber,
+        "applicationNumber": applicationNumber,
+        "producerMinistry": producerMinistry,
+        "producerBranch": producerBranch
+      }
+      transfer = await this.transferRepository.createTransfer(transferMetaData);
+      logger.debug('new transfer created...');
+
+    }
+    const transferId = transfer?._id || new mongoose.mongo.ObjectId(0);
+
+    const digitalFileListPromises = extractedData.digitalFileListData.map(dfl => this.digitalFileService.createDigitalFileListByTransferId(transferId.toString(), dfl));
+    const digitalFileList = (await Promise.all(digitalFileListPromises)).filter((result): result is IDigitalFileList => result !== null);
+    logger.debug('digitalFileService data inserted');
+
+    return {transfer, digitalFileList};
+}
   async createTransferMetaData(
     filePath: string
   ) {
@@ -69,8 +114,8 @@ export default class TransferService {
     if (transfer && transfer._id) {
       transfer.producerMinistry = producerMinistry;
       transfer.producerBranch = producerBranch;
-      this.updateTransfer(transfer._id?.toString(), transfer);
-    }
+      return await this.updateTransfer(transfer._id?.toString(), transfer);
+    } 
     const newTransfer = await this.createTransfer(transferMetaData);
     return newTransfer;
   }

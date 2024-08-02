@@ -13,6 +13,7 @@ using DATSCompanionService.Interfaces;
 using System.Net.Http;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using Microsoft.Win32;
 
 namespace DATSCompanionService.Behaviors
 {
@@ -54,9 +55,41 @@ namespace DATSCompanionService.Behaviors
                 case DATSActions.CheckFolder:
                     CheckIfFileFolderExist(message);
                     break;
+                case DATSActions.HealthCheck:
+
+                    break;
             }
         }
+        private void HealthCheck()
+        {
+            using (RegistryKey key = Registry.ClassesRoot.OpenSubKey("citz_grs_dats\\shell\\open\\command"))
+            {
+                if (key != null)
+                {
+                    // Get the command value
+                    string command = key.GetValue(null) as string;
+                    if (!string.IsNullOrEmpty(command))
+                    {
+                        // Extract the path to the executable from the command string
+                        int startIndex = command.IndexOf('"') + 1;
+                        int endIndex = command.IndexOf('"', startIndex);
+                        string exePath = command.Substring(startIndex, endIndex - startIndex);
 
+                        // Check if the file exists
+                        bool exists = File.Exists(exePath);
+                        Broadcast?.NotifyClients(JsonSerializer.Serialize(new MessageContract<ReportProgress>
+                        {
+                            Action = exists ? DATSActions.Healthy : DATSActions.ErrorDesktop,
+                            Source = DATSSource.Service,
+                            Payload = new ReportProgress
+                            {
+                                Progress = 100
+                            }
+                        }));
+                    }
+                }
+            }
+        }
         private void CheckIfFileFolderExist(MessageContract<dynamic> message)
         {
             Logger?.WriteEntry("Checking if folder exists");
@@ -81,7 +114,9 @@ namespace DATSCompanionService.Behaviors
         {
             var tempPath = GetTemporaryDirectory();
             DATSFileToUpload payload = JsonSerializer.Deserialize<DATSFileToUpload>(message.Payload);
-            for(int i = 0; i <  payload.Package.Length; i++) 
+            string combinedNotes = string.Join("\n", payload.Package.Select(p => p.Note).Where(note => !string.IsNullOrEmpty(note)));
+
+            for (int i = 0; i <  payload.Package.Length; i++) 
             //foreach (var path in payload.Paths)
             {
                 var path = payload.Package[i].Path;
@@ -127,7 +162,10 @@ namespace DATSCompanionService.Behaviors
                         content.Add(new StringContent(payload.AccessionNumber), "accessNumber");
                         content.Add(new StringContent(classification), "classification");
                         content.Add(new StringContent(JsonSerializer.Serialize(TechnicalMetadataGenerator.Generate(path))), "technicalV2");
-
+                        if(i == 0 && !string.IsNullOrEmpty(combinedNotes))
+                        {
+                            content.Add(new StringContent(combinedNotes), "note");
+                        }
                         // Post the content to the server
                         var result = client.PostAsync(payload.UploadUrl, content).Result;
                         if (result.IsSuccessStatusCode)

@@ -91,68 +91,7 @@ export class TransferService {
       });
   }
 
-  // Digital File List Service function
-  public async getDigitalFileListsFromTransfer(transferId: any): Promise<any> {
-    return await axios
-      .get(`${API_URL}/api/transfers/${transferId}/digitalFileLists`)
-      .then((response) => {
-        //const digitalFileLists: IDigitalFileList[] = response.data;
-        return response.data;
-      })
-      .catch((error) => {
-        console.error(error);
-        return error;
-      });
-  }
-
-  public async updateDigitalFileList(
-    transferId: string,
-    digitalFileListId: string,
-    updatedData: Partial<IDigitalFileListDTO>
-  ): Promise<any> {
-    try {
-      const response = await axios.put(
-        `${API_URL}/api/transfers/${transferId}/digitalFileLists/${digitalFileListId}`,
-        updatedData
-      );
-      return response.data;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
-  public async createDigitalFileList(
-    transferId: string,
-    data: Partial<IDigitalFileListDTO>
-  ): Promise<any> {
-    try {
-      const response = await axios.post(
-        `${API_URL}/api/transfers/${transferId}/digitalFileLists`,
-        data
-      );
-      return response.data;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
-
-  public async deleteDigitalFileList(
-    transferId: any,
-    digitalFileListId: any
-  ): Promise<any[]> {
-    return await axios
-      .delete(
-        `${API_URL}/api/transfers/${transferId}/DigitalFileLists/${digitalFileListId}`
-      )
-      .then((response) => {
-        return response.data;
-      })
-      .catch((error) => {
-        console.error(error);
-        return error;
-      });
-  }
+  
 
   public async createPSPs(transferId: any): Promise<any> {
     return await axios

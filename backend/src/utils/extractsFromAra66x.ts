@@ -1,13 +1,8 @@
 import ExcelJS from "exceljs";
 import { ITransfer } from "../models/interfaces/ITransfer";
+import { TransferData } from "../service/data-extractor-service";
 
-interface TransferData {
-  accession: string;
-  application: string;
-  ministry: string;
-  branch: string;
-  folders: string[];
-}
+
 
 export default async function extractsFromAra66x(excelfile: string) {
   const wb = new ExcelJS.Workbook();
@@ -25,6 +20,8 @@ export default async function extractsFromAra66x(excelfile: string) {
     const application = ws1.getCell("B5");
     const ministry = ws1.getCell("B2");
     const branch = ws1.getCell("B3");
+
+    
 
     const transferData: TransferData = {
       accession: ws1.getCell("B4").text,

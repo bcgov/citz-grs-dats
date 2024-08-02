@@ -10,6 +10,7 @@ import { Menu, MenuItem } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSSO } from "@bcgov/citz-imb-sso-react";
 import { useLocation } from 'react-router-dom';
+import HealthCheck from '../HealthCheck';
 // Create styles
 const useStyles = makeStyles((theme) => ({
   logo: {
@@ -68,6 +69,7 @@ const MyAppBar: React.FC = () => {
   };
   return (
     <AppBar position="static" sx={{mb: 10}}>
+      <HealthCheck />
       <Toolbar>
       <img src="/assets/BCID_H_rgb_rev.e68ccb04.png" alt="Logo" className={classes.logo} />
         { isAuthenticated ? <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => {window.location.href = `/dashboard`}}>

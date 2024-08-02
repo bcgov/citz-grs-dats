@@ -67,6 +67,8 @@ namespace DATSCompanion.Shared.Models
     {
         public string Path { get; set; }
         public string Classification { get; set; }
+
+        public string Note { get; set; }
     }
     public class Error
     {
@@ -93,7 +95,11 @@ namespace DATSCompanion.Shared.Models
         FolderUpload,
         CheckFolder,
         FileFolderExists,
-        FileFolderNotExists
+        FileFolderNotExists,
+        HealthCheck,
+        Healthy,
+        ErrorDesktop,
+
     }
 
 }

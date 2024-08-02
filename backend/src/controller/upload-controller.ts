@@ -4,6 +4,8 @@ import S3ClientService from "../service/s3Client-service";
 import DigitalFileListService from "../service/digitalFileList-service";
 import { RequestHandler } from "express";
 import mongoose from "mongoose";
+import { CSVDataExtractor } from "../service/data-extractor-service";
+import logger from "../config/logs/winston-config";
 
 
 
@@ -23,7 +25,45 @@ export default class UploadController {
     this.digitalFileListService = new DigitalFileListService();
     this.documentationPath = "";
   }
+ handleARIS66xCsvUpload: RequestHandler = async (req, res, next) => {
+  logger.debug('upload csv file req received');
+  const uploadedFile = req.file;
+  if (!uploadedFile) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+  logger.debug('uploading csv file');
 
+  this.transferService.createTransferMetaDataV2(new CSVDataExtractor(), uploadedFile.buffer)
+  .then(async result => {
+    try{
+  logger.debug('uploading to s3');
+      await this.s3ClientService.uploadToS3(uploadedFile,result!);
+    var newTransfer = result?.transfer;
+    res.status(201).json({
+      message: "Upload ARIS 66x successful",
+      transfer: {
+        "accessionNumber": newTransfer?.accessionNumber,
+        "applicationNumber": newTransfer?.applicationNumber,
+        "transferStatus": newTransfer?.transferStatus,
+        "digitalFileLists": [],
+        "producerMinistry": newTransfer?.producerMinistry,
+        "producerBranch": newTransfer?.producerBranch,
+        "_id": newTransfer?._id,
+        "createDate": newTransfer?.createDate,
+        "updatedDate": newTransfer?.updatedDate,
+      }
+    });
+    }
+    catch(e)
+    {
+      logger.error(`error uploading dataport file. ${JSON.stringify(e)}`);
+      res.status(500).json({ error: "An error occurred" });
+    }
+  }).catch(e => {
+    logger.error(`Error creating transfer metadata. ${JSON.stringify(e)}`);
+    res.status(500).json({ error: "An error occurred" });
+  });
+ }
   handleARIS66xUpload: RequestHandler = async (req, res, next) => {
     try {
 
@@ -140,12 +180,20 @@ export default class UploadController {
   saveFolderDetails: RequestHandler = async (req, res, next) => {
     try {
       const { file, body } = req;
-      const { checksum: receivedChecksum, transferId, applicationNumber, accessNumber: accessionNumber, classification: primarySecondary, technicalV2: techMetadatav2 } = body;
+      const { checksum: receivedChecksum, transferId, applicationNumber, accessNumber: accessionNumber, classification: primarySecondary, technicalV2: techMetadatav2, note: note } = body;
 
       if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
         return res.status(400).send('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
       }
-
+      if(note)
+      {
+        const placeholders = {
+          ApplicationNumber: applicationNumber || '',
+          AccessionNumber: accessionNumber || ''
+        };
+        logger.debug(`note received ${note}`);
+        await this.fileService.createNote(note,placeholders);
+      }
       await this.fileService.saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2);
 
       res.status(200).send('File uploaded and checksum verified');
