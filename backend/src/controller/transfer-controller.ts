@@ -131,6 +131,7 @@ export default class TransferController {
         accessionNumber,
         applicationNumber
       );
+      return res.status(404).json({ error: "Transfer not found" });
 
       if (!transfer) {
         return res.status(404).json({ error: "Transfer not found" });

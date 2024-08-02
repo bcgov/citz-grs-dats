@@ -114,7 +114,9 @@ namespace DATSCompanionService.Behaviors
         {
             var tempPath = GetTemporaryDirectory();
             DATSFileToUpload payload = JsonSerializer.Deserialize<DATSFileToUpload>(message.Payload);
-            for(int i = 0; i <  payload.Package.Length; i++) 
+            string combinedNotes = string.Join("\n", payload.Package.Select(p => p.Note).Where(note => !string.IsNullOrEmpty(note)));
+
+            for (int i = 0; i <  payload.Package.Length; i++) 
             //foreach (var path in payload.Paths)
             {
                 var path = payload.Package[i].Path;
@@ -160,7 +162,10 @@ namespace DATSCompanionService.Behaviors
                         content.Add(new StringContent(payload.AccessionNumber), "accessNumber");
                         content.Add(new StringContent(classification), "classification");
                         content.Add(new StringContent(JsonSerializer.Serialize(TechnicalMetadataGenerator.Generate(path))), "technicalV2");
-
+                        if(i == 0 && !string.IsNullOrEmpty(combinedNotes))
+                        {
+                            content.Add(new StringContent(combinedNotes), "note");
+                        }
                         // Post the content to the server
                         var result = client.PostAsync(payload.UploadUrl, content).Result;
                         if (result.IsSuccessStatusCode)

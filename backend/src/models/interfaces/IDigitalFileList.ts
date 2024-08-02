@@ -24,4 +24,5 @@ export interface IDigitalFileList extends Document {
   createdBy?: string;
   updatedBy?: string;
   timestamps?: {};
+  note?:string;
 }
