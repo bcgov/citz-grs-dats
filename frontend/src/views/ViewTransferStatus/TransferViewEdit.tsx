@@ -52,17 +52,24 @@ const TransferViewEdit: React.FC = () => {
   };
 
   const handleDeleteTransfer = async () => {
+    setOpenDelete(false);
+    setLoading(true);
     try {
-      await transferService.deleteTransfer(id);
-      setOpenDelete(false);
+      const response = await transferService.deleteTransfer(id);
+      setMessage(response.message); // Set the success message
+      setSnackbarOpen(true); // Show the Snackbar
     } catch (error) {
-      console.error("Error deleting transfer:", error);
+      console.error("Error deleting the Transfer:", error);
+      setMessage("Error deleting the Transfer!"); // Set the error message
+      setSnackbarOpen(true); // Show the Snackbar
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
   const handleCreatePSP = async () => {
-    setOpenCreatePSP(false); // Close the dialog first
-    setLoading(true); // Start loading
+    setOpenCreatePSP(false);
+    setLoading(true);
     try {
       const response = await transferService.createPSPs(id);
       setMessage(response.message); // Set the success message
