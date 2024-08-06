@@ -85,17 +85,17 @@ export default class S3ClientService {
         var transferData = transferInfo.transfer;
         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
         transferFolderPath = transferFolderPath + "/";
-        this.createFolder(transferFolderPath);
+        await this.createFolder(transferFolderPath);
 
         const accession_num = transferData?.accessionNumber;
         const application_num = transferData?.applicationNumber;
         const subApplicationPath = transferFolderPath + accession_num + "-" + application_num + "/";
-        this.createFolder(subApplicationPath);
+        await this.createFolder(subApplicationPath);
 
 
         //Create the Documentation folder
         const subDocPath = subApplicationPath + "Documentation/";
-        this.createFolder(subDocPath);
+        await this.createFolder(subDocPath);
         const targetFilePath = subDocPath + file.originalname;
 
         try {
@@ -122,19 +122,19 @@ export default class S3ClientService {
         //Create the Transfer Root Folder
         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
         transferFolderPath = transferFolderPath + "/";
-        this.createFolder(transferFolderPath);
+        await this.createFolder(transferFolderPath);
 
         //create sub folders in Transfers
         let transferData = await extractsFromAra66x(uploadedFile.path);
         const accession_num = transferData?.accession;
         const application_num = transferData?.application;
         const subApplicationPath = transferFolderPath + accession_num + "-" + application_num + "/";
-        this.createFolder(subApplicationPath);
+        await this.createFolder(subApplicationPath);
 
 
         //Create the Documentation folder
         const subDocPath = subApplicationPath + "Documentation/";
-        this.createFolder(subDocPath);
+        await this.createFolder(subDocPath);
 
         const targetFilePath = subDocPath + uploadedFile.originalname;
 
@@ -153,7 +153,7 @@ export default class S3ClientService {
         }
 
         try {
-            // Create folder if necessary (assume this.createFolder is defined elsewhere)
+
             const metaDataPath = subApplicationPath + "Metadata/";
             await this.createFolder(metaDataPath);
 
@@ -241,7 +241,7 @@ export default class S3ClientService {
         const checksumPath = transferFolderPath + "/" + jsonFileName;
         const jsonBuffer = JSON.stringify(checksumstring);
 
-        this.createFolder(transferFolderPath);
+        await this.createFolder(transferFolderPath);
 
         try {
             const uploadFilecommand = new PutObjectCommand({
@@ -268,7 +268,7 @@ export default class S3ClientService {
     }
     async uploadTechnicalV2File(techMetadatav2: any, psppath: string) {
         const transferFolderPath = psppath + "Metadatas/";
-        this.createFolder(transferFolderPath);
+        await this.createFolder(transferFolderPath);
         console.log("----------->uploadTechnicalV2File=" + transferFolderPath);
         const jsonBuffer = Buffer.from(JSON.stringify(techMetadatav2));
         console.log("----------->uploadTechnicalV2File=" + jsonBuffer);

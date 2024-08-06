@@ -113,7 +113,7 @@ export default class FileService {
                 if (psp.pathToS3) {
                     const zipBuffer = await this.s3ClientService.copyPSPFolderFromS3ToZip(psp.pathToS3);
                     if (zipBuffer) {
-                        const shareLanDrive = process.env.SHARE_LAN_DRIVE || 'C:\\TestDATS\\';
+                        const shareLanDrive = process.env.SMB_ARCHIVE_LAND_DRIVE || 'C:\\TestDATS\\';
                         const directoryName = 'Tr_' + transfer.accessionNumber + "_" + transfer.applicationNumber;
                         const directoryPath = path.join(shareLanDrive, directoryName);
 
@@ -146,10 +146,10 @@ export default class FileService {
 
     private async sendBufferToSMBShare(buffer: Buffer, fileName: string) {
         const smb2Client = new SMB2({
-            share: "\\\\CA-L19NW8G3\\TestDATS",
-            domain: "GROUPINFRA",
-            username: "GRSDATS",
-            password: "pine2@MAPLE^5384",
+            share: process.env.SMB_ARCHIVE_LAND_DRIVE || 'C:\\TestDATS\\',
+            domain: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
+            username: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
+            password: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
         });
 
         const remoteFilePath = `${fileName}`;
