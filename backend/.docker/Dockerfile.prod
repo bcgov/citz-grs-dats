@@ -22,6 +22,9 @@ RUN npm i
 # Copy only the necessary files from the previous stage
 COPY --from=build /app/dist ./build
 
+# Ensure the public directory is included
+COPY --from=build /app/src/public ./build/public
+
 RUN mkdir /.npm
 RUN chgrp -R 0 /.npm && chmod -R g=u /.npm
 
