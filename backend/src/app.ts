@@ -11,51 +11,47 @@ import * as sessionTypes from "./types/custom-types";
 import logger, { auditor } from "./config/logs/winston-config";
 import cookieParser from "cookie-parser";
 import path from "path";
-import { protectedRoute, sso } from '@bcgov/citz-imb-sso-express';
-
+import { protectedRoute, sso } from "@bcgov/citz-imb-sso-express";
 
 const app = express();
 sso(app);
 
-logger.info('This is an info message');
-logger.debug('This is an debug message');
-logger.error('This is an error message');
-auditor('test audit log', { event: 'user_login', username: 'johndoe' });
-
+logger.info("This is an info message");
+logger.debug("This is an debug message");
+logger.error("This is an error message");
+auditor("test audit log", { event: "user_login", username: "johndoe" });
 
 const corsOptions = {
   origin: process.env.FRONTEND_URL, // 'http://localhost:3000',
-  credentials: true
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: process.env.NODE_ENV === 'production' },
+    cookie: { secure: process.env.NODE_ENV === "production" },
   })
 );
-
 
 // app.use(authRoutes);
 app.use(express.json());
 
-
-// Healt check 
+// Healt check
 app.get("/", (req, res) => {
   res.status(200).json("API Is Healthy");
 });
 
-app.get('/dashboard', protectedRoute(), (req: any, res) => {
-  logger.info('Dashboard route called');
-  res.json({ message: 'This is a protected route', user: req.user });
+app.get("/dashboard", protectedRoute(), (req: any, res) => {
+  logger.info("Dashboard route called");
+  res.json({ message: "This is a protected route", user: req.user });
 });
-app.get('/api/base-url', (req, res) => {
+app.get("/api/base-url", (req, res) => {
   res.json({ baseUrl: `${process.env.BACKEND_URL}` });
 });
 app.use("/api", transferRouter);
@@ -66,7 +62,7 @@ app.use("/api", uploadFilesRoute);
 //   logger.info('Userinfo route called');
 //   res.json(req.user.userinfo);
 // });
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use(function (req: Request, res: Response, next: NextFunction) {
   console.log(
     `[${req.method} ${req.originalUrl}] is called, body is ${JSON.stringify(
@@ -77,4 +73,3 @@ app.use(function (req: Request, res: Response, next: NextFunction) {
 });
 
 export default app;
-
