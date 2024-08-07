@@ -46,7 +46,7 @@ const SendRecordsEDRMS = () => {
     useState<ITransferDTO | null>(null);
     const dataportComponent = useRef<{ validateInputs: () => boolean }>(null);
     const aris617xComponent = useRef<{ validateInputs: () => boolean }>(null);
-    const fileListComponent = useRef<{ validateInputs: () => boolean }>(null);
+    const fileListComponent = useRef<{ validateInputs: () => boolean, clearFiles: () => void }>(null);
     
   const navigate = useNavigate();
   const childRef = useRef<any>(null);
@@ -77,7 +77,7 @@ const SendRecordsEDRMS = () => {
       label: "Upload Dataport file",
       beforeNext: async () => await handleUpload(file, uploadService.uploadDataportFile),
       content: (
-        <DataportTxtDropZone
+        <DataportTxtDropZone ref={dataportComponent}
           validate={(isValid, errorMessage) => handleValidationChange(0, isValid, errorMessage)}
           setFile={updateFile}
           setExcelData={setExcelData}
@@ -100,6 +100,8 @@ const SendRecordsEDRMS = () => {
       showSnackbar("Upload successful", "success");
       setNextButtonLabel("Next");
       setBeforeNextCompleted(true);
+      setFile(null);
+      fileListComponent.current!!.clearFiles();
     } catch (error) {
       console.error("Upload failed", error);
       showSnackbar("Upload failed", "error");
@@ -111,13 +113,14 @@ const SendRecordsEDRMS = () => {
     }
       },
       content: (
-        <Aris617DropZone ref={aris617xComponent}
+        <Aris617DropZone ref={fileListComponent}
           showValidationMessage={(isValid, errorMessage) =>
           handleValidationChange(0, isValid, errorMessage)
         }
           setFile={updateAris617File}
         />
       ),
+      validate: () => fileListComponent.current!!.validateInputs(),
     },
     {
       label: "Upload Transfer Form (ARS 617)",
@@ -162,6 +165,7 @@ const SendRecordsEDRMS = () => {
           excelData={excelData}
         />
       ),
+      validate: () => isValid,
     },
     {
       label: "Confirmation & Receipt",
@@ -185,6 +189,7 @@ const SendRecordsEDRMS = () => {
           showValidationMessage={(isValid, errorMessage) => handleValidationChange(3, isValid, errorMessage)}
         />
       ),
+      validate: () => childRef.current!!.validateInputs(),
     },
     {
       label: "Download Files",
