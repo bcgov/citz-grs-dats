@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Typography,
   Box,
@@ -26,6 +26,7 @@ import { TransferStatus } from "../../types/Enums/TransferStatus";
 
 const TransferViewEdit: React.FC = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [transfer, setTransfer] = useState<ITransferDTO | any>(null);
   const [isTransferEditing, setIsTransferEditing] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
@@ -58,6 +59,9 @@ const TransferViewEdit: React.FC = () => {
       const response = await transferService.deleteTransfer(id);
       setMessage(response.message); // Set the success message
       setSnackbarOpen(true); // Show the Snackbar
+      setTimeout(() => {
+        navigate("/transfer-status-view"); // Redirect to TransferStatusView.ts after 3 seconds
+      }, 3000);
     } catch (error) {
       console.error("Error deleting the Transfer:", error);
       setMessage("Error deleting the Transfer!"); // Set the error message
