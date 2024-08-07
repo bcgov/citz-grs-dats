@@ -115,7 +115,7 @@ namespace DATSCompanionService.Behaviors
             var tempPath = GetTemporaryDirectory();
             DATSFileToUpload payload = JsonSerializer.Deserialize<DATSFileToUpload>(message.Payload);
             string combinedNotes = string.Join("\n", payload.Package.Select(p => p.Note).Where(note => !string.IsNullOrEmpty(note)));
-
+            bool isUploadFail = false;
             for (int i = 0; i <  payload.Package.Length; i++) 
             //foreach (var path in payload.Paths)
             {
@@ -167,7 +167,7 @@ namespace DATSCompanionService.Behaviors
                             content.Add(new StringContent(combinedNotes), "note");
                         }
                         // Post the content to the server
-                        var result = client.PostAsync(payload.UploadUrl, content).Result;
+                        var result = client.PostAsync(payload.UploadUrl + "/api/upload-files", content).Result;
                         if (result.IsSuccessStatusCode)
                         {
                             Logger?.WriteEntry($"folder upload successful {path}");
@@ -201,6 +201,7 @@ namespace DATSCompanionService.Behaviors
                 }
                 catch (Exception ex)
                 {
+                    isUploadFail = true;
                     Logger?.WriteEntry($"folder upload failed {path}; reason {ex.Message} {ex.StackTrace}");
 
                     Broadcast?.NotifyClients(JsonSerializer.Serialize(new MessageContract<Error>
@@ -212,6 +213,20 @@ namespace DATSCompanionService.Behaviors
                             Message = $"{path}"
                         }
                     }));
+                }
+            }
+            if(isUploadFail)
+            {
+                using (var http = new HttpClient())
+                {
+                    http.PutAsync($"{payload.UploadUrl}/transfers/{payload.TransferId}", new StringContent(JsonSerializer.Serialize(new { transferStatus = "Transfer complete" })));
+                }
+                using (var http = new HttpClient())
+                {
+                    var res = http.PutAsync($"{payload.UploadUrl}/transfers/{payload.TransferId}",
+                        new StringContent(
+                            JsonSerializer.Serialize(new { transferStatus = "Transfer complete", accessionNumber = payload.AccessionNumber, applicationNumber = payload.ApplicationNumber }), UTF32Encoding.UTF8, "application/json"
+                            )).Result;
                 }
             }
             Broadcast?.NotifyClients(JsonSerializer.Serialize(new MessageContract<ReportProgress>
