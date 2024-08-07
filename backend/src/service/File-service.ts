@@ -35,8 +35,7 @@ export default class FileService {
         this.transferRepository = new TransferRepository();
         this.lanDrivePath = "Upload617/";
     }
-    async createNote(notes: string, placeholders: Placeholder) : Promise<string> 
-    {
+    async createNote(notes: string, placeholders: Placeholder): Promise<string> {
         const accession_num = placeholders['AccessionNumber'];
         const application_num = placeholders['ApplicationNumber'];
 
@@ -114,7 +113,7 @@ export default class FileService {
                 if (psp.pathToS3) {
                     const zipBuffer = await this.s3ClientService.copyPSPFolderFromS3ToZip(psp.pathToS3);
                     if (zipBuffer) {
-                        const shareLanDrive = process.env.SHARE_LAN_DRIVE || 'C:\\TestDATS\\';
+                        const shareLanDrive = process.env.SMB_ARCHIVE_LAND_DRIVE || 'C:\\TestDATS\\';
                         const directoryName = 'Tr_' + transfer.accessionNumber + "_" + transfer.applicationNumber;
                         const directoryPath = path.join(shareLanDrive, directoryName);
 
@@ -147,10 +146,10 @@ export default class FileService {
 
     private async sendBufferToSMBShare(buffer: Buffer, fileName: string) {
         const smb2Client = new SMB2({
-            share: "\\\\CA-L19NW8G3\\TestDATS",
-            domain: "GROUPINFRA",
-            username: "jacques.levesque",
-            password: "!Zebra12344",
+            share: process.env.SMB_ARCHIVE_LAND_DRIVE || 'C:\\TestDATS\\',
+            domain: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
+            username: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
+            password: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
         });
 
         const remoteFilePath = `${fileName}`;
@@ -195,7 +194,7 @@ export default class FileService {
         }
 
         const transferAdminJson = JSON.stringify(transfer);
-        console.log(transferAdminJson)
+        console.log("Admin Metadatas : " + transferAdminJson)
 
         const s3ClientService = new S3ClientService();
         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
@@ -203,7 +202,7 @@ export default class FileService {
 
         const pspname = 'PSP-' + accessionNumber + "-" + applicationNumber + "-" + primarySecondary + "-01"
         const psppath = transferFolderPath + "/" + accessionNumber + "-" + applicationNumber + "/" + pspname + "/";
-        s3ClientService.createFolder(psppath);
+        await s3ClientService.createFolder(psppath);
 
 
         // store the zip and checksum

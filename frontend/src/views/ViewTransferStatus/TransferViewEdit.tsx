@@ -34,6 +34,7 @@ const TransferViewEdit: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const transferService = new TransferService();
 
@@ -52,7 +53,7 @@ const TransferViewEdit: React.FC = () => {
     }
   };
 
-  const handleDeleteTransfer = async () => {
+const handleDeleteTransfer = async () => {
     setOpenDelete(false);
     setLoading(true);
     try {
@@ -70,6 +71,7 @@ const TransferViewEdit: React.FC = () => {
       setLoading(false); // Stop loading
     }
   };
+
 
   const handleCreatePSP = async () => {
     setOpenCreatePSP(false);

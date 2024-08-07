@@ -32,6 +32,8 @@ import SaveIcon from "@mui/icons-material/Save";
 import ITransferDTO from "../../../types/DTO/Interfaces/ITransferDTO";
 import { getApiBaseUrl } from "../../../services/serverUrlService";
 import { WEBSOCKET_PUSH_URL, WEBSOCKET_URL } from "../../../types/constants";
+import { TransferService } from "../../../services/transferService";
+import { TransferStatus } from "../../../types/Enums/TransferStatus";
 enum DATSActions {
   FolderSelected,
   FileSelected,
@@ -108,7 +110,6 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   useEffect(() => {
     let attempts = 0;
     const maxAttempts = 3;
-  
     const connectWebSocket = () => {
       const ws = new WebSocket(WEBSOCKET_URL);
   
@@ -207,6 +208,11 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             validate(false, `upload failed for ${data.Payload.Message}. This transfer is rolled back, please contact administrator`);
             cancelAllProgress(transfer);
             break;
+            case DATSActions.Completed:
+              setTimeout(async () => {
+              await new TransferService().updateTransfer({ _id: transfer._id, accessionNumber: transfer.accessionNumber, applicationNumber: transfer.applicationNumber, transferStatus: TransferStatus.TrComplete });
+              }, 3000)
+              break;
         }
       };
   
@@ -220,9 +226,16 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     };
   }, [transfer.digitalFileLists]);
   
-
+  const validateInputs = ():boolean  => {
+    if(!transfer.digitalFileLists ||  (transfer.digitalFileLists && transfer.digitalFileLists.length == 0))
+    {
+      validate(false, "Please add folders to update and/or ensure there are no error marker in any folder");
+      return false;
+    }
+    return true;
+  }
   useImperativeHandle(ref, () => ({
-    uploadAllFolders,
+    uploadAllFolders,validateInputs
   }));
   // Function to update the status of all folders to PROGRESS
   const setAllProgress = (transfer: ITransferDTO) => {
