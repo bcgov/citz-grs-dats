@@ -26,6 +26,7 @@ import { TransferStatus } from "../../types/Enums/TransferStatus";
 
 const TransferViewEdit: React.FC = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [transfer, setTransfer] = useState<ITransferDTO | any>(null);
   const [isTransferEditing, setIsTransferEditing] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
@@ -33,7 +34,6 @@ const TransferViewEdit: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const transferService = new TransferService();
 
@@ -57,19 +57,20 @@ const TransferViewEdit: React.FC = () => {
     setLoading(true);
     try {
       const response = await transferService.deleteTransfer(id);
-      setMessage(response.message);
-      setSnackbarOpen(true);
+      setMessage(response.message); // Set the success message
+      setSnackbarOpen(true); // Show the Snackbar
       setTimeout(() => {
-        navigate("/transfer-status");
-      }, 5000);
+        navigate("/transfer-status-view"); // Redirect to TransferStatusView.ts after 3 seconds
+      }, 3000);
     } catch (error) {
       console.error("Error deleting the Transfer:", error);
-      setMessage("Error deleting the Transfer!");
-      setSnackbarOpen(true);
+      setMessage("Error deleting the Transfer!"); // Set the error message
+      setSnackbarOpen(true); // Show the Snackbar
     } finally {
       setLoading(false); // Stop loading
     }
   };
+
 
   const handleCreatePSP = async () => {
     setOpenCreatePSP(false);
