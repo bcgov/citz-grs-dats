@@ -65,6 +65,9 @@ export class CSVDataExtractor implements IDataExtractor
                   const existingData = dataMap.get(accession);
                   if (existingData) {
                     existingData.folders.push(folder);
+                    if(ministry) {
+                      existingData.ministry = ministry;
+                    }
                   }
                 }
                 if(folder === '')

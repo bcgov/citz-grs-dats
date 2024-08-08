@@ -119,7 +119,13 @@ export const extractDataport = (file: File): Promise<DatsExcelModel> => {
     reader.readAsText(file);
   });
 };
+const formatDate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const day = String(date.getDate()).padStart(2, '0');
 
+  return `${year}-${month}-${day}`;
+}
 export const generateExcel = async (folders: IFolderInformation[]) => {
   const response = await fetch(`/api/digital-file-list-template.xlsx`); // Adjust the path to your template file
   const arrayBuffer = await response.arrayBuffer();
@@ -137,10 +143,10 @@ export const generateExcel = async (folders: IFolderInformation[]) => {
     folder.fileId,
     null,//file title
     folder.opr ? 'Y' : 'N',
-    folder.startDate ?{ v: folder.startDate, t: 's' } : null,
-    folder.endDate ?{ v: folder.endDate, t: 's' }: null,
-    folder.soDate ? { v: folder.soDate, t: 's' } : null,
-    null
+    folder.startDate ? formatDate(folder.startDate) : null,
+    folder.endDate ? formatDate(folder.endDate) : null,
+    folder.soDate ? formatDate(folder.soDate)  : null,
+    folder.fdDate ? formatDate(folder.fdDate)  : null
   ]);
   XLSX.utils.sheet_add_aoa(filesSheet, filesData, { origin: 'A2' }); // Add data starting from row 2 to leave headers intact
 
