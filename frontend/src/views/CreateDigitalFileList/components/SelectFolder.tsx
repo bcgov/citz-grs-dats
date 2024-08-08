@@ -277,12 +277,14 @@ const SelectFolder: FC = () => {
                 <DatePicker
                   value={folder.soDate}
                   onChange={(date) => handleChange(index, "soDate", date)}
+                  format="yyyy-MM-dd"
                 />
               </Grid>
               <Grid item xs={12} sm={1.5}>
                 <DatePicker
                   value={folder.fdDate}
                   onChange={(date) => handleChange(index, "fdDate", date)}
+                  format="yyyy-MM-dd"
                 />
               </Grid>
               <Grid item xs={12} sm={0.5}>

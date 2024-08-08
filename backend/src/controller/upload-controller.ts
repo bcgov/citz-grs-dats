@@ -46,7 +46,7 @@ export default class UploadController {
         "applicationNumber": newTransfer?.applicationNumber,
         "transferStatus": newTransfer?.transferStatus,
         "digitalFileLists": [],
-        "producerMinistry": newTransfer?.producerMinistry,
+        "producerMinistry": newTransfer?.producerMinistry?.replace(/[\n\r]/g, ''),
         "producerBranch": newTransfer?.producerBranch,
         "_id": newTransfer?._id,
         "createDate": newTransfer?.createDate,

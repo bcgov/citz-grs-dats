@@ -100,8 +100,6 @@ const SendRecordsEDRMS = () => {
       showSnackbar("Upload successful", "success");
       setNextButtonLabel("Next");
       setBeforeNextCompleted(true);
-      setFile(null);
-      fileListComponent.current!!.clearFiles();
     } catch (error) {
       console.error("Upload failed", error);
       showSnackbar("Upload failed", "error");
@@ -251,8 +249,14 @@ const SendRecordsEDRMS = () => {
 
     setNextButtonLabel("Next");
     setErrors((prev) => prev.filter((error) => error !== activeStep));
+    if(activeStep === 1)
+      {
+        setFile(null);
+        fileListComponent.current!!.clearFiles();
+      }
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
     setBeforeNextCompleted(false);
+    
   };
 
   const handleBack = () => {

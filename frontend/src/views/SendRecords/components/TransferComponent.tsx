@@ -287,7 +287,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         Payload: {
           Package: transfer.digitalFileLists?.map((file) => ({
             Path: file.folder,
-            Classification: file.primarySecondary,
+            Classification: file.primarySecondary || '',
             Note: file.note
           })),
           TransferId: transfer._id,

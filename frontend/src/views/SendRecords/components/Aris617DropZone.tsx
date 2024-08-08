@@ -28,6 +28,7 @@ const Aris617DropZone = forwardRef((props: Aris617DropZoneProps, ref) => {
     return isValid;
   }
   const clearFiles = ():void => {
+    setIsValid(false);
     setClearFilesSignal(true);
   }
   useImperativeHandle(ref, () => ({
