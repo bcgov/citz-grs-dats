@@ -209,9 +209,12 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             cancelAllProgress(transfer);
             break;
             case DATSActions.Completed:
+              if(makeFieldsDisable) //this is to ensure the upload was in progress as the completed event can also be fired by folder selection action
+              {
               setTimeout(async () => {
               await new TransferService().updateTransfer({ _id: transfer._id, accessionNumber: transfer.accessionNumber, applicationNumber: transfer.applicationNumber, transferStatus: TransferStatus.TrComplete });
               }, 3000)
+            }
               break;
         }
       };
@@ -329,7 +332,10 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     }));
   };
 
-
+  const handleAddFolder = (folder: string) => {
+    currentFolder.current = folder;
+    window.location.href = `citz-grs-dats://open?browse=folder`;
+  }
   const handleEditClick = (folder: string) => {
     currentFolder.current = folder;
     setIsPopupOpen(true);
@@ -409,7 +415,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       </Grid>
       {(!transfer.digitalFileLists || transfer.digitalFileLists.length === 0) && (
         <Box sx={{ mt: 2 }}>
-          <Button variant="contained" color="primary"  onClick={() => handleEditClick('NEW_FOLDER')}>
+          <Button variant="contained" color="primary"  onClick={() => handleAddFolder('NEW_FOLDER')}>
             Add Digital File
           </Button>
         </Box>
