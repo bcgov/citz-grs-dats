@@ -29,9 +29,6 @@ services:
       - mongodb
     networks:
       - mern-stack-net
-    volumes:
-      - ./backend:/backend
-      - /frontend/node_modules
     healthcheck:
       test: ["CMD", "curl -f http://localhost:5000/health || exit 1"] # Check health endpoint for healthy service.
       interval: 30s # Perform the health check every 30 seconds.
@@ -39,9 +36,10 @@ services:
       retries: 5 # Retry the health check up to 5 times before considering the container unhealthy.
   frontend:
     container_name: citz-grs-dats-app
+    tty: true
     build:
       context: ./frontend
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile.dev
     depends_on:
       - citz-grs-dats-api
     ports:
@@ -49,8 +47,7 @@ services:
     networks:
       - mern-stack-net
     volumes:
-      - ./frontend:/frontend
-      - /frontend/node_modules
+      - ./frontend/src:/app/src
 networks:
   mern-stack-net:
     driver: bridge
