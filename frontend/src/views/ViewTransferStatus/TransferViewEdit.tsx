@@ -57,17 +57,17 @@ const TransferViewEdit: React.FC = () => {
     setLoading(true);
     try {
       const response = await transferService.deleteTransfer(id);
-      setMessage(response.message); // Set the success message
-      setSnackbarOpen(true); // Show the Snackbar
+      setMessage(response.message);
+      setSnackbarOpen(true);
       setTimeout(() => {
-        navigate("/transfer-status-view"); // Redirect to TransferStatusView.ts after 3 seconds
+        navigate("/transfer-status");
       }, 3000);
     } catch (error) {
       console.error("Error deleting the Transfer:", error);
-      setMessage("Error deleting the Transfer!"); // Set the error message
-      setSnackbarOpen(true); // Show the Snackbar
+      setMessage("Error deleting the Transfer!");
+      setSnackbarOpen(true);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
@@ -77,14 +77,14 @@ const TransferViewEdit: React.FC = () => {
     setLoading(true);
     try {
       const response = await transferService.createPSPs(id);
-      setMessage(response.message); // Set the success message
-      setSnackbarOpen(true); // Show the Snackbar
+      setMessage(response.message);
+      setSnackbarOpen(true);
     } catch (error) {
       console.error("Error creating PSPs:", error);
-      setMessage("Error creating PSPs"); // Set the error message
-      setSnackbarOpen(true); // Show the Snackbar
+      setMessage("Error creating PSPs");
+      setSnackbarOpen(true);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
@@ -106,7 +106,7 @@ const TransferViewEdit: React.FC = () => {
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
-    setMessage(null); // Reset the message
+    setMessage(null);
   };
 
   useEffect(() => {
