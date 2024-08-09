@@ -9,7 +9,7 @@ const Landing: React.FC = () => {
     <div className="Landing">
       <main>
         <div className="content">
-          <Typography sx={{ fontSize: "1.3em", fontWeight: "700" }}>
+          <Typography sx={{ fontSize: "1.1em", fontWeight: "700" }}>
             Welcome to DATS. This application helps you:
           </Typography>
           <ul
