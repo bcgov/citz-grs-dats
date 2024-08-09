@@ -12,11 +12,11 @@ const Dashboard: React.FC = () => {
         Software Center. Please follow these instructions [insert link later].
       </Typography>
       <br />
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
+      <Box sx={{ display: "flex" }}>
         <CardComponent
           title="Create a Digital File List"
           content="Create a file list for digital government information stored in a LAN drive. Provide a Windows folder address and some basic information, and DATS will create a list of every document in that folder for you. "
-          link="/create"
+          link="/create-intro"
         />
         <CardComponent
           title="Send Record to DATS"
