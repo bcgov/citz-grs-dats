@@ -223,55 +223,6 @@ export default class FileService {
     }
 
 
-
-    // async createPSPs(transferId: string): Promise<string> {
-    //     try {
-    //         const transfer = await this.transferRepository.getTransferWithPsps(transferId);
-
-    //         if (!transfer) {
-    //             throw new Error('Transfer not found');
-    //         }
-
-    //         const psps = (transfer.psps as unknown as IPsp[]) ?? [];
-    //         const transferFolderPath = "Tr_" + transfer.accessionNumber + "_" + transfer.applicationNumber + "/";
-
-    //         await Promise.all(psps.map(async (psp) => {
-    //             if (psp.pathToS3) {
-    //                 const zipBuffer = await this.s3ClientService.copyPSPFolderFromS3ToZip(psp.pathToS3);
-    //                 if (zipBuffer) {
-    //                     const filePath = `${psp.name}.zip`;
-    //                     // here
-    //                     const zipBufferHash = calculateHash(filePath, "sha1") as unknown as string;
-
-    //                     console.log(zipBufferHash);
-    //                     if (zipBufferHash) {
-    //                         await this.s3ClientService.uploadPSPToS3(zipBuffer, filePath, transferFolderPath)
-    //                         await this.s3ClientService.savePspHashToJson(filePath, zipBufferHash, transferFolderPath)
-    //                     }
-
-
-
-
-
-    //                     console.log('File saved successfully!');
-    //                 } else {
-    //                     console.log('No zip buffer created');
-    //                 }
-    //             }
-    //         }));
-
-    //         // Mark the Transfer PSP created
-    //         transfer.transferStatus = TransferStatus.PSPcomplete;
-    //         await this.transferRepository.updateTransfer(transferId, transfer);
-
-    //         console.log('PSP folders moved successfully');
-    //         return 'PSP folders created successfully';
-    //     } catch (error) {
-    //         console.error('Error moving PSP folders:', error);
-    //         throw error;
-    //     }
-    // }
-
     private async sendBufferToSMBShare(buffer: Buffer, fileName: string) {
         const smb2Client = new SMB2({
             share: process.env.SMB_ARCHIVE_LAND_DRIVE || 'C:\\TestDATS\\',
@@ -292,13 +243,6 @@ export default class FileService {
                 resolve();
             });
         });
-    }
-
-
-    private createFolder(localFolderPath: string): void {
-        if (!fs.existsSync(localFolderPath)) {
-            fs.mkdirSync(localFolderPath, { recursive: true });
-        }
     }
 
     async saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2) {
