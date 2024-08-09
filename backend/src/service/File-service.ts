@@ -6,6 +6,7 @@ import S3ClientService from "../service/s3Client-service";
 import TransferService from "../service/transfer-service";
 import TransferRepository from "../repository/transfer-repository"
 import validateBufferChecksum from "../utils/validateBufferChecksum"
+import calculateHash from "../utils/calculateHash"
 import { IPsp } from 'src/models/psp-model';
 import { TransferStatus } from "../models/enums/TransferStatus"
 import logger from '../config/logs/winston-config';
@@ -108,22 +109,25 @@ export default class FileService {
             }
 
             const psps = (transfer.psps as unknown as IPsp[]) ?? [];
+            const transferFolderPath = "Tr_" + transfer.accessionNumber + "_" + transfer.applicationNumber + "/";
 
             await Promise.all(psps.map(async (psp) => {
                 if (psp.pathToS3) {
                     const zipBuffer = await this.s3ClientService.copyPSPFolderFromS3ToZip(psp.pathToS3);
                     if (zipBuffer) {
-                        const shareLanDrive = process.env.SMB_ARCHIVE_LAND_DRIVE || 'C:\\TestDATS\\';
-                        const directoryName = 'Tr_' + transfer.accessionNumber + "_" + transfer.applicationNumber;
-                        const directoryPath = path.join(shareLanDrive, directoryName);
+                        const filePath = `${psp.name}.zip`;
+                        // here
+                        const zipBufferHash = calculateHash(filePath, "sha1") as unknown as string;
 
-                        if (!fs.existsSync(directoryPath)) {
-                            fs.mkdirSync(directoryPath, { recursive: true });
+                        console.log(zipBufferHash);
+                        if (zipBufferHash) {
+                            await this.s3ClientService.uploadPSPToS3(zipBuffer, filePath, transferFolderPath)
+                            await this.s3ClientService.savePspHashToJson(filePath, zipBufferHash, transferFolderPath)
                         }
 
-                        const filePath = path.join(directoryPath, `${psp.name}.zip`);
 
-                        await fs.promises.writeFile(filePath, zipBuffer);
+
+
 
                         console.log('File saved successfully!');
                     } else {
@@ -142,6 +146,15 @@ export default class FileService {
             console.error('Error moving PSP folders:', error);
             throw error;
         }
+    }
+
+    private async sendBufferToS3Share(buffer: Buffer, fileName: string) {
+        const smb2Client = new SMB2({
+            share: process.env.SMB_ARCHIVE_LAND_DRIVE || 'C:\\TestDATS\\',
+            domain: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
+            username: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
+            password: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
+        });
     }
 
     private async sendBufferToSMBShare(buffer: Buffer, fileName: string) {
