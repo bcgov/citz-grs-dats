@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import HomeIcon from "@mui/icons-material/Home";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import { Menu, MenuItem } from "@mui/material";
+import { Menu, MenuItem, Stack } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { useSSO } from "@bcgov/citz-imb-sso-react";
 import { useLocation } from "react-router-dom";
@@ -19,9 +19,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 const MyAppBar: React.FC = () => {
-  //const { isAuthenticated, login, logout, user, home } = useAuth();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [title, setTitle] = React.useState<string>("");
+  const [breadcrumbs, setBreadcrumbs] = React.useState<string>("");
   const classes = useStyles();
   const location = useLocation();
   const { isAuthenticated, login, logout, user } = useSSO();
@@ -44,13 +43,14 @@ const MyAppBar: React.FC = () => {
       // Join the mapped titles with a hyphen separator to create a single string
       const documentTitle = mappedTitles.join(" / ");
       // Update the state with the new document title
-      setTitle(documentTitle);
+      setBreadcrumbs(documentTitle);
       // Set the document title
       document.title = documentTitle;
     } else {
       // If no valid mappings, clear the document title
-      setTitle("");
+      setBreadcrumbs("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location]);
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -80,12 +80,29 @@ const MyAppBar: React.FC = () => {
             <HomeIcon />
           </IconButton>
         ) : null}
-        {isAuthenticated && title ? (
-          <Typography sx={{ color: "white" }}> / {title}</Typography>
+        {isAuthenticated && breadcrumbs ? (
+          <Typography sx={{ color: "white" }}> / {breadcrumbs}</Typography>
         ) : null}
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          MyApp
-        </Typography>
+        <Stack direction="row" sx={{ flexGrow: 1 }}>
+          <Typography
+            variant="h3"
+            component="div"
+            sx={{ marginBottom: "15px", color: "white", marginLeft: "20px" }}
+          >
+            Digital Archives Transfer Service (DATS)
+          </Typography>
+          <Typography
+            sx={{
+              color: "#FCBA19",
+              fontWeight: "700",
+              fontSize: "0.8em",
+              marginTop: "15px",
+              marginLeft: "5px",
+            }}
+          >
+            PILOT
+          </Typography>
+        </Stack>
         {isAuthenticated ? (
           <div>
             <IconButton
@@ -118,8 +135,12 @@ const MyAppBar: React.FC = () => {
             </Menu>
           </div>
         ) : (
-          //{ idpHint: "idir", postLoginRedirectURL: "/post-login" }
-          <Button color="inherit" onClick={() => login({ idpHint: "idir" })}>
+          <Button
+            color="inherit"
+            onClick={() =>
+              login({ idpHint: "idir", postLoginRedirectURL: "/dashboard" })
+            }
+          >
             Login
           </Button>
         )}

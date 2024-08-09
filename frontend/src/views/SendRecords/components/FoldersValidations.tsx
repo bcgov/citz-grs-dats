@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { makeStyles } from "@mui/styles";
-import { styled } from "@mui/material/styles";
 import {
   Card,
   Typography,
@@ -21,28 +20,27 @@ import UploadService from "../../../services/uploadService";
 import checkMark from "../../../assets/images/Sign-check-icon.png";
 
 const useStyles = makeStyles((theme: Theme) => ({
-    container: {
-      display: "flex",
-      flexWrap: "nowrap",
-      "& > :not(style)": {
-        m: 1,
-        width: "80%",
-        height: "auto",
-      },
+  container: {
+    display: "flex",
+    flexWrap: "nowrap",
+    "& > :not(style)": {
+      m: 1,
+      width: "80%",
+      height: "auto",
     },
-    folderList: {
-      marginTop: theme.spacing(2),
-      maxHeight: "auto",
-      overflowY: "auto",
-    },
-    infoBox: {
-      marginTop: theme.spacing(2),
-      marginLeft: theme.spacing(2),
-      height: "80%",
-      padding: theme.spacing(2),
-    },
-  })
-);
+  },
+  folderList: {
+    marginTop: theme.spacing(2),
+    maxHeight: "auto",
+    overflowY: "auto",
+  },
+  infoBox: {
+    marginTop: theme.spacing(2),
+    marginLeft: theme.spacing(2),
+    height: "80%",
+    padding: theme.spacing(2),
+  },
+}));
 
 interface FoldersValidationProps {
   onValidation?: () => void;
@@ -53,7 +51,6 @@ const FoldersValidation: React.FC<FoldersValidationProps> = ({}) => {
   const classes = useStyles();
   const uploadService = new UploadService();
   const handleValidation = () => {
-
     console.log("Validating folders");
   };
   return (
@@ -101,7 +98,11 @@ const FoldersValidation: React.FC<FoldersValidationProps> = ({}) => {
         </Grid>
         <Grid item xs={12}>
           {/* Add any additional buttons or actions related to folder validation */}
-          <Button variant="contained" color="primary" onClick={handleValidation}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleValidation}
+          >
             Validate Folders
           </Button>
         </Grid>
