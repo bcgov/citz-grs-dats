@@ -60,7 +60,7 @@ const MyAppBar: React.FC = () => {
     setAnchorEl(null);
   };
   return (
-    <AppBar position="static" sx={{ mb: 10 }}>
+    <AppBar position="static" sx={{ mb: 5 }}>
       <HealthCheck />
       <Toolbar>
         <img

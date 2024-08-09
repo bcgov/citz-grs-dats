@@ -6,7 +6,7 @@ import { useSSO } from "@bcgov/citz-imb-sso-react";
 const Dashboard: React.FC = () => {
   const { hasRoles } = useSSO();
   return (
-    <div style={{ marginBottom: "45px" }}>
+    <Box style={{ marginBottom: "45px" }}>
       <Typography>
         The first time you use DATS you must install a desktop app from the
         Software Center. Please follow these instructions [insert link later].
@@ -39,7 +39,7 @@ const Dashboard: React.FC = () => {
         </a>
         .
       </Typography>
-    </div>
+    </Box>
   );
 };
 
