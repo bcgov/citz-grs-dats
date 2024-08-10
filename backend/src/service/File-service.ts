@@ -29,13 +29,11 @@ export default class FileService {
     private s3ClientService: S3ClientService;
     private transferService: TransferService;
     private transferRepository: TransferRepository;
-    private lanDrivePath: string;
 
     constructor() {
         this.s3ClientService = new S3ClientService();
         this.transferService = new TransferService();
         this.transferRepository = new TransferRepository();
-        this.lanDrivePath = "Upload617/";
     }
     async createNote(notes: string, placeholders: Placeholder): Promise<string> {
         const accession_num = placeholders['AccessionNumber'];
