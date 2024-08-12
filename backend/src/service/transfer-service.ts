@@ -54,28 +54,26 @@ export default class TransferService {
       applicationNumber
     );
   }
-async createTransferMetaDataV2(
-  extractor: IDataExtractor,
-  buffer: Buffer
-) : Promise<{transfer: ITransfer | null,digitalFileList: IDigitalFileList[]} | null>
-{
-  logger.debug('parsing csv file');
-  const extractedData = await extractor.extractDigitalFileAndTransferData(buffer);
-  const accessionNumber = extractedData.transferData.accession;
-  const applicationNumber = extractedData.transferData.application;
-  const producerMinistry = extractedData.transferData.ministry;
-  const producerBranch = extractedData.transferData.branch;
-  logger.debug('parsing csv file - success');
+  async createTransferMetaDataV2(
+    extractor: IDataExtractor,
+    buffer: Buffer
+  ): Promise<{ transfer: ITransfer | null, digitalFileList: IDigitalFileList[] } | null> {
+    logger.debug('parsing csv file');
+    const extractedData = await extractor.extractDigitalFileAndTransferData(buffer);
+    const accessionNumber = extractedData.transferData.accession;
+    const applicationNumber = extractedData.transferData.application;
+    const producerMinistry = extractedData.transferData.ministry;
+    const producerBranch = extractedData.transferData.branch;
+    logger.debug('parsing csv file - success');
 
-  var transfer = await this.getTransferByKeysNumbers(accessionNumber, applicationNumber);
+    var transfer = await this.getTransferByKeysNumbers(accessionNumber, applicationNumber);
     if (transfer && transfer._id) {
       transfer.producerMinistry = producerMinistry;
       transfer.producerBranch = producerBranch;
-  logger.debug('duplicate transfer - updating...');
+      logger.debug('duplicate transfer - updating...');
       this.updateTransfer(transfer._id?.toString(), transfer);
     }
-    else 
-    {
+    else {
       const transferMetaData: ITransfer = {
         "accessionNumber": accessionNumber,
         "applicationNumber": applicationNumber,
@@ -92,8 +90,8 @@ async createTransferMetaDataV2(
     const digitalFileList = (await Promise.all(digitalFileListPromises)).filter((result): result is IDigitalFileList => result !== null);
     logger.debug('digitalFileService data inserted');
 
-    return {transfer, digitalFileList};
-}
+    return { transfer, digitalFileList };
+  }
   async createTransferMetaData(
     filePath: string
   ) {
@@ -115,7 +113,7 @@ async createTransferMetaDataV2(
       transfer.producerMinistry = producerMinistry;
       transfer.producerBranch = producerBranch;
       return await this.updateTransfer(transfer._id?.toString(), transfer);
-    } 
+    }
     const newTransfer = await this.createTransfer(transferMetaData);
     return newTransfer;
   }
@@ -179,10 +177,7 @@ async createTransferMetaDataV2(
       let pspexist = await this.pspRepository.getPspByName(pspname);
       if (pspexist) {
         console.log('A PSP with the same name already exists in the transfer');
-        // Create a new PSP or retrieve an existing one
       } else {
-
-
         let psp = await this.pspRepository.createPsp(pspData);
 
         // Add the PSP to the transfer

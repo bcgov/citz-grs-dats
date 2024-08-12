@@ -243,95 +243,241 @@ export default class FileService {
         });
     }
 
-    async saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2) {
+    /**
+    * Save folder details to S3, validate checksums, and prepare PSPs.
+    * 
+    * @param file - The file buffer to be saved.
+    * @param receivedChecksum - The checksum received for validation.
+    * @param transferId - The ID of the transfer.
+    * @param applicationNumber - The application number for the transfer.
+    * @param accessionNumber - The accession number for the transfer.
+    * @param primarySecondary - Indicates primary or secondary classification.
+    * @param techMetadatav2 - Technical metadata version 2 for the transfer.
+    */
+    async saveFolderDetails(
+        file: any,
+        receivedChecksum: string,
+        transferId: string,
+        applicationNumber: string,
+        accessionNumber: string,
+        primarySecondary: string,
+        techMetadatav2: any
+    ): Promise<void> {
 
-        if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
-            throw new Error('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
-        }
+        // Step 1: Validate all required inputs are provided
+        this.validateInputs(file, receivedChecksum, applicationNumber, accessionNumber, primarySecondary);
 
-        console.log(" In File saveFolderDetails  = ");
+        // Step 2: Validate the checksum of the provided file
+        await this.validateFileChecksum(file, receivedChecksum);
 
-        const isValid = await validateBufferChecksum(file, receivedChecksum, 'sha1');
-        if (!isValid) {
-            console.log('Checksum mismatch. File validation failed.');
-            throw new Error('Checksum mismatch. File validation failed.')
-        }
-        // get the admin json
-        const transfer = await this.transferRepository.getTransferByKeysNumbers(accessionNumber, applicationNumber);
-        console.log(' in the transfer' + transfer);
-        if (!transfer) {
-            throw new Error('Transfer not found');
-        }
+        // Step 3: Retrieve the transfer details using accession and application numbers
+        const transfer = await this.getTransfer(accessionNumber, applicationNumber);
+        const transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers'; // Default folder name if not set
 
-        const transferAdminJson = JSON.stringify(transfer);
-        console.log("Admin Metadatas : " + transferAdminJson)
+        // Step 4: Prepare the PSP name and path
+        const { pspname, psppath } = this.preparePSPPath(accessionNumber, applicationNumber, primarySecondary, transferFolderPath);
 
-        const s3ClientService = new S3ClientService();
-        var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+        // Step 5: Create a folder in S3 for the PSP
+        await this.s3ClientService.createFolder(psppath);
 
+        // Step 6: Upload the zip file to S3 and save the checksum
+        const zipFilePath = await this.s3ClientService.uploadZipFile(file, receivedChecksum, psppath);
 
-        const pspname = 'PSP-' + accessionNumber + "-" + applicationNumber + "-" + primarySecondary + "-01"
-        const psppath = transferFolderPath + "/" + accessionNumber + "-" + applicationNumber + "/" + pspname + "/";
-        await s3ClientService.createFolder(psppath);
+        // Step 7: Upload the technical metadata (v2) to S3
+        await this.s3ClientService.uploadTechnicalV2File(techMetadatav2, zipFilePath);
 
-
-        // store the zip and checksum
-        const zipFilePath = await s3ClientService.uploadZipFile(file, receivedChecksum, psppath);
-
-        // const techMetadatav2test = [
-        //     {
-        //         "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\1-MB-DOC.doc",
-        //         "FileName": "1-MB-DOC.doc",
-        //         "Checksum": "88dc8b79636f7d5131d2446c6855ca956a176932",
-        //         "DateCreated": "2024-06-27T16:32:40.7403152-04:00",
-        //         "DateModified": "2024-06-27T16:32:43.6795841-04:00",
-        //         "DateAccessed": "2024-07-15T19:09:13.1135847-04:00",
-        //         "DateLastSaved": "2024-06-27T16:32:43.6795841-04:00",
-        //         "AssociatedProgramName": "Pick an application",
-        //         "Owner": "IDIR\\NSYED",
-        //         "Computer": "VIRTUAL-MIND",
-        //         "ContentType": "application/octet-stream",
-        //         "SizeInBytes": 1048576
-        //     },
-        //     {
-        //         "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\138-KB-XML-File.xml",
-        //         "FileName": "138-KB-XML-File.xml",
-        //         "Checksum": "abd4a088b49d9f9863be4f7fda45a0528f6a4af8",
-        //         "DateCreated": "2024-06-27T16:39:14.7746566-04:00",
-        //         "DateModified": "2024-06-27T16:39:19.0695192-04:00",
-        //         "DateAccessed": "2024-07-15T19:09:13.1193231-04:00",
-        //         "DateLastSaved": "2024-06-27T16:39:19.0695192-04:00",
-        //         "AssociatedProgramName": "Microsoft Edge",
-        //         "Owner": "IDIR\\NSYED",
-        //         "Computer": "VIRTUAL-MIND",
-        //         "ContentType": "application/octet-stream",
-        //         "SizeInBytes": 141317
-        //     }
-        // ]
-
-
-        // Upload the technical metadata v2
-        const jsonFileResponsedata = await s3ClientService.uploadTechnicalV2File(techMetadatav2, zipFilePath);
-
-        // Prepared the Psp
+        // Step 8: Prepare the PSP data to be associated with the transfer
         const pspData: Partial<IPsp> = {
             name: pspname,
             pathToS3: psppath,
-            pathToLan: " ",
-            pspStatus: "To be Create"
+            pathToLan: " ", // Placeholder for LAN path if needed in the future
+            pspStatus: "To be Create" // Initial status of the PSP
         };
 
-        // add the psp to the transfer
-
-        this.transferService.addPspToTransfer(accessionNumber, applicationNumber, pspname, pspData)
-            .then(updatedTransfer => {
-                console.log("Updated Transfer:", updatedTransfer);
-            })
-            .catch(error => {
-                throw new Error("Error adding PSP to Transfer:");
-            });
-
+        // Step 9: Add the PSP to the transfer and handle the result
+        await this.addPspToTransfer(accessionNumber, applicationNumber, pspname, pspData);
     }
+
+    /**
+    * Validates that all required inputs are present.
+    * 
+    * @param file - The file buffer to be saved.
+    * @param receivedChecksum - The checksum received for validation.
+    * @param applicationNumber - The application number for the transfer.
+    * @param accessionNumber - The accession number for the transfer.
+    * @param primarySecondary - Indicates primary or secondary classification.
+    */
+    private validateInputs(
+        file: Buffer,
+        receivedChecksum: string,
+        applicationNumber: string,
+        accessionNumber: string,
+        primarySecondary: string
+    ): void {
+        if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
+            throw new Error('File, checksum, transferId, applicationNumber, accessionNumber, or classification missing');
+        }
+    }
+    /**
+     * Validates the checksum of the provided file.
+     * 
+     * @param file - The file buffer to validate.
+     * @param receivedChecksum - The checksum received for validation.
+     */
+    private async validateFileChecksum(file: Buffer, receivedChecksum: string): Promise<void> {
+        const isValid = await validateBufferChecksum(file, receivedChecksum, 'sha1');
+        if (!isValid) {
+            throw new Error('Checksum mismatch. File validation failed.');
+        }
+    }
+
+    /**
+ * Retrieves the transfer details based on accession and application numbers.
+ * 
+ * @param accessionNumber - The accession number for the transfer.
+ * @param applicationNumber - The application number for the transfer.
+ * @returns - The transfer object if found.
+ */
+    private async getTransfer(accessionNumber: string, applicationNumber: string): Promise<ITransfer> {
+        const transfer = await this.transferRepository.getTransferByKeysNumbers(accessionNumber, applicationNumber);
+        if (!transfer) {
+            throw new Error('Transfer not found');
+        }
+        console.log('In the transfer:', transfer);
+        return transfer;
+    }
+
+    /**
+ * Prepares the PSP name and path.
+ * 
+ * @param accessionNumber - The accession number for the transfer.
+ * @param applicationNumber - The application number for the transfer.
+ * @param primarySecondary - Indicates primary or secondary classification.
+ * @param transferFolderPath - The base folder path for the transfer.
+ * @returns - An object containing the PSP name and path.
+ */
+    private preparePSPPath(
+        accessionNumber: string,
+        applicationNumber: string,
+        primarySecondary: string,
+        transferFolderPath: string
+    ): { pspname: string, psppath: string } {
+        const pspname = `PSP-${accessionNumber}-${applicationNumber}-${primarySecondary}-01`;
+        const psppath = `${transferFolderPath}/${accessionNumber}-${applicationNumber}/${pspname}/`;
+        return { pspname, psppath };
+    }
+
+    /**
+   * Adds the PSP data to the transfer and logs the result.
+   * 
+   * @param accessionNumber - The accession number for the transfer.
+   * @param applicationNumber - The application number for the transfer.
+   * @param pspname - The name of the PSP.
+   * @param pspData - The PSP data to be added to the transfer.
+   */
+    private async addPspToTransfer(
+        accessionNumber: string,
+        applicationNumber: string,
+        pspname: string,
+        pspData: Partial<IPsp>
+    ): Promise<void> {
+        try {
+            const updatedTransfer = await this.transferService.addPspToTransfer(accessionNumber, applicationNumber, pspname, pspData);
+            console.log("Updated Transfer:", updatedTransfer);
+        } catch (error) {
+            throw new Error("Error adding PSP to Transfer:");
+        }
+    }
+
+    // async saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2) {
+
+    //     if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
+    //         throw new Error('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
+    //     }
+
+    //     console.log(" In File saveFolderDetails  = ");
+
+    //     const isValid = await validateBufferChecksum(file, receivedChecksum, 'sha1');
+    //     if (!isValid) {
+    //         console.log('Checksum mismatch. File validation failed.');
+    //         throw new Error('Checksum mismatch. File validation failed.')
+    //     }
+    //     // get the admin json
+    //     const transfer = await this.transferRepository.getTransferByKeysNumbers(accessionNumber, applicationNumber);
+    //     console.log(' in the transfer' + transfer);
+    //     if (!transfer) {
+    //         throw new Error('Transfer not found');
+    //     }
+
+    //     const transferAdminJson = JSON.stringify(transfer);
+    //     console.log("Admin Metadatas : " + transferAdminJson)
+
+    //     const s3ClientService = new S3ClientService();
+    //     var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+
+
+    //     const pspname = 'PSP-' + accessionNumber + "-" + applicationNumber + "-" + primarySecondary + "-01"
+    //     const psppath = transferFolderPath + "/" + accessionNumber + "-" + applicationNumber + "/" + pspname + "/";
+    //     await s3ClientService.createFolder(psppath);
+
+
+    //     // store the zip and checksum
+    //     const zipFilePath = await s3ClientService.uploadZipFile(file, receivedChecksum, psppath);
+
+    //     // const techMetadatav2test = [
+    //     //     {
+    //     //         "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\1-MB-DOC.doc",
+    //     //         "FileName": "1-MB-DOC.doc",
+    //     //         "Checksum": "88dc8b79636f7d5131d2446c6855ca956a176932",
+    //     //         "DateCreated": "2024-06-27T16:32:40.7403152-04:00",
+    //     //         "DateModified": "2024-06-27T16:32:43.6795841-04:00",
+    //     //         "DateAccessed": "2024-07-15T19:09:13.1135847-04:00",
+    //     //         "DateLastSaved": "2024-06-27T16:32:43.6795841-04:00",
+    //     //         "AssociatedProgramName": "Pick an application",
+    //     //         "Owner": "IDIR\\NSYED",
+    //     //         "Computer": "VIRTUAL-MIND",
+    //     //         "ContentType": "application/octet-stream",
+    //     //         "SizeInBytes": 1048576
+    //     //     },
+    //     //     {
+    //     //         "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\138-KB-XML-File.xml",
+    //     //         "FileName": "138-KB-XML-File.xml",
+    //     //         "Checksum": "abd4a088b49d9f9863be4f7fda45a0528f6a4af8",
+    //     //         "DateCreated": "2024-06-27T16:39:14.7746566-04:00",
+    //     //         "DateModified": "2024-06-27T16:39:19.0695192-04:00",
+    //     //         "DateAccessed": "2024-07-15T19:09:13.1193231-04:00",
+    //     //         "DateLastSaved": "2024-06-27T16:39:19.0695192-04:00",
+    //     //         "AssociatedProgramName": "Microsoft Edge",
+    //     //         "Owner": "IDIR\\NSYED",
+    //     //         "Computer": "VIRTUAL-MIND",
+    //     //         "ContentType": "application/octet-stream",
+    //     //         "SizeInBytes": 141317
+    //     //     }
+    //     // ]
+
+
+    //     // Upload the technical metadata v2
+    //     const jsonFileResponsedata = await s3ClientService.uploadTechnicalV2File(techMetadatav2, zipFilePath);
+
+    //     // Prepared the Psp
+    //     const pspData: Partial<IPsp> = {
+    //         name: pspname,
+    //         pathToS3: psppath,
+    //         pathToLan: " ",
+    //         pspStatus: "To be Create"
+    //     };
+
+    //     // add the psp to the transfer
+
+    //     this.transferService.addPspToTransfer(accessionNumber, applicationNumber, pspname, pspData)
+    //         .then(updatedTransfer => {
+    //             console.log("Updated Transfer:", updatedTransfer);
+    //         })
+    //         .catch(error => {
+    //             throw new Error("Error adding PSP to Transfer:");
+    //         });
+
+    // }
 
 }
 
