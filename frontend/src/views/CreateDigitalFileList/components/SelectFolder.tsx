@@ -44,6 +44,7 @@ const SelectFolder: FC = () => {
   const [message, setMessage] = useState("");
   const [progress, setProgress] = useState(0);
   const [folders, setFolders] = React.useState<IFolderInformation[]>([]);
+  const [isBusy,setIsBusy] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState<string | null>(null);
   const leaveDelay: number = 300;
   const enterDelay: number = 200;
@@ -69,10 +70,12 @@ const SelectFolder: FC = () => {
           console.log("setting progress");
           setProgress(data.Payload.Progress);
           setMessage(data.Payload.Message);
+          setIsBusy(true);
           break;
         case DATSActions.Completed:
           setProgress(data.Payload.Progress);
           setMessage(data.Payload.Message);
+          setIsBusy(true);
           break;
         case DATSActions.FileInformation:
           setFolders((prevFolders) => [
@@ -106,6 +109,10 @@ const SelectFolder: FC = () => {
               })),
             },
           ]);
+          setIsBusy(false);
+          break;
+          case DATSActions.Cancelled:
+            setIsBusy(false);
           break;
       }
       if (data.path) {
@@ -119,15 +126,17 @@ const SelectFolder: FC = () => {
         setMessage("User canceled the dialog.");
       } else if (data.progress !== undefined) {
         setProgress(data.progress);
+        setIsBusy(false);
       }
     };
 
     return () => {
       ws.close();
     };
-  }, []);
+  }, [isBusy]);
 
   const openDesktopApp = () => {
+    setIsBusy(true);
     window.location.href = `citz-grs-dats://open?browse=folder`;
   };
 
@@ -175,11 +184,11 @@ const SelectFolder: FC = () => {
           color="primary"
           startIcon={<AddIcon />}
           onClick={openDesktopApp}
-          disabled={progress > 0} // Disable button while progress is active
+          disabled={isBusy} // Disable button while progress is active
         >
           Add Folder
         </Button>
-        {progress > 0 && (
+        {isBusy && (
           <Box ml={2}>
             <CircularProgress size={24} />
           </Box>
@@ -300,6 +309,7 @@ const SelectFolder: FC = () => {
         <Button
           variant="contained"
           color="secondary"
+          disabled={(isBusy && folders.length === 0) || folders.length === 0 }
           onClick={() => generateExcel(folders)}
         >
           Generate Digital File List
