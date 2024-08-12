@@ -6,9 +6,11 @@ import S3ClientService from "../service/s3Client-service";
 import TransferService from "../service/transfer-service";
 import TransferRepository from "../repository/transfer-repository"
 import validateBufferChecksum from "../utils/validateBufferChecksum"
+import calculateHash from "../utils/calculateHash"
 import { IPsp } from 'src/models/psp-model';
 import { TransferStatus } from "../models/enums/TransferStatus"
 import logger from '../config/logs/winston-config';
+import { ITransfer } from 'src/models/transfer-model';
 
 const replacePlaceholders = (text: string, placeholders: { [key: string]: string }): string => {
     let replacedText = text;
@@ -27,13 +29,11 @@ export default class FileService {
     private s3ClientService: S3ClientService;
     private transferService: TransferService;
     private transferRepository: TransferRepository;
-    private lanDrivePath: string;
 
     constructor() {
         this.s3ClientService = new S3ClientService();
         this.transferService = new TransferService();
         this.transferRepository = new TransferRepository();
-        this.lanDrivePath = "Upload617/";
     }
     async createNote(notes: string, placeholders: Placeholder): Promise<string> {
         const accession_num = placeholders['AccessionNumber'];
@@ -99,6 +99,13 @@ export default class FileService {
         });
     }
 
+
+    /**
+       * Orchestrates the creation of PSPs for a given transfer.
+       * Fetches the transfer, processes each PSP, and updates the transfer status.
+       * @param transferId - The ID of the transfer for which PSPs are to be created.
+       * @returns A promise that resolves to a success message upon completion.
+       */
     async createPSPs(transferId: string): Promise<string> {
         try {
             const transfer = await this.transferRepository.getTransferWithPsps(transferId);
@@ -107,34 +114,17 @@ export default class FileService {
                 throw new Error('Transfer not found');
             }
 
-            const psps = (transfer.psps as unknown as IPsp[]) ?? [];
+            if (transfer.psps && Array.isArray(transfer.psps)) {
+                const psps = transfer.psps as unknown as IPsp[];
 
-            await Promise.all(psps.map(async (psp) => {
-                if (psp.pathToS3) {
-                    const zipBuffer = await this.s3ClientService.copyPSPFolderFromS3ToZip(psp.pathToS3);
-                    if (zipBuffer) {
-                        const shareLanDrive = process.env.SMB_ARCHIVE_LAND_DRIVE || 'C:\\TestDATS\\';
-                        const directoryName = 'Tr_' + transfer.accessionNumber + "_" + transfer.applicationNumber;
-                        const directoryPath = path.join(shareLanDrive, directoryName);
+                const transferFolderPath = this.getTransferFolderPath(transfer);
 
-                        if (!fs.existsSync(directoryPath)) {
-                            fs.mkdirSync(directoryPath, { recursive: true });
-                        }
+                await this.processPSPs(psps, transferFolderPath);
+            } else {
+                console.log('No PSPs found for this transfer.');
+            }
 
-                        const filePath = path.join(directoryPath, `${psp.name}.zip`);
-
-                        await fs.promises.writeFile(filePath, zipBuffer);
-
-                        console.log('File saved successfully!');
-                    } else {
-                        console.log('No zip buffer created');
-                    }
-                }
-            }));
-
-            // Mark the Transfer PSP created
-            transfer.transferStatus = TransferStatus.PSPcomplete;
-            await this.transferRepository.updateTransfer(transferId, transfer);
+            await this.markTransferAsComplete(transferId, transfer);
 
             console.log('PSP folders moved successfully');
             return 'PSP folders created successfully';
@@ -143,6 +133,93 @@ export default class FileService {
             throw error;
         }
     }
+
+    /**
+ * Constructs the folder path for the transfer based on its accession number and application number.
+ * @param transfer - The transfer object for which the folder path is generated.
+ * @returns The constructed folder path as a string.
+ */
+    private getTransferFolderPath(transfer: ITransfer): string {
+        return `Tr_${transfer.accessionNumber}_${transfer.applicationNumber}/`;
+    }
+
+    /**
+* Processes each PSP in the transfer by zipping, hashing, uploading, and saving the hash as a JSON file.
+* @param psps - An array of PSP objects to process.
+* @param transferFolderPath - The base folder path where files will be uploaded in S3.
+*/
+    private async processPSPs(psps: IPsp[], transferFolderPath: string): Promise<void> {
+        if (!psps || psps.length === 0) return;
+
+        await Promise.all(psps.map(async (psp) => {
+            if (psp.pathToS3) {
+                await this.handlePSP(psp, transferFolderPath);
+            }
+        }));
+    }
+    /**
+         * Handles the process for a single PSP, including zipping, hashing, uploading, and saving the hash as a JSON file.
+         * @param psp - The PSP object to process.
+         * @param transferFolderPath - The base folder path where files will be uploaded in S3.
+         */
+    private async handlePSP(psp: IPsp, transferFolderPath: string): Promise<void> {
+        if (!psp.pathToS3) {
+            throw new Error(`PSP path is undefined for PSP: ${psp.name}`);
+        }
+
+        const zipBuffer = await this.s3ClientService.copyPSPFolderFromS3ToZip(psp.pathToS3);
+        if (!zipBuffer) {
+            console.log(`No zip buffer created for PSP: ${psp.name}`);
+            return;
+        }
+
+        const filePath = `${psp.name}.zip`;
+        const zipBufferHash = await this.calculateHashForBuffer(zipBuffer);
+
+        await this.uploadPSP(zipBuffer, filePath, transferFolderPath);
+        await this.savePSPHashToJson(filePath, zipBufferHash, transferFolderPath);
+
+        console.log(`File ${filePath} saved successfully!`);
+    }/**
+     * Calculates the hash of the provided buffer using the specified algorithm.
+     * @param buffer - The buffer (e.g., ZIP file) for which the hash is calculated.
+     * @returns A promise that resolves to the hash as a string.
+     */
+    private async calculateHashForBuffer(buffer: Buffer): Promise<string> {
+        return calculateHash(buffer, 'sha1') as unknown as string;
+    }
+
+    /**
+     * Uploads the provided ZIP buffer to S3 at the specified file path.
+     * @param zipBuffer - The buffer containing the ZIP file data.
+     * @param filePath - The file path in S3 where the ZIP file will be uploaded.
+     * @param transferFolderPath - The base folder path where files will be uploaded in S3.
+     */
+    private async uploadPSP(zipBuffer: Buffer, filePath: string, transferFolderPath: string): Promise<void> {
+        await this.s3ClientService.uploadPSPToS3(zipBuffer, filePath, transferFolderPath);
+    }
+
+    /**
+     * Saves the hash of the ZIP file as a JSON file in S3 with a .checksum.json extension.
+     * @param filePath - The original file path of the ZIP file.
+     * @param zipBufferHash - The calculated hash of the ZIP file.
+     * @param transferFolderPath - The base folder path where files will be uploaded in S3.
+     */
+    private async savePSPHashToJson(filePath: string, zipBufferHash: string, transferFolderPath: string): Promise<void> {
+        // const checksumFilePath = `${transferFolderPath}${filePath.replace('.zip', '.checksum.json')}`;
+        await this.s3ClientService.savePspHashToJson(filePath, zipBufferHash, transferFolderPath);
+    }
+
+    /**
+     * Updates the transfer's status to "PSPcomplete" and saves the changes to the repository.
+     * @param transferId - The ID of the transfer to update.
+     * @param transfer - The transfer object to be updated.
+     */
+    private async markTransferAsComplete(transferId: string, transfer: ITransfer): Promise<void> {
+        transfer.transferStatus = TransferStatus.PSPcomplete;
+        await this.transferRepository.updateTransfer(transferId, transfer);
+    }
+
 
     private async sendBufferToSMBShare(buffer: Buffer, fileName: string) {
         const smb2Client = new SMB2({
@@ -164,13 +241,6 @@ export default class FileService {
                 resolve();
             });
         });
-    }
-
-
-    private createFolder(localFolderPath: string): void {
-        if (!fs.existsSync(localFolderPath)) {
-            fs.mkdirSync(localFolderPath, { recursive: true });
-        }
     }
 
     async saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2) {
