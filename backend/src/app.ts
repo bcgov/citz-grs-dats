@@ -48,23 +48,23 @@ app.get("/", (req, res) => {
 });
 
 // SMB2 Healt check connection to LAnd drive
-app.get("/SMBCheck", (req, res) => {
-  try {
-    // Perform the SMB2 health check
-    healthCheck();
-    res.status(200).json("SMB2 health check completed successfully");
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json('SMB2 health check failed:');
+// app.get("/SMBCheck", (req, res) => {
+//   try {
+//     // Perform the SMB2 health check
+//     healthCheck();
+//     res.status(200).json("SMB2 health check completed successfully");
+//   } catch (error) {
+//     if (error instanceof Error) {
+//       res.status(500).json('SMB2 health check failed:');
 
-    } else {
-      res.status(500).json('SMB2 health check failed with an unknown error');
-    }
-    process.exit(1);
-  } finally {
-    closeConnection();
-  }
-});
+//     } else {
+//       res.status(500).json('SMB2 health check failed with an unknown error');
+//     }
+//     process.exit(1);
+//   } finally {
+//     closeConnection();
+//   }
+// });
 
 app.get("/dashboard", protectedRoute(), (req: any, res) => {
   logger.info("Dashboard route called");
