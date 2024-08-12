@@ -12,7 +12,7 @@ import logger, { auditor } from "./config/logs/winston-config";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { protectedRoute, sso } from "@bcgov/citz-imb-sso-express";
-
+import { healthCheck, closeConnection } from './config/smb2/index';
 const app = express();
 sso(app);
 
@@ -45,6 +45,28 @@ app.use(express.json());
 // Healt check
 app.get("/", (req, res) => {
   res.status(200).json("API Is Healthy");
+});
+
+// SMB2 Healt check connection to LAnd drive
+app.get("/SMBCheck", async (req, res) => {
+  try {
+    // Perform the SMB2 health check
+    await healthCheck();
+
+
+    console.log('SMB2 health check completed successfully');
+    res.status(200).json("SMB2 health check completed successfully");
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('SMB2 health check failed:', error.message);
+      res.status(503).json('SMB2 health check failed: ' + error.message);
+    } else {
+      console.error('SMB2 health check failed with an unknown error');
+      res.status(503).json('SMB2 health check failed with an unknown error');
+    }
+  } finally {
+    closeConnection();
+  }
 });
 
 app.get("/dashboard", protectedRoute(), (req: any, res) => {

@@ -9,11 +9,6 @@ import AdmZip from "adm-zip";
 import extractTechnicalMetadataToJson from "../utils/exctractTechnicalV1DatafromExcel"
 import path from "path";
 import crypto from 'crypto';
-// import { promisify } from "util";
-
-// const writeFileAsync = promisify(fs.writeFile);
-// const mkdirAsync = promisify(fs.mkdir);
-// const readFileAsync = promisify(fs.readFile);
 import { ITransfer } from "src/models/interfaces/ITransfer";
 import { IDigitalFileList } from "src/models/interfaces/IDigitalFileList";
 
@@ -64,7 +59,7 @@ export default class S3ClientService {
 
             const createFolderCommand = new PutObjectCommand({
                 Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
-                Key: folderPath, // Folder key ends with '/'
+                Key: folderPath,
             });
 
             const data = await this.s3Client.send(createFolderCommand);
@@ -224,6 +219,52 @@ export default class S3ClientService {
             console.log('File uploaded successfully', data);
         } catch (error) {
             console.error('Error uploading file', error);
+            throw error;
+        }
+    }
+
+    async uploadPSPToS3(
+        buffer: Buffer,
+        targetFilePath: string,
+        transferFolderPath: string
+    ) {
+        console.log("--------->targetPdfFilePath=" + targetFilePath);
+        await this.createFolder(transferFolderPath);
+
+
+        try {
+            const uploadFilecommand = new PutObjectCommand({
+                Bucket: 'dats-bucket-psp',
+                Key: transferFolderPath + targetFilePath, // File path within the folder
+                Body: buffer, // File content as buffer
+            });
+
+            const data = await this.s3Client.send(uploadFilecommand);
+
+            console.log('PSP uploaded successfully', data);
+        } catch (error) {
+            console.error('Error uploading PSP', error);
+            throw error;
+        }
+    }
+
+    async savePspHashToJson(name: string, hash: string, transferFolderPath: string) {
+        const checksumFilePath = `${name}.checksum.json`;
+        const checksumContent = JSON.stringify({ hash }, null, 2);
+        await this.createFolder(transferFolderPath);
+
+        try {
+            const uploadChecksumCommand = new PutObjectCommand({
+                Bucket: 'dats-bucket-psp',
+                Key: transferFolderPath + checksumFilePath,
+                Body: Buffer.from(checksumContent),
+                ContentType: 'application/json'
+            });
+
+            const data = await this.s3Client.send(uploadChecksumCommand);
+            console.log('Checksum file uploaded successfully', data);
+        } catch (error) {
+            console.error('Error uploading checksum file', error);
             throw error;
         }
     }

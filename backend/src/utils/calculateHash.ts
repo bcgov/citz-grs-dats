@@ -1,24 +1,16 @@
-import * as fs from "fs";
 import * as crypto from "crypto";
 
-function calculateHash(filePath, algorithm) {
+function calculateHash(buffer, algorithm) {
   return new Promise((resolve, reject) => {
-    const hash = crypto.createHash(algorithm);
-
-    const stream = fs.createReadStream(filePath);
-    stream.on("data", (data) => {
-      hash.update(data);
-    });
-
-    stream.on("end", () => {
+    try {
+      const hash = crypto.createHash(algorithm);
+      hash.update(buffer);
       const fileHash = hash.digest("hex");
       console.log(fileHash);
       resolve(fileHash);
-    });
-
-    stream.on("error", (error) => {
+    } catch (error) {
       reject(error);
-    });
+    }
   });
 }
 
