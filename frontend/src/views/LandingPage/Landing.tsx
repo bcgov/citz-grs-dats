@@ -10,16 +10,10 @@ const Landing: React.FC = () => {
       <main>
         <div className="content">
           <Typography sx={{ fontSize: "1.1em", fontWeight: "700" }}>
-            Welcome to DATS. This application helps you:
+            Welcome to Digital Archive Transfer Service (DATS). This application
+            helps you:
           </Typography>
-          <ul
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <ul style={{ padding: "0 20px" }}>
             <li>Create digital file lists.</li>
             <li>Transfer digital records as evidence.</li>
           </ul>
@@ -35,7 +29,7 @@ const Landing: React.FC = () => {
           </Typography>
 
           <Button
-            style={{ margin: "15px" }}
+            style={{ margin: "25px 25px 25px 0" }}
             onPress={() =>
               login({ idpHint: "idir", postLoginRedirectURL: "/dashboard" })
             }
