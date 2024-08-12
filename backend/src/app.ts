@@ -12,7 +12,7 @@ import logger, { auditor } from "./config/logs/winston-config";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { protectedRoute, sso } from "@bcgov/citz-imb-sso-express";
-import { healthCheck, closeConnection } from './config/smb2/index';
+import { healthCheck, closeConnection } from "./config/smb2/index";
 const app = express();
 sso(app);
 
@@ -30,14 +30,6 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET!,
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: process.env.NODE_ENV === "production" },
-  })
-);
 
 // app.use(authRoutes);
 app.use(express.json());
@@ -53,16 +45,15 @@ app.get("/SMBCheck", async (req, res) => {
     // Perform the SMB2 health check
     await healthCheck();
 
-
-    console.log('SMB2 health check completed successfully');
+    console.log("SMB2 health check completed successfully");
     res.status(200).json("SMB2 health check completed successfully");
   } catch (error) {
     if (error instanceof Error) {
-      console.error('SMB2 health check failed:', error.message);
-      res.status(503).json('SMB2 health check failed: ' + error.message);
+      console.error("SMB2 health check failed:", error.message);
+      res.status(503).json("SMB2 health check failed: " + error.message);
     } else {
-      console.error('SMB2 health check failed with an unknown error');
-      res.status(503).json('SMB2 health check failed with an unknown error');
+      console.error("SMB2 health check failed with an unknown error");
+      res.status(503).json("SMB2 health check failed with an unknown error");
     }
   } finally {
     closeConnection();
