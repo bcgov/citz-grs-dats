@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@bcgov/citz-imb-sso-react": "^1.0.1",
+    "@bcgov/design-system-react-components": "0.1.1",
+    "@bcgov/citz-imb-sso-react": "1.0.1",
     "@date-io/date-fns": "^2.15.0",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",

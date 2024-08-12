@@ -12,6 +12,7 @@ import TransferViewEdit from "./views/ViewTransferStatus/TransferViewEdit";
 import SendRecords from "./views/SendRecords/SendRecords";
 import { SendRecordsLAN } from "./views/SendRecords/SendRecordsLAN";
 import SendRecordsEDRMS from "./views/SendRecords/SendRecordsEDRMS";
+import CreateDigitalFileListSplash from "./views/CreateDigitalFileList/SplashScreen";
 
 const App: React.FC = () => {
   return (
@@ -23,6 +24,10 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route
+              path="/create-intro"
+              element={<CreateDigitalFileListSplash />}
+            />
             <Route path="/create" element={<CreateDigitalFileList />} />
             <Route path="/send" element={<SendRecords />} />
             <Route path="/transfer-status" element={<TransferViewStatus />} />
