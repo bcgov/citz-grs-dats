@@ -26,6 +26,7 @@ const MyAppBar: React.FC = () => {
   const { isAuthenticated, login, logout, user } = useSSO();
   const titleMapping: { [key: string]: string } = {
     create: "Create Digital File List",
+    "create-intro": "Create Digital File List",
     send: "Send Record to DATS",
     "transfer-status": "View Transfer status",
     "send-edrms": "Send Records from EDRMS ",
