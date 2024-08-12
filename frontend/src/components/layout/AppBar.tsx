@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import HomeIcon from "@mui/icons-material/Home";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import { Menu, MenuItem, Stack } from "@mui/material";
+import { Box, Menu, MenuItem, Stack } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { useSSO } from "@bcgov/citz-imb-sso-react";
 import { useLocation } from "react-router-dom";
@@ -26,6 +26,7 @@ const MyAppBar: React.FC = () => {
   const { isAuthenticated, login, logout, user } = useSSO();
   const titleMapping: { [key: string]: string } = {
     create: "Create Digital File List",
+    "create-intro": "Create Digital File List",
     send: "Send Record to DATS",
     "transfer-status": "View Transfer status",
     "send-edrms": "Send Records from EDRMS ",
@@ -60,92 +61,107 @@ const MyAppBar: React.FC = () => {
     setAnchorEl(null);
   };
   return (
-    <AppBar position="static" sx={{ mb: 5 }}>
-      <HealthCheck />
-      <Toolbar>
-        <img
-          src="/assets/BCID_H_rgb_rev.e68ccb04.png"
-          alt="Logo"
-          className={classes.logo}
-        />
-        {isAuthenticated ? (
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            onClick={() => {
-              window.location.href = `/dashboard`;
-            }}
-          >
-            <HomeIcon />
-          </IconButton>
-        ) : null}
-        {isAuthenticated && breadcrumbs ? (
-          <Typography sx={{ color: "white" }}> / {breadcrumbs}</Typography>
-        ) : null}
-        <Stack direction="row" sx={{ flexGrow: 1 }}>
-          <Typography
-            variant="h3"
-            component="div"
-            sx={{ marginBottom: "15px", color: "white", marginLeft: "20px" }}
-          >
-            Digital Archives Transfer Service (DATS)
-          </Typography>
-          <Typography
-            sx={{
-              color: "#FCBA19",
-              fontWeight: "700",
-              fontSize: "0.8em",
-              marginTop: "15px",
-              marginLeft: "5px",
-            }}
-          >
-            PILOT
-          </Typography>
-        </Stack>
-        {isAuthenticated ? (
-          <div>
-            <IconButton
+    <Box mb={7}>
+      <AppBar position="fixed">
+        <Toolbar>
+          <img
+            src="/assets/BCID_H_rgb_rev.e68ccb04.png"
+            alt="Logo"
+            className={classes.logo}
+          />
+          <Stack direction="row" sx={{ flexGrow: 1 }}>
+            <Typography
+              variant="h3"
+              component="div"
+              sx={{ marginBottom: "15px", color: "white", marginLeft: "20px" }}
+            >
+              Digital Archives Transfer Service (DATS)
+            </Typography>
+            <Typography
+              sx={{
+                color: "#FCBA19",
+                fontWeight: "700",
+                fontSize: "0.8em",
+                marginTop: "15px",
+                marginLeft: "5px",
+              }}
+            >
+              PILOT
+            </Typography>
+          </Stack>
+          {isAuthenticated ? (
+            <div>
+              <IconButton
+                color="inherit"
+                edge="end"
+                aria-label="account of current user"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleMenu}
+              >
+                <AccountCircle />
+              </IconButton>
+              <Menu
+                id="menu-appbar"
+                anchorEl={anchorEl}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+              >
+                <MenuItem disabled>{user?.name}</MenuItem>
+                <MenuItem onClick={() => logout()}>Logout</MenuItem>
+              </Menu>
+            </div>
+          ) : (
+            <Button
               color="inherit"
-              edge="end"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMenu}
+              onClick={() =>
+                login({ idpHint: "idir", postLoginRedirectURL: "/dashboard" })
+              }
             >
-              <AccountCircle />
+              Login
+            </Button>
+          )}
+        </Toolbar>
+      </AppBar>
+      {isAuthenticated && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "left",
+            alignItems: "center",
+            padding: "0 12%",
+            background: "#38598a",
+            marginTop: "70px",
+          }}
+        >
+          {isAuthenticated ? (
+            <IconButton
+              edge="start"
+              aria-label="menu"
+              sx={{ color: "white" }}
+              onClick={() => {
+                window.location.href = `/dashboard`;
+              }}
+            >
+              <HomeIcon />
             </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-            >
-              <MenuItem disabled>{user?.name}</MenuItem>
-              <MenuItem onClick={() => logout()}>Logout</MenuItem>
-            </Menu>
-          </div>
-        ) : (
-          <Button
-            color="inherit"
-            onClick={() =>
-              login({ idpHint: "idir", postLoginRedirectURL: "/dashboard" })
-            }
-          >
-            Login
-          </Button>
-        )}
-      </Toolbar>
-    </AppBar>
+          ) : null}
+          {isAuthenticated && breadcrumbs ? (
+            <Typography sx={{ color: "white" }}> / {breadcrumbs}</Typography>
+          ) : null}
+          <HealthCheck />
+        </Box>
+      )}
+    </Box>
   );
 };
 

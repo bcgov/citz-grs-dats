@@ -25,7 +25,7 @@ const Dashboard: React.FC = () => {
         />
         {hasRoles(["Archivist"]) && (
           <CardComponent
-            title="View Transfer status"
+            title="View Transfer Status"
             content="Digital Archives staff can view and manage transfers sent via DATS, in order to create Pre-Submission Packages (PSPs). The source of truth for approvals and client service history continues to be ARIS."
             link="/transfer-status"
           />

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Alert } from '@mui/material';
-import { WEBSOCKET_URL } from '../types/constants';
+import React, { useState, useEffect } from "react";
+import { Box, Alert } from "@mui/material";
+import { WEBSOCKET_URL } from "../types/constants";
 
 const HealthCheck: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
@@ -13,12 +13,12 @@ const HealthCheck: React.FC = () => {
     };
 
     ws.onerror = (event) => {
-      setError('Failed to connect to the WebSocket server.');
+      setError("Failed to connect to the WebSocket server.");
     };
 
     ws.onclose = () => {
       if (error === null) {
-        setError('WebSocket connection closed unexpectedly.');
+        setError("WebSocket connection closed unexpectedly.");
       }
     };
 
@@ -28,13 +28,7 @@ const HealthCheck: React.FC = () => {
   }, []);
 
   return (
-    <Box mt={4}>
-      {error ? (
-        <Alert severity="error">{error}</Alert>
-      ) : (
-        null
-      )}
-    </Box>
+    <Box mt={4}>{error ? <Alert severity="error">{error}</Alert> : null}</Box>
   );
 };
 

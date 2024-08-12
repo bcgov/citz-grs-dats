@@ -16,7 +16,10 @@ const CardComponent: React.FC<CardProps> = ({
   additionalContent,
 }) => {
   return (
-    <MuiCard sx={{ maxWidth: 345, margin: 2 }} className="card">
+    <MuiCard
+      sx={{ maxWidth: 345, margin: 2, background: "#faf9f8" }}
+      className="card"
+    >
       <a href={link} className="card-link">
         <CardContent sx={{ textAlign: "justify" }}>
           <Typography variant="h5" component="div">
