@@ -278,8 +278,7 @@ export default class FileService {
         // Step 2: Validate the checksum of the provided file
         await this.validateFileChecksum(file, receivedChecksum);
 
-        // Step 3: Retrieve the transfer details using accession and application numbers
-        const transfer = await this.getTransfer(accessionNumber, applicationNumber);
+        // Step 3: setup the Transfer path
         const transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers'; // Default folder name if not set
 
         // Step 4: Prepare the PSP name and path
@@ -303,7 +302,7 @@ export default class FileService {
             pspStatus: "To be Create" // Initial status of the PSP
         };
 
-        // Step 10: Add the PSP to the transfer and handle the result
+        // Step 9: Add the PSP to the transfer and handle the result
         await this.addPspToTransfer(accessionNumber, applicationNumber, pspname, pspData);
     }
 
