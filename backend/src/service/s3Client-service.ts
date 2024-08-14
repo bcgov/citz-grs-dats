@@ -309,12 +309,13 @@ export default class S3ClientService {
     }
     async uploadTechnicalV2File(techMetadatav2: any, psppath: string) {
         const transferFolderPath = psppath + "Metadatas/";
-        await this.createFolder(transferFolderPath);
-        console.log("----------->uploadTechnicalV2File=" + transferFolderPath);
-        const jsonBuffer = Buffer.from(JSON.stringify(techMetadatav2));
-        console.log("----------->uploadTechnicalV2File=" + jsonBuffer);
+
 
         try {
+            await this.createFolder(transferFolderPath);
+            const jsonBuffer = Buffer.from(JSON.stringify(techMetadatav2));
+            console.log("----------->uploadTechnicalV2File=" + jsonBuffer);
+
             const uploadJSONcommand = new PutObjectCommand({
                 Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
                 Key: transferFolderPath + 'techMetadatav2.json',
@@ -596,6 +597,60 @@ export default class S3ClientService {
                 reject(err);
             });
         });
+    }
+
+    async getExcelFileFromS3(
+        bucketName: string,
+        transferFolderPath: string,
+        accessionNumber: string,
+        applicationNumber: string
+    ): Promise<Buffer | null> {
+        var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+        const documentationFolderPath = `${transferFolderPath}${accessionNumber}-${applicationNumber}/Documentation/`;
+
+        try {
+            // Step 1: List objects in the Documentation folder
+            const listCommand = new ListObjectsV2Command({
+                Bucket: bucketName,
+                Prefix: documentationFolderPath,
+            });
+
+            const listObjectsResponse = await this.s3Client.send(listCommand);
+
+            // Step 2: Filter out to find the Excel file (assuming .xlsx extension)
+            const excelFile = listObjectsResponse.Contents?.find((object) => object.Key?.endsWith(".xlsx"));
+
+            if (!excelFile || !excelFile.Key) {
+                throw new Error("Excel file not found in the specified folder.");
+            }
+
+            // Step 3: Get the Excel file from S3
+            const getCommand = new GetObjectCommand({
+                Bucket: bucketName,
+                Key: excelFile.Key,
+            });
+
+            const getObjectResponse = await this.s3Client.send(getCommand);
+
+            // Convert the response body (stream) to a Buffer
+            const streamToBuffer = (stream: Readable): Promise<Buffer> => {
+                return new Promise((resolve, reject) => {
+                    const chunks: Buffer[] = [];
+                    stream.on("data", (chunk) => chunks.push(chunk));
+                    stream.on("end", () => resolve(Buffer.concat(chunks)));
+                    stream.on("error", reject);
+                });
+            };
+
+            if (getObjectResponse.Body) {
+                return await streamToBuffer(getObjectResponse.Body as Readable);
+            } else {
+                throw new Error("Failed to download the Excel file.");
+            }
+        } catch (error) {
+            console.error("Error getting Excel file from S3:", error);
+            return null;
+        }
     }
 
 }
