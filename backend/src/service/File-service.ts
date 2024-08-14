@@ -1,6 +1,5 @@
 import PDFDocument from 'pdfkit';
-import fs from 'fs';
-import path from 'path';
+import XLSX from "xlsx";
 import SMB2 from 'smb2';
 import S3ClientService from "../service/s3Client-service";
 import TransferService from "../service/transfer-service";
@@ -24,6 +23,7 @@ interface Placeholder {
     [key: string]: string;
 }
 export default class FileService {
+
 
 
     private s3ClientService: S3ClientService;
@@ -394,6 +394,90 @@ export default class FileService {
             console.log("Updated Transfer:", updatedTransfer);
         } catch (error) {
             throw new Error("Error adding PSP to Transfer:");
+        }
+    }
+    async downloadUpdateAris662(applicationNumber: string, accessionNumber: string) {
+        try {
+            // Step 1: List all `techMetadatav2.json` files in the S3 folder
+
+            var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+            transferFolderPath = transferFolderPath + "/";
+
+            const prefix = `${transferFolderPath}${accessionNumber}-${applicationNumber}/`;
+            console.log(`Listing techMetadatav2.json files with prefix: ${prefix}`);
+            // TODO process.env to techMetadatav2.json
+
+            const techMetadataFiles = await this.s3ClientService.listFilesInS3WithPrefix(prefix, "techMetadatav2.json");
+
+            if (techMetadataFiles.length === 0) {
+                console.log("No techMetadatav2.json files found.");
+                throw new Error("No techMetadatav2.json files found.");
+            }
+
+            let concatenatedTechMetadata: any[] = [];
+            console.log(`Found ${techMetadataFiles.length} techMetadatav2.json files.`);
+
+            // Step 2: Download and parse each JSON file
+            for (const fileKey of techMetadataFiles) {
+                console.log(`Downloading file from S3: ${fileKey}`);
+                const jsonData = await this.s3ClientService.downloadJsonFromS3(fileKey);
+
+                concatenatedTechMetadata = concatenatedTechMetadata.concat(jsonData);
+            }
+
+            console.log(`Concatenated techMetadatav2 JSON data: ${JSON.stringify(concatenatedTechMetadata, null, 2)}`);
+
+            // Step 3: Retrieve the Excel file from S3
+            const excelBuffer = await this.s3ClientService.getExcelFileFromS3(
+                process.env.AWS_DATS_S3_BUCKET as string,
+                process.env.TRANSFER_FOLDER_NAME as string,
+                accessionNumber,
+                applicationNumber
+            );
+
+            if (!excelBuffer) {
+                console.log("Failed to retrieve the Excel file.");
+                throw new Error("Failed to retrieve the Excel file.");
+            }
+
+            console.log("Excel file retrieved successfully.");
+
+            // Step 4: Read the Excel buffer into a workbook
+            const workbook = XLSX.read(excelBuffer, { type: "buffer" });
+            console.log("Excel file read into workbook.");
+
+            // Step 5: Prepare the concatenated data for the new worksheet
+            const newWorksheetData = [
+                Object.keys(concatenatedTechMetadata[0]), // Column headers
+                ...concatenatedTechMetadata.map(item => Object.values(item)) // Rows of data
+            ];
+
+            console.log("New worksheet data prepared.");
+
+            // Step 6: Create the new worksheet
+            const newWorksheet = XLSX.utils.json_to_sheet(newWorksheetData);
+            console.log("New worksheet created.");
+
+            // Step 7: Append the new worksheet to the workbook
+            XLSX.utils.book_append_sheet(workbook, newWorksheet, "Technical Metadata v2");
+            console.log("New worksheet appended to workbook.");
+
+            // Step 8: Convert the modified workbook back to a buffer
+            const updatedExcelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+            console.log("Updated Excel file buffer created.");
+
+            const newS3Key = `${transferFolderPath}${accessionNumber}-${applicationNumber}/Documentation/Update_Aris662-${accessionNumber}_${applicationNumber}.xlsx`
+            // Step 10: Upload the updated Excel back to S3
+            await this.s3ClientService.uploadUpdatedArris662ToS3(updatedExcelBuffer, newS3Key);
+            console.log("Excel file sent to client.");
+
+            return updatedExcelBuffer
+
+
+        } catch (error) {
+            console.error("Error:", error);
+            throw new Error("An error occurred while processing your request.");
+
         }
     }
 }

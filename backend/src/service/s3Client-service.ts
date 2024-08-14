@@ -606,6 +606,7 @@ export default class S3ClientService {
         applicationNumber: string
     ): Promise<Buffer | null> {
         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+        transferFolderPath = transferFolderPath + "/";
         const documentationFolderPath = `${transferFolderPath}${accessionNumber}-${applicationNumber}/Documentation/`;
 
         try {
@@ -652,5 +653,87 @@ export default class S3ClientService {
             return null;
         }
     }
+
+    /**
+     * List all files in S3 with a specific prefix and suffix.
+     * 
+     * @param prefix - The prefix (directory path) in the S3 bucket.
+     * @param suffix - The suffix (file name ending) to filter the files.
+     * @returns - An array of S3 keys (file paths) matching the prefix and suffix.
+     */
+    public async listFilesInS3WithPrefix(prefix: string, suffix: string): Promise<string[]> {
+        const params = {
+            Bucket: process.env.AWS_DATS_S3_BUCKET as string,
+            Prefix: prefix,
+        };
+
+        const command = new ListObjectsV2Command(params);
+        const response = await this.s3Client.send(command);
+
+        if (!response.Contents) {
+            return [];
+        }
+
+        // Filter the files by suffix and return their keys (file paths)
+        return response.Contents
+            .filter(item => item.Key && item.Key.endsWith(suffix))
+            .map(item => item.Key as string);
+    }
+    /**
+    * Download a JSON file from S3 and parse its content.
+    * 
+    * @param s3Key - The S3 key (file path) of the JSON file.
+    * @returns - The parsed JSON content.
+    */
+    public async downloadJsonFromS3(s3Key: string): Promise<any> {
+        const params = {
+            Bucket: process.env.AWS_DATS_S3_BUCKET as string,
+            Key: s3Key,
+        };
+
+        const command = new GetObjectCommand(params);
+        const response = await this.s3Client.send(command);
+
+        if (!response.Body) {
+            throw new Error(`Failed to download file from S3: ${s3Key}`);
+        }
+
+        // Convert the stream into a string
+        const streamToString = (stream: Readable): Promise<string> => {
+            return new Promise((resolve, reject) => {
+                const chunks: any[] = [];
+                stream.on("data", chunk => chunks.push(chunk));
+                stream.on("error", reject);
+                stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
+            });
+        };
+
+        const jsonString = await streamToString(response.Body as Readable);
+        console.log("jsonString = " + jsonString);
+        return JSON.parse(jsonString);
+    }
+
+    // Method to upload the updated Excel file to S3
+    async uploadUpdatedArris662ToS3(buffer: Buffer, key: string): Promise<void> {
+        const bucketName = process.env.AWS_DATS_S3_BUCKET as string;
+
+        const params = {
+            Bucket: bucketName,
+            Key: key, // The key (path) in the S3 bucket where the file will be stored
+            Body: buffer, // The file content as a buffer
+            ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // MIME type for Excel files
+        };
+
+        try {
+            const command = new PutObjectCommand(params);
+            await this.s3Client.send(command);
+            console.log(`File uploaded successfully to ${bucketName}/${key}`);
+        } catch (error) {
+            console.error("Error uploading the file:", error);
+            throw error;
+        }
+    }
+
+
 
 }

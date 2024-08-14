@@ -39,9 +39,9 @@ router
   .route("/submitAgreement")
   .post(uploadController.saveSubmitAgreement);
 
-router.post(
-  "/upload-files",
-  uploadFolderDetails,
-  uploadController.saveFolderDetails);
+router.get(
+  "downloadUpdateAris662?accessionNumber=99-1234&applicationNumber=111299",
+  uploadController.downloadUpdateAris662);
+
 
 export default router;
