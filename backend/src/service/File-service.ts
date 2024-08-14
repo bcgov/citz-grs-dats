@@ -264,6 +264,14 @@ export default class FileService {
         techMetadatav2: any
     ): Promise<void> {
 
+        // Replace single backslashes \ with double backslashes \\
+        const techMetadatav2Parse = techMetadatav2.replace(/\\/g, '\\\\');
+
+        // Parse the JSON string
+        const techMetadatav2Array = JSON.parse(techMetadatav2Parse);
+
+
+
         // Step 1: Validate all required inputs are provided
         this.validateInputs(file, receivedChecksum, applicationNumber, accessionNumber, primarySecondary);
 
@@ -284,7 +292,8 @@ export default class FileService {
         const zipFilePath = await this.s3ClientService.uploadZipFile(file, receivedChecksum, psppath);
 
         // Step 7: Upload the technical metadata (v2) to S3
-        await this.s3ClientService.uploadTechnicalV2File(techMetadatav2, zipFilePath);
+        await this.s3ClientService.uploadTechnicalV2File(techMetadatav2Array, zipFilePath);
+
 
         // Step 8: Prepare the PSP data to be associated with the transfer
         const pspData: Partial<IPsp> = {
@@ -294,7 +303,7 @@ export default class FileService {
             pspStatus: "To be Create" // Initial status of the PSP
         };
 
-        // Step 9: Add the PSP to the transfer and handle the result
+        // Step 10: Add the PSP to the transfer and handle the result
         await this.addPspToTransfer(accessionNumber, applicationNumber, pspname, pspData);
     }
 
@@ -388,97 +397,6 @@ export default class FileService {
             throw new Error("Error adding PSP to Transfer:");
         }
     }
-
-    // async saveFolderDetails(file, receivedChecksum, transferId, applicationNumber, accessionNumber, primarySecondary, techMetadatav2) {
-
-    //     if (!file || !receivedChecksum || !applicationNumber || !accessionNumber || !primarySecondary) {
-    //         throw new Error('File, checksum, transferId, applicationNumber, accessionNumber or  classification missing');
-    //     }
-
-    //     console.log(" In File saveFolderDetails  = ");
-
-    //     const isValid = await validateBufferChecksum(file, receivedChecksum, 'sha1');
-    //     if (!isValid) {
-    //         console.log('Checksum mismatch. File validation failed.');
-    //         throw new Error('Checksum mismatch. File validation failed.')
-    //     }
-    //     // get the admin json
-    //     const transfer = await this.transferRepository.getTransferByKeysNumbers(accessionNumber, applicationNumber);
-    //     console.log(' in the transfer' + transfer);
-    //     if (!transfer) {
-    //         throw new Error('Transfer not found');
-    //     }
-
-    //     const transferAdminJson = JSON.stringify(transfer);
-    //     console.log("Admin Metadatas : " + transferAdminJson)
-
-    //     const s3ClientService = new S3ClientService();
-    //     var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
-
-
-    //     const pspname = 'PSP-' + accessionNumber + "-" + applicationNumber + "-" + primarySecondary + "-01"
-    //     const psppath = transferFolderPath + "/" + accessionNumber + "-" + applicationNumber + "/" + pspname + "/";
-    //     await s3ClientService.createFolder(psppath);
-
-
-    //     // store the zip and checksum
-    //     const zipFilePath = await s3ClientService.uploadZipFile(file, receivedChecksum, psppath);
-
-    //     // const techMetadatav2test = [
-    //     //     {
-    //     //         "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\1-MB-DOC.doc",
-    //     //         "FileName": "1-MB-DOC.doc",
-    //     //         "Checksum": "88dc8b79636f7d5131d2446c6855ca956a176932",
-    //     //         "DateCreated": "2024-06-27T16:32:40.7403152-04:00",
-    //     //         "DateModified": "2024-06-27T16:32:43.6795841-04:00",
-    //     //         "DateAccessed": "2024-07-15T19:09:13.1135847-04:00",
-    //     //         "DateLastSaved": "2024-06-27T16:32:43.6795841-04:00",
-    //     //         "AssociatedProgramName": "Pick an application",
-    //     //         "Owner": "IDIR\\NSYED",
-    //     //         "Computer": "VIRTUAL-MIND",
-    //     //         "ContentType": "application/octet-stream",
-    //     //         "SizeInBytes": 1048576
-    //     //     },
-    //     //     {
-    //     //         "Path": "C:\\Users\\NSYED\\Documents\\DATS\\folder1\\138-KB-XML-File.xml",
-    //     //         "FileName": "138-KB-XML-File.xml",
-    //     //         "Checksum": "abd4a088b49d9f9863be4f7fda45a0528f6a4af8",
-    //     //         "DateCreated": "2024-06-27T16:39:14.7746566-04:00",
-    //     //         "DateModified": "2024-06-27T16:39:19.0695192-04:00",
-    //     //         "DateAccessed": "2024-07-15T19:09:13.1193231-04:00",
-    //     //         "DateLastSaved": "2024-06-27T16:39:19.0695192-04:00",
-    //     //         "AssociatedProgramName": "Microsoft Edge",
-    //     //         "Owner": "IDIR\\NSYED",
-    //     //         "Computer": "VIRTUAL-MIND",
-    //     //         "ContentType": "application/octet-stream",
-    //     //         "SizeInBytes": 141317
-    //     //     }
-    //     // ]
-
-
-    //     // Upload the technical metadata v2
-    //     const jsonFileResponsedata = await s3ClientService.uploadTechnicalV2File(techMetadatav2, zipFilePath);
-
-    //     // Prepared the Psp
-    //     const pspData: Partial<IPsp> = {
-    //         name: pspname,
-    //         pathToS3: psppath,
-    //         pathToLan: " ",
-    //         pspStatus: "To be Create"
-    //     };
-
-    //     // add the psp to the transfer
-
-    //     this.transferService.addPspToTransfer(accessionNumber, applicationNumber, pspname, pspData)
-    //         .then(updatedTransfer => {
-    //             console.log("Updated Transfer:", updatedTransfer);
-    //         })
-    //         .catch(error => {
-    //             throw new Error("Error adding PSP to Transfer:");
-    //         });
-
-    // }
-
 }
 
 
