@@ -3,7 +3,7 @@ import SambaClient from "samba-client";
 const smbClient = new SambaClient({
   address:
     process.env.SMB_ARCHIVE_LAND_DRIVE ||
-    "\\\\cumulus.idir.bcgov\\Digital-Archives",
+    "//cumulus.idir.bcgov/Digital-Archives",
   username: process.env.SMB_ARCHIVE_LAND_USER || "",
   password: process.env.SMB_ARCHIVE_LAND_PASSWORD || "",
   domain: process.env.SMB_ARCHIVE_LAND_DOMAIN || "IDIR",
