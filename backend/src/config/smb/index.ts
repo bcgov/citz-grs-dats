@@ -7,6 +7,7 @@ const smbClient = new SambaClient({
   username: process.env.SMB_ARCHIVE_LAND_USER || "",
   password: process.env.SMB_ARCHIVE_LAND_PASSWORD || "",
   domain: process.env.SMB_ARCHIVE_LAND_DOMAIN || "IDIR",
+  maxProtocol: "SMB2",
 });
 
 // Path to check on the shared drive
