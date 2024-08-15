@@ -1,5 +1,4 @@
 import express from "express";
-import session from "express-session";
 import { Response, Request, NextFunction } from "express";
 import transferRouter from "./routes/transfer-route";
 import digitalFileListRoute from "./routes/digital-file-list-route";
@@ -7,12 +6,11 @@ import uploadFilesRoute from "./routes/upload-files-route";
 import { specs, swaggerUi } from "./config/swagger/swagger-config";
 import cors from "cors";
 import bodyParser from "body-parser";
-import * as sessionTypes from "./types/custom-types";
 import logger, { auditor } from "./config/logs/winston-config";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { protectedRoute, sso } from "@bcgov/citz-imb-sso-express";
-import { healthCheck, closeConnection } from "./config/smb2/index";
+import { healthCheck } from "./config/smb/index";
 const app = express();
 sso(app);
 
@@ -34,29 +32,27 @@ app.use(express.static(path.join(__dirname, "public")));
 // app.use(authRoutes);
 app.use(express.json());
 
-// Healt check
+// Health check
 app.get("/", (req, res) => {
   res.status(200).json("API Is Healthy");
 });
 
-// SMB2 Healt check connection to LAnd drive
+// SMB Health check connection to LAnd drive
 app.get("/SMBCheck", async (req, res) => {
   try {
-    // Perform the SMB2 health check
+    // Perform the SMB health check
     await healthCheck();
 
-    console.log("SMB2 health check completed successfully");
-    res.status(200).json("SMB2 health check completed successfully");
+    console.log("SMB health check completed successfully");
+    res.status(200).json("SMB health check completed successfully");
   } catch (error) {
     if (error instanceof Error) {
-      console.error("SMB2 health check failed:", error.message);
-      res.status(503).json("SMB2 health check failed: " + error.message);
+      console.error("SMB health check failed:", error.message);
+      res.status(503).json("SMB health check failed: " + error.message);
     } else {
-      console.error("SMB2 health check failed with an unknown error");
-      res.status(503).json("SMB2 health check failed with an unknown error");
+      console.error("SMB health check failed with an unknown error");
+      res.status(503).json("SMB health check failed with an unknown error");
     }
-  } finally {
-    closeConnection();
   }
 });
 
