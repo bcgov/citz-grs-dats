@@ -5,7 +5,7 @@ import {
 } from "../models/digitalFileList-model";
 
 export default class DigitalFileListRepository {
-  constructor() {}
+  constructor() { }
 
   async getDigitalFileListsByTransferId(
     transferId: any
@@ -44,6 +44,7 @@ export default class DigitalFileListRepository {
         description: digitalFileListInput.description,
         fileId: digitalFileListInput.fileId,
         folder: digitalFileListInput.folder,
+        folderSend: digitalFileListInput.folder,
         fileTitle: digitalFileListInput.fileTitle,
         transfer: transferId,
         isOPR: digitalFileListInput.isOPR,
