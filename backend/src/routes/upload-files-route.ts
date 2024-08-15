@@ -40,7 +40,7 @@ router
   .post(uploadController.saveSubmitAgreement);
 
 router.get(
-  "downloadUpdateAris662?accessionNumber=99-1234&applicationNumber=111299",
+  "/downloadUpdateAris662",
   uploadController.downloadUpdateAris662);
 
 
