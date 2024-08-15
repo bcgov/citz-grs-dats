@@ -41,7 +41,7 @@ RUN chgrp -R 0 ./logs && chmod -R g=u ./logs
 RUN mkdir ./cache
 RUN mkdir ./cache/.cache
 RUN mkdir ./cache/.cache/samba
-RUN chgrp -R 0 ./cache/.cache/samba && chmod -R g=u ./cache/.cache/samba
+RUN chgrp -R 0 ./cache/.cache/samba && chmod -R 777 ./cache/.cache/samba
 
 RUN mkdir ./Upload66x
 RUN chgrp -R 0 ./Upload66x && chmod -R g=u ./Upload66x
