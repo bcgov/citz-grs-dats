@@ -11,6 +11,10 @@ RUN npm run build
 
 FROM node:20 AS prod
 
+# Update the package list and install smbclient
+RUN apt-get update && \
+    apt-get install -y smbclient
+
 WORKDIR /app
 
 #ENV NODE_ENV=production
