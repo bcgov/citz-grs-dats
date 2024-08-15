@@ -35,6 +35,7 @@ RUN chgrp -R 0 /.npm && chmod -R g=u /.npm
 RUN mkdir ./logs
 RUN chgrp -R 0 ./logs && chmod -R g=u ./logs
 
+RUN mkdir ./.cache
 RUN mkdir ./.cache/samba
 RUN chgrp -R 0 ./.cache/samba && chmod -R g=u ./.cache/samba
 
