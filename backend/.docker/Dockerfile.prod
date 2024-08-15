@@ -12,7 +12,7 @@ RUN npm run build
 FROM node:20 AS prod
 
 # Set the HOME environment variable to a writable directory
-ENV HOME=/samba-cache
+ENV HOME=/cache
 
 # Update the package list and install smbclient
 RUN apt-get update && \
@@ -38,8 +38,10 @@ RUN chgrp -R 0 /.npm && chmod -R g=u /.npm
 RUN mkdir ./logs
 RUN chgrp -R 0 ./logs && chmod -R g=u ./logs
 
-RUN mkdir ./samba-cache
-RUN chgrp -R 0 ./samba-cache && chmod -R g=u ./samba-cache
+RUN mkdir ./cache
+RUN mkdir ./cache/.cache
+RUN mkdir ./cache/.cache/samba
+RUN chgrp -R 0 ./cache/.cache/samba && chmod -R g=u ./cache/.cache/samba
 
 RUN mkdir ./Upload66x
 RUN chgrp -R 0 ./Upload66x && chmod -R g=u ./Upload66x
