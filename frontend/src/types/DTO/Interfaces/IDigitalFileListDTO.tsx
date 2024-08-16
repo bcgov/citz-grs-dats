@@ -5,6 +5,7 @@ export interface IDigitalFileListDTO {
   description?: string;
   fileId?: string;
   folder: string;
+  folderSend?: string;
   fileTitle?: string;
   isOPR?: boolean;
   startDate?: Date;

@@ -22,6 +22,7 @@ import {
   DialogContent,
   TextareaAutosize,
   DialogActions,
+  DialogContentText,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -64,14 +65,71 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   ref
 ) => {
 
+  // jl test
+  const [open, setOpen] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+  const handleClickOpen = (folder: string) => {
+    setFolderToDelete(folder);
+    setOpen(true);
+  };
 
-  const [makeFieldsDisable,setMakeFieldsDisable] = useState<boolean>(false);
-   const [transfer, setTransfer] = useState<ITransferDTO>(initialTransfer);
+  const handleClose = () => {
+    setOpen(false);
+    setFolderToDelete(null);
+  };
+  const handleConfirmDelete = async () => {
+    if (folderToDelete) {
+      debugger;
+
+      // Retrieve the current digitalFileLists, defaulting to an empty array if undefined
+      const currentFileLists = transfer.digitalFileLists ?? [];
+
+
+      // Map through the digitalFileLists and update the `folderSend` property
+      const updatedFileLists = currentFileLists.map((fileList) => {
+        if (fileList.folder === folderToDelete) {
+          return {
+            ...fileList,
+            folderSend: 'Deleted', // Update the folderSend property
+          };
+        }
+        return fileList;
+      });
+
+      // Log the updated file lists to verify the changes
+      console.log("Updated digitalFileLists with 'Deleted' folderSend:", updatedFileLists);
+      debugger;
+
+      // Find the fileList that needs to be updated in the service
+      const fileListToUpdate = updatedFileLists.find((fileList) => fileList.folder === folderToDelete);
+
+      if (fileListToUpdate) {
+        await new TransferService().updateDigitalFileList(fileListToUpdate);
+      }
+
+
+      // Proceed with the deletion
+      setTransfer((prev) => ({
+        ...prev,
+        digitalFileLists: prev.digitalFileLists?.filter(
+          (fileList) => fileList.folder !== folderToDelete
+        ) ?? [],
+      }));
+    }
+
+    // Close the dialog after deletion
+    handleClose();
+  };
+
+
+  // end
+  const [makeFieldsDisable, setMakeFieldsDisable] = useState<boolean>(false);
+  const [transfer, setTransfer] = useState<ITransferDTO>(initialTransfer);
   const [editableFields, setEditableFields] = useState<EditableFields>({});
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const currentFolder = useRef<string | null>(null); 
+  const currentFolder = useRef<string | null>(null);
   const currentFolderNote = useRef<string | null>(null);
-  const [note,setNote] = useState(''); 
+  const [note, setNote] = useState('');
   const [folderValues, setFolderValues] = useState<FolderValues>(
     transfer.digitalFileLists!!.reduce((acc, fileList) => {
       acc[fileList.folder] = fileList.folder;
@@ -98,8 +156,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     if (hasFailedStatus) {
       validate(
         false,
-        `unable to find ${
-          statusEntries.find(([key, status]) => status === FAIL)?.[0]
+        `unable to find ${statusEntries.find(([key, status]) => status === FAIL)?.[0]
         }`
       );
     } else {
@@ -112,7 +169,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     const maxAttempts = 3;
     const connectWebSocket = () => {
       const ws = new WebSocket(WEBSOCKET_URL);
-  
+
       ws.onopen = () => {
         console.log("WebSocket connection established");
         setThirdPartyStatus({});
@@ -125,7 +182,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           })
         );
       };
-  
+
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
         attempts += 1;
@@ -137,50 +194,50 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           validate(false, 'unable to establish a connection to DATS Companion Service');
         }
       };
-  
+
       ws.onclose = () => {
         console.log("WebSocket connection closed");
       };
-  
+
       ws.onmessage = (event) => {
         console.log(event.data);
-      const data = JSON.parse(event.data);
+        const data = JSON.parse(event.data);
         switch (data.Action) {
           case DATSActions.Cancelled:
             currentFolder.current = null;
             break;
-            case DATSActions.FileInformation:
-              if ( currentFolder.current !== null) {
-                setTransfer((prev) => {
-                  const updatedFileLists = prev.digitalFileLists?.map((fileList) =>
-                    fileList.folder === currentFolder.current
-                      ? { ...fileList, folder: String(data.Payload.Path), note: note }  
-                      : fileList
-                  ) || [];
-                
-                  // Check if any item matches the condition
-                  const hasMatchingFolder = prev.digitalFileLists?.some(
-                    (fileList) => fileList.folder === currentFolder.current
-                  );
-                
-                  // If no items match, add a new item to the array
-                  if (!hasMatchingFolder) {
-                    updatedFileLists.push({
-                      folder: String(data.Payload.Path), 
-                      _id: '',
-                      size: data.Payload.SizeInBytes,
-                      fileCount: data.Payload.FileCount,
-                      transfer: ''
-                    });
-                  }
-                  return {
-                    ...prev,
-                    digitalFileLists: updatedFileLists,
-                  };
-                });
-                currentFolder.current = null; // Reset the active index after update
-              }
-              break;
+          case DATSActions.FileInformation:
+            if (currentFolder.current !== null) {
+              setTransfer((prev) => {
+                const updatedFileLists = prev.digitalFileLists?.map((fileList) =>
+                  fileList.folder === currentFolder.current
+                    ? { ...fileList, folder: String(data.Payload.Path), note: note }
+                    : fileList
+                ) || [];
+
+                // Check if any item matches the condition
+                const hasMatchingFolder = prev.digitalFileLists?.some(
+                  (fileList) => fileList.folder === currentFolder.current
+                );
+
+                // If no items match, add a new item to the array
+                if (!hasMatchingFolder) {
+                  updatedFileLists.push({
+                    folder: String(data.Payload.Path),
+                    _id: '',
+                    size: data.Payload.SizeInBytes,
+                    fileCount: data.Payload.FileCount,
+                    transfer: ''
+                  });
+                }
+                return {
+                  ...prev,
+                  digitalFileLists: updatedFileLists,
+                };
+              });
+              currentFolder.current = null; // Reset the active index after update
+            }
+            break;
           case DATSActions.FileFolderExists:
             setThirdPartyStatus((prevState) => ({
               ...prevState,
@@ -208,37 +265,36 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             validate(false, `upload failed for ${data.Payload.Message}. This transfer is rolled back, please contact administrator`);
             cancelAllProgress(transfer);
             break;
-            case DATSActions.Completed:
-              if(makeFieldsDisable) //this is to ensure the upload was in progress as the completed event can also be fired by folder selection action
-              {
+          case DATSActions.Completed:
+            if (makeFieldsDisable) //this is to ensure the upload was in progress as the completed event can also be fired by folder selection action
+            {
               setTimeout(async () => {
-              await new TransferService().updateTransfer({ _id: transfer._id, accessionNumber: transfer.accessionNumber, applicationNumber: transfer.applicationNumber, transferStatus: TransferStatus.TrComplete });
+                await new TransferService().updateTransfer({ _id: transfer._id, accessionNumber: transfer.accessionNumber, applicationNumber: transfer.applicationNumber, transferStatus: TransferStatus.TrComplete });
               }, 3000)
             }
-              break;
+            break;
         }
       };
-  
+
       return ws;
     };
-  
+
     const ws = connectWebSocket();
 
     return () => {
       ws.close();
     };
   }, [transfer.digitalFileLists]);
-  
-  const validateInputs = ():boolean  => {
-    if(!transfer.digitalFileLists ||  (transfer.digitalFileLists && transfer.digitalFileLists.length == 0))
-    {
+
+  const validateInputs = (): boolean => {
+    if (!transfer.digitalFileLists || (transfer.digitalFileLists && transfer.digitalFileLists.length == 0)) {
       validate(false, "Please add folders to update and/or ensure there are no error marker in any folder");
       return false;
     }
     return true;
   }
   useImperativeHandle(ref, () => ({
-    uploadAllFolders,validateInputs
+    uploadAllFolders, validateInputs
   }));
   // Function to update the status of all folders to PROGRESS
   const setAllProgress = (transfer: ITransferDTO) => {
@@ -259,14 +315,14 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     setUploadStatus((prevState) => {
       // Create a new state object
       const newState = { ...prevState };
-  
+
       // Iterate over each file and set the status to CANCEL if it's currently PROGRESS
       transfer.digitalFileLists?.forEach((file) => {
         if (newState[file.folder] === PROGRESS) {
           newState[file.folder] = UNKNOWN;
         }
       });
-  
+
       return newState;
     });
   };
@@ -415,7 +471,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       </Grid>
       {(!transfer.digitalFileLists || transfer.digitalFileLists.length === 0) && (
         <Box sx={{ mt: 2 }}>
-          <Button variant="contained" color="primary"  onClick={() => handleAddFolder('NEW_FOLDER')}>
+          <Button variant="contained" color="primary" onClick={() => handleAddFolder('NEW_FOLDER')}>
             Add Digital File
           </Button>
         </Box>
@@ -456,7 +512,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           <Grid container spacing={2} key={index} alignItems="center">
             <Grid item xs={6} sx={{ display: "flex", alignItems: "center" }}>
               <TextField
-              disabled={makeFieldsDisable}
+                disabled={makeFieldsDisable}
                 onChange={(event) => handleValueChange(fileList.folder, event)}
                 value={fileList.folder}
                 fullWidth
@@ -468,7 +524,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
                         <>
                           <ErrorIcon color="error" />
                           <IconButton
-                          disabled={makeFieldsDisable}
+                            disabled={makeFieldsDisable}
                             size="small"
                             onClick={() => handleEditClick(fileList.folder)}
                           >
@@ -517,13 +573,33 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             </Grid>
             <Grid item xs={1}>
               <IconButton
-              disabled={makeFieldsDisable}
+                disabled={makeFieldsDisable}
                 color="secondary"
-                onClick={() => handleDelete(fileList.folder)}
+                onClick={() => handleClickOpen(fileList.folder)} // Open the dialog with the folder name
               >
                 <DeleteIcon color="primary" />
               </IconButton>
             </Grid>
+            {/* Confirmation Dialog */}
+            <Dialog
+              open={open}
+              onClose={handleClose}
+            >
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Are you sure you want to delete the folder: {folderToDelete}?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleClose} color="primary">
+                  Cancel
+                </Button>
+                <Button onClick={handleConfirmDelete} color="error">
+                  Confirm
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Grid>
         ))}
       </Box>
