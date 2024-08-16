@@ -11,6 +11,13 @@ RUN npm run build
 
 FROM node:20 AS prod
 
+# Set the HOME environment variable to a writable directory
+ENV HOME=/cache
+
+# Update the package list and install smbclient
+RUN apt-get update && \
+    apt-get install -y smbclient
+
 WORKDIR /app
 
 #ENV NODE_ENV=production
@@ -30,6 +37,14 @@ RUN chgrp -R 0 /.npm && chmod -R g=u /.npm
 
 RUN mkdir ./logs
 RUN chgrp -R 0 ./logs && chmod -R g=u ./logs
+
+# ChatGPT Save My Season - Create the cache directory and set permissions
+RUN mkdir -p /cache/.cache/samba && \
+    chown -R $(whoami):$(whoami) /cache/.cache/samba && \
+    chmod -R 777 /cache/.cache/samba
+
+# Set the HOME environment variable to the cache directory
+ENV HOME=/cache
 
 RUN mkdir ./Upload66x
 RUN chgrp -R 0 ./Upload66x && chmod -R g=u ./Upload66x
