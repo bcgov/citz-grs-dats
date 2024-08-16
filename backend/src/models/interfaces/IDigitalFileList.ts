@@ -6,6 +6,7 @@ export interface IDigitalFileList extends Document {
   description?: string;
   fileId?: string;
   folder: string;
+  folderSend?: string;
   fileTitle?: string;
   isOPR?: boolean;
   startDate?: Date;
@@ -24,5 +25,5 @@ export interface IDigitalFileList extends Document {
   createdBy?: string;
   updatedBy?: string;
   timestamps?: {};
-  note?:string;
+  note?: string;
 }

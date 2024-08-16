@@ -7,6 +7,7 @@ const DigitalFileListSchema: Schema = new Schema<IDigitalFileList>({
   description: { type: String, required: false },
   fileId: { type: String, required: false },
   folder: { type: String, required: true },
+  folderSend: { type: String, required: false },
   fileTitle: { type: String, required: false },
   transfer: {
     type: Schema.Types.ObjectId,
@@ -24,7 +25,7 @@ const DigitalFileListSchema: Schema = new Schema<IDigitalFileList>({
   createdBy: { type: String, required: false },
   updatedBy: { type: String, required: false },
   timestamps: { createDate: Date, updatedDate: Date },
-  note: {type: String, required: false},
+  note: { type: String, required: false },
 });
 
 export const DigitalFileListModel: Model<IDigitalFileList> =
