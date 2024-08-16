@@ -48,8 +48,8 @@ export const SendRecordsLAN = () => {
   const aris617xComponent = useRef<{ validateInputs: () => boolean }>(null);
   const [arisTransferDetails, setArisTransferDetails] =
     useState<ITransferDTO | null>(null);
-    const navigate = useNavigate();
-    const childRef = useRef<any>(null); // Define a ref for ChildComponent
+  const navigate = useNavigate();
+  const childRef = useRef<any>(null); // Define a ref for ChildComponent
   const uploadService = new UploadService();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -68,8 +68,8 @@ export const SendRecordsLAN = () => {
       case 3:
         setNextButtonLabel("Upload All");
         break;
-        case 4:
-          setNextButtonLabel("Finish");
+      case 4:
+        setNextButtonLabel("Finish");
     }
   }, [activeStep]);
   let steps = [
@@ -285,24 +285,24 @@ export const SendRecordsLAN = () => {
       >
         <Box sx={{ flex: "1 1 auto" }} />
         <Box sx={{ m: 1, position: 'relative' }}>
-        <Button disabled={isUploading}
+          <Button disabled={isUploading}
 
-          onClick={activeStep === steps.length - 1 ? handleReset : handleNext}
-        >
-          {nextButtonLabel}
-        </Button>
-        {isUploading && (
-          <CircularProgress
-            size={24}
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              marginTop: '-12px',
-              marginLeft: '-12px',
-            }}
-          />
-        )}
+            onClick={activeStep === steps.length - 1 ? handleReset : handleNext}
+          >
+            {nextButtonLabel}
+          </Button>
+          {isUploading && (
+            <CircularProgress
+              size={24}
+              sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                marginTop: '-12px',
+                marginLeft: '-12px',
+              }}
+            />
+          )}
         </Box>
       </Box>
       <Snackbar

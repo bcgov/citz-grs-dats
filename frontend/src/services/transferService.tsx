@@ -90,8 +90,18 @@ export class TransferService {
         return error;
       });
   }
+  public async updateDigitalFileList(digitalFileList: any): Promise<any> {
+    return await axios
+      .put<IDigitalFileListDTO[]>(`${API_URL}/api/digitalFileLists/${digitalFileList._id}`, digitalFileList)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.error(error);
+        return error;
+      });
+  }
 
-  
 
   public async createPSPs(transferId: any): Promise<any> {
     return await axios

@@ -20,43 +20,43 @@ export default class DigitalFileListService {
     transferId: string,
     filePath: string
   ) {
-      const digitalFileListData = await extractsDigitalFileList(filePath);
-      const folders = digitalFileListData?.folders || [];
-      const schedules = digitalFileListData?.schedules || [];
-      const primaries = digitalFileListData?.primaries|| [];
-      const fileIds = digitalFileListData?.fileIds|| [];
-      const fileTitles = digitalFileListData?.fileTitles|| [];
-      const oprflags = digitalFileListData?.oprflags|| [];
-      const startDates = digitalFileListData?.startDates|| [];
-      const endDates = digitalFileListData?.endDates|| [];
-      const soDates = digitalFileListData?.soDates|| [];
-      const finalDispositionDates = digitalFileListData?.finalDispositionDates|| [];
+    const digitalFileListData = await extractsDigitalFileList(filePath);
+    const folders = digitalFileListData?.folders || [];
+    const schedules = digitalFileListData?.schedules || [];
+    const primaries = digitalFileListData?.primaries || [];
+    const fileIds = digitalFileListData?.fileIds || [];
+    const fileTitles = digitalFileListData?.fileTitles || [];
+    const oprflags = digitalFileListData?.oprflags || [];
+    const startDates = digitalFileListData?.startDates || [];
+    const endDates = digitalFileListData?.endDates || [];
+    const soDates = digitalFileListData?.soDates || [];
+    const finalDispositionDates = digitalFileListData?.finalDispositionDates || [];
 
-      let hashDigitalFileList = new Map<string, any>();
-      for(let i=0; i<folders.length; i++) {
-            var digitalFileListMetaData = {
-              "primarySecondary": primaries[i],
-              "schedule": schedules[i],
-              "description": fileTitles[i],
-              "fileId": fileIds[i],
-              "folder": folders[i],
-              "transfer":transferId,
-              "isOPR": oprflags[i] == 'Y'?true: false,
-              "startDate": startDates[i],
-              "endtDate": endDates[i],
-              "finalDispositionDate": finalDispositionDates[i]
-            } ;
+    let hashDigitalFileList = new Map<string, any>();
+    for (let i = 0; i < folders.length; i++) {
+      var digitalFileListMetaData = {
+        "primarySecondary": primaries[i],
+        "schedule": schedules[i],
+        "description": fileTitles[i],
+        "fileId": fileIds[i],
+        "folder": folders[i],
+        "transfer": transferId,
+        "isOPR": oprflags[i] == 'Y' ? true : false,
+        "startDate": startDates[i],
+        "endtDate": endDates[i],
+        "finalDispositionDate": finalDispositionDates[i]
+      };
 
-            const newDigitalFileList =await this.createDigitalFileListByTransferId(transferId,digitalFileListMetaData);
-            let key: string = newDigitalFileList?.folder || " ";
-            let content = newDigitalFileList;
-            //let content: string = newDigitalFileList?._id.toString() || " ";
-            hashDigitalFileList.set(key,content)
-      }
-      
-      return hashDigitalFileList;
+      const newDigitalFileList = await this.createDigitalFileListByTransferId(transferId, digitalFileListMetaData);
+      let key: string = newDigitalFileList?.folder || " ";
+      let content = newDigitalFileList;
+      //let content: string = newDigitalFileList?._id.toString() || " ";
+      hashDigitalFileList.set(key, content)
+    }
+
+    return hashDigitalFileList;
   }
-  
+
 
   async createDigitalFileListByTransferId(
     transferId: string,
@@ -86,6 +86,8 @@ export default class DigitalFileListService {
     updatedDigitalFileListData: any
   ): Promise<IDigitalFileList | null> {
     try {
+      console.log("In updateDigitalFileList service:", digitalDatalistId);
+      console.log("In updateDigitalFileList service:", updatedDigitalFileListData);
       return await this.digitalFileListRepository.updateDigitalFileList(
         digitalDatalistId,
         updatedDigitalFileListData

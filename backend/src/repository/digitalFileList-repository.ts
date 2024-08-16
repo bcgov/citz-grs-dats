@@ -118,6 +118,9 @@ export default class DigitalFileListRepository {
   ): Promise<IDigitalFileList | null> {
     try {
       // Find the DigitalFileList document by ID and update its fields
+      console.log("In updateDigitalFileList repo:", digitalFileListId);
+      console.log("In updateDigitalFileList repo:", updateData);
+
       const updateDigitalFileList =
         await DigitalFileListModel.findByIdAndUpdate(
           digitalFileListId,
@@ -128,11 +131,12 @@ export default class DigitalFileListRepository {
       if (!updateDigitalFileList) {
         throw new Error("Digital File List not found");
       }
-
+      console.log("updateDigitalFileList  = " + updateDigitalFileList)
       // Respond with the updated DigitalFileList document
       return updateDigitalFileList;
     } catch (error) {
-      throw error;
+      throw new Error("error in update Digital File List " + error);
+
     }
   }
 }

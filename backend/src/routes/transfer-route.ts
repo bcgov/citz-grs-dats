@@ -26,6 +26,8 @@ router.get('/transfer/:accessionNumber/:applicationNumber', (req, res) => transf
 router
   .route("/transfers/:transferId/createPSPs")
   .post(transferController.createPSPsfortransfer)
-
+router
+  .route("/digitalFileLists/:digitalFileListsId")
+  .put(transferController.updateDigitalFileList)
 
 export default router;

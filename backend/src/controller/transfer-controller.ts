@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { validationResult, param } from "express-validator";
 import { TransferService } from "../service";
 import FileService from "../service/File-service";
+import DigitalFileListService from "../service/digitalFileList-service";
 
 
 import { transferCreateValidation, transferUpdateValidation } from "../validators/transfer-validators";
@@ -13,10 +14,12 @@ export default class TransferController {
 
   private transferService: TransferService;
   private fileService: FileService;
+  private digitalFileListService: DigitalFileListService;
 
   constructor() {
     this.transferService = new TransferService();
     this.fileService = new FileService();
+    this.digitalFileListService = new DigitalFileListService();
     this.getTransfers = this.getTransfers.bind(this);
     this.getTransferById = this.getTransferById.bind(this);
     this.createTransfer = this.createTransfer.bind(this);
@@ -26,6 +29,7 @@ export default class TransferController {
     this.getSearchTransfers = this.getSearchTransfers.bind(this);
     this.saveSubmitAgreement = this.saveSubmitAgreement.bind(this);
     this.createPSPsfortransfer = this.createPSPsfortransfer.bind(this);
+    this.updateDigitalFileList = this.updateDigitalFileList.bind(this);
 
     // Bind the function to the current instance
   }
@@ -294,6 +298,26 @@ export default class TransferController {
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "An error occurred" });
+    }
+  }
+
+  async updateDigitalFileList(req: Request, res: Response) {
+    try {
+      const digitalFileListId = req.params.digitalFileListsId;
+      const updatedDigitalFileListData = req.body;
+      console.log('In updateDigitalFileList controller = ' + digitalFileListId);
+      console.log(updatedDigitalFileListData);
+      const updatedDigitalFileList = await this.digitalFileListService.updateDigitalFileList(
+        digitalFileListId,
+        updatedDigitalFileListData
+      );
+      if (!updatedDigitalFileList) {
+        return res.status(404).json({ error: "DigitalFileList not found" });
+      }
+      res.status(200).json(updatedDigitalFileList);
+
+    } catch (error) {
+
     }
   }
 
