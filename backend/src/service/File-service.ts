@@ -1,6 +1,9 @@
 import PDFDocument from 'pdfkit';
 import XLSX from "xlsx";
-import SMB2 from 'smb2';
+import SambaClient from "samba-client";
+import { promises as fs } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
 import S3ClientService from "../service/s3Client-service";
 import TransferService from "../service/transfer-service";
 import TransferRepository from "../repository/transfer-repository"
@@ -11,6 +14,7 @@ import { TransferStatus } from "../models/enums/TransferStatus"
 import logger from '../config/logs/winston-config';
 import { ITransfer } from 'src/models/transfer-model';
 import { IDigitalFileList } from 'src/models/digitalFileList-model';
+
 
 const replacePlaceholders = (text: string, placeholders: { [key: string]: string }): string => {
     let replacedText = text;
@@ -223,27 +227,40 @@ export default class FileService {
 
 
     private async sendBufferToSMBShare(buffer: Buffer, fileName: string) {
-        const smb2Client = new SMB2({
-            share: process.env.SMB_ARCHIVE_LAND_DRIVE || 'C:\\TestDATS\\',
-            domain: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
-            username: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
-            password: process.env.SMB_ARCHIVE_LAND_DRIVE || "",
+        const smbClient = new SambaClient({
+            address:
+                process.env.SMB_ARCHIVE_LAND_DRIVE ||
+                "\\\\cumulus.idir.bcgov\\Digital-Archives",
+            username: process.env.SMB_ARCHIVE_LAND_USER || "",
+            password: process.env.SMB_ARCHIVE_LAND_PASSWORD || "",
+            domain: process.env.SMB_ARCHIVE_LAND_DOMAIN || "IDIR",
         });
 
         const remoteFilePath = `${fileName}`;
 
-        return new Promise<void>((resolve, reject) => {
-            smb2Client.writeFile(remoteFilePath, buffer, (err) => {
-                if (err) {
-                    return reject(err);
-                }
+        // Define a temporary local file path
+        const tempFilePath = join(tmpdir(), fileName);
 
-                console.log("File successfully sent to SMB share.");
-                resolve();
-            });
-        });
+        try {
+            // Write the buffer to a temporary file
+            await fs.writeFile(tempFilePath, buffer);
+
+            // Send the temporary file to the SMB share
+            await smbClient.sendFile(tempFilePath, remoteFilePath);
+
+            console.log("File successfully sent to SMB share.");
+        } catch (err) {
+            console.error("Failed to send file to SMB share:", err);
+            throw err; // Re-throw the error to propagate it
+        } finally {
+            // Clean up the temporary file
+            try {
+                await fs.unlink(tempFilePath);
+            } catch (cleanupErr) {
+                console.warn("Failed to clean up temporary file:", cleanupErr);
+            }
+        }
     }
-
     /**
     * Save folder details to S3, validate checksums, and prepare PSPs.
     * 
@@ -582,65 +599,6 @@ export default class FileService {
     }
 
     /**
-     * Processes the 'DIGITAL FILE LIST' sheet by adding a new column 'Folder Send',
-     * and updates the column with matching folderSend values from the transfer.
-     * @param workbook - The Excel workbook containing the 'DIGITAL FILE LIST' sheet.
-     * @param accessionNumber - The accession number associated with the transfer.
-     * @param applicationNumber - The application number associated with the transfer.
-     */
-    // private async processDigitalFileList(workbook: XLSX.WorkBook, accessionNumber: string, applicationNumber: string): Promise<void> {
-    //     const sheetName = 'DIGITAL FILE LIST';
-    //     const digitalFileListSheet = workbook.Sheets[sheetName];
-
-    //     if (!digitalFileListSheet) {
-    //         console.error(`Sheet '${sheetName}' not found.`);
-    //         throw new Error(`Sheet '${sheetName}' not found.`);
-    //     }
-
-    //     // Insert a new column 'Folder Send' after the first column
-    //     this.insertNewColumn(digitalFileListSheet);
-
-    //     // Retrieve transfer and digital file list details
-    //     const transfer = await this.getTransfer(accessionNumber, applicationNumber);
-    //     const range = XLSX.utils.decode_range(digitalFileListSheet['!ref'] as string);
-    //     const digitalFileLists = transfer.digitalFileLists as unknown as IDigitalFileList[];
-
-
-    //     if (digitalFileLists && digitalFileLists.length > 0) {
-    //          for (let R = range.s.r; R <= range.e.r; ++R) {
-    //             for (let C = range.e.c; C >= 0; --C) {
-    //                 const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-    //                 const targetCellAddress = XLSX.utils.encode_cell({ r: R, c: C + 1 });
-    //                 if (C === 0) {
-    //                     const cellValue = digitalFileListSheet[cellAddress]?.v;
-
-    //                     // Check if the folder exists in the first column (A)
-    //                     const matchingDigitalFileList = digitalFileLists.find(dfl => dfl.folder === cellValue);
-
-    //                     if (R === 0) {
-    //                         digitalFileListSheet[targetCellAddress] = { t: 's', v: 'Folder Send' }; // Header
-    //                     } else if (matchingDigitalFileList) {
-    //                         digitalFileListSheet[targetCellAddress] = { t: 's', v: matchingDigitalFileList.folderSend || '' };
-    //                     } else {
-    //                         digitalFileListSheet[targetCellAddress] = { t: 's', v: '' };
-    //                     }
-    //                 } else {
-    //                     digitalFileListSheet[targetCellAddress] = digitalFileListSheet[cellAddress];
-    //                 }
-    //             }
-    //         }
-
-    //         range.e.c++;
-    //         digitalFileListSheet['!ref'] = XLSX.utils.encode_range(range);
-    //         console.log("New column inserted into DIGITAL FILE LIST and Folder Send values added.");
-    //     } else {
-    //         console.log('No digital file lists found.');
-    //     }
-
-    //     console.log("Folder Send column updated in DIGITAL FILE LIST sheet.");
-    // }
-
-    /**
      * Inserts a new column named 'Folder Send' after the first column in the given sheet.
      * @param sheet - The Excel worksheet where the new column will be inserted.
      */
@@ -691,138 +649,6 @@ export default class FileService {
         const newS3Key = `${transferFolderPath}${accessionNumber}-${applicationNumber}/Documentation/Update_Aris662-${accessionNumber}_${applicationNumber}.xlsx`;
         await this.s3ClientService.uploadUpdatedArris662ToS3(buffer, newS3Key);
     }
-    // async downloadUpdateAris662(applicationNumber: string, accessionNumber: string) {
-    //     try {
-    //         // Step 1: List all `techMetadatav2.json` files in the S3 folder
-    //         var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
-    //         transferFolderPath = transferFolderPath + "/";
-
-    //         const prefix = `${transferFolderPath}${accessionNumber}-${applicationNumber}/`;
-    //         console.log(`Listing techMetadatav2.json files with prefix: ${prefix}`);
-
-    //         const techMetadataFiles = await this.s3ClientService.listFilesInS3WithPrefix(prefix, "techMetadatav2.json");
-
-    //         if (techMetadataFiles.length === 0) {
-    //             console.log("No techMetadatav2.json files found.");
-    //             throw new Error("No techMetadatav2.json files found.");
-    //         }
-
-    //         let concatenatedTechMetadata: any[] = [];
-    //         console.log(`Found ${techMetadataFiles.length} techMetadatav2.json files.`);
-
-    //         // Step 2: Download and parse each JSON file
-    //         for (const fileKey of techMetadataFiles) {
-    //             console.log(`Downloading file from S3: ${fileKey}`);
-    //             const jsonData = await this.s3ClientService.downloadJsonFromS3(fileKey);
-    //             concatenatedTechMetadata = concatenatedTechMetadata.concat(jsonData);
-    //         }
-
-    //         console.log(`Concatenated techMetadatav2 JSON data: ${JSON.stringify(concatenatedTechMetadata, null, 2)}`);
-
-    //         // Step 3: Retrieve the Excel file from S3
-    //         const excelBuffer = await this.s3ClientService.getExcelFileFromS3(
-    //             process.env.AWS_DATS_S3_BUCKET as string,
-    //             process.env.TRANSFER_FOLDER_NAME as string,
-    //             accessionNumber,
-    //             applicationNumber
-    //         );
-
-    //         if (!excelBuffer) {
-    //             console.log("Failed to retrieve the Excel file.");
-    //             throw new Error("Failed to retrieve the Excel file.");
-    //         }
-
-    //         console.log("Excel file retrieved successfully.");
-
-    //         // Step 4: Read the Excel buffer into a workbook
-    //         const workbook = XLSX.read(excelBuffer, { type: "buffer" });
-    //         console.log("Excel file read into workbook.");
-
-    //         // Step 5: Prepare the concatenated data for the new worksheet
-    //         const newWorksheetData = [
-    //             Object.keys(concatenatedTechMetadata[0]), // Column headers
-    //             ...concatenatedTechMetadata.map(item => Object.values(item)) // Rows of data
-    //         ];
-
-    //         console.log("New worksheet data prepared.");
-
-    //         // Step 6: Create the new worksheet
-    //         const newWorksheet = XLSX.utils.json_to_sheet(newWorksheetData);
-    //         console.log("New worksheet created.");
-
-    //         // Step 7: Append the new worksheet to the workbook
-    //         XLSX.utils.book_append_sheet(workbook, newWorksheet, "Technical Metadata v2");
-    //         console.log("New worksheet appended to workbook.");
-
-    //         // Step 8: Get and add the folderSend to the DIGITAL FILE LIST
-    //         const sheetName = 'DIGITAL FILE LIST';
-    //         const digitalFileListSheet = workbook.Sheets[sheetName];
-
-    //         if (!digitalFileListSheet) {
-    //             console.error(`Sheet '${sheetName}' not found.`);
-    //             throw new Error(`Sheet '${sheetName}' not found.`);
-    //         }
-
-    //         const range = XLSX.utils.decode_range(digitalFileListSheet['!ref'] as string);
-
-    //         // Step 9: Get the transfer and digital file lists
-    //         const transfer = await this.getTransfer(accessionNumber, applicationNumber);
-
-    //         if (!transfer) {
-    //             throw new Error('Transfer not found');
-    //         }
-
-    //         const digitalFileLists = transfer.digitalFileLists as unknown as IDigitalFileList[];
-
-    //         if (digitalFileLists && digitalFileLists.length > 0) {
-    //             // Step 10: Insert the new column and add Folder Send data
-    //             for (let R = range.s.r; R <= range.e.r; ++R) {
-    //                 for (let C = range.e.c; C >= 0; --C) {
-    //                     const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-    //                     const targetCellAddress = XLSX.utils.encode_cell({ r: R, c: C + 1 });
-    //                     if (C === 0) {
-    //                         const cellValue = digitalFileListSheet[cellAddress]?.v;
-
-    //                         // Check if the folder exists in the first column (A)
-    //                         const matchingDigitalFileList = digitalFileLists.find(dfl => dfl.folder === cellValue);
-
-    //                         if (R === 0) {
-    //                             digitalFileListSheet[targetCellAddress] = { t: 's', v: 'Folder Send' }; // Header
-    //                         } else if (matchingDigitalFileList) {
-    //                             digitalFileListSheet[targetCellAddress] = { t: 's', v: matchingDigitalFileList.folderSend || '' };
-    //                         } else {
-    //                             digitalFileListSheet[targetCellAddress] = { t: 's', v: '' };
-    //                         }
-    //                     } else {
-    //                         digitalFileListSheet[targetCellAddress] = digitalFileListSheet[cellAddress];
-    //                     }
-    //                 }
-    //             }
-
-    //             range.e.c++;
-    //             digitalFileListSheet['!ref'] = XLSX.utils.encode_range(range);
-    //             console.log("New column inserted into DIGITAL FILE LIST and Folder Send values added.");
-    //         } else {
-    //             console.log('No digital file lists found.');
-    //         }
-
-    //         // Step 11: Convert the modified workbook back to a buffer
-    //         const updatedExcelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
-    //         console.log("Updated Excel file buffer created.");
-
-    //         const newS3Key = `${transferFolderPath}${accessionNumber}-${applicationNumber}/Documentation/Update_Aris662-${accessionNumber}_${applicationNumber}.xlsx`
-
-    //         // Step 12: Upload the updated Excel back to S3
-    //         await this.s3ClientService.uploadUpdatedArris662ToS3(updatedExcelBuffer, newS3Key);
-    //         console.log("Excel file sent to client.");
-
-    //         return updatedExcelBuffer;
-    //     } catch (error) {
-    //         console.error("Error:", error);
-    //         throw new Error("An error occurred while processing your request.");
-    //     }
-    // }
-
 
 }
 
