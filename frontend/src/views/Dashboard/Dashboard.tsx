@@ -4,7 +4,7 @@ import CardComponent from "../../components/Card/CardComponent";
 import { useSSO } from "@bcgov/citz-imb-sso-react";
 
 const Dashboard: React.FC = () => {
-  const { hasRoles } = useSSO();
+  const { hasRoles, isAuthenticated } = useSSO();
   return (
     <Box style={{ marginBottom: "45px" }}>
       <Typography>
@@ -12,25 +12,27 @@ const Dashboard: React.FC = () => {
         Software Center. Please follow these instructions [insert link later].
       </Typography>
       <br />
-      <Box sx={{ display: "flex" }}>
-        <CardComponent
-          title="Create a Digital File List"
-          content="Create a file list for digital government information stored in a LAN drive. Provide a Windows folder address and some basic information, and DATS will create a list of every document in that folder for you. "
-          link="/create-intro"
-        />
-        <CardComponent
-          title="Send Record to DATS"
-          content="Send digital Full Retention (FR) records to the Digital Archives, from either a LAN drive or EDRMS."
-          link="/send"
-        />
-        {hasRoles(["Archivist"]) && (
+      {isAuthenticated && (
+        <Box sx={{ display: "flex" }}>
           <CardComponent
-            title="View Transfer Status"
-            content="Digital Archives staff can view and manage transfers sent via DATS, in order to create Pre-Submission Packages (PSPs). The source of truth for approvals and client service history continues to be ARIS."
-            link="/transfer-status"
+            title="Create a Digital File List"
+            content="Create a file list for digital government information stored in a LAN drive. Provide a Windows folder address and some basic information, and DATS will create a list of every document in that folder for you. "
+            link="/create-intro"
           />
-        )}
-      </Box>
+          <CardComponent
+            title="Send Record to DATS"
+            content="Send digital Full Retention (FR) records to the Digital Archives, from either a LAN drive or EDRMS."
+            link="/send"
+          />
+          {hasRoles(["Archivist"]) && (
+            <CardComponent
+              title="View Transfer Status"
+              content="Digital Archives staff can view and manage transfers sent via DATS, in order to create Pre-Submission Packages (PSPs). The source of truth for approvals and client service history continues to be ARIS."
+              link="/transfer-status"
+            />
+          )}
+        </Box>
+      )}
       <br />
       <Typography>
         If you need assistance{" "}
