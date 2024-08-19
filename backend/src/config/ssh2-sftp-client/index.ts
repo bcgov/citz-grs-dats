@@ -6,7 +6,7 @@ const config = {
     host: process.env.LAN_FTP_SERVER_HOST || 'your.sftp.server',
     port: process.env.LAN_FTP_SERVER_ || '22',
     username: process.env.LAN_FTP_SERVER_USER || "",
-    password: process.env.LAN_FTP_SERVER__PASSWORD || "",
+    password: process.env.LAN_FTP_SERVER_PASSWORD || "",
 };
 
 const remotePath = '/remote/path/';
