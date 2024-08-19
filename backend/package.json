@@ -48,6 +48,7 @@
     "os": "^0.1.2",
     "pdfkit": "^0.15.0",
     "samba-client": "7.2.0",
+    "ssh2-sftp-client": "^11.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-schema-official": "^2.0.0-bab6bed",
     "swagger-ui-express": "^5.0.0",
