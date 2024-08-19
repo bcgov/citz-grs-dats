@@ -4,7 +4,7 @@ const sftp = new Client();
 
 const config = {
     host: process.env.LAN_FTP_SERVER_HOST || 'your.sftp.server',
-    port: process.env.LAN_FTP_SERVER_ || '22',
+    port: process.env.LAN_FTP_SERVER_PORT || '22',
     username: process.env.LAN_FTP_SERVER_USER || "",
     password: process.env.LAN_FTP_SERVER_PASSWORD || "",
 };
