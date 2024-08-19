@@ -27,13 +27,26 @@ namespace DATSCompanionService.Behaviors
         protected override void OnMessage(MessageEventArgs e)
         {
             var messageJson = e.Data;
-            var message = System.Text.Json.JsonSerializer.Deserialize<MessageContract<string>>(messageJson);
+            var message = JsonSerializer.Deserialize<MessageContract<string>>(messageJson);
             Logger?.WriteEntry($"payload received: {messageJson}");
 
             if (message.Action == DATSActions.FolderSelected)
             {
                 var selectedPath = message.Payload;
-                List<DATSFileInformation> fileDetailsList = TechnicalMetadataGenerator.Generate(selectedPath);
+                var progress = new Progress<Tuple<int, string>>(p => {
+                    // Update progress bar
+                    Broadcast?.NotifyClients(JsonSerializer.Serialize(new MessageContract<ReportProgress>
+                    {
+                        Action = DATSActions.Progress,
+                        Source = DATSSource.Service,
+                        Payload = new ReportProgress
+                        {
+                            Progress = p.Item1,
+                            Message = p.Item2
+                        }
+                    }));
+                });
+                List<DATSFileInformation> fileDetailsList = TechnicalMetadataGenerator.Generate(selectedPath, progress);
 
                 int directoryCount = Directory.EnumerateDirectories(selectedPath, "*", SearchOption.AllDirectories).Count();
                 var newMessage = new MessageContract<DATSFileDetails>
@@ -56,7 +69,7 @@ namespace DATSCompanionService.Behaviors
                     Payload = new ReportProgress
                     {
                         Progress = 0,
-                        Message = "Success"
+                        Message = "FolderSelected"
                     }
                 }));
                 Broadcast?.NotifyClients(JsonSerializer.Serialize(newMessage));

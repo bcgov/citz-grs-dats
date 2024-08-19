@@ -1,32 +1,48 @@
-﻿using DATSCompanion.Shared.Models;
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
-using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace DATSCompanionService
+namespace TestApplication
 {
+    public class DATSFileInformation
+    {
+        public string Path { get; set; }
+        public string FileName { get; set; }
+        public string Checksum { get; set; }
+        public DateTime DateCreated { get; set; }
+        public DateTime DateModified { get; set; }
+        public DateTime DateAccessed { get; set; }
+        public DateTime DateLastSaved { get; set; }
+        public string AssociatedProgramName { get; set; }
+        public string Owner { get; set; }
+        public string Computer { get; set; }
+        public string ContentType { get; set; }
+
+        public long SizeInBytes { get; set; }
+    }
     public class TechnicalMetadataGenerator
     {
-        public static List<DATSFileInformation> Generate(string folder, IProgress<Tuple<int, string>> progress = null)
+        public static List<DATSFileInformation> Generate(string folder, Action<string> addLineToTextBox)
         {
             var fileList = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories);
-            ConcurrentBag<DATSFileInformation> fileDetailsBag = new ConcurrentBag<DATSFileInformation>();
-
-            int totalFiles = fileList.Length;
-            int processedFiles = 0;
-
-            Parallel.ForEach(fileList, file =>
+            List<DATSFileInformation> fileDetailsList = new List<DATSFileInformation>();
+            Stopwatch stopwatch = new Stopwatch();
+            for (int i = 0; i < fileList.Length; i++)
             {
+                string file = fileList[i];
+                addLineToTextBox("Getting metadata for " + file);
+                stopwatch.Start();
+                var checksum = GetFileChecksum(file);
+                stopwatch.Stop();
+                addLineToTextBox($"Time taken to calculate cechksum: {stopwatch.ElapsedMilliseconds} ms");
+                stopwatch.Restart();
                 FileInfo fileInfo = new FileInfo(file);
                 DATSFileInformation details = new DATSFileInformation
                 {
@@ -37,19 +53,19 @@ namespace DATSCompanionService
                     DateModified = fileInfo.LastWriteTime,
                     DateAccessed = fileInfo.LastAccessTime,
                     DateLastSaved = fileInfo.LastWriteTime, // Placeholder for DateLastSaved
-                    Owner = "", // GetOwner(file),
+                    Owner = GetOwner(file),
                     Computer = Environment.MachineName,
                     ContentType = GetMimeType(file),
-                    AssociatedProgramName = "", // GetAssociatedProgramName(file),
+                    AssociatedProgramName = GetAssociatedProgramName(file),
                     SizeInBytes = fileInfo.Length
                 };
-                fileDetailsBag.Add(details);
-                // Increment the processed files counter and report progress
-                int currentCount = Interlocked.Increment(ref processedFiles);
-                progress?.Report(Tuple.Create((currentCount * 100) / totalFiles, fileInfo.Name));
-            });
+                stopwatch.Stop();
+                addLineToTextBox($"Time taken to getting other metadata: {stopwatch.ElapsedMilliseconds} ms");
 
-            return fileDetailsBag.ToList();
+                fileDetailsList.Add(details);
+
+            }
+            return fileDetailsList;
         }
 
         static string GetOwner(string filePath)

@@ -87,6 +87,7 @@
     <Compile Include="DATSCompanionServiceInstaller.Designer.cs">
       <DependentUpon>DATSCompanionServiceInstaller.cs</DependentUpon>
     </Compile>
+    <Compile Include="Handler\ProgressableStreamContent.cs" />
     <Compile Include="Interfaces\IBroadcastService.cs" />
     <Compile Include="Service1.cs">
       <SubType>Component</SubType>
