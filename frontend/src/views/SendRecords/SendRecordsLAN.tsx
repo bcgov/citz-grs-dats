@@ -27,6 +27,7 @@ import TransferComponent from "./components/TransferComponent";
 import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
 import { Aris66UploadResponse } from "../../types/DTO/Interfaces/Aris66UploadResponse";
 import { useNavigate } from "react-router-dom";
+import DownloadAris662Button from "./components/DownloadAris662Button";
 
 
 
@@ -55,29 +56,7 @@ export const SendRecordsLAN = () => {
   const uploadService = new UploadService();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const handleDownload = async () => {
-    try {
-      const uploadService = new UploadService();
 
-      const accessionNumber = "99-1234";
-      const applicationNumber = "111299";
-
-      // Use UploadService to download the file
-      const response = await uploadService.getUpdateAris662(accessionNumber, applicationNumber);
-
-      // Create a Blob from the response data and download it
-      const blob = new Blob([response], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `Update_Aris662-${accessionNumber}_${applicationNumber}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Error downloading the file:", error);
-    }
-  };
   React.useEffect(() => {
     // This code runs before rendering the current step
     switch (activeStep) {
@@ -201,20 +180,13 @@ export const SendRecordsLAN = () => {
     {
       label: "Download Files",
       content: (
-        <div>
-          <Typography>
-            DATS will display a “Transfer complete message” and a “Thanks Message
-            or text” at this last step and a link to download the new Digital File
-            List (ARS 66X)
-          </Typography>
-          <Button variant="contained" color="primary" onClick={handleDownload}>
-            Download Digital File List
-          </Button>
-        </div>
+        <DownloadAris662Button
+          arisTransferDetails={arisTransferDetails}
+          uploadService={uploadService}
+        />
       ),
       validate: () => true,
-    },
-  ];
+    }];
   const showSnackbar = (message: string, severity: "success" | "error") => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
