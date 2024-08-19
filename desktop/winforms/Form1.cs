@@ -1,3 +1,4 @@
+using DATSCompanion.Shared;
 using DATSCompanion.Shared.Models;
 using System.Collections.Specialized;
 using System.IO;
@@ -77,9 +78,25 @@ namespace DATSCompanionApp
             Close();
         }
 
+        private string Sanitize(string selectedPath)
+        {
+            // Check if the selected folder is a network-mapped drive or local
+            DriveInfo driveInfo = new DriveInfo(Path.GetPathRoot(selectedPath));
+            if (driveInfo.DriveType == DriveType.Network)
+            {
+                // It's a network-mapped drive
+                return Win32Lib.GetNetworkPath(selectedPath);
+            }
+            else
+            {
+                // It's a local drive
+                return selectedPath;
+            }
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
-            this.serviceCommunicator.PostMessage("test pipe communication");
+            OpenDialog(Constants.BrowseTypeFolder);
         }
     }
 }

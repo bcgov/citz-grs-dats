@@ -17,6 +17,10 @@ namespace DATSCompanion.Shared.Models
         public double Progress { get; set; }
 
         public string Message { get; set; }
+        public long BytesUploaded { get; set; }
+        public long BytesRemaining { get; set; }
+        public string ETA { get; set; }
+        public long TotalBytes { get; set; }
     }
     public class DATSFileInformation
     {
@@ -99,6 +103,9 @@ namespace DATSCompanion.Shared.Models
         HealthCheck,
         Healthy,
         ErrorDesktop,
+
+        UploadProgress,
+        UploadSuccessfull
 
     }
 
