@@ -10,7 +10,7 @@ import logger, { auditor } from "./config/logs/winston-config";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { protectedRoute, sso } from "@bcgov/citz-imb-sso-express";
-import { healthCheck } from "./config/smb/index";
+import { sftpHealthCheck } from "./config/ssh2-sftp-client";
 const app = express();
 sso(app);
 
@@ -38,20 +38,20 @@ app.get("/", (req, res) => {
 });
 
 // SMB Health check connection to LAnd drive
-app.get("/SMBCheck", async (req, res) => {
+app.get("/FTPCheck", async (req, res) => {
   try {
     // Perform the SMB health check
-    await healthCheck();
+    await sftpHealthCheck();
 
-    console.log("SMB health check completed successfully");
-    res.status(200).json("SMB health check completed successfully");
+    console.log("SFTP health check completed successfully");
+    res.status(200).json("SFTP health check completed successfully");
   } catch (error) {
     if (error instanceof Error) {
-      console.error("SMB health check failed:", error.message);
-      res.status(503).json("SMB health check failed: " + error.message);
+      console.error("SFTP health check failed:", error.message);
+      res.status(503).json("SFTP health check failed: " + error.message);
     } else {
-      console.error("SMB health check failed with an unknown error");
-      res.status(503).json("SMB health check failed with an unknown error");
+      console.error("SFTP health check failed with an unknown error");
+      res.status(503).json("SFTP health check failed with an unknown error");
     }
   }
 });

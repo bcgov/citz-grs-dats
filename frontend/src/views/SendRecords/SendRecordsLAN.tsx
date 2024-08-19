@@ -27,6 +27,9 @@ import TransferComponent from "./components/TransferComponent";
 import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
 import { Aris66UploadResponse } from "../../types/DTO/Interfaces/Aris66UploadResponse";
 import { useNavigate } from "react-router-dom";
+import DownloadAris662Button from "./components/DownloadAris662Button";
+
+
 
 export const SendRecordsLAN = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -53,6 +56,7 @@ export const SendRecordsLAN = () => {
   const uploadService = new UploadService();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   React.useEffect(() => {
     // This code runs before rendering the current step
     switch (activeStep) {
@@ -176,15 +180,13 @@ export const SendRecordsLAN = () => {
     {
       label: "Download Files",
       content: (
-        <Typography>
-          DATS will display a “Transfer complete message” and a “Thanks Message
-          or text” at this last step and a link to download the new Digital File
-          List (ARS 66X){" "}
-        </Typography>
+        <DownloadAris662Button
+          arisTransferDetails={arisTransferDetails}
+          uploadService={uploadService}
+        />
       ),
       validate: () => true,
-    },
-  ];
+    }];
   const showSnackbar = (message: string, severity: "success" | "error") => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);

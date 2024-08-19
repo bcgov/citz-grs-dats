@@ -205,12 +205,17 @@ export default class UploadController {
     const accessionNumber = req.query.accessionNumber as string;
     const applicationNumber = req.query.applicationNumber as string;
     try {
-      const updatedExcelBuffer = await this.fileService.downloadUpdateAris662(applicationNumber, accessionNumber);
+      console.log('accessionNumber = ' + accessionNumber);
+      console.log('applicationNumber = ' + applicationNumber);
+      const updatedExcelBuffer = await this.fileService.downloadUpdateAris662(accessionNumber, applicationNumber);
       res.setHeader('Content-Disposition', `attachment; filename=Update_Aris662-${accessionNumber}_${applicationNumber}.xlsx`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.send(updatedExcelBuffer);
-    } catch (error) {
+      //res.end(updatedExcelBuffer, 'binary');
 
+    } catch (error) {
+      console.error("Error while generating the file:", error);
+      res.status(500).send("An error occurred while generating the file.");
     }
   }
 }

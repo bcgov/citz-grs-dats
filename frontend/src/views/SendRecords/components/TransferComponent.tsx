@@ -404,12 +404,6 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       console.error("Log WebSocket error", error);
     };
   };
-  const handleDelete = (folder: string) => {
-    setTransfer((prev) => ({
-      ...prev,
-      digitalFileLists: prev.digitalFileLists!!.filter((fileList) => fileList.folder !== folder),
-    }));
-  };
   const handleValueChange = (
     folder: string,
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

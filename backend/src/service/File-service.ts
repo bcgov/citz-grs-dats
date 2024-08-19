@@ -423,7 +423,7 @@ export default class FileService {
      * @param accessionNumber - The accession number associated with the transfer.
      * @returns A promise that resolves to the updated Excel file buffer.
      */
-    async downloadUpdateAris662(applicationNumber: string, accessionNumber: string): Promise<Buffer> {
+    async downloadUpdateAris662(accessionNumber: string, applicationNumber: string): Promise<Buffer> {
         try {
             const transferFolder = this.getTransferFolder();
             const prefix = this.constructS3Prefix(transferFolder, accessionNumber, applicationNumber);

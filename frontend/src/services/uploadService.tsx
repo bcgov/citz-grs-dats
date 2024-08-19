@@ -83,4 +83,23 @@ export default class UploadService {
       throw error;
     }
   }
+
+  public async getUpdateAris662(accessionNumber: string, applicationNumber: string): Promise<any> {
+    try {
+      const response = await axios.get(`${API_URL}/api/downloadUpdateAris662`, {
+        params: {
+          accessionNumber,
+          applicationNumber
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error making GET request to downloadUpdateAris662 :`, error);
+      throw error;
+    }
+  }
 }
