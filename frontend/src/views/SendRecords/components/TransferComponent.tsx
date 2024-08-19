@@ -48,6 +48,8 @@ enum DATSActions {
   CheckFolder,
   FileFolderExists,
   FileFolderNotExists,
+  UploadProgress = 15,
+  UploadSuccessfull = 16
 }
 type Props = {
   initialTransfer: ITransferDTO;
@@ -65,7 +67,9 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   ref
 ) => {
 
-  // jl test
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadEta, setUploadEta] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);  // jl test
   const [open, setOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
   const handleClickOpen = (folder: string) => {
@@ -144,7 +148,9 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   }>({});
   const SUCCESS: Number = 1;
   const FAIL: Number = 2;
+
   const PROGRESS: Number = 3;
+  const INDETERMINATE = 4;
   const UNKNOWN: Number = 0;
 
   useEffect(() => {
@@ -203,6 +209,27 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         console.log(event.data);
         const data = JSON.parse(event.data);
         switch (data.Action) {
+          case DATSActions.UploadProgress:
+          console.log("setting progress");
+          setUploadStatus((prevState) => ({
+            ...prevState,
+            [data.Payload.Message]: PROGRESS,
+          }));
+          setUploadProgress(data.Payload.Progress);
+          setUploadMessage(`( ${convertBytesToMB(data.Payload.BytesUploaded)}/${convertBytesToMB(data.Payload.TotalBytes)} MB)`);
+          setUploadEta(data.Payload.ETA);
+          if(data.Payload.Progress == 100)
+          {
+            //completed
+            setTimeout(async () => {
+              setUploadStatus((prevState) => ({
+                ...prevState,
+                [data.Payload.Message]: SUCCESS,
+              }));
+              await new TransferService().updateTransfer({ _id: transfer._id, accessionNumber: transfer.accessionNumber, applicationNumber: transfer.applicationNumber, transferStatus: TransferStatus.TrComplete });
+              }, 2000)
+          }
+          break;
           case DATSActions.Cancelled:
             currentFolder.current = null;
             break;
@@ -251,11 +278,12 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             }));
             // validate(false,`unable to find ${data.Payload.Message}`);
             break;
-          case DATSActions.Progress:
-            setUploadStatus((prevState) => ({
-              ...prevState,
-              [data.Payload.Message]: SUCCESS,
-            }));
+          case DATSActions.UploadSuccessfull:
+            validate(true, `All folders have been uploaded successfully`);
+
+            break;
+            case DATSActions.Progress:
+            
             break;
           case DATSActions.Error:
             setUploadStatus((prevState) => ({
@@ -265,14 +293,9 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             validate(false, `upload failed for ${data.Payload.Message}. This transfer is rolled back, please contact administrator`);
             cancelAllProgress(transfer);
             break;
-          case DATSActions.Completed:
-            if (makeFieldsDisable) //this is to ensure the upload was in progress as the completed event can also be fired by folder selection action
-            {
-              setTimeout(async () => {
-                await new TransferService().updateTransfer({ _id: transfer._id, accessionNumber: transfer.accessionNumber, applicationNumber: transfer.applicationNumber, transferStatus: TransferStatus.TrComplete });
-              }, 3000)
-            }
-            break;
+            case DATSActions.Completed:
+              
+              break;
         }
       };
 
@@ -304,7 +327,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
 
       // Iterate over each file and set the status to PROGRESS
       transfer.digitalFileLists?.forEach((file) => {
-        newState[file.folder] = PROGRESS;
+        newState[file.folder] = INDETERMINATE;
       });
 
       return newState;
@@ -357,7 +380,17 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       })
     );
   };
+  const convertBytesToMB = (totalBytes: any): number | null  => {
+    const bytes = Number(totalBytes);
 
+    if (!isNaN(bytes)) {
+        const megabytes = bytes / (1024 * 1024);
+        return parseFloat(megabytes.toFixed(2));
+    } else {
+        console.error("totalBytes is not a valid number.");
+        return null;
+    }
+}
   const sendMessageToService = (message: any) => {
     console.log(message);
 
@@ -422,7 +455,18 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     if (status === UNKNOWN) return null;
     if (status === FAIL) return <ErrorIcon color="error" />;
     if (status === SUCCESS) return <CheckCircleIcon color="success" />;
-    if (status === PROGRESS) return <CircularProgress size={24} />;
+    if (status === INDETERMINATE) return <CircularProgress color="primary" size={24} />;
+    if (status === PROGRESS) return <Box sx={{ width: '100%', mt: 2 }}>
+    <Box sx={{ display: 'block', alignItems: 'center', mb: 2 }}>
+       <Typography sx={{ fontSize: '0.6rem' }} gutterBottom>
+         {uploadMessage}
+       </Typography>
+     </Box>
+     <Box>
+       <LinearProgress variant="determinate" value={uploadProgress} />
+       <Typography sx={{ fontSize: '0.6rem' }} color="textSecondary">{`${Math.floor(uploadProgress)}% (${uploadEta})`}</Typography>
+       </Box>
+     </Box>
     return status ? (
       <CheckCircleIcon color="success" />
     ) : (

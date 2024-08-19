@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using Microsoft.Win32;
+using DATSCompanionService.Handler;
 
 namespace DATSCompanionService.Behaviors
 {
@@ -50,7 +51,7 @@ namespace DATSCompanionService.Behaviors
             switch (message.Action)
             {
                 case DATSActions.FolderUpload:
-                    UploadFolder(message);
+                    UploadFolderV2(message);
                     break;
                 case DATSActions.CheckFolder:
                     CheckIfFileFolderExist(message);
@@ -110,18 +111,22 @@ namespace DATSCompanionService.Behaviors
             }
         }
 
-        private void UploadFolder(dynamic message)
+      
+
+        private void UploadFolderV2(dynamic message)
         {
             var tempPath = GetTemporaryDirectory();
             DATSFileToUpload payload = JsonSerializer.Deserialize<DATSFileToUpload>(message.Payload);
             string combinedNotes = string.Join("\n", payload.Package.Select(p => p.Note).Where(note => !string.IsNullOrEmpty(note)));
             bool isUploadFail = false;
-            for (int i = 0; i <  payload.Package.Length; i++) 
-            //foreach (var path in payload.Paths)
+
+            for (int i = 0; i < payload.Package.Length; i++)
             {
+                if (isUploadFail) break; //break out of loop if upload fails
                 var path = payload.Package[i].Path;
                 var classification = payload.Package[i].Classification;
                 Logger?.WriteEntry($"uploading folder {path}");
+
                 try
                 {
                     var uploadFileDetails = message.Payload;
@@ -136,6 +141,7 @@ namespace DATSCompanionService.Behaviors
                     }
                     ZipFile.CreateFromDirectory(path, zipPath);
                     Logger?.WriteEntry($"archived file for folder {zipPath}");
+
                     // Calculate SHA-1 checksum
                     string checksum = CalculateSHA1(zipPath);
 
@@ -143,8 +149,34 @@ namespace DATSCompanionService.Behaviors
                     using (var client = new HttpClient())
                     {
                         var content = new MultipartFormDataContent();
-                        // Read the file bytes
-                        var fileContent = new ByteArrayContent(File.ReadAllBytes(zipPath));
+                        var fileStream = new FileStream(zipPath, FileMode.Open, FileAccess.Read);
+                        var totalBytes = fileStream.Length;
+                        var startTime = DateTime.UtcNow;
+
+                        var fileContent = new ProgressableStreamContent(fileStream, (sentBytes) =>
+                        {
+                            var progress = (double)sentBytes / totalBytes * 100;
+                            var bytesRemaining = totalBytes - sentBytes;
+                            var eta = sentBytes > 0
+                                ? TimeSpan.FromSeconds(bytesRemaining / (sentBytes / (DateTime.UtcNow - startTime).TotalSeconds))
+                                : TimeSpan.Zero;
+
+                            Broadcast?.NotifyClients(JsonSerializer.Serialize(new MessageContract<ReportProgress>
+                            {
+                                Action = DATSActions.UploadProgress,
+                                Source = DATSSource.Service,
+                                Payload = new ReportProgress
+                                {
+                                    Progress = progress,
+                                    Message = path,
+                                    TotalBytes = (sentBytes + bytesRemaining),
+                                    BytesUploaded = sentBytes,
+                                    BytesRemaining = bytesRemaining,
+                                    ETA = eta.ToString(@"hh\:mm\:ss")
+                                }
+                            }));
+                        });
+
                         fileContent.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/octet-stream");
                         fileContent.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data")
                         {
@@ -162,25 +194,16 @@ namespace DATSCompanionService.Behaviors
                         content.Add(new StringContent(payload.AccessionNumber), "accessNumber");
                         content.Add(new StringContent(classification), "classification");
                         content.Add(new StringContent(JsonSerializer.Serialize(TechnicalMetadataGenerator.Generate(path))), "technicalV2");
-                        if(i == 0 && !string.IsNullOrEmpty(combinedNotes))
+                        if (i == 0 && !string.IsNullOrEmpty(combinedNotes))
                         {
                             content.Add(new StringContent(combinedNotes), "note");
                         }
+
                         // Post the content to the server
-                        var result = client.PostAsync(payload.UploadUrl + "/api/upload-files", content).Result;
+                        var result = client.PostAsync(payload.UploadUrl, content).Result;
                         if (result.IsSuccessStatusCode)
                         {
                             Logger?.WriteEntry($"folder upload successful {path}");
-                            Broadcast?.NotifyClients(JsonSerializer.Serialize(new MessageContract<ReportProgress>
-                            {
-                                Action = DATSActions.Progress,
-                                Source = DATSSource.Service,
-                                Payload = new ReportProgress
-                                {
-                                    Progress = 100.0 * i / payload.Package.Length,
-                                    Message = $"{path}"
-                                }
-                            }));
                         }
                         else
                         {
@@ -215,30 +238,21 @@ namespace DATSCompanionService.Behaviors
                     }));
                 }
             }
-            if(isUploadFail)
+
+            if (!isUploadFail)
             {
-                using (var http = new HttpClient())
+                Logger?.WriteEntry($"all uploads succesful for {payload.TransferId} : {payload.ApplicationNumber} : {payload.AccessionNumber} ");
+
+                //all uploads succesful
+                Broadcast?.NotifyClients(JsonSerializer.Serialize(new MessageContract<ReportProgress>
                 {
-                    http.PutAsync($"{payload.UploadUrl}/transfers/{payload.TransferId}", new StringContent(JsonSerializer.Serialize(new { transferStatus = "Transfer complete" })));
-                }
-                using (var http = new HttpClient())
-                {
-                    var res = http.PutAsync($"{payload.UploadUrl}/transfers/{payload.TransferId}",
-                        new StringContent(
-                            JsonSerializer.Serialize(new { transferStatus = "Transfer complete", accessionNumber = payload.AccessionNumber, applicationNumber = payload.ApplicationNumber }), UTF32Encoding.UTF8, "application/json"
-                            )).Result;
-                }
+                    Action = DATSActions.UploadSuccessfull,
+                    Source = DATSSource.Service,
+                }));
             }
-            Broadcast?.NotifyClients(JsonSerializer.Serialize(new MessageContract<ReportProgress>
-            {
-                Action = DATSActions.Completed,
-                Source = DATSSource.Service,
-                Payload = new ReportProgress
-                {
-                    Progress = 100
-                }
-            }));
         }
+
+
         private string CalculateSHA1(string filePath)
         {
             using (var sha1 = SHA1.Create())
