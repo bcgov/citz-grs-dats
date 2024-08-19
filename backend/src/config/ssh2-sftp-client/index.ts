@@ -5,11 +5,11 @@ const sftp = new Client();
 const config = {
     host: process.env.LAN_FTP_SERVER_HOST || 'your.sftp.server',
     port: process.env.LAN_FTP_SERVER_ || '22',
-    username: process.env.LAN_FTP_SERVER__USER || "",
-    password: process.env.LAN_FTP_SERVER__PASSWORD || "",
+    username: process.env.LAN_FTP_SERVER_USER || "",
+    password: process.env.LAN_FTP_SERVER_PASSWORD || "",
 };
 
-const remotePath = '/remote/path/';
+const remotePath = process.env.LAN_FTP_SERVER_REMOTE_PATH || '/remote/path/';
 
 export const sftpHealthCheck = async (): Promise<void> => {
     try {
