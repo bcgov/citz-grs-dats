@@ -5,6 +5,7 @@ import {
   CircularProgress,
   Grid,
   IconButton,
+  LinearProgress,
   Paper,
   TextField,
   Tooltip,
@@ -65,7 +66,7 @@ const SelectFolder: FC = () => {
           break;
         case DATSActions.Completed:
           setProgress(data.Payload.Progress);
-          setMessage(data.Payload.Message);
+          setMessage("");
           setIsBusy(true);
           break;
         case DATSActions.FileInformation:
@@ -180,13 +181,21 @@ const SelectFolder: FC = () => {
           >
             Add Folder
           </Button>
-          {isBusy && (
-            <Box ml={2}>
-              <CircularProgress size={24} />
-            </Box>
-          )}
-        </Box>
+          </Box>
       </Box>
+      {isBusy && (
+            <Box sx={{ width: '100%', mt: 2 }}>
+         <Box sx={{ display: 'block', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              {message}
+            </Typography>
+          </Box>
+          <Box>
+            <LinearProgress variant="determinate" value={progress} />
+            <Typography variant="body2" color="textSecondary">{`${progress}%`}</Typography>
+            </Box>
+          </Box>
+          )}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Grid container spacing={1} alignItems="center">
           {headers.map((header) => (
@@ -302,7 +311,7 @@ const SelectFolder: FC = () => {
         <Button
           variant="contained"
           color="secondary"
-          disabled={(isBusy && folders.length === 0) || folders.length === 0}
+          disabled={isBusy ||  folders.length === 0}
           onClick={() => generateExcel(folders)}
         >
           Generate Digital File List

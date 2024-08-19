@@ -76,22 +76,20 @@ namespace TestApplication
             }
 
             // Perform operations with the selected file
-            AddLineToTextBox($"Selected file: {filePath}");
-            var buffer = ReadFile(filePath);
-            CalculateAndLogSHA1(buffer);
-            CalculateAndLogMD5(buffer);
+            AddLineToTextBox($"Selected folder: {filePath}");
+            TechnicalMetadataGenerator.Generate(filePath, AddLineToTextBox);
+            //var buffer = ReadFile(filePath);
+            //CalculateAndLogSHA1(buffer);
+            //CalculateAndLogMD5(buffer);
         }
 
         static string GetOpenFilePath()
         {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            using (var openFileDialog = new FolderBrowserDialog())
             {
-                openFileDialog.Filter = "Binary files (*.bin)|*.bin|All files (*.*)|*.*";
-                openFileDialog.DefaultExt = "bin";
-
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    return openFileDialog.FileName;
+                    return openFileDialog.SelectedPath;
                 }
             }
             return null;
