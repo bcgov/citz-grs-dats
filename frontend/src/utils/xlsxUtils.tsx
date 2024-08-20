@@ -29,6 +29,15 @@ export const extractExcelData = (file: File): Promise<DatsExcelModel> => {
         if (!secondSheetName) {
           return reject('The second sheet does not exist.');
         }
+        const ws = workbook.Sheets['Technical Metadata v1'];
+
+        if (!ws) {
+          reject(new Error("Technical Metadata v1 sheet is missing"));
+        }
+
+        if (!secondSheetName) {
+          return reject('The second sheet does not exist.');
+        }
         //ensure second column has value for every row
         const secondSheet = workbook.Sheets[secondSheetName];
         const jsonData = XLSX.utils.sheet_to_json<any[]>(secondSheet, { header: 1 });
@@ -134,8 +143,8 @@ export const generateExcel = async (folders: IFolderInformation[]) => {
   // Assuming the template has 'Files' and 'Objects' sheets
   const filesSheet = workbook.Sheets[workbook.SheetNames[1]];
   const objectsSheet = workbook.Sheets[workbook.SheetNames[2]];
-  
-  
+
+
   const filesData = folders.map(folder => [
     folder.path,
     folder.schedule,
@@ -145,21 +154,21 @@ export const generateExcel = async (folders: IFolderInformation[]) => {
     folder.opr ? 'Y' : 'N',
     folder.startDate ? formatDate(folder.startDate) : null,
     folder.endDate ? formatDate(folder.endDate) : null,
-    folder.soDate ? formatDate(folder.soDate)  : null,
-    folder.fdDate ? formatDate(folder.fdDate)  : null
+    folder.soDate ? formatDate(folder.soDate) : null,
+    folder.fdDate ? formatDate(folder.fdDate) : null
   ]);
   XLSX.utils.sheet_add_aoa(filesSheet, filesData, { origin: 'A2' }); // Add data starting from row 2 to leave headers intact
 
 
-  const objectsData = folders.flatMap(folder => 
+  const objectsData = folders.flatMap(folder =>
     folder.files.map(obj => [
       obj.path,
       obj.checksum,
       obj.name,
       obj.dateCreated ? { v: obj.dateCreated, t: 's' } : null,
-      obj.dateModified ? { v: obj.dateModified, t: 's' }: null,
-      obj.dateAccessed ? { v: obj.dateAccessed, t: 's' }: null,
-      obj.dateLastSaved ? { v: obj.dateLastSaved, t: 's' }: null,
+      obj.dateModified ? { v: obj.dateModified, t: 's' } : null,
+      obj.dateAccessed ? { v: obj.dateAccessed, t: 's' } : null,
+      obj.dateLastSaved ? { v: obj.dateLastSaved, t: 's' } : null,
       obj.owner,
       obj.owner,
       obj.owner,
