@@ -144,20 +144,6 @@ const TransferViewEdit: React.FC = () => {
         <Box>
           <Button
             variant="text"
-            startIcon={
-              isTransferEditing ? <DoneTwoToneIcon /> : <EditTwoToneIcon />
-            }
-            onClick={() => {
-              if (isTransferEditing) {
-                handleUpdateTransfer();
-              }
-              setIsTransferEditing(!isTransferEditing);
-            }}
-          >
-            {isTransferEditing ? "Done" : "Edit"}
-          </Button>
-          <Button
-            variant="text"
             color="error"
             onClick={handleClickOpenDelete}
           >
@@ -167,7 +153,7 @@ const TransferViewEdit: React.FC = () => {
             variant="text"
             color="primary"
             onClick={handleClickOpenCreatePSP}
-            disabled={transfer.transferStatus !== TransferStatus.TrComplete}
+          // disabled={transfer.transferStatus !== TransferStatus.TrComplete}
           >
             Create PSP
           </Button>
@@ -205,7 +191,7 @@ const TransferViewEdit: React.FC = () => {
             marginLeft: 2,
             marginBottom: 2,
           }}
-          disabled={!isTransferEditing}
+          disabled
           label="Description"
           name="description"
           variant="outlined"
@@ -216,7 +202,7 @@ const TransferViewEdit: React.FC = () => {
           id="outlined-select-currency"
           select
           label="Select"
-          disabled={!isTransferEditing}
+          disabled
           onChange={handleInputChange}
           value={transfer.transferStatus}
         >
@@ -239,7 +225,7 @@ const TransferViewEdit: React.FC = () => {
         sx={{ marginTop: 2, marginBottom: 2, marginLeft: 2 }}
       >
         <TextField
-          disabled={!isTransferEditing}
+          disabled
           sx={{ width: "30%", marginRight: "2%" }}
           name="producerMinistry"
           label="Ministry"
@@ -249,7 +235,7 @@ const TransferViewEdit: React.FC = () => {
         />
 
         <TextField
-          disabled={!isTransferEditing}
+          disabled
           sx={{ width: "30%" }}
           name="producerBranch"
           label="Branch"
@@ -258,7 +244,7 @@ const TransferViewEdit: React.FC = () => {
           value={transfer.producerBranch}
         />
         <TextField
-          disabled={!isTransferEditing}
+          disabled
           sx={{ width: "30%", marginLeft: 2 }}
           name="producerOfficeName"
           label="Office"
