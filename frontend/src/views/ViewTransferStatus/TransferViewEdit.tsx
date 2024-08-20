@@ -153,7 +153,6 @@ const TransferViewEdit: React.FC = () => {
             variant="text"
             color="primary"
             onClick={handleClickOpenCreatePSP}
-          // disabled={transfer.transferStatus !== TransferStatus.TrComplete}
           >
             Create PSP
           </Button>
