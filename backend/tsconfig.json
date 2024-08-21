@@ -1,26 +1,25 @@
 {
-    "compilerOptions": {
-      "target": "es6",
-      "module": "commonjs",
-      "outDir": "./dist",
-      "moduleResolution": "node",
-      "strict": true,
-      "forceConsistentCasingInFileNames": false,
-      "esModuleInterop": true,
-      "noImplicitAny": false,
-      "baseUrl": ".",
-      "types": ["node", "express-session"],
-      "typeRoots": ["./node_modules/@types", "./src/types"],
-      "paths": {
-        "@controller/*": ["controller/*"],
-        "@config/*": ["config/*"],
-        "@service/*": ["service/*"],
-        "@model/*": ["model/*"],
-        "@route/*": ["route/*"],
-        "@repository/*": ["repository/*"]
-      },
-    } ,   
-    "include": ["src/**/*"],
-    "exclude": ["node_modules"]
-  }
-  
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "moduleResolution": "node",
+    "strict": true,
+    "forceConsistentCasingInFileNames": false,
+    "esModuleInterop": true,
+    "noImplicitAny": false,
+    "baseUrl": ".",
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"],
+    "paths": {
+      "@controller/*": ["controller/*"],
+      "@config/*": ["config/*"],
+      "@service/*": ["service/*"],
+      "@model/*": ["model/*"],
+      "@route/*": ["route/*"],
+      "@repository/*": ["repository/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

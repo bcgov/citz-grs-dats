@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import { Button } from "@bcgov/design-system-react-components";
 import { useNavigate } from "react-router-dom";
+import { useSSO } from "@bcgov/citz-imb-sso-react";
 
 const CreateDigitalFileListSplash: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useSSO();
+
+  useEffect(() => {
+    if (!isAuthenticated) window.location.href = "/";
+  }, [isAuthenticated]);
   return (
     <Box>
       <Typography sx={{ fontSize: "1.1em", fontWeight: "700" }}>

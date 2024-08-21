@@ -12,6 +12,9 @@ import path from "path";
 import { protectedRoute, sso } from "@bcgov/citz-imb-sso-express";
 import { sftpHealthCheck } from "./config/ssh2-sftp-client";
 const app = express();
+
+app.set("trust proxy", 1);
+
 sso(app);
 
 logger.info("This is an info message");
@@ -29,7 +32,6 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// app.use(authRoutes);
 app.use(express.json());
 
 // Health check
@@ -56,10 +58,6 @@ app.get("/FTPCheck", async (req, res) => {
   }
 });
 
-app.get("/dashboard", protectedRoute(), (req: any, res) => {
-  logger.info("Dashboard route called");
-  res.json({ message: "This is a protected route", user: req.user });
-});
 app.get("/api/base-url", (req, res) => {
   res.json({ baseUrl: `${process.env.BACKEND_URL}` });
 });

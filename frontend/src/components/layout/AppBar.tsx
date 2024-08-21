@@ -28,7 +28,7 @@ const MyAppBar: React.FC = () => {
     create: "Create Digital File List",
     "create-intro": "Create Digital File List",
     send: "Send Record to DATS",
-    "transfer-status": "View Transfer status",
+    "transfer-status": "View Transfer Status",
     "send-edrms": "Send Records from EDRMS ",
     "send-lan": "Send Records from LAN Drive",
   };
@@ -62,7 +62,7 @@ const MyAppBar: React.FC = () => {
   };
   return (
     <Box mb={7}>
-      <AppBar position="fixed">
+      <AppBar position="fixed" sx={{ marginBottom: "70px" }}>
         <Toolbar>
           <img
             src="/assets/BCID_H_rgb_rev.e68ccb04.png"
@@ -89,7 +89,7 @@ const MyAppBar: React.FC = () => {
               PILOT
             </Typography>
           </Stack>
-          {isAuthenticated ? (
+          {isAuthenticated && (
             <div>
               <IconButton
                 color="inherit"
@@ -120,15 +120,6 @@ const MyAppBar: React.FC = () => {
                 <MenuItem onClick={() => logout()}>Logout</MenuItem>
               </Menu>
             </div>
-          ) : (
-            <Button
-              color="inherit"
-              onClick={() =>
-                login({ idpHint: "idir", postLoginRedirectURL: "/dashboard" })
-              }
-            >
-              Login
-            </Button>
           )}
         </Toolbar>
       </AppBar>
@@ -161,6 +152,7 @@ const MyAppBar: React.FC = () => {
           <HealthCheck />
         </Box>
       )}
+      {!isAuthenticated && <Box sx={{ height: "60px" }} />}
     </Box>
   );
 };

@@ -1,8 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Grid, Typography } from "@mui/material";
 import CardComponent from "../../components/Card/CardComponent";
+import { useSSO } from "@bcgov/citz-imb-sso-react";
 
 const SendRecords: React.FC = () => {
+  const { isAuthenticated } = useSSO();
+
+  useEffect(() => {
+    if (!isAuthenticated) window.location.href = "/";
+  }, [isAuthenticated]);
   return (
     <Box style={{ marginBottom: "45px" }}>
       <Typography sx={{ fontSize: "1.1em", fontWeight: "700" }}>

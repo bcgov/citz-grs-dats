@@ -1,5 +1,4 @@
-import * as React from "react";
-import { useCallback, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Typography from "@mui/material/Typography";
 import Aris617DropZone from "./components/Aris617DropZone";
 import SubmissionAgreement from "./components/submissionAgreement";
@@ -10,28 +9,28 @@ import {
   Box,
   Button,
   CircularProgress,
-  Grid,
-  Paper,
   Snackbar,
   Step,
-  StepContent,
   StepLabel,
   Stepper,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import ErrorIcon from "@mui/icons-material/Error";
 import { Aris66xDropZone } from "./components/Aris66xDropZone";
 import { DatsExcelModel } from "../../utils/xlsxUtils";
 import TransferComponent from "./components/TransferComponent";
 import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
-import { Aris66UploadResponse } from "../../types/DTO/Interfaces/Aris66UploadResponse";
 import { useNavigate } from "react-router-dom";
+import { useSSO } from "@bcgov/citz-imb-sso-react";
 import DownloadAris662Button from "./components/DownloadAris662Button";
 
-
-
 export const SendRecordsLAN = () => {
+  const { isAuthenticated } = useSSO();
+
+  useEffect(() => {
+    if (!isAuthenticated) window.location.href = "/";
+  }, [isAuthenticated]);
+
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<number[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -103,7 +102,8 @@ export const SendRecordsLAN = () => {
       },
       beforeNextCompleted: false,
       content: (
-        <Aris66xDropZone ref={aris66xComponent}
+        <Aris66xDropZone
+          ref={aris66xComponent}
           showValidationMessage={(isValid, errorMessage) =>
             handleValidationChange(0, isValid, errorMessage)
           }
@@ -139,7 +139,8 @@ export const SendRecordsLAN = () => {
       },
       beforeNextCompleted: false,
       content: (
-        <Aris617DropZone ref={aris617xComponent}
+        <Aris617DropZone
+          ref={aris617xComponent}
           showValidationMessage={(isValid, errorMessage) =>
             handleValidationChange(1, isValid, errorMessage)
           }
@@ -167,14 +168,23 @@ export const SendRecordsLAN = () => {
           setIsUploading(true);
           childRef.current.uploadAllFolders();
           setIsUploading(false);
-          showSnackbar("The Upload is initiated successfully and will continue in the background", "success");
+          showSnackbar(
+            "The Upload is initiated successfully and will continue in the background",
+            "success"
+          );
           setNextButtonLabel("Next");
           setBeforeNextCompleted(true);
         }
       },
-      content: <TransferComponent ref={childRef} initialTransfer={arisTransferDetails!!} showValidationMessage={(isValid, errorMessage) => {
-        handleValidationChange(3, isValid, errorMessage);
-      }} />,
+      content: (
+        <TransferComponent
+          ref={childRef}
+          initialTransfer={arisTransferDetails!!}
+          showValidationMessage={(isValid, errorMessage) => {
+            handleValidationChange(3, isValid, errorMessage);
+          }}
+        />
+      ),
       validate: () => isValid,
     },
     {
@@ -239,7 +249,7 @@ export const SendRecordsLAN = () => {
     setActiveStep(0);
     setErrors([]);
     setIsValid(true);
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   const handleValidationChange = (
@@ -286,9 +296,9 @@ export const SendRecordsLAN = () => {
         }}
       >
         <Box sx={{ flex: "1 1 auto" }} />
-        <Box sx={{ m: 1, position: 'relative' }}>
-          <Button disabled={isUploading}
-
+        <Box sx={{ m: 1, position: "relative" }}>
+          <Button
+            disabled={isUploading}
             onClick={activeStep === steps.length - 1 ? handleReset : handleNext}
           >
             {nextButtonLabel}
@@ -297,11 +307,11 @@ export const SendRecordsLAN = () => {
             <CircularProgress
               size={24}
               sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                marginTop: '-12px',
-                marginLeft: '-12px',
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                marginTop: "-12px",
+                marginLeft: "-12px",
               }}
             />
           )}
