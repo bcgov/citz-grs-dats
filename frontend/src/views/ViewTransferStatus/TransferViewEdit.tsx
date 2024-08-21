@@ -242,31 +242,12 @@ const TransferViewEdit: React.FC = () => {
       >
         <TextField
           disabled={!isTransferEditing}
-          sx={{ width: "30%", marginRight: "2%" }}
-          name="producerMinistry"
-          label="Ministry"
-          variant="outlined"
-          onChange={handleInputChange}
-          value={transfer.producerMinistry}
-        />
-
-        <TextField
-          disabled={!isTransferEditing}
-          sx={{ width: "30%" }}
+          sx={{ width: "67%" }}
           name="producerBranch"
-          label="Branch"
+          label="Producer"
           variant="outlined"
           onChange={handleInputChange}
           value={transfer.producerBranch}
-        />
-        <TextField
-          disabled={!isTransferEditing}
-          sx={{ width: "30%", marginLeft: 2 }}
-          name="producerOfficeName"
-          label="Office"
-          variant="outlined"
-          onChange={handleInputChange}
-          value={transfer.producerOfficeName}
         />
       </Grid>
 

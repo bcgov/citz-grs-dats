@@ -1,4 +1,4 @@
-FROM node:20 AS build
+FROM node:21.5-bullseye-slim AS build
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ RUN npm i
 # Build application
 RUN npm run build
 
-FROM node:20 AS prod
+FROM node:21.5-bullseye-slim AS prod
 
 # Set the HOME environment variable to a writable directory
 ENV HOME=/cache

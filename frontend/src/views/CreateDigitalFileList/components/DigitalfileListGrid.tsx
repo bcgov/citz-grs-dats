@@ -1,11 +1,11 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/DeleteOutlined';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Close';
+import * as React from "react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Close";
 import {
   GridRowsProp,
   GridRowModesModel,
@@ -19,15 +19,15 @@ import {
   GridRowModel,
   GridRowEditStopReasons,
   GridSlots,
-} from '@mui/x-data-grid';
+} from "@mui/x-data-grid";
 import {
   randomCreatedDate,
   randomTraderName,
   randomId,
   randomArrayItem,
-} from '@mui/x-data-grid-generator';
+} from "@mui/x-data-grid-generator";
 
-const roles = ['Market', 'Finance', 'Development'];
+const roles = ["Market", "Finance", "Development"];
 const randomRole = () => {
   return randomArrayItem(roles);
 };
@@ -45,18 +45,17 @@ const initialRows: GridRowsProp = [
     primarySecondary: "29900-05",
     fileId: "615",
     opr: true,
-    startDate : randomCreatedDate(),
-    endDate : randomCreatedDate(),
-    SODate : randomCreatedDate(),
-    FDDate : randomCreatedDate(),
+    startDate: randomCreatedDate(),
+    endDate: randomCreatedDate(),
+    SODate: randomCreatedDate(),
+    FDDate: randomCreatedDate(),
   },
- 
 ];
 
 interface EditToolbarProps {
   setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
   setRowModesModel: (
-    newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
+    newModel: (oldModel: GridRowModesModel) => GridRowModesModel
   ) => void;
 }
 
@@ -65,17 +64,17 @@ function EditToolbar(props: EditToolbarProps) {
 
   const handleClick = () => {
     const id = randomId();
-    setRows((oldRows) => [...oldRows, { id, name: '', age: '', isNew: true }]);
+    setRows((oldRows) => [...oldRows, { id, name: "", age: "", isNew: true }]);
     setRowModesModel((oldModel) => ({
       ...oldModel,
-      [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
+      [id]: { mode: GridRowModes.Edit, fieldToFocus: "name" },
     }));
   };
 
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-      Add a new folder
+        Add a new folder
       </Button>
     </GridToolbarContainer>
   );
@@ -83,9 +82,14 @@ function EditToolbar(props: EditToolbarProps) {
 
 export default function FullFeaturedCrudGrid() {
   const [rows, setRows] = React.useState(initialRows);
-  const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
+  const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>(
+    {}
+  );
 
-  const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
+  const handleRowEditStop: GridEventListener<"rowEditStop"> = (
+    params,
+    event
+  ) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
       event.defaultMuiPrevented = true;
     }
@@ -137,7 +141,7 @@ export default function FullFeaturedCrudGrid() {
     },
     {
       field: "primarySecondary",
-      headerName: "Primary/Secondary",
+      headerName: "Primary / Secondary",
       width: 150,
       editable: true,
     },
@@ -241,12 +245,12 @@ export default function FullFeaturedCrudGrid() {
     <Box
       sx={{
         height: 500,
-        width: '100%',
-        '& .actions': {
-          color: 'text.secondary',
+        width: "100%",
+        "& .actions": {
+          color: "text.secondary",
         },
-        '& .textPrimary': {
-          color: 'text.primary',
+        "& .textPrimary": {
+          color: "text.primary",
         },
       }}
     >
@@ -259,7 +263,7 @@ export default function FullFeaturedCrudGrid() {
         onRowEditStop={handleRowEditStop}
         processRowUpdate={processRowUpdate}
         slots={{
-          toolbar: EditToolbar as GridSlots['toolbar'],
+          toolbar: EditToolbar as GridSlots["toolbar"],
         }}
         slotProps={{
           toolbar: { setRows, setRowModesModel },

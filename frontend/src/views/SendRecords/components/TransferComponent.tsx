@@ -49,7 +49,7 @@ enum DATSActions {
   FileFolderExists,
   FileFolderNotExists,
   UploadProgress = 15,
-  UploadSuccessfull = 16
+  UploadSuccessfull = 16,
 }
 type Props = {
   initialTransfer: ITransferDTO;
@@ -66,10 +66,9 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   { initialTransfer, showValidationMessage: validate },
   ref
 ) => {
-
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadEta, setUploadEta] = useState("");
-  const [uploadProgress, setUploadProgress] = useState(0);  // jl test
+  const [uploadProgress, setUploadProgress] = useState(0); // jl test
   const [open, setOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
   const handleClickOpen = (folder: string) => {
@@ -88,43 +87,46 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       // Retrieve the current digitalFileLists, defaulting to an empty array if undefined
       const currentFileLists = transfer.digitalFileLists ?? [];
 
-
       // Map through the digitalFileLists and update the `folderSend` property
       const updatedFileLists = currentFileLists.map((fileList) => {
         if (fileList.folder === folderToDelete) {
           return {
             ...fileList,
-            folderSend: 'Deleted', // Update the folderSend property
+            folderSend: "Deleted", // Update the folderSend property
           };
         }
         return fileList;
       });
 
       // Log the updated file lists to verify the changes
-      console.log("Updated digitalFileLists with 'Deleted' folderSend:", updatedFileLists);
+      console.log(
+        "Updated digitalFileLists with 'Deleted' folderSend:",
+        updatedFileLists
+      );
       debugger;
 
       // Find the fileList that needs to be updated in the service
-      const fileListToUpdate = updatedFileLists.find((fileList) => fileList.folder === folderToDelete);
+      const fileListToUpdate = updatedFileLists.find(
+        (fileList) => fileList.folder === folderToDelete
+      );
 
       if (fileListToUpdate) {
         await new TransferService().updateDigitalFileList(fileListToUpdate);
       }
 
-
       // Proceed with the deletion
       setTransfer((prev) => ({
         ...prev,
-        digitalFileLists: prev.digitalFileLists?.filter(
-          (fileList) => fileList.folder !== folderToDelete
-        ) ?? [],
+        digitalFileLists:
+          prev.digitalFileLists?.filter(
+            (fileList) => fileList.folder !== folderToDelete
+          ) ?? [],
       }));
     }
 
     // Close the dialog after deletion
     handleClose();
   };
-
 
   // end
   const [makeFieldsDisable, setMakeFieldsDisable] = useState<boolean>(false);
@@ -133,7 +135,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const currentFolder = useRef<string | null>(null);
   const currentFolderNote = useRef<string | null>(null);
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState("");
   const [folderValues, setFolderValues] = useState<FolderValues>(
     transfer.digitalFileLists!!.reduce((acc, fileList) => {
       acc[fileList.folder] = fileList.folder;
@@ -162,7 +164,8 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     if (hasFailedStatus) {
       validate(
         false,
-        `unable to find ${statusEntries.find(([key, status]) => status === FAIL)?.[0]
+        `unable to find ${
+          statusEntries.find(([key, status]) => status === FAIL)?.[0]
         }`
       );
     } else {
@@ -196,8 +199,13 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           console.log(`Retrying connection (${attempts}/${maxAttempts})...`);
           setTimeout(connectWebSocket, 1000); // Retry after 1 second
         } else {
-          console.error("Max retries reached. Unable to establish WebSocket connection.");
-          validate(false, 'unable to establish a connection to DATS Companion Service');
+          console.error(
+            "Max retries reached. Unable to establish WebSocket connection."
+          );
+          validate(
+            false,
+            "unable to establish a connection to DATS Companion Service"
+          );
         }
       };
 
@@ -210,37 +218,50 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         const data = JSON.parse(event.data);
         switch (data.Action) {
           case DATSActions.UploadProgress:
-          console.log("setting progress");
-          setUploadStatus((prevState) => ({
-            ...prevState,
-            [data.Payload.Message]: PROGRESS,
-          }));
-          setUploadProgress(data.Payload.Progress);
-          setUploadMessage(`( ${convertBytesToMB(data.Payload.BytesUploaded)}/${convertBytesToMB(data.Payload.TotalBytes)} MB)`);
-          setUploadEta(data.Payload.ETA);
-          if(data.Payload.Progress == 100)
-          {
-            //completed
-            setTimeout(async () => {
-              setUploadStatus((prevState) => ({
-                ...prevState,
-                [data.Payload.Message]: SUCCESS,
-              }));
-              await new TransferService().updateTransfer({ _id: transfer._id, accessionNumber: transfer.accessionNumber, applicationNumber: transfer.applicationNumber, transferStatus: TransferStatus.TrComplete });
-              }, 2000)
-          }
-          break;
+            console.log("setting progress");
+            setUploadStatus((prevState) => ({
+              ...prevState,
+              [data.Payload.Message]: PROGRESS,
+            }));
+            setUploadProgress(data.Payload.Progress);
+            setUploadMessage(
+              `( ${convertBytesToMB(
+                data.Payload.BytesUploaded
+              )}/${convertBytesToMB(data.Payload.TotalBytes)} MB)`
+            );
+            setUploadEta(data.Payload.ETA);
+            if (data.Payload.Progress == 100) {
+              //completed
+              setTimeout(async () => {
+                setUploadStatus((prevState) => ({
+                  ...prevState,
+                  [data.Payload.Message]: SUCCESS,
+                }));
+                await new TransferService().updateTransfer({
+                  _id: transfer._id,
+                  accessionNumber: transfer.accessionNumber,
+                  applicationNumber: transfer.applicationNumber,
+                  transferStatus: TransferStatus.TrComplete,
+                });
+              }, 2000);
+            }
+            break;
           case DATSActions.Cancelled:
             currentFolder.current = null;
             break;
           case DATSActions.FileInformation:
             if (currentFolder.current !== null) {
               setTransfer((prev) => {
-                const updatedFileLists = prev.digitalFileLists?.map((fileList) =>
-                  fileList.folder === currentFolder.current
-                    ? { ...fileList, folder: String(data.Payload.Path), note: note }
-                    : fileList
-                ) || [];
+                const updatedFileLists =
+                  prev.digitalFileLists?.map((fileList) =>
+                    fileList.folder === currentFolder.current
+                      ? {
+                          ...fileList,
+                          folder: String(data.Payload.Path),
+                          note: note,
+                        }
+                      : fileList
+                  ) || [];
 
                 // Check if any item matches the condition
                 const hasMatchingFolder = prev.digitalFileLists?.some(
@@ -251,10 +272,10 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
                 if (!hasMatchingFolder) {
                   updatedFileLists.push({
                     folder: String(data.Payload.Path),
-                    _id: '',
+                    _id: "",
                     size: data.Payload.SizeInBytes,
                     fileCount: data.Payload.FileCount,
-                    transfer: ''
+                    transfer: "",
                   });
                 }
                 return {
@@ -282,20 +303,21 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             validate(true, `All folders have been uploaded successfully`);
 
             break;
-            case DATSActions.Progress:
-            
+          case DATSActions.Progress:
             break;
           case DATSActions.Error:
             setUploadStatus((prevState) => ({
               ...prevState,
               [data.Payload.Message]: FAIL,
             }));
-            validate(false, `upload failed for ${data.Payload.Message}. This transfer is rolled back, please contact administrator`);
+            validate(
+              false,
+              `upload failed for ${data.Payload.Message}. This transfer is rolled back, please contact administrator`
+            );
             cancelAllProgress(transfer);
             break;
-            case DATSActions.Completed:
-              
-              break;
+          case DATSActions.Completed:
+            break;
         }
       };
 
@@ -310,14 +332,21 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   }, [transfer.digitalFileLists]);
 
   const validateInputs = (): boolean => {
-    if (!transfer.digitalFileLists || (transfer.digitalFileLists && transfer.digitalFileLists.length == 0)) {
-      validate(false, "Please add folders to update and/or ensure there are no error marker in any folder");
+    if (
+      !transfer.digitalFileLists ||
+      (transfer.digitalFileLists && transfer.digitalFileLists.length == 0)
+    ) {
+      validate(
+        false,
+        "Please add folders to update and/or ensure there are no error marker in any folder"
+      );
       return false;
     }
     return true;
-  }
+  };
   useImperativeHandle(ref, () => ({
-    uploadAllFolders, validateInputs
+    uploadAllFolders,
+    validateInputs,
   }));
   // Function to update the status of all folders to PROGRESS
   const setAllProgress = (transfer: ITransferDTO) => {
@@ -354,8 +383,8 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     debugger;
     if (!transfer.digitalFileLists || transfer.digitalFileLists.length === 0) {
       debugger;
-      console.log('no folders to upload');
-      validate(false, 'Please add folders to upload');
+      console.log("no folders to upload");
+      validate(false, "Please add folders to upload");
       return;
     }
     const baseUrl = await getApiBaseUrl();
@@ -369,8 +398,8 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         Payload: {
           Package: transfer.digitalFileLists?.map((file) => ({
             Path: file.folder,
-            Classification: file.primarySecondary || '',
-            Note: file.note
+            Classification: file.primarySecondary || "",
+            Note: file.note,
           })),
           TransferId: transfer._id,
           ApplicationNumber: transfer.applicationNumber,
@@ -380,17 +409,17 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       })
     );
   };
-  const convertBytesToMB = (totalBytes: any): number | null  => {
+  const convertBytesToMB = (totalBytes: any): number | null => {
     const bytes = Number(totalBytes);
 
     if (!isNaN(bytes)) {
-        const megabytes = bytes / (1024 * 1024);
-        return parseFloat(megabytes.toFixed(2));
+      const megabytes = bytes / (1024 * 1024);
+      return parseFloat(megabytes.toFixed(2));
     } else {
-        console.error("totalBytes is not a valid number.");
-        return null;
+      console.error("totalBytes is not a valid number.");
+      return null;
     }
-}
+  };
   const sendMessageToService = (message: any) => {
     console.log(message);
 
@@ -407,7 +436,9 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   const handleDelete = (folder: string) => {
     setTransfer((prev) => ({
       ...prev,
-      digitalFileLists: prev.digitalFileLists!!.filter((fileList) => fileList.folder !== folder),
+      digitalFileLists: prev.digitalFileLists!!.filter(
+        (fileList) => fileList.folder !== folder
+      ),
     }));
   };
   const handleValueChange = (
@@ -424,7 +455,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   const handleAddFolder = (folder: string) => {
     currentFolder.current = folder;
     window.location.href = `citz-grs-dats://open?browse=folder`;
-  }
+  };
   const handleEditClick = (folder: string) => {
     currentFolder.current = folder;
     setIsPopupOpen(true);
@@ -438,13 +469,13 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
 
   const handlePopupClose = () => {
     setIsPopupOpen(false);
-    setNote('');
+    setNote("");
   };
   const handleNoteSubmit = () => {
     setIsPopupOpen(false);
     currentFolderNote.current = note;
-    console.log('note' + note);
-    console.log('note ref' + currentFolderNote.current);
+    console.log("note" + note);
+    console.log("note ref" + currentFolderNote.current);
     window.location.href = `citz-grs-dats://open?browse=folder`;
   };
   const handleNoteChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -455,18 +486,25 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     if (status === UNKNOWN) return null;
     if (status === FAIL) return <ErrorIcon color="error" />;
     if (status === SUCCESS) return <CheckCircleIcon color="success" />;
-    if (status === INDETERMINATE) return <CircularProgress color="primary" size={24} />;
-    if (status === PROGRESS) return <Box sx={{ width: '100%', mt: 2 }}>
-    <Box sx={{ display: 'block', alignItems: 'center', mb: 2 }}>
-       <Typography sx={{ fontSize: '0.6rem' }} gutterBottom>
-         {uploadMessage}
-       </Typography>
-     </Box>
-     <Box>
-       <LinearProgress variant="determinate" value={uploadProgress} />
-       <Typography sx={{ fontSize: '0.6rem' }} color="textSecondary">{`${Math.floor(uploadProgress)}% (${uploadEta})`}</Typography>
-       </Box>
-     </Box>
+    if (status === INDETERMINATE)
+      return <CircularProgress color="primary" size={24} />;
+    if (status === PROGRESS)
+      return (
+        <Box sx={{ width: "100%", mt: 2 }}>
+          <Box sx={{ display: "block", alignItems: "center", mb: 2 }}>
+            <Typography sx={{ fontSize: "0.6rem" }} gutterBottom>
+              {uploadMessage}
+            </Typography>
+          </Box>
+          <Box>
+            <LinearProgress variant="determinate" value={uploadProgress} />
+            <Typography
+              sx={{ fontSize: "0.6rem" }}
+              color="textSecondary"
+            >{`${Math.floor(uploadProgress)}% (${uploadEta})`}</Typography>
+          </Box>
+        </Box>
+      );
     return status ? (
       <CheckCircleIcon color="success" />
     ) : (
@@ -513,9 +551,14 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           />
         </Grid>
       </Grid>
-      {(!transfer.digitalFileLists || transfer.digitalFileLists.length === 0) && (
+      {(!transfer.digitalFileLists ||
+        transfer.digitalFileLists.length === 0) && (
         <Box sx={{ mt: 2 }}>
-          <Button variant="contained" color="primary" onClick={() => handleAddFolder('NEW_FOLDER')}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handleAddFolder("NEW_FOLDER")}
+          >
             Add Digital File
           </Button>
         </Box>
@@ -542,7 +585,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           </Grid>
           <Grid item xs={1}>
             <Typography variant="body2" color="textSecondary">
-              PrimarySecondary
+              Primary / Secondary
             </Typography>
           </Grid>
           <Grid item xs={1}>
@@ -625,10 +668,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
               </IconButton>
             </Grid>
             {/* Confirmation Dialog */}
-            <Dialog
-              open={open}
-              onClose={handleClose}
-            >
+            <Dialog open={open} onClose={handleClose}>
               <DialogTitle>Confirm Deletion</DialogTitle>
               <DialogContent>
                 <DialogContentText>
@@ -654,7 +694,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             minRows={5}
             value={note}
             onChange={handleNoteChange}
-            style={{ width: '100%' }}
+            style={{ width: "100%" }}
           />
         </DialogContent>
         <DialogActions>
