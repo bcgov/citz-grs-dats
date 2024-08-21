@@ -150,26 +150,15 @@ const TransferViewEdit: React.FC = () => {
         <Box>
           <Button
             variant="text"
-            startIcon={
-              isTransferEditing ? <DoneTwoToneIcon /> : <EditTwoToneIcon />
-            }
-            onClick={() => {
-              if (isTransferEditing) {
-                handleUpdateTransfer();
-              }
-              setIsTransferEditing(!isTransferEditing);
-            }}
+            color="error"
+            onClick={handleClickOpenDelete}
           >
-            {isTransferEditing ? "Done" : "Edit"}
-          </Button>
-          <Button variant="text" color="error" onClick={handleClickOpenDelete}>
             Delete Transfer
           </Button>
           <Button
             variant="text"
             color="primary"
             onClick={handleClickOpenCreatePSP}
-            disabled={transfer.transferStatus !== TransferStatus.TrComplete}
           >
             Create PSP
           </Button>
@@ -207,7 +196,7 @@ const TransferViewEdit: React.FC = () => {
             marginLeft: 2,
             marginBottom: 2,
           }}
-          disabled={!isTransferEditing}
+          disabled
           label="Description"
           name="description"
           variant="outlined"
@@ -218,7 +207,7 @@ const TransferViewEdit: React.FC = () => {
           id="outlined-select-currency"
           select
           label="Select"
-          disabled={!isTransferEditing}
+          disabled
           onChange={handleInputChange}
           value={transfer.transferStatus}
         >

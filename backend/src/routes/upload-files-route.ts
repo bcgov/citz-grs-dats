@@ -43,5 +43,9 @@ router.get(
   "/downloadUpdateAris662",
   uploadController.downloadUpdateAris662);
 
+router.post(
+  "/upload-files",
+  uploadFolderDetails,
+  uploadController.saveFolderDetails);
 
 export default router;
