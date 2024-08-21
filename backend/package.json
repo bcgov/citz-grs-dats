@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.598.0",
-    "@bcgov/citz-imb-sso-express": "1.0.2-beta",
+    "@bcgov/citz-imb-sso-express": "1.0.2-beta2",
     "@types/mime-types": "^2.1.4",
     "@types/mongoose": "^5.11.97",
     "@types/multer": "^1.4.11",

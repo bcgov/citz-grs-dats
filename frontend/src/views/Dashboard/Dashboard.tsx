@@ -12,7 +12,7 @@ const Dashboard: React.FC = () => {
         Software Center. Please follow these instructions [insert link later].
       </Typography>
       <br />
-      {isAuthenticated && (
+      {isAuthenticated ? (
         <Box sx={{ display: "flex" }}>
           <CardComponent
             title="Create a Digital File List"
@@ -32,6 +32,10 @@ const Dashboard: React.FC = () => {
             />
           )}
         </Box>
+      ) : (
+        <Typography variant="h3" sx={{ marginBottom: "35px" }}>
+          Your session has ended. Re-log to continue using DATS.
+        </Typography>
       )}
       <br />
       <Typography>
