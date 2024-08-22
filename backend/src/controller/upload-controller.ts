@@ -238,6 +238,7 @@ export default class UploadController {
       console.log('subApplicationPath = ' + subApplicationPath);
 
       await this.s3ClientService.saveToS3Documentation(file.buffer, fileName, subApplicationPath);
+      res.status(200).send('File uploaded to the S3 documentation folder');
     } catch (error) {
       console.error("Error while uplaoding the file:", error);
       res.status(500).send("An error occurred while uplaoding the file.");

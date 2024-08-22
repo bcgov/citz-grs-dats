@@ -102,9 +102,14 @@ const SendRecordsEDRMS = () => {
         //add your update logic here
         setIsUploading(true);
         try {
+          const applicationNumber = excelData?.applicationNumber ?? '';
+          const accessionNumber = excelData?.accessionNumber ?? '';
           const formData = new FormData();
-          formData.append("uploadARIS617file", aris617File!);
-          var res = await uploadService.upload617File(formData);
+          formData.append("file", aris617File!);
+          formData.append("applicationNumber", applicationNumber);
+          formData.append("accessionNumber", accessionNumber);
+          var res = await uploadService.uploadFileToDocumentation(formData);
+
           console.log(res);
           setIsUploading(false);
           showSnackbar("Upload successful", "success");
@@ -137,9 +142,13 @@ const SendRecordsEDRMS = () => {
         //add your update logic here
         setIsUploading(true);
         try {
+          const applicationNumber = excelData?.applicationNumber ?? '';
+          const accessionNumber = excelData?.accessionNumber ?? '';
           const formData = new FormData();
-          formData.append("uploadARIS617file", aris617File!);
-          var res = await uploadService.upload617File(formData);
+          formData.append("file", aris617File!);
+          formData.append("applicationNumber", applicationNumber);
+          formData.append("accessionNumber", accessionNumber);
+          var res = await uploadService.uploadFileToDocumentation(formData);
           console.log(res);
           setIsUploading(false);
           showSnackbar("Upload successful", "success");
@@ -162,6 +171,7 @@ const SendRecordsEDRMS = () => {
             handleValidationChange(0, isValid, errorMessage)
           }
           setFile={updateAris617File}
+
         />
       ),
       validate: () => aris617xComponent.current!!.validateInputs(),
@@ -337,10 +347,10 @@ const SendRecordsEDRMS = () => {
             {...(!isInErrorState
               ? { variant: "contained" }
               : {
-                  variant: "outlined",
-                  color: "error",
-                  startIcon: <ErrorIcon />,
-                })}
+                variant: "outlined",
+                color: "error",
+                startIcon: <ErrorIcon />,
+              })}
             onClick={activeStep === steps.length - 1 ? handleReset : handleNext}
           >
             {nextButtonLabel}

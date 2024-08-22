@@ -119,9 +119,13 @@ export const SendRecordsLAN = () => {
         //add your update logic here
         setIsUploading(true);
         try {
+          const applicationNumber = excelData?.applicationNumber ?? '';
+          const accessionNumber = excelData?.accessionNumber ?? '';
           const formData = new FormData();
-          formData.append("uploadARIS617file", aris617File!);
-          var res = await uploadService.upload617File(formData);
+          formData.append("file", aris617File!);
+          formData.append("applicationNumber", applicationNumber);
+          formData.append("accessionNumber", accessionNumber);
+          var res = await uploadService.uploadFileToDocumentation(formData);
           console.log(res);
           setIsUploading(false);
           showSnackbar("Upload successful", "success");

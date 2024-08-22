@@ -64,7 +64,21 @@ export default class UploadService {
       });
   }
 
-
+  public async uploadFileToDocumentation(formData: any): Promise<any> {
+    return await axios
+      .post(`${API_URL}/api/uploadFilesToS3Documentation`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.error(error);
+        return error;
+      });
+  }
 
   public async saveAgreementToDats(agreementText: Array<any>, applicationNumber: string, accessionNumber: string, userDisplayName: string, formattedDate: string, status: string, decision: string): Promise<any> {
     try {
