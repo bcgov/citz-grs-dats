@@ -23,8 +23,15 @@ import DoneTwoToneIcon from "@mui/icons-material/DoneTwoTone";
 import { TransferService } from "../../services/transferService";
 import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
 import { TransferStatus } from "../../types/Enums/TransferStatus";
+import { useSSO } from "@bcgov/citz-imb-sso-react";
 
 const TransferViewEdit: React.FC = () => {
+  const { isAuthenticated } = useSSO();
+
+  useEffect(() => {
+    if (!isAuthenticated) window.location.href = "/";
+  }, [isAuthenticated]);
+
   const { id } = useParams();
   const navigate = useNavigate();
   const [transfer, setTransfer] = useState<ITransferDTO | any>(null);
@@ -70,7 +77,6 @@ const TransferViewEdit: React.FC = () => {
       setLoading(false);
     }
   };
-
 
   const handleCreatePSP = async () => {
     setOpenCreatePSP(false);
@@ -224,39 +230,17 @@ const TransferViewEdit: React.FC = () => {
         sx={{ marginTop: 2, marginBottom: 2, marginLeft: 2 }}
       >
         <TextField
-          disabled
-          sx={{ width: "30%", marginRight: "2%" }}
-          name="producerMinistry"
-          label="Ministry"
-          variant="outlined"
-          onChange={handleInputChange}
-          value={transfer.producerMinistry}
-        />
-
-        <TextField
-          disabled
-          sx={{ width: "30%" }}
+          disabled={!isTransferEditing}
+          sx={{ width: "67%" }}
           name="producerBranch"
-          label="Branch"
+          label="Producer"
           variant="outlined"
           onChange={handleInputChange}
           value={transfer.producerBranch}
         />
-        <TextField
-          disabled
-          sx={{ width: "30%", marginLeft: 2 }}
-          name="producerOfficeName"
-          label="Office"
-          variant="outlined"
-          onChange={handleInputChange}
-          value={transfer.producerOfficeName}
-        />
       </Grid>
 
-      <Dialog
-        open={openDelete}
-        onClose={handleCloseDelete}
-      >
+      <Dialog open={openDelete} onClose={handleCloseDelete}>
         <DialogTitle>{"Delete Transfer"}</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -273,10 +257,7 @@ const TransferViewEdit: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        open={openCreatePSP}
-        onClose={handleCloseCreatePSP}
-      >
+      <Dialog open={openCreatePSP} onClose={handleCloseCreatePSP}>
         <DialogTitle>{"Create PSP"}</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -293,7 +274,7 @@ const TransferViewEdit: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      <Backdrop open={loading} style={{ zIndex: 1300, color: '#fff' }}>
+      <Backdrop open={loading} style={{ zIndex: 1300, color: "#fff" }}>
         <CircularProgress color="inherit" />
       </Backdrop>
 
@@ -301,9 +282,12 @@ const TransferViewEdit: React.FC = () => {
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert onClose={handleSnackbarClose} severity={message?.includes("Error") ? "error" : "success"}>
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={message?.includes("Error") ? "error" : "success"}
+        >
           {message}
         </Alert>
       </Snackbar>

@@ -1,5 +1,4 @@
-import * as React from "react";
-import { useCallback, useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Typography from "@mui/material/Typography";
 import {
   Alert,
@@ -19,14 +18,19 @@ import { useNavigate } from "react-router-dom";
 import Aris617DropZone from "./components/Aris617DropZone";
 import SubmissionAgreement from "./components/submissionAgreement";
 import TransferComponent from "./components/TransferComponent";
-import { Aris66xDropZone } from "./components/Aris66xDropZone";
 import UploadService from "../../services/uploadService";
 import { DatsExcelModel } from "../../utils/xlsxUtils";
 import ITransferDTO from "../../types/DTO/Interfaces/ITransferDTO";
-import { Aris66UploadResponse } from "../../types/DTO/Interfaces/Aris66UploadResponse";
 import { DataportTxtDropZone } from "./components/DataportTxtDropZone";
+import { useSSO } from "@bcgov/citz-imb-sso-react";
 
 const SendRecordsEDRMS = () => {
+  const { isAuthenticated } = useSSO();
+
+  useEffect(() => {
+    if (!isAuthenticated) window.location.href = "/";
+  }, [isAuthenticated]);
+
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<number[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -44,10 +48,13 @@ const SendRecordsEDRMS = () => {
   const [nextButtonLabel, setNextButtonLabel] = useState("Next");
   const [arisTransferDetails, setArisTransferDetails] =
     useState<ITransferDTO | null>(null);
-    const dataportComponent = useRef<{ validateInputs: () => boolean }>(null);
-    const aris617xComponent = useRef<{ validateInputs: () => boolean }>(null);
-    const fileListComponent = useRef<{ validateInputs: () => boolean, clearFiles: () => void }>(null);
-    
+  const dataportComponent = useRef<{ validateInputs: () => boolean }>(null);
+  const aris617xComponent = useRef<{ validateInputs: () => boolean }>(null);
+  const fileListComponent = useRef<{
+    validateInputs: () => boolean;
+    clearFiles: () => void;
+  }>(null);
+
   const navigate = useNavigate();
   const childRef = useRef<any>(null);
   const uploadService = new UploadService();
@@ -75,46 +82,50 @@ const SendRecordsEDRMS = () => {
   const steps = [
     {
       label: "Upload Dataport file",
-      beforeNext: async () => await handleUpload(file, uploadService.uploadDataportFile),
+      beforeNext: async () =>
+        await handleUpload(file, uploadService.uploadDataportFile),
       content: (
-        <DataportTxtDropZone ref={dataportComponent}
-          validate={(isValid, errorMessage) => handleValidationChange(0, isValid, errorMessage)}
+        <DataportTxtDropZone
+          ref={dataportComponent}
+          validate={(isValid, errorMessage) =>
+            handleValidationChange(0, isValid, errorMessage)
+          }
           setFile={updateFile}
           setExcelData={setExcelData}
         />
       ),
       validate: () => dataportComponent.current!!.validateInputs(),
-
     },
     {
       label: "Upload File List",
       beforeNext: async () => {
         //add your update logic here
-    setIsUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("uploadARIS617file", aris617File!);
-      var res = await uploadService.upload617File(formData);
-      console.log(res);
-      setIsUploading(false);
-      showSnackbar("Upload successful", "success");
-      setNextButtonLabel("Next");
-      setBeforeNextCompleted(true);
-    } catch (error) {
-      console.error("Upload failed", error);
-      showSnackbar("Upload failed", "error");
-      setIsUploading(false);
-      setIsValid(false);
-      setErrors((prev) => [...prev, activeStep]);
-      setNextButtonLabel("Upload 617 file");
-      return;
-    }
+        setIsUploading(true);
+        try {
+          const formData = new FormData();
+          formData.append("uploadARIS617file", aris617File!);
+          var res = await uploadService.upload617File(formData);
+          console.log(res);
+          setIsUploading(false);
+          showSnackbar("Upload successful", "success");
+          setNextButtonLabel("Next");
+          setBeforeNextCompleted(true);
+        } catch (error) {
+          console.error("Upload failed", error);
+          showSnackbar("Upload failed", "error");
+          setIsUploading(false);
+          setIsValid(false);
+          setErrors((prev) => [...prev, activeStep]);
+          setNextButtonLabel("Upload 617 file");
+          return;
+        }
       },
       content: (
-        <Aris617DropZone ref={fileListComponent}
+        <Aris617DropZone
+          ref={fileListComponent}
           showValidationMessage={(isValid, errorMessage) =>
-          handleValidationChange(0, isValid, errorMessage)
-        }
+            handleValidationChange(0, isValid, errorMessage)
+          }
           setFile={updateAris617File}
         />
       ),
@@ -124,33 +135,33 @@ const SendRecordsEDRMS = () => {
       label: "Upload Transfer Form (ARS 617)",
       beforeNext: async () => {
         //add your update logic here
-    setIsUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("uploadARIS617file", aris617File!);
-      var res = await uploadService.upload617File(formData);
-      console.log(res);
-      setIsUploading(false);
-      showSnackbar("Upload successful", "success");
-      setNextButtonLabel("Next");
-      setBeforeNextCompleted(true);
-    } catch (error) {
-      console.error("Upload failed", error);
-      showSnackbar("Upload failed", "error");
-      setIsUploading(false);
-      setIsValid(false);
-      setErrors((prev) => [...prev, activeStep]);
-      setNextButtonLabel("Upload 617 file");
-      return;
-    }
+        setIsUploading(true);
+        try {
+          const formData = new FormData();
+          formData.append("uploadARIS617file", aris617File!);
+          var res = await uploadService.upload617File(formData);
+          console.log(res);
+          setIsUploading(false);
+          showSnackbar("Upload successful", "success");
+          setNextButtonLabel("Next");
+          setBeforeNextCompleted(true);
+        } catch (error) {
+          console.error("Upload failed", error);
+          showSnackbar("Upload failed", "error");
+          setIsUploading(false);
+          setIsValid(false);
+          setErrors((prev) => [...prev, activeStep]);
+          setNextButtonLabel("Upload 617 file");
+          return;
+        }
       },
       content: (
-        <Aris617DropZone ref={aris617xComponent}
+        <Aris617DropZone
+          ref={aris617xComponent}
           showValidationMessage={(isValid, errorMessage) =>
-          handleValidationChange(0, isValid, errorMessage)
-        }
+            handleValidationChange(0, isValid, errorMessage)
+          }
           setFile={updateAris617File}
-          
         />
       ),
       validate: () => aris617xComponent.current!!.validateInputs(),
@@ -159,7 +170,9 @@ const SendRecordsEDRMS = () => {
       label: "Submission Agreement",
       content: (
         <SubmissionAgreement
-        showValidationMessage={(isValid, errorMessage) => handleValidationChange(2, isValid, errorMessage)}
+          showValidationMessage={(isValid, errorMessage) =>
+            handleValidationChange(2, isValid, errorMessage)
+          }
           excelData={excelData}
         />
       ),
@@ -171,12 +184,14 @@ const SendRecordsEDRMS = () => {
         if (childRef.current) {
           setIsUploading(true);
           childRef.current.uploadAllFolders();
-          if(isValid)
-          {
-          setIsUploading(false);
-          showSnackbar("The Upload is initiated successfully and will continue in the background", "success");
-          setNextButtonLabel("Next");
-          setBeforeNextCompleted(true);
+          if (isValid) {
+            setIsUploading(false);
+            showSnackbar(
+              "The Upload is initiated successfully and will continue in the background",
+              "success"
+            );
+            setNextButtonLabel("Next");
+            setBeforeNextCompleted(true);
           }
         }
       },
@@ -184,7 +199,9 @@ const SendRecordsEDRMS = () => {
         <TransferComponent
           ref={childRef}
           initialTransfer={arisTransferDetails!!}
-          showValidationMessage={(isValid, errorMessage) => handleValidationChange(3, isValid, errorMessage)}
+          showValidationMessage={(isValid, errorMessage) =>
+            handleValidationChange(3, isValid, errorMessage)
+          }
         />
       ),
       validate: () => childRef.current!!.validateInputs(),
@@ -193,7 +210,9 @@ const SendRecordsEDRMS = () => {
       label: "Download Files",
       content: (
         <Typography>
-          DATS will display a “Transfer complete message” and a “Thanks Message or text” at this last step and a link to download the new Digital File List (ARS 66X)
+          DATS will display a “Transfer complete message” and a “Thanks Message
+          or text” at this last step and a link to download the new Digital File
+          List (ARS 66X)
         </Typography>
       ),
       validate: () => true,
@@ -249,14 +268,12 @@ const SendRecordsEDRMS = () => {
 
     setNextButtonLabel("Next");
     setErrors((prev) => prev.filter((error) => error !== activeStep));
-    if(activeStep === 1)
-      {
-        setFile(null);
-        fileListComponent.current!!.clearFiles();
-      }
+    if (activeStep === 1) {
+      setFile(null);
+      fileListComponent.current!!.clearFiles();
+    }
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
     setBeforeNextCompleted(false);
-    
   };
 
   const handleBack = () => {
@@ -269,7 +286,7 @@ const SendRecordsEDRMS = () => {
     setActiveStep(0);
     setErrors([]);
     setIsValid(true);
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   const handleValidationChange = (
@@ -290,7 +307,10 @@ const SendRecordsEDRMS = () => {
 
   return (
     <Box sx={{ width: "100%", p: 2 }}>
-      <Stepper activeStep={activeStep} orientation={isSmallScreen ? "vertical" : "horizontal"}>
+      <Stepper
+        activeStep={activeStep}
+        orientation={isSmallScreen ? "vertical" : "horizontal"}
+      >
         {steps.map((step, index) => (
           <Step key={step.label}>
             <StepLabel error={errors.includes(index)}>{step.label}</StepLabel>
@@ -299,15 +319,28 @@ const SendRecordsEDRMS = () => {
       </Stepper>
       <Box sx={{ mt: 2, mb: 1 }}>
         {React.cloneElement(steps[activeStep].content, {
-          validate: (isValid: boolean, errorMessage: string) => handleValidationChange(activeStep, isValid, errorMessage),
+          validate: (isValid: boolean, errorMessage: string) =>
+            handleValidationChange(activeStep, isValid, errorMessage),
         })}
       </Box>
-      <Box sx={{ display: "flex", flexDirection: isSmallScreen ? "column" : "row", pt: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: isSmallScreen ? "column" : "row",
+          pt: 2,
+        }}
+      >
         <Box sx={{ flex: "1 1 auto" }} />
-        <Box sx={{ m: 1, position: 'relative' }}>
+        <Box sx={{ m: 1, position: "relative" }}>
           <Button
             disabled={isUploading}
-            {...(!isInErrorState ? { variant: "contained" } : { variant: "outlined", color: "error", startIcon: <ErrorIcon /> })}
+            {...(!isInErrorState
+              ? { variant: "contained" }
+              : {
+                  variant: "outlined",
+                  color: "error",
+                  startIcon: <ErrorIcon />,
+                })}
             onClick={activeStep === steps.length - 1 ? handleReset : handleNext}
           >
             {nextButtonLabel}
@@ -316,18 +349,26 @@ const SendRecordsEDRMS = () => {
             <CircularProgress
               size={24}
               sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                marginTop: '-12px',
-                marginLeft: '-12px',
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                marginTop: "-12px",
+                marginLeft: "-12px",
               }}
             />
           )}
         </Box>
       </Box>
-      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
-        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: "100%" }}>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>

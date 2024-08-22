@@ -158,10 +158,10 @@ const SelectFolder: FC = () => {
     { title: "P/S", info: "Primary (P) and Secondary (S)", sm: 1.3 },
     { title: "FILE", info: "Information about File", sm: 1.4 },
     { title: "OPR", info: "Office of Primary Responsibility (OPR)", sm: 1.2 },
-    { title: "Start Date", info: "Information about Start Date", sm: 1.2 },
-    { title: "End Date", info: "Information about End Date", sm: 1.1 },
+    { title: "Start Date", info: "Start Date", sm: 1.2 },
+    { title: "End Date", info: "End Date", sm: 1.1 },
     { title: "SO Date", info: "Superseded (S) or Obsolete (O) Date", sm: 1.1 },
-    { title: "FD Date", info: "Information about FD Date", sm: 1 },
+    { title: "FD Date", info: "Final Disposition Date", sm: 1 },
     { title: "Actions", info: "Information about Actions", sm: 0.7 },
   ];
 
@@ -181,21 +181,24 @@ const SelectFolder: FC = () => {
           >
             Add Folder
           </Button>
-          </Box>
+        </Box>
       </Box>
       {isBusy && (
-            <Box sx={{ width: '100%', mt: 2 }}>
-         <Box sx={{ display: 'block', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ width: "100%", mt: 2 }}>
+          <Box sx={{ display: "block", alignItems: "center", mb: 2 }}>
             <Typography variant="h6" gutterBottom>
               {message}
             </Typography>
           </Box>
           <Box>
             <LinearProgress variant="determinate" value={progress} />
-            <Typography variant="body2" color="textSecondary">{`${progress}%`}</Typography>
-            </Box>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+            >{`${progress}%`}</Typography>
           </Box>
-          )}
+        </Box>
+      )}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Grid container spacing={1} alignItems="center">
           {headers.map((header) => (
@@ -311,7 +314,7 @@ const SelectFolder: FC = () => {
         <Button
           variant="contained"
           color="secondary"
-          disabled={isBusy ||  folders.length === 0}
+          disabled={isBusy || folders.length === 0}
           onClick={() => generateExcel(folders)}
         >
           Generate Digital File List
