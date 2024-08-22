@@ -4,8 +4,8 @@ import { uploadARIS66xMiddleware } from "../middleware/uploadARIS66xMiddleware";
 import { uploadARIS617Middleware } from "../middleware/uploadARIS617Middleware";
 import UploadController from "../controller/upload-controller";
 import { uploadFolderDetails } from "../middleware/uploadFolderDetails";
-import { uploadDataportFileMiddleware } from "../middleware/uploadDataportFile";
 import multer from "multer";
+import { uploadFileToS3 } from "../middleware/uploadFileToS3";
 
 const router = express.Router();
 const uploadController = new UploadController();
@@ -47,5 +47,10 @@ router.post(
   "/upload-files",
   uploadFolderDetails,
   uploadController.saveFolderDetails);
+
+router.post(
+  "/upload-files-toS3Documentation",
+  uploadFileToS3,
+  uploadController.saveToS3Documentation);
 
 export default router;

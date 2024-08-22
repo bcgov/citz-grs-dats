@@ -29,9 +29,9 @@ interface Aris66xDropZoneProps {
   setFile: (file: File | null) => void;
   setExcelData: (data: any) => void;
 }
-export const DataportTxtDropZone = forwardRef((props: Aris66xDropZoneProps,ref) => {
-  
- const {validate, setFile,  setExcelData} = props;
+export const DataportTxtDropZone = forwardRef((props: Aris66xDropZoneProps, ref) => {
+
+  const { validate, setFile, setExcelData } = props;
   const [acceptedFiles, setAcceptedFiles] = useState<File[]>([]);
   const [data, setData] = useState<DatsExcelModel | null>(null);
   const [isCheckboxChecked, setIsCheckboxChecked] = useState(false);
@@ -65,26 +65,25 @@ export const DataportTxtDropZone = forwardRef((props: Aris66xDropZoneProps,ref) 
                 setFile(null);
                 setAcceptedFiles([]);
                 setClearFilesSignal(true);
-              } 
+              }
             },
             (error) => {
-              if(error.response.status == 404) //transfer not found
+              if (error.response.status == 404) //transfer not found
               {
                 setData(extractedData);
                 setExcelData(extractedData);
-                console.log("Aris66xDropZone" + file); // This is the file that was uploaded
+                console.log("DataportTxtDropZone" + file); // This is the file that was uploaded
                 setFile(file);
                 validate(isCheckboxChecked, "");
               }
-              else
-              {
+              else {
                 //anyother error
-              console.log('404 transfer not found')
-              validate(false, error);
-              setIsCheckboxChecked(false);
-              setExcelData(null);
-              setData(null);
-              setFile(null);
+                console.log('404 transfer not found')
+                validate(false, error);
+                setIsCheckboxChecked(false);
+                setExcelData(null);
+                setData(null);
+                setFile(null);
               }
             }
           );
@@ -104,9 +103,8 @@ export const DataportTxtDropZone = forwardRef((props: Aris66xDropZoneProps,ref) 
     const newFiles = acceptedFiles.filter((f) => f !== file);
     setAcceptedFiles(newFiles);
   };
-  const validateInputs = ():boolean  => {
-    if(!isCheckboxChecked)
-    {
+  const validateInputs = (): boolean => {
+    if (!isCheckboxChecked) {
       validate(false, "Please check & confirm the applicaton and accession number");
     }
     return isCheckboxChecked;

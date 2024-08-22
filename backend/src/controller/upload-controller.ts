@@ -6,6 +6,8 @@ import { RequestHandler } from "express";
 import mongoose from "mongoose";
 import { CSVDataExtractor } from "../service/data-extractor-service";
 import logger from "../config/logs/winston-config";
+import { readFile } from "fs";
+import { promises as fs } from 'fs';
 
 
 
@@ -76,7 +78,6 @@ export default class UploadController {
       const newTransfer = await this.transferService.createTransferMetaData(uploadedFile.path);
       const newTransferId = newTransfer?._id || new mongoose.mongo.ObjectId(0);
       const hashDigitalFileList = await this.digitalFileListService.createDigitalFileListMetaData(newTransferId.toString(), uploadedFile.path);
-      // TODO Add the S3 PSP structure
 
       this.documentationPath = await this.s3ClientService.uploadAra66xFile(uploadedFile);
 
@@ -134,12 +135,12 @@ export default class UploadController {
 
       const uploadedFile = req.file;
 
-      //console.log("handleARIS617Upload, uploadedFile"+uploadedFile);
+      console.log("documentationPath, " + this.documentationPath);
 
       if (!uploadedFile) {
         return res.status(400).json({ error: "No file uploaded" });
       }
-      const documentationPath = await this.s3ClientService.uploadARIS617File(uploadedFile, this.documentationPath);
+      this.documentationPath = await this.s3ClientService.uploadARIS617File(uploadedFile, this.documentationPath);
 
       res.status(201).json({
         message: "Upload ARIS 617 successful",
@@ -218,7 +219,30 @@ export default class UploadController {
       res.status(500).send("An error occurred while generating the file.");
     }
   }
-}
 
+  saveToS3Documentation: RequestHandler = async (req, res, next) => {
+    const { file, body } = req;
+    const { accessionNumber, applicationNumber } = body;
+    console.log('accessionNumber = ' + accessionNumber);
+    console.log('applicationNumber = ' + applicationNumber);
+    try {
+      if (!file || !file.buffer) {
+        throw new Error('File is missing or not properly uploaded');
+      }
+
+      console.log('accessionNumber = ' + accessionNumber);
+      console.log('applicationNumber = ' + applicationNumber);
+      //const fileBuffer = await fs.readFile(file.path); // Read the file as a buffer
+      const fileName = file.originalname; // Get the original file name
+      const subApplicationPath = accessionNumber + "-" + applicationNumber + "/";
+      console.log('subApplicationPath = ' + subApplicationPath);
+
+      await this.s3ClientService.saveToS3Documentation(file.buffer, fileName, subApplicationPath);
+    } catch (error) {
+      console.error("Error while uplaoding the file:", error);
+      res.status(500).send("An error occurred while uplaoding the file.");
+    }
+  }
+}
 
 

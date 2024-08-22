@@ -223,6 +223,31 @@ export default class S3ClientService {
         }
     }
 
+    async saveToS3Documentation(
+        buffer: Buffer,
+        fileName: string,
+        targetFilePath: string
+    ) {
+        console.log("--------->targetPdfFilePath=" + targetFilePath);
+        //Create the Transfer Root Folder
+        var transferFolderPath = process.env.TRANSFER_FOLDER_NAME || 'Transfers';
+        transferFolderPath = transferFolderPath + "/" + targetFilePath + "Documentation/" + fileName;
+        console.log(transferFolderPath)
+        try {
+            const uploadFilecommand = new PutObjectCommand({
+                Bucket: process.env.AWS_DATS_S3_BUCKET || 'dats-bucket-dev',
+                Key: transferFolderPath, // File path within the folder
+                Body: buffer, // File content as buffer
+            });
+
+            const data = await this.s3Client.send(uploadFilecommand);
+            console.log('File uploaded successfully', data);
+        } catch (error) {
+            console.error('Error uploading file', error);
+            throw error;
+        }
+    }
+
     async uploadPSPToS3(
         buffer: Buffer,
         targetFilePath: string,
