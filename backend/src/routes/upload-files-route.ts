@@ -49,7 +49,7 @@ router.post(
   uploadController.saveFolderDetails);
 
 router.post(
-  "/upload-files-toS3Documentation",
+  "/uploadFilesToS3Documentation",
   uploadFileToS3,
   uploadController.saveToS3Documentation);
 
