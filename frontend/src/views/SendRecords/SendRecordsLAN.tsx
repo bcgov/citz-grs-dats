@@ -51,7 +51,7 @@ export const SendRecordsLAN = () => {
   const [arisTransferDetails, setArisTransferDetails] =
     useState<ITransferDTO | null>(null);
   const navigate = useNavigate();
-  const childRef = useRef<any>(null); // Define a ref for ChildComponent
+  const childRef = useRef<{ validateInputs: () => boolean }>(null); // Define a ref for ChildComponent
   const uploadService = new UploadService();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -69,7 +69,7 @@ export const SendRecordsLAN = () => {
         setNextButtonLabel("Next");
         break;
       case 3:
-        setNextButtonLabel("Upload All");
+        setNextButtonLabel("Next");
         break;
       case 4:
         setNextButtonLabel("Finish");
@@ -167,29 +167,10 @@ export const SendRecordsLAN = () => {
     },
     {
       label: "Confirmation & Receipt",
-      beforeNext: async () => {
-        if (childRef.current) {
-          setIsUploading(true);
-          childRef.current.uploadAllFolders();
-          setIsUploading(false);
-          showSnackbar(
-            "The Upload is initiated successfully and will continue in the background",
-            "success"
-          );
-          setNextButtonLabel("Next");
-          setBeforeNextCompleted(true);
-        }
-      },
-      content: (
-        <TransferComponent
-          ref={childRef}
-          initialTransfer={arisTransferDetails!!}
-          showValidationMessage={(isValid, errorMessage) => {
-            handleValidationChange(3, isValid, errorMessage);
-          }}
-        />
-      ),
-      validate: () => isValid,
+      content: <TransferComponent ref={childRef} initialTransfer={arisTransferDetails!!} showValidationMessage={(isValid, errorMessage) => {
+        handleValidationChange(3, isValid, errorMessage);
+      }} />,
+      validate: () => childRef.current!.validateInputs(),
     },
     {
       label: "Download Files",

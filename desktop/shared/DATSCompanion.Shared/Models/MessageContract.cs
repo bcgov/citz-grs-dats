@@ -17,10 +17,14 @@ namespace DATSCompanion.Shared.Models
         public double Progress { get; set; }
 
         public string Message { get; set; }
+
+        public string ProgressMessage { get; set; }
         public long BytesUploaded { get; set; }
         public long BytesRemaining { get; set; }
         public string ETA { get; set; }
         public long TotalBytes { get; set; }
+
+        public bool IsIndeterminate { get; set; } = false;
     }
     public class DATSFileInformation
     {
@@ -105,8 +109,9 @@ namespace DATSCompanion.Shared.Models
         ErrorDesktop,
 
         UploadProgress,
-        UploadSuccessfull
-
+        UploadSuccessfull,
+        TechnicalMetadataJson,
+        DesktopAppClosing,
     }
 
 }
