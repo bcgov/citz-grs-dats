@@ -55,7 +55,7 @@ export default class TransferRepository {
     }
   }
   async getTransferWithPsps(transferId: string): Promise<ITransfer | null> {
-    return await TransferModel.findById(transferId).populate('psps').exec();
+    return await TransferModel.findById(transferId).populate('psps').populate('digitalFileLists').exec();
   }
   async createTransfer(transferInput: ITransfer): Promise<ITransfer | null> {
     try {
