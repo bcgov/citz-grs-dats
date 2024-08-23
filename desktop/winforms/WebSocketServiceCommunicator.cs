@@ -10,7 +10,7 @@ namespace DATSCompanionApp
 {
     public class WebSocketServiceCommunicator : IServiceCommunicator
     {
-        public void PostMessage(string message)
+        public async Task PostMessage(string message)
         {
             Uri serverUri = new Uri($"{Constants.WebSocketListener}{Constants.DesktopSocketEndpoint}");
             using (ClientWebSocket webSocket = new ClientWebSocket())
@@ -18,14 +18,14 @@ namespace DATSCompanionApp
                 try
                 {
                     // Connect to the WebSocket server
-                    var connectTask = webSocket.ConnectAsync(serverUri, CancellationToken.None);
-                    connectTask.Wait();
+                    await webSocket.ConnectAsync(serverUri, CancellationToken.None);
+                    
                     Console.WriteLine("Connected to the WebSocket server.");
 
                     // Send a message to the server
                     ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message));
-                    var sendTask = webSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
-                    sendTask.Wait();
+                    await webSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
+                    
                     Console.WriteLine("Message sent to the server.");
 
                     //// Receive a message from the server
@@ -36,8 +36,7 @@ namespace DATSCompanionApp
                     //Console.WriteLine("Message received from server: " + response);
 
                     // Close the WebSocket connection
-                    var closeTask = webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client closing", CancellationToken.None);
-                    closeTask.Wait();
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client closing", CancellationToken.None);
                     Console.WriteLine("WebSocket connection closed.");
                 }
                 catch (WebSocketException e)
@@ -45,6 +44,11 @@ namespace DATSCompanionApp
                     Console.WriteLine("WebSocket error: " + e.Message);
                 }
             }
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
         }
     }
 }

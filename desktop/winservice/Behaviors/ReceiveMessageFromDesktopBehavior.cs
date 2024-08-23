@@ -27,58 +27,123 @@ namespace DATSCompanionService.Behaviors
         protected override void OnMessage(MessageEventArgs e)
         {
             var messageJson = e.Data;
-            var message = JsonSerializer.Deserialize<MessageContract<string>>(messageJson);
-            Logger?.WriteEntry($"payload received: {messageJson}");
-
-            if (message.Action == DATSActions.FolderSelected)
+            var message = JsonSerializer.Deserialize<MessageContract<dynamic>>(messageJson);
+            //Logger?.WriteEntry($"payload received: {messageJson}");
+            switch (message.Action)
             {
-                var selectedPath = message.Payload;
-                var progress = new Progress<Tuple<int, string>>(p => {
-                    // Update progress bar
+                case DATSActions.FolderSelected:
+                    break;
+                case DATSActions.FileSelected:
+                    break;
+                case DATSActions.MultipleFilesSelected:
+                    break;
+                case DATSActions.FileInformation:
+                    break;
+                case DATSActions.Cancelled:
+                    break;
+                case DATSActions.Progress:
+                    Broadcast?.NotifyClients(messageJson);
+                    break;
+                case DATSActions.DesktopAppClosing:
+                    Broadcast?.NotifyClients(messageJson);
+                    break;
+                case DATSActions.Error:
+                    break;
+                case DATSActions.Completed:
+                    break;
+                case DATSActions.FolderUpload:
+                    break;
+                case DATSActions.CheckFolder:
+                    break;
+                case DATSActions.FileFolderExists:
+                    Broadcast?.NotifyClients(messageJson);
+                    break;
+                case DATSActions.FileFolderNotExists:
+                    Broadcast?.NotifyClients(messageJson);
+                    break;
+                case DATSActions.HealthCheck:
+                    break;
+                case DATSActions.Healthy:
+                    break;
+                case DATSActions.ErrorDesktop:
+                    break;
+                case DATSActions.UploadProgress:
+                    Broadcast?.NotifyClients(messageJson);
+                    break;
+                case DATSActions.UploadSuccessfull:
+                    Broadcast?.NotifyClients(messageJson);
+                    break;
+                case DATSActions.TechnicalMetadataJson:
                     Broadcast?.NotifyClients(JsonSerializer.Serialize(new MessageContract<ReportProgress>
                     {
-                        Action = DATSActions.Progress,
+                        Action = DATSActions.Completed,
                         Source = DATSSource.Service,
                         Payload = new ReportProgress
                         {
-                            Progress = p.Item1,
-                            Message = p.Item2
+                            Progress = 0,
+                            Message = "FolderSelected"
                         }
                     }));
-                });
-                List<DATSFileInformation> fileDetailsList = TechnicalMetadataGenerator.Generate(selectedPath, progress);
-
-                int directoryCount = Directory.EnumerateDirectories(selectedPath, "*", SearchOption.AllDirectories).Count();
-                var newMessage = new MessageContract<DATSFileDetails>
-                {
-                    Action = DATSActions.FileInformation,
-                    Source = DATSSource.Service,
-                    Payload = new DATSFileDetails
+                    var payload = JsonSerializer.Deserialize<DATSFileDetails>(message.Payload);
+                    var newMessage = new MessageContract<DATSFileDetails>
                     {
-                        FileCount = fileDetailsList.Count,
-                        FolderCount = directoryCount,
-                        Path = selectedPath,
-                        SizeInBytes = fileDetailsList.Sum(f => f.SizeInBytes),
-                        Files = fileDetailsList
-                    }
-                };
+                        Action = DATSActions.FileInformation,
+                        Source = DATSSource.Service,
+                        Payload = payload
+                    };
+                    Broadcast?.NotifyClients(JsonSerializer.Serialize(newMessage));
+                    break;
+                default:
+                    Broadcast?.NotifyClients(messageJson);
+                    break;
+            }
+        }
+
+
+        private void OnFolderSelected(MessageContract<dynamic> message)
+        {
+            var selectedPath = message.Payload;
+            var progress = new Progress<Tuple<int, string>>(p => {
+                // Update progress bar
                 Broadcast?.NotifyClients(JsonSerializer.Serialize(new MessageContract<ReportProgress>
                 {
-                    Action = DATSActions.Completed,
+                    Action = DATSActions.Progress,
                     Source = DATSSource.Service,
                     Payload = new ReportProgress
                     {
-                        Progress = 0,
-                        Message = "FolderSelected"
+                        Progress = p.Item1,
+                        Message = p.Item2
                     }
                 }));
-                Broadcast?.NotifyClients(JsonSerializer.Serialize(newMessage));
-            }
-            Broadcast?.NotifyClients(messageJson);
-        }
+            });
+            List<DATSFileInformation> fileDetailsList = TechnicalMetadataGenerator.Generate(selectedPath, progress);
 
-        
-       
+            int directoryCount = Directory.EnumerateDirectories(selectedPath, "*", SearchOption.AllDirectories).Count();
+            var newMessage = new MessageContract<DATSFileDetails>
+            {
+                Action = DATSActions.FileInformation,
+                Source = DATSSource.Service,
+                Payload = new DATSFileDetails
+                {
+                    FileCount = fileDetailsList.Count,
+                    FolderCount = directoryCount,
+                    Path = selectedPath,
+                    SizeInBytes = fileDetailsList.Sum(f => f.SizeInBytes),
+                    Files = fileDetailsList
+                }
+            };
+            Broadcast?.NotifyClients(JsonSerializer.Serialize(new MessageContract<ReportProgress>
+            {
+                Action = DATSActions.Completed,
+                Source = DATSSource.Service,
+                Payload = new ReportProgress
+                {
+                    Progress = 0,
+                    Message = "FolderSelected"
+                }
+            }));
+            Broadcast?.NotifyClients(JsonSerializer.Serialize(newMessage));
+        }
         protected override void OnError(WebSocketSharp.ErrorEventArgs e)
         {
             base.OnError(e);

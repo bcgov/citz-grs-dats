@@ -28,6 +28,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
 import DeleteIcon from "@mui/icons-material/Delete";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import ITransferDTO from "../../../types/DTO/Interfaces/ITransferDTO";
@@ -50,6 +51,8 @@ enum DATSActions {
   FileFolderNotExists,
   UploadProgress = 15,
   UploadSuccessfull = 16,
+  DesktopAppClosing = 18,
+  Indeterminate = 19
 }
 type Props = {
   initialTransfer: ITransferDTO;
@@ -132,6 +135,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   const [makeFieldsDisable, setMakeFieldsDisable] = useState<boolean>(false);
   const [transfer, setTransfer] = useState<ITransferDTO>(initialTransfer);
   const [editableFields, setEditableFields] = useState<EditableFields>({});
+  const [enabledUploadIndex, setEnabledUploadIndex] = useState(0); // Track the enabled upload button
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const currentFolder = useRef<string | null>(null);
   const currentFolderNote = useRef<string | null>(null);
@@ -182,14 +186,6 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       ws.onopen = () => {
         console.log("WebSocket connection established");
         setThirdPartyStatus({});
-        sendMessageToService(
-          JSON.stringify({
-            Action: DATSActions.CheckFolder,
-            Payload: {
-              Paths: transfer.digitalFileLists?.map((file) => file.folder),
-            },
-          })
-        );
       };
 
       ws.onerror = (error) => {
@@ -217,11 +213,15 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         console.log(event.data);
         const data = JSON.parse(event.data);
         switch (data.Action) {
+          
+          case DATSActions.DesktopAppClosing:
+            //this will get called on desktop closed
+            break;
           case DATSActions.UploadProgress:
             console.log("setting progress");
             setUploadStatus((prevState) => ({
               ...prevState,
-              [data.Payload.Message]: PROGRESS,
+              [data.Payload.Message]: data.Payload.IsIndeterminate ? INDETERMINATE : PROGRESS,
             }));
             setUploadProgress(data.Payload.Progress);
             setUploadMessage(
@@ -229,22 +229,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
                 data.Payload.BytesUploaded
               )}/${convertBytesToMB(data.Payload.TotalBytes)} MB)`
             );
-            setUploadEta(data.Payload.ETA);
-            if (data.Payload.Progress == 100) {
-              //completed
-              setTimeout(async () => {
-                setUploadStatus((prevState) => ({
-                  ...prevState,
-                  [data.Payload.Message]: SUCCESS,
-                }));
-                await new TransferService().updateTransfer({
-                  _id: transfer._id,
-                  accessionNumber: transfer.accessionNumber,
-                  applicationNumber: transfer.applicationNumber,
-                  transferStatus: TransferStatus.TrComplete,
-                });
-              }, 2000);
-            }
+            setUploadEta(data.Payload.ETA || "");
             break;
           case DATSActions.Cancelled:
             currentFolder.current = null;
@@ -293,6 +278,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             }));
             break;
           case DATSActions.FileFolderNotExists:
+            setMakeFieldsDisable(false);
             setThirdPartyStatus((prevState) => ({
               ...prevState,
               [data.Payload.Message]: FAIL,
@@ -300,10 +286,30 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             // validate(false,`unable to find ${data.Payload.Message}`);
             break;
           case DATSActions.UploadSuccessfull:
-            validate(true, `All folders have been uploaded successfully`);
-
+            if (enabledUploadIndex === transfer.digitalFileLists!.length - 1) {
+              validate(true, `All folders have been uploaded successfully`);
+            } 
+              //completed
+              setTimeout(async () => {
+                setUploadStatus((prevState) => ({
+                  ...prevState,
+                  [data.Payload.Message]: SUCCESS,
+                }));
+                await new TransferService().updateTransfer({
+                  _id: transfer._id,
+                  accessionNumber: transfer.accessionNumber,
+                  applicationNumber: transfer.applicationNumber,
+                  transferStatus: TransferStatus.TrComplete,
+                });
+              }, 500);
+              setEnabledUploadIndex((prevIndex) => prevIndex + 1);
             break;
           case DATSActions.Progress:
+            console.log("setting progress");
+            setUploadStatus((prevState) => ({
+              ...prevState,
+              [data.Payload.ProgressMessage]: INDETERMINATE,
+            }));
             break;
           case DATSActions.Error:
             setUploadStatus((prevState) => ({
@@ -332,36 +338,22 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   }, [transfer.digitalFileLists]);
 
   const validateInputs = (): boolean => {
-    if (
-      !transfer.digitalFileLists ||
-      (transfer.digitalFileLists && transfer.digitalFileLists.length == 0)
-    ) {
+    if (enabledUploadIndex === transfer.digitalFileLists!.length - 1){
+      return true;
+    }
+    else
+    {
       validate(
         false,
-        "Please add folders to update and/or ensure there are no error marker in any folder"
+        "Please upload all folders ..."
       );
       return false;
     }
-    return true;
   };
   useImperativeHandle(ref, () => ({
-    uploadAllFolders,
     validateInputs,
   }));
-  // Function to update the status of all folders to PROGRESS
-  const setAllProgress = (transfer: ITransferDTO) => {
-    setUploadStatus((prevState) => {
-      // Create a new state object
-      const newState = { ...prevState };
-
-      // Iterate over each file and set the status to PROGRESS
-      transfer.digitalFileLists?.forEach((file) => {
-        newState[file.folder] = INDETERMINATE;
-      });
-
-      return newState;
-    });
-  };
+  
 
   const cancelAllProgress = (transfer: ITransferDTO) => {
     setUploadStatus((prevState) => {
@@ -378,37 +370,35 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       return newState;
     });
   };
-
-  const uploadAllFolders = async (): Promise<void> => {
-    debugger;
-    if (!transfer.digitalFileLists || transfer.digitalFileLists.length === 0) {
-      debugger;
-      console.log("no folders to upload");
-      validate(false, "Please add folders to upload");
-      return;
-    }
+  const uploadFolder = async (folder: string, index: number) => {
+    //TODO:// move this api call to be called only once rather on every uplaod
     const baseUrl = await getApiBaseUrl();
-
-    //report(true, '');
-    setAllProgress(transfer);
     setMakeFieldsDisable(true);
-    sendMessageToService(
-      JSON.stringify({
-        Action: DATSActions.FolderUpload,
-        Payload: {
-          Package: transfer.digitalFileLists?.map((file) => ({
-            Path: file.folder,
-            Classification: file.primarySecondary || "",
-            Note: file.note,
-          })),
-          TransferId: transfer._id,
-          ApplicationNumber: transfer.applicationNumber,
-          AccessionNumber: transfer.accessionNumber,
-          UploadUrl: `${baseUrl}/api/upload-files`,
-        },
-      })
+    var digitalFile = transfer.digitalFileLists?.find(
+      (p) => p.folder === folder
     );
+    //build the payload
+    var payload = {
+      Action: DATSActions.FolderUpload,
+      Payload: {
+        Package: [
+          {
+            Path: digitalFile?.folder,
+            Classification: digitalFile?.primarySecondary || "",
+            Note: digitalFile?.note,
+          },
+        ],
+        TransferId: transfer._id,
+        ApplicationNumber: transfer.applicationNumber,
+        AccessionNumber: transfer.accessionNumber,
+        UploadUrl: `${baseUrl}/api/upload-files`,
+      },
+    };
+    var base64 = btoa(JSON.stringify(payload));
+    console.log(base64);
+    window.location.href = `citz-grs-dats://upload?payload=${base64}`;
   };
+  
   const convertBytesToMB = (totalBytes: any): number | null => {
     const bytes = Number(totalBytes);
 
@@ -420,19 +410,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       return null;
     }
   };
-  const sendMessageToService = (message: any) => {
-    console.log(message);
-
-    const logSocket = new WebSocket(WEBSOCKET_PUSH_URL);
-    logSocket.onopen = () => {
-      logSocket.send(message);
-      logSocket.close();
-      console.log("message sent??!");
-    };
-    logSocket.onerror = (error) => {
-      console.error("Log WebSocket error", error);
-    };
-  };
+  
   const handleValueChange = (
     folder: string,
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -603,7 +581,6 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
                         <>
                           <ErrorIcon color="error" />
                           <IconButton
-                            disabled={makeFieldsDisable}
                             size="small"
                             onClick={() => handleEditClick(fileList.folder)}
                           >
@@ -651,6 +628,14 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
               {getStatusIcon(uploadStatus[fileList.folder])}
             </Grid>
             <Grid item xs={1}>
+              <IconButton
+                disabled={index !== enabledUploadIndex}
+                color="primary"
+                onClick={() => uploadFolder(fileList.folder, index)}
+                sx={{ ...(index !== enabledUploadIndex && { color: "gray" }) }}
+              >
+                <UploadFileIcon color="primary" />
+              </IconButton>
               <IconButton
                 disabled={makeFieldsDisable}
                 color="secondary"

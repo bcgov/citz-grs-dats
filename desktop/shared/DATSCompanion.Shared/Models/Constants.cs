@@ -6,6 +6,7 @@ namespace DATSCompanion.Shared.Models
 {
     public class Constants
     {
+        public const string HttpWebSocketListener = "http://localhost:50504";
         public const string WebSocketListener = "ws://localhost:50504";
         public const string DesktopSocketEndpoint = "/ws/desktop";
         public const string ReactSocketEndpoint = "/ws/react";

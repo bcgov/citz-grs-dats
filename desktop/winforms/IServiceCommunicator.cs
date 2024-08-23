@@ -8,6 +8,7 @@ namespace DATSCompanionApp
 {
     public interface IServiceCommunicator
     {
-        void PostMessage(string message);
+        Task PostMessage(string message);
+        Task StartAsync(CancellationToken cancellationToken = default);
     }
 }
