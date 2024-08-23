@@ -118,6 +118,13 @@ export default class FileService {
             if (!transfer) {
                 throw new Error('Transfer not found');
             }
+            // add the Admin Data json to the /metadatas folder
+
+            const admintransferJson = JSON.stringify(transfer, null, 2);
+
+            const transferBuffer = Buffer.from(admintransferJson, 'utf-8');
+            const subApplicationPath = transfer.accessionNumber + "-" + transfer.applicationNumber + "/";
+            this.s3ClientService.saveToS3Metadatas(transferBuffer, 'AdminMetadata.json', subApplicationPath)
 
             if (transfer.psps && Array.isArray(transfer.psps)) {
                 const psps = transfer.psps as unknown as IPsp[];
@@ -201,6 +208,8 @@ export default class FileService {
      * @param transferFolderPath - The base folder path where files will be uploaded in S3.
      */
     private async uploadPSP(zipBuffer: Buffer, filePath: string, transferFolderPath: string): Promise<void> {
+        // TODO when the SFTP will be up
+        // need to change this call to the upload to the SFTP server
         await this.s3ClientService.uploadPSPToS3(zipBuffer, filePath, transferFolderPath);
     }
 
