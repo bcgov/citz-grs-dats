@@ -16,10 +16,7 @@ export default class DigitalFileListService {
     );
   }
 
-  async createDigitalFileListMetaData(
-    transferId: string,
-    filePath: string
-  ) {
+  async createDigitalFileListMetaData(transferId: string, filePath: string) {
     const digitalFileListData = await extractsDigitalFileList(filePath);
     const folders = digitalFileListData?.folders || [];
     const schedules = digitalFileListData?.schedules || [];
@@ -30,33 +27,36 @@ export default class DigitalFileListService {
     const startDates = digitalFileListData?.startDates || [];
     const endDates = digitalFileListData?.endDates || [];
     const soDates = digitalFileListData?.soDates || [];
-    const finalDispositionDates = digitalFileListData?.finalDispositionDates || [];
+    const finalDispositionDates =
+      digitalFileListData?.finalDispositionDates || [];
 
     let hashDigitalFileList = new Map<string, any>();
     for (let i = 0; i < folders.length; i++) {
       var digitalFileListMetaData = {
-        "primarySecondary": primaries[i],
-        "schedule": schedules[i],
-        "description": fileTitles[i],
-        "fileId": fileIds[i],
-        "folder": folders[i],
-        "transfer": transferId,
-        "isOPR": oprflags[i] == 'Y' ? true : false,
-        "startDate": startDates[i],
-        "endtDate": endDates[i],
-        "finalDispositionDate": finalDispositionDates[i]
+        primarySecondary: primaries[i],
+        schedule: schedules[i],
+        description: fileTitles[i],
+        fileId: fileIds[i],
+        folder: folders[i],
+        transfer: transferId,
+        isOPR: oprflags[i] == "Y" ? true : false,
+        startDate: startDates[i],
+        endtDate: endDates[i],
+        finalDispositionDate: finalDispositionDates[i],
       };
 
-      const newDigitalFileList = await this.createDigitalFileListByTransferId(transferId, digitalFileListMetaData);
+      const newDigitalFileList = await this.createDigitalFileListByTransferId(
+        transferId,
+        digitalFileListMetaData
+      );
       let key: string = newDigitalFileList?.folder || " ";
       let content = newDigitalFileList;
       //let content: string = newDigitalFileList?._id.toString() || " ";
-      hashDigitalFileList.set(key, content)
+      hashDigitalFileList.set(key, content);
     }
 
     return hashDigitalFileList;
   }
-
 
   async createDigitalFileListByTransferId(
     transferId: string,
@@ -87,7 +87,10 @@ export default class DigitalFileListService {
   ): Promise<IDigitalFileList | null> {
     try {
       console.log("In updateDigitalFileList service:", digitalDatalistId);
-      console.log("In updateDigitalFileList service:", updatedDigitalFileListData);
+      console.log(
+        "In updateDigitalFileList service:",
+        updatedDigitalFileListData
+      );
       return await this.digitalFileListRepository.updateDigitalFileList(
         digitalDatalistId,
         updatedDigitalFileListData
