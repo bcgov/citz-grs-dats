@@ -6,6 +6,8 @@ import React, {
   forwardRef,
   FC,
   useRef,
+  Dispatch,
+  SetStateAction,
 } from "react";
 import {
   Box,
@@ -52,11 +54,12 @@ enum DATSActions {
   UploadProgress = 15,
   UploadSuccessfull = 16,
   DesktopAppClosing = 18,
-  Indeterminate = 19
+  Indeterminate = 19,
 }
 type Props = {
   initialTransfer: ITransferDTO;
   showValidationMessage: (isValid: boolean, errorMessage: string) => void;
+  setAllFoldersUploaded: Dispatch<SetStateAction<boolean>>;
 };
 
 type EditableFields = {
@@ -66,7 +69,7 @@ type FolderValues = {
   [key: string]: string;
 };
 const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
-  { initialTransfer, showValidationMessage: validate },
+  { initialTransfer, showValidationMessage: validate, setAllFoldersUploaded },
   ref
 ) => {
   const [uploadMessage, setUploadMessage] = useState("");
@@ -159,6 +162,21 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   const INDETERMINATE = 4;
   const UNKNOWN: Number = 0;
 
+  const [foldersUploaded, setFoldersUploaded] = useState(0);
+  const [foldersTotal, setFoldersTotal] = useState(
+    transfer.digitalFileLists?.map((obj) => obj.folder)?.length ?? 0
+  );
+
+  useEffect(() => {
+    const foldersTotal =
+      transfer.digitalFileLists?.map((obj) => obj.folder)?.length ?? 0;
+    const foldersUploaded = Object.keys(uploadStatus).length;
+    setFoldersUploaded(foldersUploaded);
+    setFoldersTotal(foldersTotal);
+
+    setAllFoldersUploaded(foldersTotal - foldersUploaded === 0);
+  }, [uploadStatus, transfer]);
+
   useEffect(() => {
     const statusEntries = Object.entries(thirdPartyStatus);
     const hasFailedStatus = statusEntries.some(
@@ -213,7 +231,6 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         console.log(event.data);
         const data = JSON.parse(event.data);
         switch (data.Action) {
-          
           case DATSActions.DesktopAppClosing:
             //this will get called on desktop closed
             break;
@@ -221,7 +238,9 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             console.log("setting progress");
             setUploadStatus((prevState) => ({
               ...prevState,
-              [data.Payload.Message]: data.Payload.IsIndeterminate ? INDETERMINATE : PROGRESS,
+              [data.Payload.Message]: data.Payload.IsIndeterminate
+                ? INDETERMINATE
+                : PROGRESS,
             }));
             setUploadProgress(data.Payload.Progress);
             setUploadMessage(
@@ -288,21 +307,21 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
           case DATSActions.UploadSuccessfull:
             if (enabledUploadIndex === transfer.digitalFileLists!.length - 1) {
               validate(true, `All folders have been uploaded successfully`);
-            } 
-              //completed
-              setTimeout(async () => {
-                setUploadStatus((prevState) => ({
-                  ...prevState,
-                  [data.Payload.Message]: SUCCESS,
-                }));
-                await new TransferService().updateTransfer({
-                  _id: transfer._id,
-                  accessionNumber: transfer.accessionNumber,
-                  applicationNumber: transfer.applicationNumber,
-                  transferStatus: TransferStatus.TrComplete,
-                });
-              }, 500);
-              setEnabledUploadIndex((prevIndex) => prevIndex + 1);
+            }
+            //completed
+            setTimeout(async () => {
+              setUploadStatus((prevState) => ({
+                ...prevState,
+                [data.Payload.Message]: SUCCESS,
+              }));
+              await new TransferService().updateTransfer({
+                _id: transfer._id,
+                accessionNumber: transfer.accessionNumber,
+                applicationNumber: transfer.applicationNumber,
+                transferStatus: TransferStatus.TrComplete,
+              });
+            }, 500);
+            setEnabledUploadIndex((prevIndex) => prevIndex + 1);
             break;
           case DATSActions.Progress:
             console.log("setting progress");
@@ -338,22 +357,16 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   }, [transfer.digitalFileLists]);
 
   const validateInputs = (): boolean => {
-    if (enabledUploadIndex === transfer.digitalFileLists!.length - 1){
+    if (enabledUploadIndex === transfer.digitalFileLists!.length - 1) {
       return true;
-    }
-    else
-    {
-      validate(
-        false,
-        "Please upload all folders ..."
-      );
+    } else {
+      validate(false, "Please upload all folders ...");
       return false;
     }
   };
   useImperativeHandle(ref, () => ({
     validateInputs,
   }));
-  
 
   const cancelAllProgress = (transfer: ITransferDTO) => {
     setUploadStatus((prevState) => {
@@ -398,7 +411,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     console.log(base64);
     window.location.href = `citz-grs-dats://upload?payload=${base64}`;
   };
-  
+
   const convertBytesToMB = (totalBytes: any): number | null => {
     const bytes = Number(totalBytes);
 
@@ -410,7 +423,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
       return null;
     }
   };
-  
+
   const handleValueChange = (
     folder: string,
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -632,9 +645,12 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
                 disabled={index !== enabledUploadIndex}
                 color="primary"
                 onClick={() => uploadFolder(fileList.folder, index)}
-                sx={{ ...(index !== enabledUploadIndex && { color: "gray" }) }}
               >
-                <UploadFileIcon color="primary" />
+                <UploadFileIcon
+                  sx={{
+                    color: index !== enabledUploadIndex ? "grey" : "primary",
+                  }}
+                />
               </IconButton>
               <IconButton
                 disabled={makeFieldsDisable}

@@ -56,6 +56,12 @@ export const SendRecordsLAN = () => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
+  const [allFoldersUploaded, setAllFoldersUploaded] = useState(false);
+
+  useEffect(() => {
+    console.log("AllFoldersUploaded: ", allFoldersUploaded);
+  }, [allFoldersUploaded]);
+
   React.useEffect(() => {
     // This code runs before rendering the current step
     switch (activeStep) {
@@ -119,8 +125,8 @@ export const SendRecordsLAN = () => {
         //add your update logic here
         setIsUploading(true);
         try {
-          const applicationNumber = excelData?.applicationNumber ?? '';
-          const accessionNumber = excelData?.accessionNumber ?? '';
+          const applicationNumber = excelData?.applicationNumber ?? "";
+          const accessionNumber = excelData?.accessionNumber ?? "";
           const formData = new FormData();
           formData.append("file", aris617File!);
           formData.append("applicationNumber", applicationNumber);
@@ -167,10 +173,18 @@ export const SendRecordsLAN = () => {
     },
     {
       label: "Confirmation & Receipt",
-      content: <TransferComponent ref={childRef} initialTransfer={arisTransferDetails!!} showValidationMessage={(isValid, errorMessage) => {
-        handleValidationChange(3, isValid, errorMessage);
-      }} />,
-      validate: () => childRef.current!.validateInputs(),
+      content: (
+        <TransferComponent
+          ref={childRef}
+          initialTransfer={arisTransferDetails!!}
+          showValidationMessage={(isValid, errorMessage) => {
+            handleValidationChange(3, isValid, errorMessage);
+          }}
+          setAllFoldersUploaded={setAllFoldersUploaded}
+        />
+      ),
+      nextButtonDisabled: !allFoldersUploaded,
+      validate: () => allFoldersUploaded,
     },
     {
       label: "Download Files",
@@ -181,7 +195,8 @@ export const SendRecordsLAN = () => {
         />
       ),
       validate: () => true,
-    }];
+    },
+  ];
   const showSnackbar = (message: string, severity: "success" | "error") => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
@@ -283,7 +298,7 @@ export const SendRecordsLAN = () => {
         <Box sx={{ flex: "1 1 auto" }} />
         <Box sx={{ m: 1, position: "relative" }}>
           <Button
-            disabled={isUploading}
+            disabled={isUploading || steps[activeStep]?.nextButtonDisabled}
             onClick={activeStep === steps.length - 1 ? handleReset : handleNext}
           >
             {nextButtonLabel}
