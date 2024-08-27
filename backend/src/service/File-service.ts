@@ -14,7 +14,7 @@ import { TransferStatus } from "../models/enums/TransferStatus";
 import logger from "../config/logs/winston-config";
 import { ITransfer } from "src/models/transfer-model";
 import { IDigitalFileList } from "src/models/digitalFileList-model";
-import { config, sftp } from "src/config/ssh2-sftp-client";
+import { config, sftp } from "../config/ssh2-sftp-client";
 
 const replacePlaceholders = (
   text: string,
