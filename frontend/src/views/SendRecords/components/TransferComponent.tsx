@@ -642,13 +642,13 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             </Grid>
             <Grid item xs={1}>
               <IconButton
-                disabled={index !== enabledUploadIndex}
+                disabled={!(index !== foldersUploaded + 1)}
                 color="primary"
                 onClick={() => uploadFolder(fileList.folder, index)}
               >
                 <UploadFileIcon
                   sx={{
-                    color: index !== enabledUploadIndex ? "grey" : "primary",
+                    color: index !== foldersUploaded - 1 ? "primary" : "grey",
                   }}
                 />
               </IconButton>
