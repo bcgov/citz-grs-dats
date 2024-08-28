@@ -25,6 +25,7 @@ import {
   TextareaAutosize,
   DialogActions,
   DialogContentText,
+  Tooltip,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -641,17 +642,36 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
               {getStatusIcon(uploadStatus[fileList.folder])}
             </Grid>
             <Grid item xs={1}>
-              <IconButton
-                disabled={!(index === foldersUploaded)}
-                color="primary"
-                onClick={() => uploadFolder(fileList.folder, index)}
-              >
-                <UploadFileIcon
+              <Tooltip title="Start Upload">
+                <IconButton
+                  disabled={!(index === foldersUploaded)}
+                  color="primary"
+                  onClick={() => uploadFolder(fileList.folder, index)}
                   sx={{
-                    color: index === foldersUploaded ? "primary" : "grey",
+                    borderRadius: "5px",
+                    border:
+                      index === foldersUploaded ? "3px dashed #fcc203" : "none",
                   }}
-                />
-              </IconButton>
+                >
+                  <UploadFileIcon
+                    sx={{
+                      color: index === foldersUploaded ? "primary" : "grey",
+                    }}
+                  />
+
+                  <img
+                    src="src/assets/images/pointer.svg"
+                    style={{
+                      display: index === foldersUploaded ? "block" : "none",
+                      position: "absolute",
+                      bottom: -20,
+                      right: -15,
+                      width: "25px",
+                      height: "25px",
+                    }}
+                  />
+                </IconButton>
+              </Tooltip>
               <IconButton
                 disabled={makeFieldsDisable}
                 color="secondary"
