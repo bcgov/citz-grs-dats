@@ -240,7 +240,12 @@ export default class FileService {
     filePath: string,
     transferFolderPath: string
   ): Promise<void> {
-    await this.uploadPSPtoLanWithSftp(zipBuffer, filePath, transferFolderPath);
+    //await this.uploadPSPtoLanWithSftp(zipBuffer, filePath, transferFolderPath);
+    await this.s3ClientService.uploadPSPToS3(
+      zipBuffer,
+      filePath,
+      transferFolderPath
+    );
   }
 
   private async uploadPSPtoLanWithSftp(
