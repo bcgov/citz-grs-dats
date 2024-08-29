@@ -248,17 +248,21 @@ export default class FileService {
     targetFilePath: string,
     transferFolderPath: string
   ): Promise<void> {
-    console.log("--------->targetPdfFilePath=" + targetFilePath);
-
     try {
       await sftp.connect(config);
 
       const remoteFilePath = process.env.LAN_FTP_SERVER_REMOTE_PATH ?? "/dev";
-      await sftp.put(buffer, `${remoteFilePath}/${transferFolderPath}`);
+      await sftp.mkdir(`${remoteFilePath}/${transferFolderPath}`);
+
+      // Upload
+      await sftp.put(
+        buffer,
+        `${remoteFilePath}/${transferFolderPath}/${targetFilePath}`
+      );
 
       console.log(
         "PSP uploaded (using SFTP) successfully to",
-        `${remoteFilePath}/${transferFolderPath}`
+        `${remoteFilePath}/${transferFolderPath}/${targetFilePath}`
       );
     } catch (error) {
       console.error("Error uploading PSP using SFTP", error);

@@ -3,7 +3,7 @@ import Client from "ssh2-sftp-client";
 export const sftp = new Client();
 
 export const config = {
-  host: process.env.LAN_FTP_SERVER_HOST || "your.sftp.server",
+  host: process.env.LAN_FTP_SERVER_HOST || "CUMULUS.IDIR.BCGOV",
   port: process.env.LAN_FTP_SERVER_PORT || "22",
   username: process.env.LAN_FTP_SERVER_USER || "",
   password: process.env.LAN_FTP_SERVER_PASSWORD || "",
@@ -24,6 +24,7 @@ export const sftpHealthCheck = async (): Promise<void> => {
     } else {
       console.error("SFTP health check failed with an unknown error");
     }
+    throw error;
   } finally {
     await sftp.end();
   }
