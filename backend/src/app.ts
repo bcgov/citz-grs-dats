@@ -39,13 +39,12 @@ app.get("/", (req, res) => {
   res.status(200).json("API Is Healthy");
 });
 
-// SMB Health check connection to LAnd drive
-app.get("/FTPCheck", async (req, res) => {
+// SFTP Health check connection to LAnd drive
+app.get("/SFTPCheck", async (req, res) => {
   try {
-    // Perform the SMB health check
+    // Perform the SFTP health check
     await sftpHealthCheck();
 
-    console.log("SFTP health check completed successfully");
     res.status(200).json("SFTP health check completed successfully");
   } catch (error) {
     if (error instanceof Error) {
