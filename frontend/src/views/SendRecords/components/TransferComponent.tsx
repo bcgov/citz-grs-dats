@@ -548,6 +548,18 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         </Box>
       )}
       <Box mt={4}>
+        <Typography
+          sx={{
+            marginBottom: "25px",
+            padding: "5px",
+            fontWeight: 700,
+            borderRadius: "5px",
+            border: "3px dashed #fcc203",
+          }}
+        >
+          Please upload each folder using the upload icon to the right of each
+          folder.
+        </Typography>
         <Typography variant="h6" gutterBottom>
           Folders
         </Typography>
