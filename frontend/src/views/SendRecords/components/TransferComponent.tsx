@@ -27,6 +27,7 @@ import {
   DialogContentText,
   Tooltip,
 } from "@mui/material";
+import { readFileAsString } from "../../../utils/xlsxUtils";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
@@ -59,6 +60,8 @@ enum DATSActions {
 }
 type Props = {
   initialTransfer: ITransferDTO;
+  isEdrms : boolean;
+  filename: string | null,
   showValidationMessage: (isValid: boolean, errorMessage: string) => void;
   setAllFoldersUploaded: Dispatch<SetStateAction<boolean>>;
 };
@@ -70,7 +73,7 @@ type FolderValues = {
   [key: string]: string;
 };
 const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
-  { initialTransfer, showValidationMessage: validate, setAllFoldersUploaded },
+  { initialTransfer, isEdrms,filename, showValidationMessage: validate, setAllFoldersUploaded },
   ref
 ) => {
   const [uploadMessage, setUploadMessage] = useState("");
@@ -176,7 +179,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     setFoldersTotal(foldersTotal);
 
     setAllFoldersUploaded(foldersTotal - foldersUploaded === 0);
-  }, [uploadStatus, transfer]);
+  }, [uploadStatus, transfer, foldersTotal]);
 
   useEffect(() => {
     const statusEntries = Object.entries(thirdPartyStatus);
@@ -228,7 +231,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
         console.log("WebSocket connection closed");
       };
 
-      ws.onmessage = (event) => {
+      ws.onmessage = async (event) => {
         console.log(event.data);
         const data = JSON.parse(event.data);
         switch (data.Action) {
@@ -255,6 +258,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             currentFolder.current = null;
             break;
           case DATSActions.FileInformation:
+            
             if (currentFolder.current !== null) {
               setTransfer((prev) => {
                 const updatedFileLists =
@@ -402,6 +406,8 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             Note: digitalFile?.note,
           },
         ],
+        Filename: isEdrms ? filename : '',
+        IsEdrms: isEdrms,
         TransferId: transfer._id,
         ApplicationNumber: transfer.applicationNumber,
         AccessionNumber: transfer.accessionNumber,
@@ -656,7 +662,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             <Grid item xs={1}>
               <Tooltip title="Start Upload">
                 <IconButton
-                  disabled={!(index === foldersUploaded)}
+                 // disabled={!(index === foldersUploaded)}
                   color="primary"
                   onClick={() => uploadFolder(fileList.folder, index)}
                   sx={{

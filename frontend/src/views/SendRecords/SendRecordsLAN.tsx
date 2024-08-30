@@ -25,11 +25,11 @@ import { useSSO } from "@bcgov/citz-imb-sso-react";
 import DownloadAris662Button from "./components/DownloadAris662Button";
 
 export const SendRecordsLAN = () => {
-  const { isAuthenticated } = useSSO();
+  // const { isAuthenticated } = useSSO();
 
-  useEffect(() => {
-    if (!isAuthenticated) window.location.href = "/";
-  }, [isAuthenticated]);
+  // useEffect(() => {
+  //   if (!isAuthenticated) window.location.href = "/";
+  // }, [isAuthenticated]);
 
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<number[]>([]);
@@ -176,6 +176,8 @@ export const SendRecordsLAN = () => {
       content: (
         <TransferComponent
           ref={childRef}
+          isEdrms={false}
+          filename={null}
           initialTransfer={arisTransferDetails!!}
           showValidationMessage={(isValid, errorMessage) => {
             handleValidationChange(3, isValid, errorMessage);

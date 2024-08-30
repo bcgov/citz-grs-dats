@@ -69,6 +69,10 @@ namespace DATSCompanion.Shared.Models
         public string UploadUrl { get; set; }
         public string ApplicationNumber { get; set; }
         public string AccessionNumber { get; set; }
+
+        public bool IsEdrms { get; set; }
+
+        public string Filename { get; set; }
     }
 
     public class DATSUploadPackage
@@ -112,6 +116,7 @@ namespace DATSCompanion.Shared.Models
         UploadSuccessfull,
         TechnicalMetadataJson,
         DesktopAppClosing,
+        DigitalFileListRequest 
     }
 
 }

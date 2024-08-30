@@ -96,4 +96,9 @@ public class WebSocketServerCommunicator : IServiceCommunicator
         }
         return Task.CompletedTask;
     }
+
+    public Task<string> PostAndReceiveMessage(string message)
+    {
+        throw new NotImplementedException();
+    }
 }
