@@ -14,9 +14,8 @@ namespace DATSCompanionApp.Helpers
 {
     public class TechnicalMetadataGenerator
     {
-        public static List<DATSFileInformation> Generate(string folder, IProgress<Tuple<int, string>> progress = null)
+        public static List<DATSFileInformation> Generate(string[] fileList, IProgress<Tuple<int, string>> progress = null)
         {
-            var fileList = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories);
             ConcurrentBag<DATSFileInformation> fileDetailsBag = new ConcurrentBag<DATSFileInformation>();
 
             int totalFiles = fileList.Length;
@@ -47,6 +46,11 @@ namespace DATSCompanionApp.Helpers
             });
 
             return fileDetailsBag.ToList();
+        }
+        public static List<DATSFileInformation> Generate(string folder, IProgress<Tuple<int, string>> progress = null)
+        {
+            var fileList = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories);
+            return Generate(fileList, progress);
         }
 
         static string GetOwner(string filePath)

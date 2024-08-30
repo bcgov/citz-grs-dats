@@ -25,11 +25,11 @@ import { DataportTxtDropZone } from "./components/DataportTxtDropZone";
 import { useSSO } from "@bcgov/citz-imb-sso-react";
 
 const SendRecordsEDRMS = () => {
-  const { isAuthenticated } = useSSO();
+  // const { isAuthenticated } = useSSO();
 
-  useEffect(() => {
-    if (!isAuthenticated) window.location.href = "/";
-  }, [isAuthenticated]);
+  // useEffect(() => {
+  //   if (!isAuthenticated) window.location.href = "/";
+  // }, [isAuthenticated]);
 
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<number[]>([]);
@@ -43,6 +43,7 @@ const SendRecordsEDRMS = () => {
   const [snackbarSeverity, setSnackbarSeverity] =
     useState<AlertColor>("success");
   const [file, setFile] = useState<File | null>(null);
+  const [filename, setFilename] = useState<string | null>(null)
   const [aris617File, setAris617File] = useState<File | null>(null);
   const [excelData, setExcelData] = useState<DatsExcelModel | null>(null);
   const [nextButtonLabel, setNextButtonLabel] = useState("Next");
@@ -60,14 +61,18 @@ const SendRecordsEDRMS = () => {
   const uploadService = new UploadService();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
+  const [allFoldersUploaded, setAllFoldersUploaded] = useState(false);
+   useEffect(() => {
+          console.log("AllFoldersUploaded: ", allFoldersUploaded);
+            }, [allFoldersUploaded]);
+            
   useEffect(() => {
     const labels = [
       "Upload Dataport file",
       "Upload File List",
       "Upload 617 file",
       "Next",
-      "Upload All",
+      "Next",
       "Finish",
     ];
     setNextButtonLabel(labels[activeStep] || "Next");
@@ -78,6 +83,7 @@ const SendRecordsEDRMS = () => {
 
   const updateAris617File = (file: File | null) => {
     setAris617File(file);
+    
   };
   const steps = [
     {
@@ -190,28 +196,31 @@ const SendRecordsEDRMS = () => {
     },
     {
       label: "Confirmation & Receipt",
-      beforeNext: async () => {
-        if (childRef.current) {
-          setIsUploading(true);
-          childRef.current.uploadAllFolders();
-          if (isValid) {
-            setIsUploading(false);
-            showSnackbar(
-              "The Upload is initiated successfully and will continue in the background",
-              "success"
-            );
-            setNextButtonLabel("Next");
-            setBeforeNextCompleted(true);
-          }
-        }
-      },
+      // beforeNext: async () => {
+      //   if (childRef.current) {
+      //     setIsUploading(true);
+      //     childRef.current.uploadAllFolders();
+      //     if (isValid) {
+      //       setIsUploading(false);
+      //       showSnackbar(
+      //         "The Upload is initiated successfully and will continue in the background",
+      //         "success"
+      //       );
+      //       setNextButtonLabel("Next");
+      //       setBeforeNextCompleted(true);
+      //     }
+      //   }
+      // },
       content: (
         <TransferComponent
           ref={childRef}
           initialTransfer={arisTransferDetails!!}
+          isEdrms={true}
+          filename={filename!}
           showValidationMessage={(isValid, errorMessage) =>
             handleValidationChange(3, isValid, errorMessage)
           }
+          setAllFoldersUploaded={setAllFoldersUploaded}
         />
       ),
       validate: () => childRef.current!!.validateInputs(),
@@ -235,6 +244,7 @@ const SendRecordsEDRMS = () => {
       const formData = new FormData();
       formData.append("file", file!);
       const res = await uploadFunc(formData);
+      setFilename(file!.name);
       console.log(res);
       setArisTransferDetails(res.transfer);
       setIsUploading(false);

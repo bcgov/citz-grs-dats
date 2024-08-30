@@ -87,7 +87,20 @@ export const extractExcelData = (file: File): Promise<DatsExcelModel> => {
     reader.readAsBinaryString(file);
   });
 };
-
+export const readFileAsString = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => {
+      reject(new Error("Failed to read the file."));
+    };
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      
+      resolve(content);
+    };
+    reader.readAsText(file);
+  });
+}
 export const extractDataport = (file: File): Promise<DatsExcelModel> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

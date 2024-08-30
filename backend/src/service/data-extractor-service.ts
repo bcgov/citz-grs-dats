@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import csv from 'csv-parser';
 import { Readable } from 'stream';
 import logger from '../config/logs/winston-config';
-
+import * as readline from 'readline';
 export interface TransferData {
   accession: string;
   application: string;
@@ -38,112 +38,105 @@ export interface IDataExtractor {
 }
 
 export class CSVDataExtractor implements IDataExtractor {
+
   extractDigitalFileAndTransferData(buffer: Buffer): Promise<DigitalTransferDataModel> {
     return new Promise((resolve, reject) => {
-      const dataMap = new Map<string, TransferData>();
-      const digitalFileListData: DigitalFileListData[] = [];
-      Readable.from(buffer)
-        .pipe(csv({ separator: '\t' }))
-        .on('data', (row) => {
-          const Classification = row['Classification'] || '';
-          // Validate if the "Accession Number" is not empty
-          try {
-            var inContainerRow = 0
-            if (Classification) {
-              inContainerRow = inContainerRow + 1
-              logger.debug('inContainerRow ' + inContainerRow);
-              logger.debug('In After if Classification');
-              const accession = row['Accession Number'] || '';
-              const application = row['Consignment (Application)'] || '';
-              const ministry = row['Provenance'] || '';
-              const branch = `${row['Owner: Name'] || ''} ${row['Owner: ID Number'] || ''}`;
-              const folder = row['First and previous Part'] || '';
-
-
-              console.log("accession = " + accession)
-
-              console.log("Classification = " + Classification)
-
-              if (!dataMap.has(accession)) {
-                dataMap.set(accession, {
-                  accession,
-                  application,
-                  ministry,
-                  branch,
-                  folders: [folder],
-                });
-              } else {
-                const existingData = dataMap.get(accession);
-                if (existingData) {
-                  existingData.folders.push(folder);
-                  if (ministry) {
-                    existingData.ministry = ministry;
-                  }
+      try {
+        const lines = buffer.toString('utf-8').split('\n');
+        const headers = lines[0].split('\t');
+  
+        let transferData: TransferData = {
+          accession: '',
+          application: '',
+          ministry: '',
+          branch: '',
+          folders: []
+        };
+  
+        let digitalFileListData: DigitalFileListData[] = [];
+        let foldersSet: Set<string> = new Set();
+  
+        // Column indices
+        const accessionIdx = headers.indexOf('Accession Number');
+        const applicationIdx = headers.indexOf('Consignment (Application)');
+        const ministryIdx = headers.indexOf('Provenance');
+        const branchIdx = headers.indexOf('Owner: Name Owner: ID Number');
+        const containerIdx = headers.indexOf('Container (Folder/Box)');
+        const dosFileIdx = headers.indexOf('DOS file');
+        const retrievalCodeIdx = headers.indexOf('Retrieval Code');
+        const titleIdx = headers.indexOf('Title (Structured Part)');
+        const seriesRecordIdx = headers.indexOf('Series record');
+        const startDateIdx = headers.indexOf('Start Date');
+        const endDateIdx = headers.indexOf('End Date');
+        const soDateIdx = headers.indexOf('SO Date');
+        const disposalDateIdx = headers.indexOf('Date of Disposal');
+  
+        for (let i = 1; i < lines.length; i++) {
+          const row = lines[i].split('\t');
+  
+          // Extract TransferData fields if not already set
+          if (!transferData.accession && row[accessionIdx]) {
+            transferData.accession = row[accessionIdx];
+          }
+          if (!transferData.application && row[applicationIdx]) {
+            transferData.application = row[applicationIdx];
+          }
+          if (!transferData.ministry && row[ministryIdx]) {
+            transferData.ministry = row[ministryIdx];
+          }
+          if (!transferData.branch && row[branchIdx]) {
+            transferData.branch = row[branchIdx];
+          }
+  
+          // Process folders and add to foldersSet
+          if (row[containerIdx]) {
+            const folderParts = row[containerIdx].split('/');
+            if (folderParts.length > 1) {
+              const folder = folderParts[1].trim();
+              if (!foldersSet.has(folder)) {
+                foldersSet.add(folder);
+  
+                // If unique folder, create DigitalFileListData entry
+                if (row[dosFileIdx]) {
+                  const containerValue = row[containerIdx];
+                  // Correctly extract primarySecondary by taking everything after the first hyphen up to the slash
+                  const primarySecondaryMatch = containerValue.match(/-(.*?)(\/|$)/);
+                  const primarySecondary = primarySecondaryMatch ? primarySecondaryMatch[1].trim() : '';
+  
+                  const isOPR = row[seriesRecordIdx]?.toLowerCase() === 'true';
+  
+                  digitalFileListData.push({
+                    folder: folder,
+                    schedule: '',
+                    primarySecondary,
+                    fileId: row[retrievalCodeIdx],
+                    description: row[titleIdx],
+                    isOPR,
+                    startDate: row[startDateIdx],
+                    endDate: row[endDateIdx],
+                    soDate: row[soDateIdx],
+                    finalDispositionDate: row[disposalDateIdx],
+                  });
                 }
               }
-              if (folder === '') {
-                return;
-              }
-              var input = row['Classification'];
-              // Define a regular expression to match the pattern
-              // Explanation:
-              // ^(\w{3,4}) - Matches the acronym which can be 3 or 4 letters
-              // - - Matches the hyphen
-              // (\d{5}-\d{2}) - Matches the second part (e.g., 00201-40)
-              // : - Matches the colon
-              // \s* - Matches any whitespace between the colon and the third part
-              // (\d+) - Matches the third part which is a sequence of digits
-              // const regex = /^(\w{3,4})-(\d{5}-\d{2})\s*:\s*(\d+)$/;
-              const regex = /^\w{3,4}-(\d{5}-\d{2})\s*:\s*(\d+)/;
-
-              // Apply the regex to the input string
-              const match = input.match(regex);
-              var scheduleAcronym = '';
-              var primarySecondary = '';
-              var scheduleId = '';
-              console.log(match);
-
-              if (match) {
-                primarySecondary = match[1]?.trim() || '';   // Safely access match[1] and trim, or return an empty string if undefined
-                scheduleId = match[2]?.trim() || '';  // Safely access match[2] and trim, or return an empty string if undefined
-
-                console.log("Primary: " + primarySecondary);   // Outputs: Primary: 11000-20
-                console.log("Schedule: " + scheduleId); // Outputs: Schedule: 201294
-              } else {
-                console.error("Error: The input string does not match the expected pattern.");
-              }
-
-              const data: DigitalFileListData = {
-                folder: folder,
-                schedule: scheduleId,
-                primarySecondary: primarySecondary,
-                fileId: row['Retrieval Code'] || '',
-                description: row['Title (Structured Part)'] || '',
-                isOPR: row['Series record'] === 'Y' || false,
-                startDate: row['Start Date'] || '',
-                endDate: row['End Date'] || '',
-                soDate: row['SO Date'] || '',
-                finalDispositionDate: row['Date of Disposal'] || ''
-              };
-              console.log('DigitalFileListData = ' + data.folder);
-              digitalFileListData.push(data);
             }
-          } catch (error) {
-            logger.error("In Classification" + error);
           }
-        })
-        .on('end', () => {
-          if (dataMap.size > 0) {
-            const transferData = Array.from(dataMap.values())[0];
-            resolve({ transferData, digitalFileListData });
-          } else {
-            reject(new Error('No data found'));
-          }
-        })
-        .on('error', (error) => {
-
-          reject(error);
-        });
+        }
+  
+        // Convert folders Set to Array and assign to transferData.folders
+        transferData.folders = Array.from(foldersSet);
+  
+        const digitalTransferDataModel: DigitalTransferDataModel = {
+          transferData,
+          digitalFileListData
+        };
+  
+        // Resolve the promise with the constructed data model
+        resolve(digitalTransferDataModel);
+      } catch (error) {
+        // Reject the promise with an error if something goes wrong
+        reject(error);
+      }
     });
   }
   extractTransferData(buffer: Buffer): Promise<TransferData> {

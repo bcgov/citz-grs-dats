@@ -10,5 +10,6 @@ namespace DATSCompanionApp
     {
         Task PostMessage(string message);
         Task StartAsync(CancellationToken cancellationToken = default);
+        Task<string> PostAndReceiveMessage(string message);
     }
 }
