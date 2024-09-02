@@ -25,11 +25,11 @@ import { DataportTxtDropZone } from "./components/DataportTxtDropZone";
 import { useSSO } from "@bcgov/citz-imb-sso-react";
 
 const SendRecordsEDRMS = () => {
-  // const { isAuthenticated } = useSSO();
+  const { isAuthenticated } = useSSO();
 
-  // useEffect(() => {
-  //   if (!isAuthenticated) window.location.href = "/";
-  // }, [isAuthenticated]);
+  useEffect(() => {
+    if (!isAuthenticated) window.location.href = "/";
+  }, [isAuthenticated]);
 
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<number[]>([]);
