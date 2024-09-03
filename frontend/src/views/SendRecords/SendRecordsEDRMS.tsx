@@ -61,8 +61,10 @@ const SendRecordsEDRMS = () => {
   const uploadService = new UploadService();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [allFoldersUploaded, setAllFoldersUploaded] = useState(false);
-   useEffect(() => {
+
+  useEffect(() => {
           console.log("AllFoldersUploaded: ", allFoldersUploaded);
             }, [allFoldersUploaded]);
             
@@ -223,7 +225,8 @@ const SendRecordsEDRMS = () => {
           setAllFoldersUploaded={setAllFoldersUploaded}
         />
       ),
-      validate: () => childRef.current!!.validateInputs(),
+      nextButtonDisabled: !allFoldersUploaded,
+      validate: () => allFoldersUploaded,
     },
     {
       label: "Download Files",
@@ -353,7 +356,7 @@ const SendRecordsEDRMS = () => {
         <Box sx={{ flex: "1 1 auto" }} />
         <Box sx={{ m: 1, position: "relative" }}>
           <Button
-            disabled={isUploading}
+            disabled={isUploading || steps[activeStep]?.nextButtonDisabled}
             {...(!isInErrorState
               ? { variant: "contained" }
               : {
