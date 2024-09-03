@@ -40,6 +40,7 @@ import { getApiBaseUrl } from "../../../services/serverUrlService";
 import { WEBSOCKET_PUSH_URL, WEBSOCKET_URL } from "../../../types/constants";
 import { TransferService } from "../../../services/transferService";
 import { TransferStatus } from "../../../types/Enums/TransferStatus";
+import {arePathsEqual} from "../../../utils/pathHelpers";
 enum DATSActions {
   FolderSelected,
   FileSelected,
@@ -258,12 +259,12 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             currentFolder.current = null;
             break;
           case DATSActions.FileInformation:
-            
+
             if (currentFolder.current !== null) {
               setTransfer((prev) => {
                 const updatedFileLists =
                   prev.digitalFileLists?.map((fileList) =>
-                    fileList.folder === currentFolder.current
+                    arePathsEqual(fileList.folder,currentFolder.current!)
                       ? {
                           ...fileList,
                           folder: String(data.Payload.Path),
@@ -274,7 +275,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
 
                 // Check if any item matches the condition
                 const hasMatchingFolder = prev.digitalFileLists?.some(
-                  (fileList) => fileList.folder === currentFolder.current
+                  (fileList) => arePathsEqual(fileList.folder,currentFolder.current!)
                 );
 
                 // If no items match, add a new item to the array
