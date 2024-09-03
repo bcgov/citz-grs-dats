@@ -58,10 +58,6 @@ export const SendRecordsLAN = () => {
 
   const [allFoldersUploaded, setAllFoldersUploaded] = useState(false);
 
-  useEffect(() => {
-    console.log("AllFoldersUploaded: ", allFoldersUploaded);
-  }, [allFoldersUploaded]);
-
   React.useEffect(() => {
     // This code runs before rendering the current step
     switch (activeStep) {
