@@ -5,7 +5,7 @@ export const sftp = new Client();
 export const config = {
   host: process.env.LAN_FTP_SERVER_HOST || "CUMULUS.IDIR.BCGOV",
   port: process.env.LAN_FTP_SERVER_PORT || "22",
-  username: "IDIR\GRSDATS" || "",
+  username: `${process.env.LAN_FTP_SERVER_USER_DOMAIN}\\${process.env.LAN_FTP_SERVER_USER}` || "",
   password: process.env.LAN_FTP_SERVER_PASSWORD || "",
 };
 
