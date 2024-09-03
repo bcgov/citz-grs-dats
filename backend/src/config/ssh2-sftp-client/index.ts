@@ -27,6 +27,8 @@ export const sftpHealthCheck = async (): Promise<void> => {
     }
     throw error;
   } finally {
-    await sftp.end();
+    setTimeout(async () => {
+      await sftp.end();
+    }, 100);
   }
 };
