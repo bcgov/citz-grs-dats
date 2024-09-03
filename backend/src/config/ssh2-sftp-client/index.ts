@@ -13,6 +13,7 @@ const remotePath = process.env.LAN_FTP_SERVER_REMOTE_PATH || "/dev";
 
 export const sftpHealthCheck = async (): Promise<void> => {
   try {
+    console.log('Why is it broken?: ', config);
     await sftp.connect(config);
 
     // Perform a basic operation to verify the connection (list files in a directory)
