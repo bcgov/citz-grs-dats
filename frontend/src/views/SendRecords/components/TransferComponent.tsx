@@ -173,13 +173,13 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
   );
 
   useEffect(() => {
-    const foldersTotal =
+    const foldersTotal: number =
       transfer.digitalFileLists?.map((obj) => obj.folder)?.length ?? 0;
-    const foldersUploaded = Object.keys(uploadStatus).length;
+    const foldersUploaded = Object.keys(Object.entries(uploadStatus).filter(([key]) => key !== 'null')).length;
     setFoldersUploaded(foldersUploaded);
     setFoldersTotal(foldersTotal);
 
-    setAllFoldersUploaded(foldersTotal - foldersUploaded === 0);
+    setAllFoldersUploaded(foldersTotal !== 0 && foldersTotal - foldersUploaded === 0);
   }, [uploadStatus, transfer, foldersTotal]);
 
   useEffect(() => {
@@ -663,7 +663,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             <Grid item xs={1}>
               <Tooltip title="Start Upload">
                 <IconButton
-                 // disabled={!(index === foldersUploaded)}
+                  disabled={!(index === foldersUploaded)}
                   color="primary"
                   onClick={() => uploadFolder(fileList.folder, index)}
                   sx={{
@@ -675,18 +675,6 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
                   <UploadFileIcon
                     sx={{
                       color: index === foldersUploaded ? "primary" : "grey",
-                    }}
-                  />
-
-                  <img
-                    src="src/assets/images/pointer.svg"
-                    style={{
-                      display: index === foldersUploaded ? "block" : "none",
-                      position: "absolute",
-                      bottom: -20,
-                      right: -15,
-                      width: "25px",
-                      height: "25px",
                     }}
                   />
                 </IconButton>
