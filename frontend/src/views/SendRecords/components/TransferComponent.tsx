@@ -418,6 +418,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     var base64 = btoa(JSON.stringify(payload));
     console.log(base64);
     window.location.href = `citz-grs-dats://upload?payload=${base64}`;
+    setMakeFieldsDisable(false);
   };
 
   const convertBytesToMB = (totalBytes: any): number | null => {
@@ -437,6 +438,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const newValue = event.target.value;
+
     setFolderValues((prev) => ({
       ...prev,
       [folder]: newValue,
@@ -603,7 +605,6 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             <Grid item xs={6} sx={{ display: "flex", alignItems: "center" }}>
               <TextField
                 disabled={makeFieldsDisable}
-                onChange={(event) => handleValueChange(fileList.folder, event)}
                 value={fileList.folder}
                 fullWidth
                 InputProps={{
@@ -663,7 +664,7 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
             <Grid item xs={1}>
               <Tooltip title="Start Upload">
                 <IconButton
-                  disabled={!(index === foldersUploaded)}
+                  disabled={!(index === foldersUploaded || makeFieldsDisable)}
                   color="primary"
                   onClick={() => uploadFolder(fileList.folder, index)}
                   sx={{
@@ -674,17 +675,19 @@ const TransferComponent: ForwardRefRenderFunction<unknown, Props> = (
                 >
                   <UploadFileIcon
                     sx={{
-                      color: index === foldersUploaded ? "primary" : "grey",
+                      color: index === foldersUploaded || makeFieldsDisable ? "primary" : "grey",
                     }}
                   />
                 </IconButton>
               </Tooltip>
               <IconButton
-                disabled={makeFieldsDisable}
+                disabled={makeFieldsDisable || foldersUploaded >= index + 1}
                 color="secondary"
                 onClick={() => handleClickOpen(fileList.folder)} // Open the dialog with the folder name
               >
-                <DeleteIcon color="primary" />
+                <DeleteIcon color="primary" sx={{
+                      color: !(makeFieldsDisable || foldersUploaded >= index + 1) ? "primary" : "grey",
+                    }} />
               </IconButton>
             </Grid>
             {/* Confirmation Dialog */}
