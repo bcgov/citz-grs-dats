@@ -269,13 +269,12 @@ export default class FileService {
         "PSP uploaded (using SFTP) successfully to",
         `${remoteFilePath}/${transferFolderPath}/${targetFilePath}`
       );
-    } catch (error) {
-      console.error("Error uploading PSP using SFTP", error);
-      throw error;
-    } finally {
+
       setTimeout(async () => {
         await sftp.end();
       }, 100);
+    } catch (error) {
+      console.error("Error uploading PSP using SFTP", error);
     }
   }
 
