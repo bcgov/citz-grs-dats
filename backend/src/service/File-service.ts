@@ -273,7 +273,9 @@ export default class FileService {
       console.error("Error uploading PSP using SFTP", error);
       throw error;
     } finally {
-      await sftp.end();
+      setTimeout(async () => {
+        await sftp.end();
+      }, 100);
     }
   }
 
