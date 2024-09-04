@@ -48,10 +48,8 @@ app.get("/SFTPCheck", async (req, res) => {
     res.status(200).json("SFTP health check completed successfully");
   } catch (error) {
     if (error instanceof Error) {
-      console.error("SFTP health check failed:", error.message);
       res.status(503).json("SFTP health check failed: " + error.message);
     } else {
-      console.error("SFTP health check failed with an unknown error");
       res.status(503).json("SFTP health check failed with an unknown error");
     }
   }
