@@ -26,3 +26,12 @@ The product is anticipated to include:
 - [Architecture](Docs/Architecture/README.md)
 - [Devops guide](Docs/Devops/README.md)
 - [Openshift](Docs/Openshift/README.md)
+
+```mermaid
+flowchart TD
+    A[Christmas] -->|Get money| B(Go shopping)
+    B --> C{BLAH BLAH BLAHBLAH BLAH}
+    C -->|One| D[Laptop]
+    C -->|Two| E[iPhone]
+    C -->|Three| F[fa:fa-car Car]
+```
