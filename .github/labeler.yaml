@@ -2,11 +2,11 @@
 # 'label_name'
 #   - path_of_diff/where/code_lives/to_base_label_upon
 
-'Github Actions':
+'Actions':
   - .github/workflows/*
 
-'GRS-DATS API':
-  - backend/**/*
+'API':
+  - server/**/*
 
-'GRS-DATS Frontend':
-  - frontend/**/*
+'APP':
+  - client/**/*
