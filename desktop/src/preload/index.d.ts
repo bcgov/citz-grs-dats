@@ -4,7 +4,9 @@ declare global {
 	interface Window {
 		electron: ElectronAPI;
 		api: {
+			versions: NodeJS.Process.Versions;
 			checkApiStatus: () => Promise<boolean>;
+			checkIpRange: () => Promise<boolean>;
 		};
 	}
 }

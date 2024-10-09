@@ -1,30 +1,42 @@
-import { useState } from "react";
-import Versions from "./components/Versions";
+import { useEffect, useState } from "react";
+import { Versions, VPNPopup } from "./components";
 import electronLogo from "./assets/electron.svg";
 
 function App(): JSX.Element {
 	const [apiStatus, setApiStatus] = useState<string>("Checking...");
+	const [showVPNPopup, setShowVPNPopup] = useState<boolean | null>(null);
 	const [api] = useState(window.api);
 
 	const ipcHandle = (): void => window.electron.ipcRenderer.send("ping");
 
-	const handleAPIStatusUpdate = async () => {
-		const statusOK = await api.checkApiStatus();
-		setApiStatus(statusOK ? "Online" : "Offline");
+	const handleIPStatusUpdate = async () => {
+		const ipStatusOK = await api.checkIpRange();
+		setShowVPNPopup(!ipStatusOK);
 	};
 
-	// Set an interval to check the API status every 30 seconds
-	setInterval(handleAPIStatusUpdate, 30 * 1000); // 30 seconds interval
-	// Immediately check the API status when the preload script is loaded
-	handleAPIStatusUpdate();
+	const handleAPIStatusUpdate = async () => {
+		const apiStatusOK = await api.checkApiStatus();
+		setApiStatus(apiStatusOK ? "Online" : "Offline");
+	};
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		handleAPIStatusUpdate();
+
+		handleIPStatusUpdate();
+		// Set an interval to check the API status every 5 seconds
+		const interval = setInterval(handleIPStatusUpdate, 5 * 1000);
+
+		return () => clearInterval(interval); // Clean up interval on unmount
+	}, []);
 
 	return (
 		<>
 			<img alt="logo" className="logo" src={electronLogo} />
 			<div className="creator">Digital Archives Transfer Service</div>
 			<div className="text">
-				Build an Electron app with <span className="react">React</span>
-				&nbsp;and <span className="ts">TypeScript</span>
+				Build an Electron app with <span className="react">React</span> and{" "}
+				<span className="ts">TypeScript</span>
 			</div>
 			<p className="tip">
 				Please try pressing <code>Ctrl/Cmd + Shift + I</code> to open the
@@ -41,6 +53,7 @@ function App(): JSX.Element {
 				</div>
 			</div>
 			<Versions />
+			{showVPNPopup && <VPNPopup />}
 		</>
 	);
 }

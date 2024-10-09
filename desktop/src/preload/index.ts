@@ -1,10 +1,12 @@
 import { contextBridge } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
-import { checkApiStatus } from "./api";
+import { checkApiStatus, checkIpRange } from "./api";
 
 // Custom APIs for renderer
 const api = {
+	versions: process.versions,
 	checkApiStatus,
+	checkIpRange,
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

@@ -2,6 +2,7 @@
 	"name": "desktop",
 	"version": "1.0.0",
 	"main": "./out/main/index.js",
+	"type": "module",
 	"scripts": {
 		"typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
 		"typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
