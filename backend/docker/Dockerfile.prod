@@ -1,0 +1,33 @@
+ARG NODE_IMAGE_TAG=22-bullseye-slim
+ARG BACKEND_PORT=3200
+
+# STAGE 1: Build
+FROM node:${NODE_IMAGE_TAG} AS build
+
+WORKDIR /app
+COPY . .
+
+RUN apt-get update && \
+    apt-get install -y curl && \
+    npm i && \
+    npm run build
+
+# Stage 2: Prod
+FROM node:${NODE_IMAGE_TAG} AS prod
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Copy only the package.json to install production dependencies
+COPY package.json .
+RUN npm i
+
+# Copy only the necessary files from the previous stage
+COPY --from=build /app/build ./build
+
+RUN mkdir /.npm
+RUN chgrp -R 0 /.npm && chmod -R g=u /.npm
+
+EXPOSE ${BACKEND_PORT}
+
+CMD ["node", "./build/index.js"]
