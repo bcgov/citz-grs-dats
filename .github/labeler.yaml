@@ -6,7 +6,7 @@
   - .github/workflows/*
 
 'API':
-  - server/**/*
+  - backend/**/*
 
 'APP':
-  - client/**/*
+  - desktop/**/*

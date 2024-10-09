@@ -1,0 +1,81 @@
+services:
+  ### BACKEND (EXPRESS API)
+  express-api:
+    container_name: express-api
+    tty: true
+    init: true
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "node", "/app/healthcheck.js"] # Check health endpoint for healthy service.
+      interval: 30s # Perform the health check every 30 seconds.
+      timeout: 10s # Consider the health check a failure if it takes more than 10 seconds.
+      retries: 5 # Retry the health check up to 5 times before considering the container unhealthy.
+      start_period: 5s # How long to wait after the container starts to run the first health check.
+    build:
+      context: backend
+      dockerfile: docker/Dockerfile
+      args:
+        - NODE_IMAGE_TAG=${NODE_IMAGE_TAG} # Node image tag
+        - BACKEND_PORT=${BACKEND_PORT}
+    env_file: .env
+    environment:
+      - MONGO_HOST=mongo
+    ports:
+      - ${BACKEND_PORT:-3200}:3200
+    volumes:
+      - ./backend/src:/app/src
+    depends_on:
+      mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  ### MONGO DATABASE
+  mongo:
+    container_name: mongo
+    image: mongo:${MONGO_IMAGE_TAG:-8.0}
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-password}
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - ${MONGO_EXTERNAL_PORT}:27017
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s # Perform the health check every 30 seconds.
+      timeout: 10s # Consider the health check a failure if it takes more than 10 seconds.
+      retries: 5 # Retry the health check up to 5 times before considering the container unhealthy.
+      start_period: 10s # How long to wait after the container starts to run the first health check.
+
+  ### RABBITMQ
+  rabbitmq:
+    image: rabbitmq:${RABBITMQ_IMAGE_TAG:-'4.0-alpine'}
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - ${RABBITMQ_EXTERNAL_PORT}:5672        # RabbitMQ default port for clients
+      - '15672:15672'      # RabbitMQ Management UI port
+    env_file: .env
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    command: ["bash", "-c", "chmod 400 /var/lib/rabbitmq/.erlang.cookie; rabbitmq-server"]
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmqctl status || exit 1"]
+      interval: 30s # Perform the health check every 30 seconds.
+      timeout: 10s # Consider the health check a failure if it takes more than 10 seconds.
+      retries: 5 # Retry the health check up to 5 times before considering the container unhealthy.
+      start_period: 10s # How long to wait after the container starts to run the first health check.
+
+volumes:
+  mongo_data:
+  rabbitmq_data:
+
+networks:
+  app-network:
+    driver: bridge
