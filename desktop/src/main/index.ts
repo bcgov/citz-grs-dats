@@ -46,24 +46,6 @@ function createWindow(): void {
 	} else {
 		mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
 	}
-
-	const checkApiStatus = async () => {
-		try {
-			const response = await fetch("http://localhost:3200/health");
-			mainWindow.webContents.send(
-				"api-status",
-				response.ok ? "Online" : "Offline",
-			);
-		} catch (error) {
-			mainWindow.webContents.send("api-status", "Offline");
-		}
-	};
-
-	// Ping the API immediately when the window is created
-	checkApiStatus();
-
-	// Set an interval to ping the API every 30 seconds
-	setInterval(checkApiStatus, 30000); // 30 seconds interval
 }
 
 app.whenReady().then(() => {
