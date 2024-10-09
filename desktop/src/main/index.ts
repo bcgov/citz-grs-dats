@@ -21,7 +21,7 @@ function createWindow(): void {
 		autoHideMenuBar: false, // Set this to false to make sure the menu is visible during development
 		...(process.platform === "linux" ? { icon } : {}),
 		webPreferences: {
-			preload: join(__dirname, "../preload/index.js"),
+			preload: join(__dirname, "../preload/index.mjs"),
 			sandbox: false,
 		},
 	});
@@ -46,24 +46,6 @@ function createWindow(): void {
 	} else {
 		mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
 	}
-
-	const checkApiStatus = async () => {
-		try {
-			const response = await fetch("http://localhost:3200/health");
-			mainWindow.webContents.send(
-				"api-status",
-				response.ok ? "Online" : "Offline",
-			);
-		} catch (error) {
-			mainWindow.webContents.send("api-status", "Offline");
-		}
-	};
-
-	// Ping the API immediately when the window is created
-	checkApiStatus();
-
-	// Set an interval to ping the API every 30 seconds
-	setInterval(checkApiStatus, 30000); // 30 seconds interval
 }
 
 app.whenReady().then(() => {
