@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": ["node_modules", "build", "coverage"]
+		"ignore": ["node_modules/", "build/", "coverage/"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -23,8 +23,8 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true,
-			"suspicious": {
-				"noConsole": "off"
+			"complexity": {
+				"noForEach": "off"
 			}
 		}
 	},

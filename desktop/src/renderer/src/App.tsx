@@ -3,11 +3,42 @@ import { Versions, VPNPopup } from "./components";
 import electronLogo from "./assets/electron.svg";
 
 function App(): JSX.Element {
+	const [api] = useState(window.api); // Preload scripts
 	const [apiStatus, setApiStatus] = useState<string>("Checking...");
 	const [showVPNPopup, setShowVPNPopup] = useState<boolean | null>(null);
-	const [api] = useState(window.api);
 
-	const ipcHandle = (): void => window.electron.ipcRenderer.send("ping");
+	// Authentication state
+	const [accessToken, setAccessToken] = useState<string | undefined>(undefined);
+	const [idToken, setIdToken] = useState<string | undefined>(undefined);
+
+	const handleLogin = async () => await api.startLoginProcess();
+	const handleLogout = async () => await api.logout(idToken);
+
+	useEffect(() => {
+		// Handle "auth-success" message from main process
+		// Triggered upon successful login
+		window.electron.ipcRenderer.on("auth-success", (_, tokens) => {
+			setAccessToken(tokens.accessToken);
+			setIdToken(tokens.idToken);
+		});
+
+		// Handle "token-refresh-success" message from main process
+		// Triggered upon successful refresh of tokens
+		window.electron.ipcRenderer.on("token-refresh-success", (_, tokens) =>
+			setAccessToken(tokens.accessToken),
+		);
+
+		// Handle "auth-logout" message from main process
+		// Triggered upon logout
+		window.electron.ipcRenderer.on("auth-logout", () => setAccessToken(undefined));
+
+		// Cleanup
+		return () => {
+			window.electron.ipcRenderer.removeAllListeners("auth-success");
+			window.electron.ipcRenderer.removeAllListeners("auth-logout");
+			window.electron.ipcRenderer.removeAllListeners("token-refresh-success");
+		};
+	}, []);
 
 	const handleIPStatusUpdate = async () => {
 		const ipStatusOK = await api.checkIpRange();
@@ -21,14 +52,27 @@ function App(): JSX.Element {
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
+		// Check if API is health upon first load
 		handleAPIStatusUpdate();
 
+		// Check for VPN or gov Network use on load, and every 5 seconds
 		handleIPStatusUpdate();
-		// Set an interval to check the API status every 5 seconds
 		const interval = setInterval(handleIPStatusUpdate, 5 * 1000);
 
-		return () => clearInterval(interval); // Clean up interval on unmount
+		return () => {
+			clearInterval(interval);
+		};
 	}, []);
+
+	const handleTestRoute = async () => {
+		const [error, result] = await api.fetchProtectedRoute(
+			"http://localhost:3200/test",
+			accessToken,
+		);
+
+		if (error) console.log("Error in fetch: ", error);
+		console.log("Result: ", result);
+	};
 
 	return (
 		<>
@@ -39,16 +83,26 @@ function App(): JSX.Element {
 				<span className="ts">TypeScript</span>
 			</div>
 			<p className="tip">
-				Please try pressing <code>Ctrl/Cmd + Shift + I</code> to open the
-				devTools
+				Please try pressing <code>Ctrl/Cmd + Shift + I</code> to open the devTools
 			</p>
 			<div className="status">
 				<strong>API Status:</strong> {apiStatus}
 			</div>
+			<div className="tip">{accessToken && `Hello ${api.getUser(accessToken)?.display_name}!`}</div>
 			<div className="actions">
 				<div className="action">
-					<button type="button" onClick={ipcHandle}>
-						Send IPC Ping to Main Process
+					<button type="button" onClick={accessToken ? handleLogout : handleLogin}>
+						{accessToken ? "Logout" : "Login"}
+					</button>
+				</div>
+				<div className="action">
+					<button type="button" onClick={handleTestRoute}>
+						Log Protected Route Test
+					</button>
+				</div>
+				<div className="action">
+					<button type="button" onClick={() => console.log("User: ", api.getUser(accessToken))}>
+						Log User
 					</button>
 				</div>
 			</div>

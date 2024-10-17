@@ -7,18 +7,29 @@ import {
 	type MenuItemConstructorOptions,
 } from "electron";
 import { join } from "node:path";
-import { electronApp, optimizer, is } from "@electron-toolkit/utils";
+import { is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
 
+const DEBUG = true;
+
 let mainWindow: BrowserWindow;
+let authWindow: BrowserWindow | null = null;
+let refreshInterval: NodeJS.Timeout | undefined;
+
+const tokens: Record<string, string | undefined> = {
+	accessToken: undefined,
+	refreshToken: undefined,
+	idToken: undefined,
+	accessExpiresIn: undefined,
+	refreshExpiresIn: undefined,
+};
 
 function createWindow(): void {
-	// Create the browser window.
 	mainWindow = new BrowserWindow({
 		width: 900,
 		height: 670,
 		show: false,
-		autoHideMenuBar: false, // Set this to false to make sure the menu is visible during development
+		autoHideMenuBar: false,
 		...(process.platform === "linux" ? { icon } : {}),
 		webPreferences: {
 			preload: join(__dirname, "../preload/index.mjs"),
@@ -27,11 +38,8 @@ function createWindow(): void {
 	});
 
 	mainWindow.on("ready-to-show", () => {
-		const menu = Menu.buildFromTemplate(
-			menuTemplate as MenuItemConstructorOptions[],
-		);
+		const menu = Menu.buildFromTemplate(menuTemplate as MenuItemConstructorOptions[]);
 		Menu.setApplicationMenu(menu);
-
 		mainWindow.show();
 	});
 
@@ -40,7 +48,6 @@ function createWindow(): void {
 		return { action: "deny" };
 	});
 
-	// Load the remote URL for development or the local html file for production.
 	if (is.dev && process.env.ELECTRON_RENDERER_URL) {
 		mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
 	} else {
@@ -48,44 +55,176 @@ function createWindow(): void {
 	}
 }
 
-app.whenReady().then(() => {
-	// Set app user model id for windows
-	electronApp.setAppUserModelId("com.electron");
+ipcMain.handle("start-login-process", async () => {
+	debug('Beginning "start-login-process" of main process.');
 
-	// Default open or close DevTools by F12 in development
-	// and ignore CommandOrControl + R in production.
-	app.on("browser-window-created", (_, window) => {
-		optimizer.watchWindowShortcuts(window);
+	// Create a new browser window for the authentication process
+	authWindow = new BrowserWindow({
+		width: 800,
+		height: 600,
+		webPreferences: {
+			nodeIntegration: false,
+			contextIsolation: true,
+		},
 	});
 
-	// IPC test
-	ipcMain.on("ping", () => console.log("pong"));
+	authWindow.loadURL("http://localhost:3200/auth/login");
 
-	createWindow();
+	// Listen for redirect navigation to the callback URL with the code parameter
+	authWindow.webContents.on("did-redirect-navigation", async (_event, url) => {
+		const urlObj = new URL(url);
+		if (urlObj.pathname === "/auth/login/callback") {
+			const code = urlObj.searchParams.get("code");
+			if (code) {
+				try {
+					setTimeout(async () => {
+						const cookies = await authWindow?.webContents.session.cookies.get({
+							url: "http://localhost:3200",
+						});
 
-	app.on("activate", () => {
-		// On macOS it's common to re-create a window in the app when the dock icon is clicked and there are no other windows open.
-		if (BrowserWindow.getAllWindows().length === 0) createWindow();
+						if (!cookies || cookies?.length === 0)
+							throw new Error("No cookies found for the session.");
+
+						// Find cookies that contain the token information
+						cookies.forEach((cookie) => {
+							if (cookie.name === "access_token") tokens.accessToken = cookie.value;
+							if (cookie.name === "refresh_token") tokens.refreshToken = cookie.value;
+							if (cookie.name === "id_token") tokens.idToken = cookie.value;
+							if (cookie.name === "expires_in") tokens.accessExpiresIn = cookie.value;
+							if (cookie.name === "refresh_expires_in") tokens.refreshExpiresIn = cookie.value;
+						});
+
+						// Notify the renderer process and schedule token refreshing
+						if (tokens.accessToken && tokens.refreshToken) {
+							debug("Tokens retrieved from cookies.");
+							scheduleRefreshTokens();
+							mainWindow.webContents.send("auth-success", tokens);
+						} else throw new Error("Required tokens not found in cookies.");
+					}, 1000);
+				} catch (error) {
+					console.error("Error during login process:", error);
+					authWindow?.close(); // Close the window even in case of error
+					authWindow = null;
+				} finally {
+					// Hide window
+					authWindow?.hide();
+				}
+			}
+		}
+	});
+
+	// Handle the case where the user closes the auth window manually
+	authWindow.on("closed", () => {
+		authWindow = null;
 	});
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits explicitly with Cmd + Q.
+ipcMain.handle("start-logout-process", async (_, idToken: string) => {
+	debug('Beginning "start-logout-process" of main process.');
+
+	// Open a new window for the logout process
+	if (!authWindow) {
+		authWindow = new BrowserWindow({
+			width: 800,
+			height: 600,
+			webPreferences: {
+				nodeIntegration: false,
+				contextIsolation: true,
+			},
+		});
+	}
+
+	authWindow.loadURL(`http://localhost:3200/auth/logout?id_token=${idToken}`);
+
+	authWindow.webContents.on("did-redirect-navigation", async (_event, url) => {
+		if (url.includes("/auth/logout/callback")) clearAuthState();
+	});
+
+	authWindow.on("closed", () => {
+		authWindow = null;
+	});
+});
+
+const clearAuthState = () => {
+	debug("Beginning clearAuthState function of main process.");
+
+	// Close auth window
+	authWindow?.close();
+	authWindow = null;
+
+	mainWindow.webContents.send("auth-logout");
+
+	clearInterval(refreshInterval);
+	tokens.accessToken = undefined;
+	tokens.refreshToken = undefined;
+	tokens.idToken = undefined;
+	tokens.accessExpiresIn = undefined;
+	tokens.refreshExpiresIn = undefined;
+};
+
+const scheduleRefreshTokens = () => {
+	debug("Beginning scheduleRefreshTokens function of main process.");
+
+	if (!tokens.refreshExpiresIn || !tokens.accessExpiresIn)
+		return console.error("Missing token expiry values after login.");
+
+	const { accessExpiresIn, refreshExpiresIn } = tokens;
+
+	// Clear any existing intervals before setting a new one
+	if (refreshInterval) clearInterval(refreshInterval);
+
+	// Refresh tokens
+	refreshInterval = setInterval(() => {
+		refreshTokens();
+	}, Number(accessExpiresIn) * 1000);
+
+	// Clear auth state when refresh token expires.
+	setTimeout(() => {
+		clearAuthState();
+		return;
+	}, Number(refreshExpiresIn) * 1000);
+};
+
+const refreshTokens = async () => {
+	debug("Beginning refreshTokens function of main process.");
+
+	if (authWindow) {
+		try {
+			authWindow.loadURL("http://localhost:3200/auth/token");
+
+			setTimeout(async () => {
+				const cookies = await authWindow?.webContents.session.cookies.get({
+					url: "http://localhost:3200",
+				});
+
+				if (!cookies || cookies?.length === 0) throw new Error("No cookies found for the session.");
+
+				// Find cookies that contain the token information
+				cookies.forEach((cookie) => {
+					if (cookie.name === "access_token") tokens.accessToken = cookie.value;
+				});
+
+				// Send the updated tokens to the renderer process
+				mainWindow.webContents.send("token-refresh-success", tokens);
+			}, 1000);
+		} catch (error) {
+			console.error("Error executing refreshTokens in authWindow:", error);
+		}
+	}
+};
+
+const debug = (log: string) => {
+	if (DEBUG) console.info(log);
+};
+
+app.whenReady().then(createWindow);
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
 		app.quit();
 	}
 });
 
-// Menu template configuration
 const menuTemplate = [
-	...(process.platform === "darwin"
-		? [
-				{
-					label: app.getName(),
-					submenu: [{ role: "quit" }],
-				},
-			]
-		: []),
+	...(process.platform === "darwin" ? [{ label: app.getName(), submenu: [{ role: "quit" }] }] : []),
 	{ role: "viewMenu" },
 ];
