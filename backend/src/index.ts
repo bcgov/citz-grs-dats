@@ -29,7 +29,6 @@ app.listen(PORT, () => {
 	try {
 		// Log server start information.
 		serverStartupLogs(PORT);
-		console.log(`API has started, and is listening on ${PORT}`)
 	} catch (error) {
 		// Log any error that occurs during the server start.
 		console.error(error);

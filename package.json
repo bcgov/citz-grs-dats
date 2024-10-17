@@ -5,7 +5,9 @@
 		"up": "docker compose up -d",
 		"down": "docker compose down -v --remove-orphans",
 		"prune": "docker compose down --rmi all --volumes && npm run clear-docker-cache",
+		"prune:api": "docker compose down express-api && docker rmi citz-grs-dats-express-api && npm run clear-docker-cache",
 		"rebuild": "npm run prune && npm run up -- --force-recreate",
+		"rebuild:api": "npm run prune:api && npm run up -- express-api",
 		"clear-docker-cache": "docker builder prune -f",
 		"shell:mongo": "docker exec -it mongo bash"
 	}

@@ -8,6 +8,8 @@
 	},
 	"dependencies": {
 		"@bcgov/citz-imb-express-utilities": "1.0.0-beta4",
+		"@bcgov/citz-imb-sso-js-core": "file:./js-core.tgz",
+		"cookie-parser": "1.4.7",
 		"cors": "2.8.5",
 		"express": "4.21.0",
 		"express-rate-limit": "7.4.1",
@@ -16,6 +18,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.3",
+		"@types/cookie-parser": "1.4.7",
 		"@types/cors": "2.8.17",
 		"@types/express": "5.0.0",
 		"@types/node": "22.7.4",

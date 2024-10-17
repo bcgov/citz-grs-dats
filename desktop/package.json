@@ -16,8 +16,10 @@
 		"build:linux": "electron-vite build && electron-builder --linux"
 	},
 	"dependencies": {
+		"@bcgov/citz-imb-sso-js-core": "file:./js-core.tgz",
 		"@electron-toolkit/preload": "3.0.1",
-		"@electron-toolkit/utils": "3.0.0"
+		"@electron-toolkit/utils": "3.0.0",
+		"electron-cookies": "1.1.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.3",

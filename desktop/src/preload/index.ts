@@ -1,17 +1,19 @@
-import { contextBridge } from "electron";
+import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
-import { checkApiStatus, checkIpRange } from "./api";
+import { checkApiStatus, checkIpRange, fetchProtectedRoute, getUser, safePromise } from "./api";
 
-// Custom APIs for renderer
 const api = {
 	versions: process.versions,
 	checkApiStatus,
 	checkIpRange,
+	startLoginProcess: () => ipcRenderer.invoke("start-login-process"),
+	logout: (idToken: string | undefined) => ipcRenderer.invoke("start-logout-process", idToken),
+	getUser,
+	safePromise,
+	fetchProtectedRoute,
 };
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
+// Expose APIs to the renderer process
 if (process.contextIsolated) {
 	try {
 		contextBridge.exposeInMainWorld("electron", electronAPI);
