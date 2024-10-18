@@ -20,6 +20,8 @@ ENV NODE_ENV=production
 
 # Copy only the package.json to install production dependencies
 COPY package.json .
+COPY express-utilities.tgz .
+COPY js-core.tgz .
 RUN npm i
 
 # Copy only the necessary files from the previous stage

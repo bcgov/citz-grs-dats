@@ -7,7 +7,7 @@
 		"build": "tsc"
 	},
 	"dependencies": {
-		"@bcgov/citz-imb-express-utilities": "1.0.0-beta4",
+		"@bcgov/citz-imb-express-utilities": "file:./express-utilities.tgz",
 		"@bcgov/citz-imb-sso-js-core": "file:./js-core.tgz",
 		"cookie-parser": "1.4.7",
 		"cors": "2.8.5",
