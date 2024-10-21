@@ -7,7 +7,7 @@ import {
 	normalizeUser,
 } from "@bcgov/citz-imb-sso-js-core";
 import type { SSOUser, SSOProtocol, SSOEnvironment } from "@bcgov/citz-imb-sso-js-core";
-import { ENV } from "@/config";
+import { ENV } from "src/config";
 
 const { SSO_CLIENT_ID, SSO_CLIENT_SECRET, SSO_ENVIRONMENT, SSO_PROTOCOL, SSO_REALM } = ENV;
 

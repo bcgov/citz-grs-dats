@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { getTokens } from "@bcgov/citz-imb-sso-js-core";
 import type { SSOEnvironment, SSOProtocol } from "@bcgov/citz-imb-sso-js-core";
-import { ENV } from "@/config";
+import { ENV } from "src/config";
 import { errorWrapper } from "@bcgov/citz-imb-express-utilities";
 
 const { SSO_ENVIRONMENT, SSO_REALM, SSO_PROTOCOL, SSO_CLIENT_ID, SSO_CLIENT_SECRET, BACKEND_URL } =
