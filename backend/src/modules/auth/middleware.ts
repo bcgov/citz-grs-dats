@@ -7,7 +7,7 @@ import {
 	normalizeUser,
 } from "@bcgov/citz-imb-sso-js-core";
 import type { SSOUser, SSOProtocol, SSOEnvironment } from "@bcgov/citz-imb-sso-js-core";
-import { ENV } from "src/config";
+import { ENV } from "@/config";
 
 const { SSO_CLIENT_ID, SSO_CLIENT_SECRET, SSO_ENVIRONMENT, SSO_PROTOCOL, SSO_REALM } = ENV;
 
@@ -29,6 +29,10 @@ export const protectedRoute = (
 	options?: ProtectedRouteOptions,
 ): RequestHandler => {
 	const routeMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+		// Ensure proper use of function.
+		if (roles && (!Array.isArray(roles) || !roles.every((item) => typeof item === "string")))
+			throw new Error("Error: Pass roles as an array of strings to protectedRoute.");
+
 		// Check if Authorization header exists.
 		const header = req.headers.authorization;
 		if (!header)
@@ -55,10 +59,6 @@ export const protectedRoute = (
 		const normalizedUser = normalizeUser<unknown>(userInfo);
 		if (!userInfo || !normalizedUser) return res.status(404).json({ error: "User not found." });
 		const userRoles = userInfo?.client_roles;
-
-		// Ensure proper use of function.
-		if (roles && (!Array.isArray(roles) || !roles.every((item) => typeof item === "string")))
-			throw new Error("Error: Pass roles as an array of strings to protectedRoute.");
 
 		// Check for roles.
 		if (roles) {

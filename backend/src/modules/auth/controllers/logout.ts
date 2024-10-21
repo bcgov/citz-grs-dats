@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { getLogoutURL } from "@bcgov/citz-imb-sso-js-core";
 import type { SSOEnvironment, SSOProtocol } from "@bcgov/citz-imb-sso-js-core";
-import { ENV } from "src/config";
+import { ENV } from "@/config";
 import { errorWrapper } from "@bcgov/citz-imb-express-utilities";
 
 const { SSO_ENVIRONMENT, SSO_REALM, SSO_PROTOCOL, BACKEND_URL } = ENV;
@@ -22,10 +22,7 @@ export const logout = errorWrapper(async (req: Request, res: Response) => {
 	} catch (error) {
 		res.status(500).json({
 			success: false,
-			error:
-				error instanceof Error
-					? error.message
-					: "An unknown error occurred during logout.",
+			error: error instanceof Error ? error.message : "An unknown error occurred during logout.",
 		});
 	}
 });

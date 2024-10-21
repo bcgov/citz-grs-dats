@@ -39,7 +39,6 @@ healthModule(app); // Route (/health)
 configModule(app, { ENVIRONMENT }); // Route (/config)
 
 app.use("/test", protectedRoute(["Admin"]), (req: Request, res: Response) => {
-	console.log("HERE");
 	res.json({ message: "YES" });
 });
 

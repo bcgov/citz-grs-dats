@@ -1,11 +1,10 @@
 import type { Request, Response } from "express";
 import { getLoginURL } from "@bcgov/citz-imb-sso-js-core";
 import type { SSOEnvironment, SSOProtocol } from "@bcgov/citz-imb-sso-js-core";
-import { ENV } from "src/config";
+import { ENV } from "@/config";
 import { errorWrapper } from "@bcgov/citz-imb-express-utilities";
 
-const { SSO_ENVIRONMENT, SSO_REALM, SSO_PROTOCOL, SSO_CLIENT_ID, BACKEND_URL } =
-	ENV;
+const { SSO_ENVIRONMENT, SSO_REALM, SSO_PROTOCOL, SSO_CLIENT_ID, BACKEND_URL } = ENV;
 
 export const login = errorWrapper(async (req: Request, res: Response) => {
 	try {
@@ -23,10 +22,7 @@ export const login = errorWrapper(async (req: Request, res: Response) => {
 	} catch (error) {
 		res.status(500).json({
 			success: false,
-			error:
-				error instanceof Error
-					? error.message
-					: "An unknown error occurred during login.",
+			error: error instanceof Error ? error.message : "An unknown error occurred during login.",
 		});
 	}
 });

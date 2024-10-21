@@ -3,6 +3,7 @@
 	"license": "Apache-2.0",
 	"main": "src/index.ts",
 	"scripts": {
+		"test": "jest",
 		"dev": "nodemon",
 		"build": "tsc"
 	},
@@ -21,11 +22,13 @@
 		"@types/cookie-parser": "1.4.7",
 		"@types/cors": "2.8.17",
 		"@types/express": "5.0.0",
+		"@types/jest": "29.5.13",
 		"@types/node": "22.7.4",
 		"@types/supertest": "6.0.2",
 		"nodemon": "3.1.7",
 		"supertest": "7.0.0",
 		"ts-jest": "29.2.5",
+		"tsconfig-paths": "4.2.0",
 		"tsx": "4.19.1",
 		"typescript": "5.6.2"
 	}

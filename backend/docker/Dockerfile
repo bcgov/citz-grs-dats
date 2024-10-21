@@ -9,7 +9,7 @@ ENV NODE_ENV=development
 
 COPY . .
 
-RUN npm i
+RUN npm i --verbose
 
 EXPOSE ${BACKEND_PORT}
 
