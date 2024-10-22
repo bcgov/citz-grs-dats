@@ -9,8 +9,7 @@ import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { CORS_OPTIONS, RATE_LIMIT_OPTIONS } from "./config";
 import { ENV } from "./config";
-import { router as authRouter } from "./modules/auth";
-import { router as testRouter } from "./modules/test";
+import { authRouter, rabbitRouter } from "./modules";
 import { protectedRoute } from "./modules/auth/middleware";
 import type { Request, Response } from "express";
 
@@ -31,7 +30,7 @@ app.set("view engine", "ejs");
 app.disable("x-powered-by");
 
 app.use("/auth", authRouter);
-app.use("/test", testRouter);
+app.use("/rabbit", rabbitRouter);
 
 // Add express utils middleware.
 app.use(expressUtilitiesMiddleware);

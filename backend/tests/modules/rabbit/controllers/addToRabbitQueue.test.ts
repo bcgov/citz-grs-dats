@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
-import { addToRabbitQueue } from "@/modules/test/controllers/addToRabbitQueue";
-import { addToQueue } from "@/modules/test/queue";
+import { addToRabbitQueue } from "@/modules/rabbit/controllers/addToRabbitQueue";
+import { addToQueue } from "@/modules/rabbit/queue";
 
 // Mock addToQueue function
-jest.mock("@/modules/test/queue", () => ({
+jest.mock("@/modules/rabbit/queue", () => ({
 	addToQueue: jest.fn(),
 }));
 

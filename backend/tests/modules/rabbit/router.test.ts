@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
 import express from "express";
 import request from "supertest";
-import router from "@/modules/test/router";
-import { addToRabbitQueue } from "@/modules/test/controllers";
+import router from "@/modules/rabbit/router";
+import { addToRabbitQueue } from "@/modules/rabbit/controllers";
 
 // Mock the controller functions
-jest.mock("@/modules/test/controllers", () => ({
+jest.mock("@/modules/rabbit/controllers", () => ({
 	addToRabbitQueue: jest.fn((req: Request, res: Response) => res.status(200).send("Complete")),
 }));
 
@@ -16,7 +16,7 @@ const createApp = () => {
 	return app;
 };
 
-describe("Test Router", () => {
+describe("Rabbit Router", () => {
 	// Test case for /addToQueue route
 	it("should call the addToRabbitQueue controller on /addToQueue route", async () => {
 		const app = createApp();
