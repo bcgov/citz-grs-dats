@@ -1,4 +1,4 @@
-ARG NODE_IMAGE_TAG=22-bullseye-slim
+ARG NODE_IMAGE_TAG=22.8-bullseye-slim
 ARG BACKEND_PORT=3200
 
 FROM node:${NODE_IMAGE_TAG}
@@ -9,7 +9,7 @@ ENV NODE_ENV=development
 
 COPY . .
 
-RUN npm i
+RUN npm i --verbose
 
 EXPOSE ${BACKEND_PORT}
 

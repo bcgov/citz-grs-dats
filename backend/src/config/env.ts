@@ -8,6 +8,11 @@ const {
 	MONGO_PASSWORD,
 	MONGO_DATABASE_NAME,
 	MONGO_HOST,
+	SSO_ENVIRONMENT = "dev",
+	SSO_REALM = "standard",
+	SSO_PROTOCOL = "openid-connect",
+	SSO_CLIENT_ID = "",
+	SSO_CLIENT_SECRET = "",
 } = process.env;
 
 // Exported configuration values.
@@ -21,4 +26,9 @@ export default {
 	MONGO_PASSWORD,
 	MONGO_DATABASE_NAME,
 	MONGO_HOST,
+	SSO_ENVIRONMENT,
+	SSO_REALM,
+	SSO_PROTOCOL,
+	SSO_CLIENT_ID,
+	SSO_CLIENT_SECRET,
 };
