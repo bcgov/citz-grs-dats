@@ -21,6 +21,7 @@ services:
     environment:
       - MONGO_HOST=mongo
       - BACKEND_URL=http://localhost:${BACKEND_PORT:-3200}
+      - RABBITMQ_URL=amqp://${RABBITMQ_DEFAULT_USER:-admin}:${RABBITMQ_DEFAULT_PASS:-pass}@rabbitmq:5672
     ports:
       - ${BACKEND_PORT:-3200}:3200
     volumes:
@@ -44,7 +45,7 @@ services:
     volumes:
       - mongo_data:/data/db
     ports:
-      - ${MONGO_EXTERNAL_PORT}:27017
+      - ${MONGO_EXTERNAL_PORT:-3300}:27017
     networks:
       - app-network
     healthcheck:
@@ -60,12 +61,14 @@ services:
     container_name: rabbitmq
     restart: always
     ports:
-      - ${RABBITMQ_EXTERNAL_PORT}:5672        # RabbitMQ default port for clients
-      - '15672:15672'      # RabbitMQ Management UI port
+      - ${RABBITMQ_EXTERNAL_PORT:-3400}:5672    # RabbitMQ default port for clients
+      - '15672:15672'                           # RabbitMQ Management UI port
     env_file: .env
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     command: ["bash", "-c", "chmod 400 /var/lib/rabbitmq/.erlang.cookie; rabbitmq-server"]
+    networks:
+      - app-network
     healthcheck:
       test: ["CMD-SHELL", "rabbitmqctl status || exit 1"]
       interval: 30s # Perform the health check every 30 seconds.
