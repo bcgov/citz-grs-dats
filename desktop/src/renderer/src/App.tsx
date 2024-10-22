@@ -83,7 +83,7 @@ function App(): JSX.Element {
 				<span className="ts">TypeScript</span>
 			</div>
 			<p className="tip">
-				Please try pressing <code>Ctrl/Cmd + Shift + I</code> to open the devTools
+				Please try pressing <code>Ctrl + Shift + I or Cmd + Option + I</code> to open the devTools
 			</p>
 			<div className="status">
 				<strong>API Status:</strong> {apiStatus}

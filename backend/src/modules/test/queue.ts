@@ -23,9 +23,7 @@ let channelPromise: Promise<amqp.Channel>;
 
 // Get or create a channel
 export const getChannel = async () => {
-	if (!channelPromise) {
-		channelPromise = connectToRabbitMQ();
-	}
+	if (!channelPromise) channelPromise = connectToRabbitMQ();
 	return channelPromise;
 };
 

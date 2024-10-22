@@ -12,7 +12,7 @@ module.exports = {
 	testMatch: ["**/tests/**/*.test.ts"],
 	collectCoverage: true,
 	collectCoverageFrom: ["src/**/*.ts"],
-	coveragePathIgnorePatterns: ["index.ts", "express.ts", "config/"],
+	coveragePathIgnorePatterns: ["index.ts", "express.ts", "config/", "queue.ts"],
 	coverageDirectory: "coverage",
 	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths || {}, {
 		prefix: "<rootDir>/",
