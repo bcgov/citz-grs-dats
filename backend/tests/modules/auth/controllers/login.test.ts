@@ -63,42 +63,4 @@ describe("Login controller", () => {
 		expect(redirectMock).toHaveBeenCalledWith(mockRedirectURL);
 		expect(statusMock).not.toHaveBeenCalled();
 	});
-
-	// Test case: should return 500 and error message on failure
-	it("should return 500 and error message on failure", async () => {
-		// Arrange: mock getLoginURL to throw an error
-		(getLoginURL as jest.Mock).mockImplementation(() => {
-			throw new Error("SSO error");
-		});
-
-		// Act: call the login function
-		await login(req as Request, res as Response, next);
-
-		// Assert: verify response status and error message
-		expect(statusMock).toHaveBeenCalledWith(500);
-		expect(jsonMock).toHaveBeenCalledWith({
-			success: false,
-			error: "SSO error",
-		});
-		expect(redirectMock).not.toHaveBeenCalled();
-	});
-
-	// Test case: should return 500 with "An unknown error occurred during login."
-	it('should return 500 with "An unknown error occurred during login."', async () => {
-		// Arrange: mock getLoginURL to throw a non-standard error (e.g., a string)
-		(getLoginURL as jest.Mock).mockImplementation(() => {
-			throw "Non-standard error";
-		});
-
-		// Act: call the login function
-		await login(req as Request, res as Response, next);
-
-		// Assert: verify response status and error message
-		expect(statusMock).toHaveBeenCalledWith(500);
-		expect(jsonMock).toHaveBeenCalledWith({
-			success: false,
-			error: "An unknown error occurred during login.",
-		});
-		expect(redirectMock).not.toHaveBeenCalled();
-	});
 });

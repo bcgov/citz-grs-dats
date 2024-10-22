@@ -26,14 +26,14 @@ app.use(rateLimit(RATE_LIMIT_OPTIONS));
 app.use(cookieParser());
 app.set("view engine", "ejs");
 
+// Add express utils middleware.
+app.use(expressUtilitiesMiddleware);
+
 // Disabled because it exposes information about the used framework to potential attackers.
 app.disable("x-powered-by");
 
 app.use("/auth", authRouter);
 app.use("/rabbit", rabbitRouter);
-
-// Add express utils middleware.
-app.use(expressUtilitiesMiddleware);
 
 // Routing
 healthModule(app); // Route (/health)

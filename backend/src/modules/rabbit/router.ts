@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { addToRabbitQueue } from "./controllers";
+import { addToTestQueue } from "./controllers";
 
 const router = Router();
 
-router.post("/addToQueue", addToRabbitQueue);
+router.post("/addToTestQueue", addToTestQueue);
 
 export default router;

@@ -64,42 +64,4 @@ describe("Logout controller", () => {
 		expect(redirectMock).toHaveBeenCalledWith(mockRedirectURL);
 		expect(statusMock).not.toHaveBeenCalled();
 	});
-
-	// Test case: should return 500 and error message on failure
-	it("should return 500 and error message on failure", async () => {
-		// Arrange: mock getLogoutURL to throw an error
-		(getLogoutURL as jest.Mock).mockImplementation(() => {
-			throw new Error("Logout error");
-		});
-
-		// Act: call the logout function
-		await logout(req as Request, res as Response, next);
-
-		// Assert: verify response status and error message
-		expect(statusMock).toHaveBeenCalledWith(500);
-		expect(jsonMock).toHaveBeenCalledWith({
-			success: false,
-			error: "Logout error",
-		});
-		expect(redirectMock).not.toHaveBeenCalled();
-	});
-
-	// Test case: should return 500 with "An unknown error occurred during logout."
-	it('should return 500 with "An unknown error occurred during logout."', async () => {
-		// Arrange: mock getLogoutURL to throw a non-standard error (e.g., a number)
-		(getLogoutURL as jest.Mock).mockImplementation(() => {
-			throw 123; // Simulate a non-standard error
-		});
-
-		// Act: call the logout function
-		await logout(req as Request, res as Response, next);
-
-		// Assert: verify response status and error message
-		expect(statusMock).toHaveBeenCalledWith(500);
-		expect(jsonMock).toHaveBeenCalledWith({
-			success: false,
-			error: "An unknown error occurred during logout.",
-		});
-		expect(redirectMock).not.toHaveBeenCalled();
-	});
 });

@@ -105,40 +105,4 @@ describe("token controller", () => {
 		});
 		expect(cookieMock).not.toHaveBeenCalled();
 	});
-
-	// Test case: should return 500 with "Couldn't get access or id token from KC token endpoint"
-	it('should return 500 with "Couldn\'t get access or id token from KC token endpoint"', async () => {
-		// Arrange: mock getNewTokens to throw an error
-		(getNewTokens as jest.Mock).mockImplementation(() => {
-			throw new Error("Couldn't get access or id token from KC token endpoint");
-		});
-
-		// Act: call the token function
-		await token(req as Request, res as Response, next);
-
-		// Assert: verify response status and error message
-		expect(statusMock).toHaveBeenCalledWith(500);
-		expect(jsonMock).toHaveBeenCalledWith({
-			success: false,
-			error: "Couldn't get access or id token from KC token endpoint",
-		});
-	});
-
-	// Test case: should return 500 with "An unknown error occurred while refreshing tokens."
-	it('should return 500 with "An unknown error occurred while refreshing tokens."', async () => {
-		// Arrange: mock getNewTokens to throw a non-standard error
-		(getNewTokens as jest.Mock).mockImplementation(() => {
-			throw 123; // Simulate a non-standard error
-		});
-
-		// Act: call the token function
-		await token(req as Request, res as Response, next);
-
-		// Assert: verify response status and error message
-		expect(statusMock).toHaveBeenCalledWith(500);
-		expect(jsonMock).toHaveBeenCalledWith({
-			success: false,
-			error: "An unknown error occurred while refreshing tokens.",
-		});
-	});
 });

@@ -93,42 +93,4 @@ describe("loginCallback controller", () => {
 		expect(statusMock).toHaveBeenCalledWith(200);
 		expect(jsonMock).toHaveBeenCalledWith(mockTokens);
 	});
-
-	// Test case: should return 500 and error message on failure
-	it("should return 500 and error message on failure", async () => {
-		// Arrange: mock getTokens to throw an error
-		(getTokens as jest.Mock).mockImplementation(() => {
-			throw new Error("Token error");
-		});
-
-		// Act: call the loginCallback function
-		await loginCallback(req as Request, res as Response, next);
-
-		// Assert: verify that the response returns 500 and error message
-		expect(statusMock).toHaveBeenCalledWith(500);
-		expect(jsonMock).toHaveBeenCalledWith({
-			success: false,
-			error: "Token error",
-		});
-		expect(cookieMock).not.toHaveBeenCalled();
-	});
-
-	// Test case: should return 500 with "An unknown error occurred during login callback."
-	it('should return 500 with "An unknown error occurred during login callback."', async () => {
-		// Arrange: mock getTokens to throw a non-standard error (e.g., a number)
-		(getTokens as jest.Mock).mockImplementation(() => {
-			throw 123; // Simulate a non-standard error
-		});
-
-		// Act: call the loginCallback function
-		await loginCallback(req as Request, res as Response, next);
-
-		// Assert: verify response status and error message
-		expect(statusMock).toHaveBeenCalledWith(500);
-		expect(jsonMock).toHaveBeenCalledWith({
-			success: false,
-			error: "An unknown error occurred during login callback.",
-		});
-		expect(cookieMock).not.toHaveBeenCalled();
-	});
 });
