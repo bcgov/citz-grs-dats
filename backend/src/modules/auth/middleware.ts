@@ -29,6 +29,9 @@ export const protectedRoute = (
 	options?: ProtectedRouteOptions,
 ): RequestHandler => {
 	const routeMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+		if (!SSO_CLIENT_ID || !SSO_CLIENT_SECRET)
+			throw new Error("SSO_CLIENT_ID and/or SSO_CLIENT_SECRET env variables are undefined.");
+
 		// Ensure proper use of function.
 		if (roles && (!Array.isArray(roles) || !roles.every((item) => typeof item === "string")))
 			throw new Error("Error: Pass roles as an array of strings to protectedRoute.");

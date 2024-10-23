@@ -9,7 +9,7 @@ import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { CORS_OPTIONS, RATE_LIMIT_OPTIONS } from "./config";
 import { ENV } from "./config";
-import { authRouter, rabbitRouter } from "./modules";
+import { authRouter, rabbitRouter, s3Router } from "./modules";
 import { protectedRoute } from "./modules/auth/middleware";
 import type { Request, Response } from "express";
 
@@ -26,14 +26,15 @@ app.use(rateLimit(RATE_LIMIT_OPTIONS));
 app.use(cookieParser());
 app.set("view engine", "ejs");
 
+// Add express utils middleware.
+app.use(expressUtilitiesMiddleware);
+
 // Disabled because it exposes information about the used framework to potential attackers.
 app.disable("x-powered-by");
 
 app.use("/auth", authRouter);
 app.use("/rabbit", rabbitRouter);
-
-// Add express utils middleware.
-app.use(expressUtilitiesMiddleware);
+app.use("/s3", s3Router);
 
 // Routing
 healthModule(app); // Route (/health)

@@ -1,1 +1,1 @@
-export * from "./addToRabbitQueue";
+export * from "./addToTestQueue";
