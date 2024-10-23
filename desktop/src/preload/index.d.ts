@@ -6,12 +6,11 @@ declare global {
 		electron: ElectronAPI;
 		api: {
 			versions: NodeJS.Process.Versions;
-			checkApiStatus: () => Promise<boolean>;
+			checkApiStatus: (url: string) => Promise<boolean>;
 			checkIpRange: () => Promise<boolean>;
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			startLoginProcess: () => Promise<any>;
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			logout: (idToken: string | undefined) => Promise<any>;
+			getCurrentApiUrl: () => Promise<string>;
+			startLoginProcess: () => Promise<void>;
+			logout: (idToken: string | undefined) => Promise<void>;
 			getUser: (accessToken: string | undefined) => SSOUser<IdirIdentityProvider> | undefined;
 			safePromise: <T>(promise: Promise<T>) => Promise<[Error | null, T | null]>;
 			fetchProtectedRoute: (

@@ -1,7 +1,7 @@
 // Check the API status periodically
-export const checkApiStatus = async () => {
+export const checkApiStatus = async (url: string) => {
 	try {
-		const response = await fetch("http://localhost:3200/health");
+		const response = await fetch(`${url}/health`);
 		return response.ok;
 	} catch (error) {
 		console.error("Error checking API status:", error);
