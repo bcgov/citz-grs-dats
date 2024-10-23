@@ -14,6 +14,18 @@ The DATS project will be transferring inactive Full Retention (FR) government di
 
 3. Change directory to `desktop` and run `npm run dev` to launch the desktop app.
 
+### Next Steps
+
+- [Change API URL](#change-api-url)
+
+<br />
+
+## Change API URL
+
+If you need to change the API URL to a different Environment, look to the toolbar options in the top left of your application window on Windows or the top left of your screen on Mac and select `Edit` > `Select API URL` > Select either `Local`, `Dev`, `Test`, or `Prod`.
+
+By default when running in development using `npm run dev`, the default selection is `Local` and when running in the executable the default selection is `Prod`.
+
 <br />
 
 ## Architecture Diagram

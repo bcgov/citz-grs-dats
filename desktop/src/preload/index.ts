@@ -6,6 +6,7 @@ const api = {
 	versions: process.versions,
 	checkApiStatus,
 	checkIpRange,
+	getCurrentApiUrl: () => ipcRenderer.invoke("get-current-api-url"),
 	startLoginProcess: () => ipcRenderer.invoke("start-login-process"),
 	logout: (idToken: string | undefined) => ipcRenderer.invoke("start-logout-process", idToken),
 	getUser,

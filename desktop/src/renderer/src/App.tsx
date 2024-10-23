@@ -46,7 +46,8 @@ function App(): JSX.Element {
 	};
 
 	const handleAPIStatusUpdate = async () => {
-		const apiStatusOK = await api.checkApiStatus();
+		const url = await api.getCurrentApiUrl();
+		const apiStatusOK = await api.checkApiStatus(url);
 		setApiStatus(apiStatusOK ? "Online" : "Offline");
 	};
 
@@ -65,10 +66,8 @@ function App(): JSX.Element {
 	}, []);
 
 	const handleTestRoute = async () => {
-		const [error, result] = await api.fetchProtectedRoute(
-			"http://localhost:3200/test",
-			accessToken,
-		);
+		const url = await api.getCurrentApiUrl();
+		const [error, result] = await api.fetchProtectedRoute(`${url}/test`, accessToken);
 
 		if (error) console.log("Error in fetch: ", error);
 		console.log("Result: ", result);

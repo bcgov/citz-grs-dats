@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
 
-const DEBUG = true;
+const DEBUG = is.dev;
 
 let mainWindow: BrowserWindow;
 let authWindow: BrowserWindow | null = null;
@@ -22,6 +22,25 @@ const tokens: Record<string, string | undefined> = {
 	idToken: undefined,
 	accessExpiresIn: undefined,
 	refreshExpiresIn: undefined,
+};
+
+// API URL constants
+const LOCAL_API_URL = "http://localhost:3200";
+const DEV_API_URL = "https://dev.api.com";
+const TEST_API_URL = "https://test.api.com";
+const PROD_API_URL = "https://prod.api.com";
+
+// Set initial API URL based on environment
+let currentApiUrl = is.dev ? LOCAL_API_URL : PROD_API_URL;
+
+const debug = (log: string) => {
+	if (DEBUG) console.info(log);
+};
+
+// Update API URL
+const setApiUrl = (apiUrl: string) => {
+	currentApiUrl = apiUrl;
+	mainWindow.webContents.send("api-url-changed", apiUrl);
 };
 
 function createWindow(): void {
@@ -55,6 +74,10 @@ function createWindow(): void {
 	}
 }
 
+ipcMain.handle("get-current-api-url", () => {
+	return currentApiUrl;
+});
+
 ipcMain.handle("start-login-process", async () => {
 	debug('Beginning "start-login-process" of main process.');
 
@@ -68,7 +91,7 @@ ipcMain.handle("start-login-process", async () => {
 		},
 	});
 
-	authWindow.loadURL("http://localhost:3200/auth/login");
+	authWindow.loadURL(`${currentApiUrl}/auth/login`);
 
 	// Listen for redirect navigation to the callback URL with the code parameter
 	authWindow.webContents.on("did-redirect-navigation", async (_event, url) => {
@@ -79,7 +102,7 @@ ipcMain.handle("start-login-process", async () => {
 				try {
 					setTimeout(async () => {
 						const cookies = await authWindow?.webContents.session.cookies.get({
-							url: "http://localhost:3200",
+							url: currentApiUrl,
 						});
 
 						if (!cookies || cookies?.length === 0)
@@ -134,7 +157,7 @@ ipcMain.handle("start-logout-process", async (_, idToken: string) => {
 		});
 	}
 
-	authWindow.loadURL(`http://localhost:3200/auth/logout?id_token=${idToken}`);
+	authWindow.loadURL(`${currentApiUrl}/auth/logout?id_token=${idToken}`);
 
 	authWindow.webContents.on("did-redirect-navigation", async (_event, url) => {
 		if (url.includes("/auth/logout/callback")) clearAuthState();
@@ -190,11 +213,11 @@ const refreshTokens = async () => {
 
 	if (authWindow) {
 		try {
-			authWindow.loadURL("http://localhost:3200/auth/token");
+			authWindow.loadURL(`${currentApiUrl}/auth/token`);
 
 			setTimeout(async () => {
 				const cookies = await authWindow?.webContents.session.cookies.get({
-					url: "http://localhost:3200",
+					url: currentApiUrl,
 				});
 
 				if (!cookies || cookies?.length === 0) throw new Error("No cookies found for the session.");
@@ -213,9 +236,44 @@ const refreshTokens = async () => {
 	}
 };
 
-const debug = (log: string) => {
-	if (DEBUG) console.info(log);
-};
+const menuTemplate = [
+	...(process.platform === "darwin" ? [{ label: app.getName(), submenu: [{ role: "quit" }] }] : []),
+	{ role: "viewMenu" },
+	{
+		label: "Edit",
+		submenu: [
+			{
+				label: "Select API URL",
+				submenu: [
+					{
+						label: "Local",
+						type: "radio",
+						checked: currentApiUrl === LOCAL_API_URL,
+						click: () => setApiUrl(LOCAL_API_URL),
+					},
+					{
+						label: "Dev",
+						type: "radio",
+						checked: currentApiUrl === DEV_API_URL,
+						click: () => setApiUrl(DEV_API_URL),
+					},
+					{
+						label: "Test",
+						type: "radio",
+						checked: currentApiUrl === TEST_API_URL,
+						click: () => setApiUrl(TEST_API_URL),
+					},
+					{
+						label: "Prod",
+						type: "radio",
+						checked: currentApiUrl === PROD_API_URL,
+						click: () => setApiUrl(PROD_API_URL),
+					},
+				],
+			},
+		],
+	},
+];
 
 app.whenReady().then(createWindow);
 app.on("window-all-closed", () => {
@@ -223,8 +281,3 @@ app.on("window-all-closed", () => {
 		app.quit();
 	}
 });
-
-const menuTemplate = [
-	...(process.platform === "darwin" ? [{ label: app.getName(), submenu: [{ role: "quit" }] }] : []),
-	{ role: "viewMenu" },
-];
