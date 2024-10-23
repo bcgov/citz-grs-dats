@@ -1,15 +1,12 @@
-// Mock environment variables
-const ENV = {
-	SSO_ENVIRONMENT: "Test" as "Dev" | "Test" | "Prod",
-	SSO_REALM: "test-realm",
-	SSO_PROTOCOL: "openid-connect",
-	SSO_CLIENT_ID: "test-client-id",
-	SSO_CLIENT_SECRET: "test-client-secret",
-};
-
 // Mocked before imports so it can be defined before controller is initialized
 jest.mock("@/config", () => ({
-	ENV,
+	ENV: {
+		SSO_ENVIRONMENT: "Test" as "Dev" | "Test" | "Prod",
+		SSO_REALM: "test-realm",
+		SSO_PROTOCOL: "openid-connect",
+		SSO_CLIENT_ID: "test-client-id",
+		SSO_CLIENT_SECRET: "test-client-secret",
+	},
 }));
 
 import { token } from "@/modules/auth/controllers/token";

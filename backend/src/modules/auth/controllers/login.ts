@@ -7,6 +7,8 @@ import { errorWrapper } from "@bcgov/citz-imb-express-utilities";
 const { SSO_ENVIRONMENT, SSO_REALM, SSO_PROTOCOL, SSO_CLIENT_ID, BACKEND_URL } = ENV;
 
 export const login = errorWrapper(async (req: Request, res: Response) => {
+	if (!SSO_CLIENT_ID) throw new Error("SSO_CLIENT_ID env variable is undefined.");
+
 	const redirectURL = getLoginURL({
 		idpHint: "idir",
 		clientID: SSO_CLIENT_ID,

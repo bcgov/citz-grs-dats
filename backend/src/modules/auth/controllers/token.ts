@@ -9,6 +9,9 @@ const { SSO_ENVIRONMENT, SSO_REALM, SSO_PROTOCOL, SSO_CLIENT_ID, SSO_CLIENT_SECR
 export const token = errorWrapper(async (req: Request, res: Response) => {
 	const refresh_token = req.cookies.refresh_token;
 
+	if (!SSO_CLIENT_ID || !SSO_CLIENT_SECRET)
+		throw new Error("SSO_CLIENT_ID and/or SSO_CLIENT_SECRET env variables are undefined.");
+
 	if (!refresh_token)
 		return res.status(401).json({
 			success: false,

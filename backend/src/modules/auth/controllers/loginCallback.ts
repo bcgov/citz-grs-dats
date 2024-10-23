@@ -10,6 +10,9 @@ const { SSO_ENVIRONMENT, SSO_REALM, SSO_PROTOCOL, SSO_CLIENT_ID, SSO_CLIENT_SECR
 export const loginCallback = errorWrapper(async (req: Request, res: Response) => {
 	const { code } = req.query;
 
+	if (!SSO_CLIENT_ID || !SSO_CLIENT_SECRET)
+		throw new Error("SSO_CLIENT_ID and/or SSO_CLIENT_SECRET env variables are undefined.");
+
 	const tokens = await getTokens({
 		code: code as string,
 		clientID: SSO_CLIENT_ID,

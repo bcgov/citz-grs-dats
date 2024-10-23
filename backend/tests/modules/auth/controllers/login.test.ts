@@ -9,7 +9,13 @@ const ENV = {
 
 // Mocked before imports so it can be defined before controller is initialized
 jest.mock("@/config", () => ({
-	ENV,
+	ENV: {
+		SSO_ENVIRONMENT: "Test",
+		SSO_REALM: "test-realm",
+		SSO_PROTOCOL: "openid-connect",
+		SSO_CLIENT_ID: "test-client-id",
+		BACKEND_URL: "http://localhost:3000",
+	},
 }));
 
 import { login } from "@/modules/auth/controllers/login";

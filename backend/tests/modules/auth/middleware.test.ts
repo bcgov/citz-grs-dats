@@ -1,9 +1,12 @@
-// Mocked before imports so it can be defined before controller is initialized
+// Mock the ENV variables before importing the middleware
 jest.mock("@/config", () => ({
-	ENV: {},
+	ENV: {
+		SSO_CLIENT_ID: "mockClientId",
+		SSO_CLIENT_SECRET: "mockClientSecret",
+	},
 }));
 
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response } from "express";
 import express from "express";
 import request from "supertest";
 import { protectedRoute } from "@/modules/auth/middleware";

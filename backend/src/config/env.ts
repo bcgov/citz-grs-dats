@@ -12,8 +12,12 @@ const {
 	SSO_ENVIRONMENT = "dev",
 	SSO_REALM = "standard",
 	SSO_PROTOCOL = "openid-connect",
-	SSO_CLIENT_ID = "",
-	SSO_CLIENT_SECRET = "",
+	SSO_CLIENT_ID,
+	SSO_CLIENT_SECRET,
+	S3_ACCESS_KEY_ID,
+	S3_SECRET_ACCESS_KEY,
+	S3_ENDPOINT = "https://citz-grs-dats.objectstore.gov.bc.ca",
+	S3_BUCKET = "dats-bucket-dev",
 } = process.env;
 
 // Exported configuration values.
@@ -33,4 +37,8 @@ export default {
 	SSO_PROTOCOL,
 	SSO_CLIENT_ID,
 	SSO_CLIENT_SECRET,
+	S3_ACCESS_KEY_ID,
+	S3_SECRET_ACCESS_KEY,
+	S3_ENDPOINT,
+	S3_BUCKET,
 };
