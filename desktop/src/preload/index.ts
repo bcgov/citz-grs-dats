@@ -1,17 +1,23 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
-import { checkApiStatus, checkIpRange, fetchProtectedRoute, getUser, safePromise } from "./api";
+import { checkApiStatus, checkIpRange } from "./api";
+import { safePromise } from "./api/utils";
+import { fetchProtectedRoute, getUser } from "./api/sso";
 
 const api = {
 	versions: process.versions,
 	checkApiStatus,
 	checkIpRange,
 	getCurrentApiUrl: () => ipcRenderer.invoke("get-current-api-url"),
-	startLoginProcess: () => ipcRenderer.invoke("start-login-process"),
-	logout: (idToken: string | undefined) => ipcRenderer.invoke("start-logout-process", idToken),
-	getUser,
-	safePromise,
-	fetchProtectedRoute,
+	sso: {
+		getUser,
+		fetchProtectedRoute,
+		startLoginProcess: () => ipcRenderer.invoke("start-login-process"),
+		logout: (idToken: string | undefined) => ipcRenderer.invoke("start-logout-process", idToken),
+	},
+	utils: {
+		safePromise,
+	},
 };
 
 // Expose APIs to the renderer process

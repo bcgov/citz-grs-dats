@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Versions, VPNPopup } from "./components";
+import { AuthButton, Versions, VPNPopup } from "./components";
 import electronLogo from "./assets/electron.svg";
 
 function App(): JSX.Element {
@@ -10,9 +10,6 @@ function App(): JSX.Element {
 	// Authentication state
 	const [accessToken, setAccessToken] = useState<string | undefined>(undefined);
 	const [idToken, setIdToken] = useState<string | undefined>(undefined);
-
-	const handleLogin = async () => await api.startLoginProcess();
-	const handleLogout = async () => await api.logout(idToken);
 
 	useEffect(() => {
 		// Handle "auth-success" message from main process
@@ -67,7 +64,7 @@ function App(): JSX.Element {
 
 	const handleTestRoute = async () => {
 		const url = await api.getCurrentApiUrl();
-		const [error, result] = await api.fetchProtectedRoute(`${url}/test`, accessToken);
+		const [error, result] = await api.sso.fetchProtectedRoute(`${url}/test`, accessToken);
 
 		if (error) console.log("Error in fetch: ", error);
 		console.log("Result: ", result);
@@ -87,12 +84,12 @@ function App(): JSX.Element {
 			<div className="status">
 				<strong>API Status:</strong> {apiStatus}
 			</div>
-			<div className="tip">{accessToken && `Hello ${api.getUser(accessToken)?.display_name}!`}</div>
+			<div className="tip">
+				{accessToken && `Hello ${api.sso.getUser(accessToken)?.display_name}!`}
+			</div>
 			<div className="actions">
 				<div className="action">
-					<button type="button" onClick={accessToken ? handleLogout : handleLogin}>
-						{accessToken ? "Logout" : "Login"}
-					</button>
+					<AuthButton accessToken={accessToken} idToken={idToken} />
 				</div>
 				<div className="action">
 					<button type="button" onClick={handleTestRoute}>
@@ -100,7 +97,7 @@ function App(): JSX.Element {
 					</button>
 				</div>
 				<div className="action">
-					<button type="button" onClick={() => console.log("User: ", api.getUser(accessToken))}>
+					<button type="button" onClick={() => console.log("User: ", api.sso.getUser(accessToken))}>
 						Log User
 					</button>
 				</div>
