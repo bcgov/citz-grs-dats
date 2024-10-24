@@ -1,4 +1,4 @@
-import { safePromise } from "./safePromise";
+import { safePromise } from "../utils/safePromise";
 
 export const fetchProtectedRoute = async (
 	url: string,
