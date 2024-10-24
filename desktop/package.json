@@ -19,7 +19,8 @@
 		"@bcgov/citz-imb-sso-js-core": "1.0.0",
 		"@electron-toolkit/preload": "3.0.1",
 		"@electron-toolkit/utils": "3.0.0",
-		"electron-cookies": "1.1.0"
+		"electron-cookies": "1.1.0",
+		"p-limit": "6.1.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.3",
