@@ -60,7 +60,11 @@ npm run build:linux
 
 5. **Test App Launch**: Ensure the desktop app opens correctly, then close it.
 
-6. **Run in Console**: Open Command Prompt and run `<file-location>/desktop.exe` (e.g., `C:\Users\<username>\AppData\Local\Programs\desktop\desktop.exe`). Execution may differ on Mac, use Terminal to run the executable.
+6. **Run in Console**:
+    a. Windows: Open Command Prompt and run `<file-location>/desktop.exe`
+        e.g., `C:\Users\<username>\AppData\Local\Programs\desktop\desktop.exe`
+    b. Mac: Open Terminal and run `open <file location>`
+        e.g., `open /Applications/desktop.app`
 
 <br />
 
