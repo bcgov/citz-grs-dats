@@ -22,6 +22,7 @@ const {
 	CHES_CLIENT_SECRET,
 	CHES_REALM = "comsvcauth",
 	CHES_ENVIRONMENT = "dev",
+	CHES_URL = "https://ches-dev.api.gov.bc.ca/api/v1",
 } = process.env;
 
 const AUTH_URL = {
@@ -56,4 +57,5 @@ export default {
 	CHES_CLIENT_ID,
 	CHES_CLIENT_SECRET,
 	CHES_TOKEN_ENDPOINT,
+	CHES_URL,
 };
