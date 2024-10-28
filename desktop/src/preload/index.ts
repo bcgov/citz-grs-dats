@@ -3,7 +3,6 @@ import { electronAPI } from "@electron-toolkit/preload";
 import { checkApiStatus, checkIpRange } from "./api";
 import { safePromise } from "./api/utils";
 import { fetchProtectedRoute, getUser } from "./api/sso";
-import { createWorkerPool, processFolder } from "./api/workers";
 
 const api = {
 	versions: process.versions,
@@ -20,8 +19,8 @@ const api = {
 		safePromise,
 	},
 	workers: {
-		createWorkerPool,
-		processFolder,
+		processFolder: ({ filePath }: { filePath: string }) =>
+			ipcRenderer.invoke("process-folder", { filePath }),
 	},
 };
 

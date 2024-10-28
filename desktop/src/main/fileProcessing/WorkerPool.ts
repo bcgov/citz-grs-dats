@@ -1,7 +1,6 @@
 import { Worker } from "node:worker_threads";
 
 type WorkerData<T = unknown> = {
-	payload: T;
 	[key: string]: T;
 };
 

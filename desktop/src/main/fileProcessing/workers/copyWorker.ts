@@ -1,7 +1,6 @@
 import { parentPort, workerData } from "node:worker_threads";
 import path from "node:path";
 import { promises as fsPromises, type Stats, createReadStream, createWriteStream } from "node:fs";
-import pLimit from "p-limit";
 
 const { stat, readdir, mkdir } = fsPromises;
 
@@ -50,6 +49,36 @@ const copyFileStream = (sourcePath: string, destinationPath: string): Promise<vo
 // Implement a delay to throttle I/O operations
 const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
+// A simple semaphore to control concurrency
+class Semaphore {
+	private counter: number;
+	private waitingQueue: Array<() => void> = [];
+
+	constructor(maxConcurrency: number) {
+		this.counter = maxConcurrency;
+	}
+
+	async acquire(): Promise<void> {
+		if (this.counter > 0) {
+			this.counter--;
+			return Promise.resolve();
+		}
+
+		return new Promise((resolve) => {
+			this.waitingQueue.push(resolve);
+		});
+	}
+
+	release(): void {
+		if (this.waitingQueue.length > 0) {
+			const next = this.waitingQueue.shift();
+			if (next) next();
+		} else {
+			this.counter++;
+		}
+	}
+}
+
 // Copy a directory in batches with concurrency limits and throttling
 const copyDirectoryInBatches = async (
 	source: string,
@@ -59,15 +88,17 @@ const copyDirectoryInBatches = async (
 ): Promise<void> => {
 	await ensureDirectoryExists(destination);
 	const files = await readdir(source);
-	const limit = pLimit(concurrencyLimit); // Set a limit on concurrent file operations
+	const semaphore = new Semaphore(concurrencyLimit); // Create a semaphore for concurrency control
 
 	for (let i = 0; i < files.length; i += batchSize) {
 		const batch = files.slice(i, i + batchSize);
 
 		// Process the batch with concurrency control
 		await Promise.all(
-			batch.map((file) =>
-				limit(async () => {
+			batch.map(async (file) => {
+				await semaphore.acquire(); // Acquire semaphore before processing
+
+				try {
 					const sourcePath = path.join(source, file);
 					const destinationPath = path.join(destination, file);
 					const fileStat: Stats = await stat(sourcePath);
@@ -75,11 +106,13 @@ const copyDirectoryInBatches = async (
 					if (fileStat.isDirectory()) {
 						await copyDirectoryInBatches(sourcePath, destinationPath, batchSize, concurrencyLimit);
 					} else {
-						console.log(`Copying file: ${sourcePath} to ${destinationPath}`);
+						console.log(`Copying file: ${sourcePath}`);
 						await copyFileStream(sourcePath, destinationPath);
 					}
-				}),
-			),
+				} finally {
+					semaphore.release(); // Release semaphore after processing
+				}
+			}),
 		);
 
 		// Add a delay between batches to throttle I/O
@@ -90,46 +123,22 @@ const copyDirectoryInBatches = async (
 /**
  * Copy Worker
  *
- * Purpose:
- * The copy worker is designed to perform efficient, concurrent copying of directories and files
- * from a specified source path to a destination path. It handles file I/O operations in batches,
- * supports error handling, and implements concurrency control to avoid overwhelming system resources.
- *
- * Key Features:
- * 1. **Concurrency:**
- *    - The worker uses the `p-limit` library to limit the number of concurrent operations.
- *    - The `concurrencyLimit` parameter controls the maximum number of concurrent file or directory operations.
- *    - This prevents the worker from overwhelming the file system and keeps resource usage in check.
- *
- * 2. **Streams:**
- *    - The worker uses `fs.createReadStream` and `fs.createWriteStream` for file copying.
- *    - Streams allow efficient, memory-safe copying of large files by reading and writing data in chunks.
- *    - Error handling for read and write streams ensures that the worker gracefully handles I/O issues.
- *
- * 3. **Batch Processing (batchSize):**
- *    - The copying process is divided into batches, where each batch processes a fixed number of files.
- *    - The `batchSize` parameter determines how many files are processed in each batch.
- *    - Batching reduces I/O load spikes and allows the worker to manage file processing incrementally.
- *
- * 4. **pLimit:**
- *    - The `p-limit` library is used to manage the concurrency of file operations within each batch.
- *    - It ensures that no more than the specified number of operations run concurrently.
- *
- * 5. **Throttling:**
- *    - A delay is added between batches to throttle I/O operations, preventing system overload during intensive tasks.
+ * This worker performs efficient, concurrent copying of directories and files
+ * from a specified source path to a destination path. It handles file I/O operations
+ * in batches, supports error handling, and implements concurrency control.
  *
  * Definitions:
  * - **concurrencyLimit:** The maximum number of concurrent file operations allowed at any given time.
  * - **streams:** Read and write streams are used for file I/O, enabling efficient copying of files, especially large ones.
  * - **batchSize:** The number of files processed in a single batch. Adjusting this parameter allows tuning of performance.
- * - **pLimit:** Restricts the number of concurrent operations, helping to manage concurrency effectively.
  */
 
 (async () => {
+	if (!workerData) return;
 	const { source, destination, batchSize } = workerData as WorkerData;
 
 	try {
-		console.log(`Starting to copy from ${source} to ${destination} in batches of ${batchSize}...`);
+		console.log(`Copying from ${source}`);
 		await copyDirectoryInBatches(source, destination, batchSize);
 
 		if (parentPort) {

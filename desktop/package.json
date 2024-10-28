@@ -3,12 +3,21 @@
 	"version": "1.0.0",
 	"main": "./out/main/index.js",
 	"type": "module",
+	"build": {
+		"extraFiles": [
+			{
+				"from": "out/cjs-workers/copyWorker.cjs",
+				"to": "resources/copyWorker.cjs"
+			}
+		]
+	},
 	"scripts": {
 		"typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
 		"typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
 		"typecheck": "npm run typecheck:node && npm run typecheck:web",
 		"dev": "electron-vite dev",
-		"build": "npm run typecheck && electron-vite build",
+		"build": "npm run typecheck && electron-vite build && npm run build:workers",
+		"build:workers": "vite build --config es.workers.vite.config.ts && vite build --config cjs.workers.vite.config.ts",
 		"postinstall": "electron-builder install-app-deps",
 		"build:unpack": "npm run build && electron-builder --dir",
 		"build:win": "npm run build && electron-builder --win",

@@ -26,12 +26,11 @@ declare global {
 			};
 
 			workers: {
-				createWorkerPool: () => WorkerPool;
-				processFolder: (
-					workerPool: WorkerPool,
-					filePath: string,
-					destination: string,
-				) => Promise<void>;
+				processFolder: ({
+					filePath,
+				}: {
+					filePath: string;
+				}) => Promise<void>;
 			};
 		};
 	}

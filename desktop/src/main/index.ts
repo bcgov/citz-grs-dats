@@ -9,6 +9,7 @@ import {
 import { join } from "node:path";
 import { is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
+import { createWorkerPool, processFolder } from "./fileProcessing";
 
 const DEBUG = is.dev;
 
@@ -32,6 +33,8 @@ const PROD_API_URL = "https://prod.api.com";
 
 // Set initial API URL based on environment
 let currentApiUrl = is.dev ? LOCAL_API_URL : PROD_API_URL;
+
+const pool = createWorkerPool();
 
 const debug = (log: string) => {
 	if (DEBUG) console.info(log);
@@ -166,6 +169,12 @@ ipcMain.handle("start-logout-process", async (_, idToken: string) => {
 	authWindow.on("closed", () => {
 		authWindow = null;
 	});
+});
+
+ipcMain.handle("process-folder", async (_, { filePath }: { filePath: string }) => {
+	debug('Beginning "process-folder" of main process.');
+
+	await processFolder(pool, filePath, is.dev);
 });
 
 const clearAuthState = () => {
