@@ -52,9 +52,11 @@ npm run build:mac
 npm run build:linux
 ```
 
-3. **Uninstall Previous Version**: Remove existing installation (e.g., in `C:\Users\<username>\AppData\Local\Programs\desktop` on Windows).
+3. **Uninstall Previous Version**: Remove existing installation
+    a. Windows: in `C:\Users\<username>\AppData\Local\Programs\desktop`.
+    b. Mac: `/Applications/desktop.app`.
 
-4. **Locate Build**: In VSCode, right-click `desktop/dist/` and select `Reveal in File Explorer`. Run the setup executable.
+4. **Locate Build**: In VSCode, right-click `desktop/dist/` and select `Reveal in Finder/File Explorer`. Run the setup executable.
 
 5. **Test App Launch**: Ensure the desktop app opens correctly, then close it.
 
