@@ -63,8 +63,8 @@ npm run build:linux
 6. **Run in Console**:
     a. Windows: Open Command Prompt and run `<file-location>/desktop.exe`
         e.g., `C:\Users\<username>\AppData\Local\Programs\desktop\desktop.exe`
-    b. Mac: Open Terminal and run `open <file location>`
-        e.g., `open /Applications/desktop.app`
+    b. Mac: Open Terminal and run `<file location>`
+        e.g., `/Applications/desktop.app/Contents/MacOS/desktop.app`
 
 <br />
 
