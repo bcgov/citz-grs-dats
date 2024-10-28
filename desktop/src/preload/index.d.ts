@@ -24,6 +24,14 @@ declare global {
 			utils: {
 				safePromise: <T>(promise: Promise<T>) => Promise<[Error | null, T | null]>;
 			};
+
+			workers: {
+				processFolder: ({
+					filePath,
+				}: {
+					filePath: string;
+				}) => Promise<void>;
+			};
 		};
 	}
 }

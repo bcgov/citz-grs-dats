@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AuthButton, Versions, VPNPopup } from "./components";
+import { AuthButton, ProcessFolderButton, Versions, VPNPopup } from "./components";
 import electronLogo from "./assets/electron.svg";
 
 function App(): JSX.Element {
@@ -100,6 +100,9 @@ function App(): JSX.Element {
 					<button type="button" onClick={() => console.log("User: ", api.sso.getUser(accessToken))}>
 						Log User
 					</button>
+				</div>
+				<div className="action">
+					<ProcessFolderButton />
 				</div>
 			</div>
 			<Versions />

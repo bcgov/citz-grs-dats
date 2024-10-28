@@ -18,6 +18,10 @@ const api = {
 	utils: {
 		safePromise,
 	},
+	workers: {
+		processFolder: ({ filePath }: { filePath: string }) =>
+			ipcRenderer.invoke("process-folder", { filePath }),
+	},
 };
 
 // Expose APIs to the renderer process
