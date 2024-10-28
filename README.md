@@ -8,23 +8,63 @@ The DATS project will be transferring inactive Full Retention (FR) government di
 
 ## Quick Start
 
-1. Set up the `.env` based on the `.env.template` file.
+1. **Set Up Environment**: Set up the `.env` based on the `.env.template` file.
 
-2. Run `npm run up` to start the API, MongoDB, and RabbitMQ services.
+2. **Start Services**: Run `npm run up` to start the API, MongoDB, and RabbitMQ services.
 
-3. Change directory to `desktop` and run `npm run dev` to launch the desktop app.
+3. **Desktop Directory**: Navigate to `desktop`.
+
+4. **Install Dependencies**: Run `npm install`.
+
+5. **Build App**: Run `npm run build` to enable worker functionality.
+
+6. **Launch App**: Run `npm run dev`.
 
 ### Next Steps
 
 - [Change API URL](#change-api-url)
+- [Test Desktop App Executable](#test-desktop-app-executable)
 
 <br />
 
 ## Change API URL
 
-If you need to change the API URL to a different Environment, look to the toolbar options in the top left of your application window on Windows or the top left of your screen on Mac and select `Edit` > `Select API URL` > Select either `Local`, `Dev`, `Test`, or `Prod`.
+To switch API environments:
 
-By default when running in development using `npm run dev`, the default selection is `Local` and when running in the executable the default selection is `Prod`.
+1. In the app, go to `Edit > Select API URL`.
+
+2. Choose `Local`, `Dev`, `Test`, or `Prod`.
+  - Default: `Local` during development using `npm run dev`, `Prod` in executable builds.
+
+<br />
+
+## Test Desktop App Executable
+
+1. **Clear Build Folders**: Remove `desktop/out/` and `desktop/dist/`.
+
+2. **Build Executable**:
+
+  - Run from `desktop/` as an Administrator:
+
+```
+npm run build:win
+npm run build:mac
+npm run build:linux
+```
+
+3. **Uninstall Previous Version**: Remove existing installation
+    a. Windows: in `C:\Users\<username>\AppData\Local\Programs\desktop`.
+    b. Mac: `/Applications/desktop.app`.
+
+4. **Locate Build**: In VSCode, right-click `desktop/dist/` and select `Reveal in Finder/File Explorer`. Run the setup executable.
+
+5. **Test App Launch**: Ensure the desktop app opens correctly, then close it.
+
+6. **Run in Console**:
+    a. Windows: Open Command Prompt and run `<file-location>/desktop.exe`
+        e.g., `C:\Users\<username>\AppData\Local\Programs\desktop\desktop.exe`
+    b. Mac: Open Terminal and run `<file location>`
+        e.g., `/Applications/desktop.app/Contents/MacOS/desktop.app`
 
 <br />
 
