@@ -94,7 +94,7 @@ describe("protectedRoute middleware", () => {
 
 		const app = createAppWithMiddleware(["role1", "role2"]);
 		await request(app).get("/test").set("Authorization", "Bearer valid-token").expect(403, {
-			sucess: false, // Note the typo from the middleware
+			success: false, // Note the typo from the middleware
 			message: "User must have all of the following roles: [role1,role2]",
 		});
 	});
