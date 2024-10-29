@@ -4,7 +4,7 @@ export const fetchProtectedRoute = async (
 	url: string,
 	accessToken: string | undefined,
 	options: RequestInit = {},
-): Promise<[Error | null, Response | null]> => {
+): Promise<[Error, null] | [null, Response]> => {
 	if (!accessToken) return [new Error("Access token is missing or undefined."), null];
 
 	const authHeaderValue = `Bearer ${accessToken}`;
