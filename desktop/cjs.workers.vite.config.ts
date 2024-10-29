@@ -29,7 +29,7 @@ export default defineConfig({
 		},
 		outDir: "out/cjs-workers", // Output directory
 		rollupOptions: {
-			external: ["worker_threads", "fs", "path", "p-limit"], // Externalize Node.js modules
+			external: ["worker_threads", "fs", "path"], // Externalize Node.js modules
 		},
 		target: "node22",
 		ssr: true,

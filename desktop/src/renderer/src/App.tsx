@@ -64,9 +64,11 @@ function App(): JSX.Element {
 
 	const handleTestRoute = async () => {
 		const url = await api.getCurrentApiUrl();
-		const [error, result] = await api.sso.fetchProtectedRoute(`${url}/test`, accessToken);
+		const [error, response] = await api.sso.fetchProtectedRoute(`${url}/test`, accessToken);
 
-		if (error) console.log("Error in fetch: ", error);
+		if (error) return console.log("Error in fetch: ", error);
+		const result = await response.result.json;
+
 		console.log("Result: ", result);
 	};
 
