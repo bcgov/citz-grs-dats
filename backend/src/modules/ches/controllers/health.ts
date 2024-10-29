@@ -6,6 +6,8 @@ import { ENV } from "src/config";
 const { CHES_URL } = ENV;
 
 export const health = errorWrapper(async (req: Request, res: Response) => {
+	const { getStandardResponse } = req;
+
 	// Fetch token for CHES auth.
 	const [fetchTokenError, tokenResponse] = await fetchToken();
 	if (fetchTokenError) throw fetchTokenError;
@@ -34,10 +36,11 @@ export const health = errorWrapper(async (req: Request, res: Response) => {
 
 	const data = await healthResponse.json();
 
-	const result = standardResponse(
-		{ data, message: "CHES connection successful", success: true },
-		req,
-	);
+	const result = getStandardResponse({
+		data,
+		message: "CHES connection successful",
+		success: true,
+	});
 
 	// Return health check result
 	return res.status(200).json(result);

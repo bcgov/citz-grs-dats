@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { health } from "@/modules/s3/controllers/health";
 import { checkS3Connection } from "@/modules/s3/utils";
+import type { StandardResponse, StandardResponseInput } from "@bcgov/citz-imb-express-utilities";
 
 // Mock checkS3Connection function
 jest.mock("@/modules/s3/utils", () => ({
@@ -15,9 +16,21 @@ describe("health controller", () => {
 	let jsonMock: jest.Mock;
 
 	beforeEach(() => {
-		req = {};
+		req = {
+			getStandardResponse: <TData>(
+				dataInput: StandardResponseInput<TData>,
+			): StandardResponse<TData> => {
+				const { success = true, data, message } = dataInput;
+
+				return {
+					success,
+					data,
+					message: message ?? "",
+				} as StandardResponse<TData>;
+			},
+		};
 		jsonMock = jest.fn();
-		statusMock = jest.fn(() => ({ json: jsonMock }));
+		statusMock = jest.fn().mockReturnValue({ json: jsonMock });
 		res = { status: statusMock } as Partial<Response>;
 		next = jest.fn();
 

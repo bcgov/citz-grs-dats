@@ -18,6 +18,7 @@ module.exports = {
 		"config/",
 		"rabbit/queue.ts",
 		"s3/utils/connection.ts",
+		"ches/utils/fetchToken.ts",
 	],
 	coverageDirectory: "coverage",
 	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths || {}, {
