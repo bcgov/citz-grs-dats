@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { errorWrapper, safePromise, standardResponse } from "@bcgov/citz-imb-express-utilities";
+import { errorWrapper, HttpError, safePromise } from "@bcgov/citz-imb-express-utilities";
 import { fetchToken } from "../utils";
 import { ENV } from "src/config";
 
@@ -15,7 +15,8 @@ export const health = errorWrapper(async (req: Request, res: Response) => {
 	const { access_token } = await tokenResponse.json();
 
 	// Get access token.
-	if (!access_token) throw new Error("Missing access_token in CHES token endpoint response.");
+	if (!access_token)
+		throw new HttpError(404, "Missing access_token in CHES token endpoint response.");
 
 	// Call CHES /health endpoint using safePromise
 	const [healthError, healthResponse] = await safePromise(
@@ -31,7 +32,7 @@ export const health = errorWrapper(async (req: Request, res: Response) => {
 	// Check if the response is OK
 	if (!healthResponse?.ok) {
 		const errorMessage = `CHES health endpoint returned an error: ${healthResponse?.statusText}`;
-		throw new Error(errorMessage);
+		throw new HttpError(400, errorMessage);
 	}
 
 	const data = await healthResponse.json();

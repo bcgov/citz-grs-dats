@@ -6,7 +6,7 @@ jest.mock("@/config", () => ({
 	},
 }));
 
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import express from "express";
 import request from "supertest";
 import { protectedRoute } from "@/modules/auth/middleware";
@@ -17,6 +17,8 @@ import {
 	hasAllRoles,
 	hasAtLeastOneRole,
 } from "@bcgov/citz-imb-sso-js-core";
+import { expressUtilitiesMiddleware } from "@bcgov/citz-imb-express-utilities";
+import type { StandardResponse, StandardResponseInput } from "@bcgov/citz-imb-express-utilities";
 
 // Mock SSO functions
 jest.mock("@bcgov/citz-imb-sso-js-core", () => ({
@@ -27,10 +29,34 @@ jest.mock("@bcgov/citz-imb-sso-js-core", () => ({
 	hasAtLeastOneRole: jest.fn(),
 }));
 
+jest.mock("@bcgov/citz-imb-express-utilities", () => {
+	const originalModule = jest.requireActual("@bcgov/citz-imb-express-utilities");
+
+	return {
+		...originalModule,
+		expressUtilitiesMiddleware: (req: Request, res: Response, next: NextFunction) => {
+			req.getStandardResponse = <TData>(
+				dataInput: StandardResponseInput<TData>,
+			): StandardResponse<TData> => {
+				const { success = true, data, message } = dataInput;
+
+				return {
+					success,
+					data,
+					message: message ?? "",
+				} as StandardResponse<TData>;
+			};
+
+			next();
+		},
+	};
+});
+
 // Helper to create an Express app with the middleware
 const createAppWithMiddleware = (roles?: string[], options?: { requireAllRoles?: boolean }) => {
 	const app = express();
 	app.use(express.json());
+	app.use(expressUtilitiesMiddleware);
 	app.use("/test", protectedRoute(roles ?? undefined, options), (req: Request, res: Response) => {
 		res.status(200).json({ message: "YES" });
 	});
@@ -66,7 +92,7 @@ describe("protectedRoute middleware", () => {
 		await request(app)
 			.get("/test")
 			.set("Authorization", "Bearer valid-token")
-			.expect(404, { error: "User not found." });
+			.expect(404, { success: false, message: "User not found." });
 	});
 
 	// Test case: should return 403 if user does not have at least one required role
@@ -94,7 +120,7 @@ describe("protectedRoute middleware", () => {
 
 		const app = createAppWithMiddleware(["role1", "role2"]);
 		await request(app).get("/test").set("Authorization", "Bearer valid-token").expect(403, {
-			success: false, // Note the typo from the middleware
+			success: false,
 			message: "User must have all of the following roles: [role1,role2]",
 		});
 	});

@@ -1,11 +1,11 @@
-import { safePromise } from "@bcgov/citz-imb-express-utilities";
+import { HttpError, safePromise } from "@bcgov/citz-imb-express-utilities";
 import { ENV } from "src/config";
 
 const { CHES_CLIENT_ID, CHES_CLIENT_SECRET, CHES_TOKEN_ENDPOINT } = ENV;
 
 export const fetchToken = async (): Promise<[Error, null] | [null, Response]> => {
 	if (!CHES_CLIENT_ID || !CHES_CLIENT_SECRET || !CHES_TOKEN_ENDPOINT) {
-		return [new Error("Missing CHES configuration variables"), null];
+		return [new HttpError(400, "Missing CHES configuration variables"), null];
 	}
 
 	const params = new URLSearchParams();

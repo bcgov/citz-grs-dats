@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { getTokens } from "@bcgov/citz-imb-sso-js-core";
 import type { SSOEnvironment, SSOProtocol } from "@bcgov/citz-imb-sso-js-core";
 import { ENV } from "src/config";
-import { errorWrapper } from "@bcgov/citz-imb-express-utilities";
+import { errorWrapper, HttpError } from "@bcgov/citz-imb-express-utilities";
 
 const { SSO_ENVIRONMENT, SSO_REALM, SSO_PROTOCOL, SSO_CLIENT_ID, SSO_CLIENT_SECRET, BACKEND_URL } =
 	ENV;
@@ -12,7 +12,7 @@ export const loginCallback = errorWrapper(async (req: Request, res: Response) =>
 	const { code } = req.query;
 
 	if (!SSO_CLIENT_ID || !SSO_CLIENT_SECRET)
-		throw new Error("SSO_CLIENT_ID and/or SSO_CLIENT_SECRET env variables are undefined.");
+		throw new HttpError(400, "SSO_CLIENT_ID and/or SSO_CLIENT_SECRET env variables are undefined.");
 
 	const tokens = await getTokens({
 		code: code as string,
