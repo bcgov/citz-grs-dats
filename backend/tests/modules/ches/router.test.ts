@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
 import express from "express";
 import request from "supertest";
-import router from "@/modules/s3/router";
-import { health } from "@/modules/s3/controllers";
+import router from "@/modules/ches/router";
+import { health } from "@/modules/ches/controllers";
 
 // Mock the controller functions
-jest.mock("@/modules/s3/controllers", () => ({
+jest.mock("@/modules/ches/controllers", () => ({
 	health: jest.fn((req: Request, res: Response) => res.status(200).send("Complete")),
 }));
 
@@ -16,7 +16,7 @@ const createApp = () => {
 	return app;
 };
 
-describe("S3 Router", () => {
+describe("CHES Router", () => {
 	// Test case for /health route
 	it("should call the health controller on /health route", async () => {
 		const app = createApp();

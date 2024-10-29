@@ -18,7 +18,20 @@ const {
 	S3_SECRET_ACCESS_KEY,
 	S3_ENDPOINT = "https://citz-grs-dats.objectstore.gov.bc.ca",
 	S3_BUCKET = "dats-bucket-dev",
+	CHES_CLIENT_ID,
+	CHES_CLIENT_SECRET,
+	CHES_REALM = "comsvcauth",
+	CHES_ENVIRONMENT = "dev",
+	CHES_URL = "https://ches-dev.api.gov.bc.ca/api/v1",
 } = process.env;
+
+const AUTH_URL = {
+	dev: "https://dev.loginproxy.gov.bc.ca/auth",
+	test: "https://test.loginproxy.gov.bc.ca/auth",
+	prod: "https://loginproxy.gov.bc.ca/auth",
+};
+
+const CHES_TOKEN_ENDPOINT = `${AUTH_URL[CHES_ENVIRONMENT as "dev" | "test" | "prod"]}/realms/${CHES_REALM}/protocol/openid-connect/token`;
 
 // Exported configuration values.
 export default {
@@ -41,4 +54,8 @@ export default {
 	S3_SECRET_ACCESS_KEY,
 	S3_ENDPOINT,
 	S3_BUCKET,
+	CHES_CLIENT_ID,
+	CHES_CLIENT_SECRET,
+	CHES_TOKEN_ENDPOINT,
+	CHES_URL,
 };
