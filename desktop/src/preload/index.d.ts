@@ -18,11 +18,11 @@ declare global {
 					url: string,
 					accessToken: string | undefined,
 					options: RequestInit = {},
-				) => Promise<[Error, null] | [null, Response]>;
+				) => Promise<[Error, null] | [null, ExtendedResponse]>;
 			};
 
 			utils: {
-				safePromise: (promise: Promise) => Promise<[Error, null] | [null, Response]>;
+				safePromise: (promise: Promise) => Promise<[Error, null] | [null, ExtendedResponse]>;
 			};
 
 			workers: {

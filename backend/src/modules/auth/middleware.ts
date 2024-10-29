@@ -77,7 +77,7 @@ export const protectedRoute = (
 				if (!userRoles || !hasAllRoles(userRoles, roles)) {
 					// User does not have all the required roles.
 					return res.status(403).json({
-						sucess: false,
+						success: false,
 						message: `User must have all of the following roles: [${roles}]`,
 					});
 				}
