@@ -4,12 +4,10 @@ import { fetchToken } from "@/modules/ches/utils";
 import { safePromise } from "@bcgov/citz-imb-express-utilities";
 import type { StandardResponse, StandardResponseInput } from "@bcgov/citz-imb-express-utilities";
 
-// Mock fetchToken function
 jest.mock("@/modules/ches/utils", () => ({
 	fetchToken: jest.fn(),
 }));
 
-// Mock safePromise function
 jest.mock("@bcgov/citz-imb-express-utilities", () => {
 	const originalModule = jest.requireActual("@bcgov/citz-imb-express-utilities");
 

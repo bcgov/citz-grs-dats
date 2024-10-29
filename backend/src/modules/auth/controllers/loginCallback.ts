@@ -8,6 +8,7 @@ const { SSO_ENVIRONMENT, SSO_REALM, SSO_PROTOCOL, SSO_CLIENT_ID, SSO_CLIENT_SECR
 	ENV;
 
 export const loginCallback = errorWrapper(async (req: Request, res: Response) => {
+	const { getStandardResponse } = req;
 	const { code } = req.query;
 
 	if (!SSO_CLIENT_ID || !SSO_CLIENT_SECRET)
@@ -21,6 +22,12 @@ export const loginCallback = errorWrapper(async (req: Request, res: Response) =>
 		ssoEnvironment: SSO_ENVIRONMENT as SSOEnvironment,
 		ssoRealm: SSO_REALM,
 		ssoProtocol: SSO_PROTOCOL as SSOProtocol,
+	});
+
+	const result = getStandardResponse({
+		data: tokens,
+		message: "Login callback successful.",
+		success: true,
 	});
 
 	// Sets tokens
@@ -47,5 +54,5 @@ export const loginCallback = errorWrapper(async (req: Request, res: Response) =>
 			sameSite: "none",
 		})
 		.status(200)
-		.json(tokens);
+		.json(result);
 });

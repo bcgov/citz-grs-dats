@@ -8,6 +8,16 @@ jest.mock("@/modules/s3/utils", () => ({
 	checkS3Connection: jest.fn(),
 }));
 
+jest.mock("@bcgov/citz-imb-express-utilities", () => {
+	const originalModule = jest.requireActual("@bcgov/citz-imb-express-utilities");
+
+	return {
+		...originalModule,
+		safePromise: jest.fn(),
+		errorWrapper: (fn: unknown) => fn,
+	};
+});
+
 describe("health controller", () => {
 	let req: Partial<Request>;
 	let res: Partial<Response>;
@@ -47,7 +57,8 @@ describe("health controller", () => {
 		expect(statusMock).toHaveBeenCalledWith(200);
 		expect(jsonMock).toHaveBeenCalledWith({
 			success: true,
-			message: "S3 connection successful",
+			data: undefined,
+			message: "S3 connection successful.",
 		});
 	});
 
@@ -61,7 +72,8 @@ describe("health controller", () => {
 		expect(statusMock).toHaveBeenCalledWith(500);
 		expect(jsonMock).toHaveBeenCalledWith({
 			success: false,
-			message: "S3 connection failed",
+			data: undefined,
+			message: "S3 connection failed.",
 		});
 	});
 });

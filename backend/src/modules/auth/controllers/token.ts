@@ -7,6 +7,7 @@ import { errorWrapper } from "@bcgov/citz-imb-express-utilities";
 const { SSO_ENVIRONMENT, SSO_REALM, SSO_PROTOCOL, SSO_CLIENT_ID, SSO_CLIENT_SECRET } = ENV;
 
 export const token = errorWrapper(async (req: Request, res: Response) => {
+	const { getStandardResponse } = req;
 	const refresh_token = req.cookies.refresh_token;
 
 	if (!SSO_CLIENT_ID || !SSO_CLIENT_SECRET)
@@ -29,6 +30,12 @@ export const token = errorWrapper(async (req: Request, res: Response) => {
 
 	if (!tokens) return res.status(401).json({ success: false, message: "Invalid token." });
 
+	const result = getStandardResponse({
+		data: tokens,
+		message: "Token successful.",
+		success: true,
+	});
+
 	// Set token
 	res
 		.cookie("access_token", tokens.access_token, {
@@ -36,5 +43,5 @@ export const token = errorWrapper(async (req: Request, res: Response) => {
 			sameSite: "none",
 		})
 		.status(200)
-		.json(tokens);
+		.json(result);
 });

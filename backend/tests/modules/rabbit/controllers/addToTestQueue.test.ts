@@ -1,11 +1,22 @@
 import type { Request, Response } from "express";
 import { addToTestQueue } from "@/modules/rabbit/controllers/addToTestQueue";
 import { addToQueue } from "@/modules/rabbit/queue";
+import type { StandardResponse, StandardResponseInput } from "@bcgov/citz-imb-express-utilities";
 
 // Mock addToQueue function
 jest.mock("@/modules/rabbit/queue", () => ({
 	addToQueue: jest.fn(),
 }));
+
+jest.mock("@bcgov/citz-imb-express-utilities", () => {
+	const originalModule = jest.requireActual("@bcgov/citz-imb-express-utilities");
+
+	return {
+		...originalModule,
+		safePromise: jest.fn(),
+		errorWrapper: (fn: unknown) => fn,
+	};
+});
 
 // Mock the response object
 const mockResponse = () => {
@@ -21,7 +32,19 @@ describe("addToTestQueue Controller", () => {
 	});
 
 	it("should add a job to the queue and return a success response", async () => {
-		const req = {} as Request;
+		const req = {
+			getStandardResponse: <TData>(
+				dataInput: StandardResponseInput<TData>,
+			): StandardResponse<TData> => {
+				const { success = true, data, message } = dataInput;
+
+				return {
+					success,
+					data,
+					message: message ?? "",
+				} as StandardResponse<TData>;
+			},
+		} as Request;
 		const res = mockResponse();
 		const next = jest.fn();
 
@@ -38,7 +61,7 @@ describe("addToTestQueue Controller", () => {
 		expect(res.json).toHaveBeenCalledWith({
 			success: true,
 			message: "Queue will process a job every 10 seconds.",
-			jobID: expect.stringContaining("job-"),
+			data: { jobID: expect.stringContaining("job-") },
 		});
 	});
 });

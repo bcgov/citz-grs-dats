@@ -13,10 +13,21 @@ jest.mock("@/config", () => ({
 import { loginCallback } from "@/modules/auth/controllers/loginCallback";
 import { getTokens } from "@bcgov/citz-imb-sso-js-core";
 import type { NextFunction, Request, Response } from "express";
+import type { StandardResponse, StandardResponseInput } from "@bcgov/citz-imb-express-utilities";
 
 jest.mock("@bcgov/citz-imb-sso-js-core", () => ({
 	getTokens: jest.fn(),
 }));
+
+jest.mock("@bcgov/citz-imb-express-utilities", () => {
+	const originalModule = jest.requireActual("@bcgov/citz-imb-express-utilities");
+
+	return {
+		...originalModule,
+		safePromise: jest.fn(),
+		errorWrapper: (fn: unknown) => fn,
+	};
+});
 
 describe("loginCallback controller", () => {
 	let req: Partial<Request>;
@@ -29,6 +40,17 @@ describe("loginCallback controller", () => {
 	beforeEach(() => {
 		req = {
 			query: { code: "test-code" },
+			getStandardResponse: <TData>(
+				dataInput: StandardResponseInput<TData>,
+			): StandardResponse<TData> => {
+				const { success = true, data, message } = dataInput;
+
+				return {
+					success,
+					data,
+					message: message ?? "",
+				} as StandardResponse<TData>;
+			},
 		};
 
 		jsonMock = jest.fn();
@@ -88,6 +110,10 @@ describe("loginCallback controller", () => {
 
 		// Assert: verify that the response returns 200 and tokens
 		expect(statusMock).toHaveBeenCalledWith(200);
-		expect(jsonMock).toHaveBeenCalledWith(mockTokens);
+		expect(jsonMock).toHaveBeenCalledWith({
+			data: mockTokens,
+			success: true,
+			message: "Login callback successful.",
+		});
 	});
 });

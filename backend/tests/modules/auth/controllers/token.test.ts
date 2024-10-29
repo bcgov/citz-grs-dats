@@ -12,10 +12,21 @@ jest.mock("@/config", () => ({
 import { token } from "@/modules/auth/controllers/token";
 import { getNewTokens } from "@bcgov/citz-imb-sso-js-core";
 import type { Request, Response, NextFunction } from "express";
+import type { StandardResponse, StandardResponseInput } from "@bcgov/citz-imb-express-utilities";
 
 jest.mock("@bcgov/citz-imb-sso-js-core", () => ({
 	getNewTokens: jest.fn(),
 }));
+
+jest.mock("@bcgov/citz-imb-express-utilities", () => {
+	const originalModule = jest.requireActual("@bcgov/citz-imb-express-utilities");
+
+	return {
+		...originalModule,
+		safePromise: jest.fn(),
+		errorWrapper: (fn: unknown) => fn,
+	};
+});
 
 describe("token controller", () => {
 	let req: Partial<Request>;
@@ -28,6 +39,17 @@ describe("token controller", () => {
 	beforeEach(() => {
 		req = {
 			cookies: { refresh_token: "test-refresh-token" },
+			getStandardResponse: <TData>(
+				dataInput: StandardResponseInput<TData>,
+			): StandardResponse<TData> => {
+				const { success = true, data, message } = dataInput;
+
+				return {
+					success,
+					data,
+					message: message ?? "",
+				} as StandardResponse<TData>;
+			},
 		};
 
 		jsonMock = jest.fn();
@@ -66,7 +88,11 @@ describe("token controller", () => {
 			sameSite: "none",
 		});
 		expect(statusMock).toHaveBeenCalledWith(200);
-		expect(jsonMock).toHaveBeenCalledWith(mockTokens);
+		expect(jsonMock).toHaveBeenCalledWith({
+			data: mockTokens,
+			success: true,
+			message: "Token successful.",
+		});
 	});
 
 	// Test case: should return 401 if refresh_token is missing
