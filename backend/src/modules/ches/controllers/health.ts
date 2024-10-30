@@ -39,7 +39,7 @@ export const health = errorWrapper(async (req: Request, res: Response) => {
 
 	const result = getStandardResponse({
 		data,
-		message: "CHES connection successful",
+		message: "CHES connection successful.",
 		success: true,
 	});
 

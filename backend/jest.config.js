@@ -16,9 +16,9 @@ module.exports = {
 		"index.ts",
 		"express.ts",
 		"config/",
-		"rabbit/queue.ts",
-		"s3/utils/connection.ts",
-		"ches/utils/fetchToken.ts",
+		"modules/ches/utils/",
+		"modules/rabbit/utils/",
+		"modules/s3/utils/",
 	],
 	coverageDirectory: "coverage",
 	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths || {}, {

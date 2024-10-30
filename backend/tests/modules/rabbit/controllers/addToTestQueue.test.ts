@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
 import { addToTestQueue } from "@/modules/rabbit/controllers/addToTestQueue";
-import { addToQueue } from "@/modules/rabbit/queue";
+import { addToQueue } from "@/modules/rabbit/utils";
 import type { StandardResponse, StandardResponseInput } from "@bcgov/citz-imb-express-utilities";
 
 // Mock addToQueue function
-jest.mock("@/modules/rabbit/queue", () => ({
+jest.mock("@/modules/rabbit/utils", () => ({
 	addToQueue: jest.fn(),
 }));
 

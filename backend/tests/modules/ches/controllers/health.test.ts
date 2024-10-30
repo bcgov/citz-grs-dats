@@ -75,6 +75,11 @@ describe("health controller", () => {
 
 		expect(fetchToken).toHaveBeenCalled();
 		expect(statusMock).toHaveBeenCalledWith(200);
+		expect(jsonMock).toHaveBeenCalledWith({
+			success: true,
+			data: { success: true },
+			message: "CHES connection successful.",
+		});
 	});
 
 	// Test case: Should throw an error if fetchToken fails
