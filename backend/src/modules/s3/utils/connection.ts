@@ -26,6 +26,6 @@ export const checkS3Connection = async (): Promise<boolean> => {
 		return true;
 	} catch (error) {
 		console.error("S3 connection error:", error);
-		return false;
+		throw error;
 	}
 };

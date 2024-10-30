@@ -43,7 +43,6 @@ export const protectedRoute = (
 		if (!header)
 			return res.status(401).json(
 				getStandardResponse({
-					data: undefined,
 					success: false,
 					message: "No authorization header found.",
 				}),
@@ -62,7 +61,6 @@ export const protectedRoute = (
 		if (!isTokenValid)
 			return res.status(401).json(
 				getStandardResponse({
-					data: undefined,
 					success: false,
 					message: "Unauthorized: Invalid token, re-log to get a new one.",
 				}),
@@ -74,7 +72,7 @@ export const protectedRoute = (
 		if (!userInfo || !normalizedUser)
 			return res
 				.status(404)
-				.json(getStandardResponse({ success: false, data: undefined, message: "User not found." }));
+				.json(getStandardResponse({ success: false, message: "User not found." }));
 		const userRoles = userInfo?.client_roles;
 
 		// Check for roles.
@@ -85,7 +83,6 @@ export const protectedRoute = (
 					return res.status(403).json(
 						getStandardResponse({
 							success: false,
-							data: undefined,
 							message: `User must have at least one of the following roles: [${roles}]`,
 						}),
 					);
@@ -96,7 +93,6 @@ export const protectedRoute = (
 					return res.status(403).json(
 						getStandardResponse({
 							success: false,
-							data: undefined,
 							message: `User must have all of the following roles: [${roles}]`,
 						}),
 					);

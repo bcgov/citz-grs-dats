@@ -8,8 +8,7 @@ export const health = errorWrapper(async (req: Request, res: Response) => {
 	const s3Connected = await checkS3Connection();
 
 	const result = getStandardResponse({
-		data: undefined,
-		message: `S3 connection ${s3Connected ? "successful" : "failed"}.`,
+		message: `S3 connection ${s3Connected ? "successful." : "failed. Ensure you are on the BC Gov network or VPN."}`,
 		success: s3Connected,
 	});
 

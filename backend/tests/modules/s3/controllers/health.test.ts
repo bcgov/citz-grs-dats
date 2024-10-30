@@ -57,7 +57,6 @@ describe("health controller", () => {
 		expect(statusMock).toHaveBeenCalledWith(200);
 		expect(jsonMock).toHaveBeenCalledWith({
 			success: true,
-			data: undefined,
 			message: "S3 connection successful.",
 		});
 	});
@@ -72,8 +71,7 @@ describe("health controller", () => {
 		expect(statusMock).toHaveBeenCalledWith(500);
 		expect(jsonMock).toHaveBeenCalledWith({
 			success: false,
-			data: undefined,
-			message: "S3 connection failed.",
+			message: "S3 connection failed. Ensure you are on the BC Gov network or VPN.",
 		});
 	});
 });

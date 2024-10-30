@@ -16,7 +16,6 @@ export const token = errorWrapper(async (req: Request, res: Response) => {
 	if (!refresh_token)
 		return res.status(401).json(
 			getStandardResponse({
-				data: undefined,
 				success: false,
 				message: "Refresh token is missing. Please log in again.",
 			}),
@@ -32,9 +31,7 @@ export const token = errorWrapper(async (req: Request, res: Response) => {
 	});
 
 	if (!tokens)
-		return res
-			.status(401)
-			.json(getStandardResponse({ data: undefined, success: false, message: "Invalid token." }));
+		return res.status(401).json(getStandardResponse({ success: false, message: "Invalid token." }));
 
 	const result = getStandardResponse({
 		data: tokens,
