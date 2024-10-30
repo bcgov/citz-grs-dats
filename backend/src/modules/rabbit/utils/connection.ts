@@ -6,6 +6,7 @@ const QUEUE_NAME = "test_queue";
 
 let connection: amqp.Connection | null = null;
 let channel: amqp.Channel | null = null;
+let isConnected = false;
 
 // Connect to RabbitMQ and create a channel
 export const connectToRabbitMQ = async (): Promise<amqp.Channel> => {
@@ -14,8 +15,10 @@ export const connectToRabbitMQ = async (): Promise<amqp.Channel> => {
 		connection = await amqp.connect(RABBITMQ_URL);
 		channel = await connection.createChannel();
 		await channel.assertQueue(QUEUE_NAME, { durable: false });
+		isConnected = true; // Update connection state
 		return channel;
 	} catch (error) {
+		isConnected = false; // Update connection state on error
 		console.error("Failed to connect to RabbitMQ:", error);
 		throw error;
 	}
@@ -40,10 +43,15 @@ export const closeRabbitMQConnection = async (): Promise<void> => {
 		if (connection) {
 			await connection.close();
 			connection = null;
+			isConnected = false; // Update connection state
 			console.log("RabbitMQ connection closed.");
 		}
 	} catch (error) {
 		console.error("Failed to close RabbitMQ connection:", error);
 		throw error;
 	}
+};
+
+export const checkRabbitConnection = (): boolean => {
+	return isConnected;
 };

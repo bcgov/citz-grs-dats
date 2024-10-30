@@ -1,18 +1,16 @@
 import type { Request, Response } from "express";
 import { errorWrapper } from "@bcgov/citz-imb-express-utilities";
-import { checkChesHealth } from "../utils";
+import { checkRabbitConnection } from "../utils";
 
 export const health = errorWrapper(async (req: Request, res: Response) => {
 	const { getStandardResponse } = req;
 
-	const { data, success } = await checkChesHealth();
+	const connected = checkRabbitConnection();
 
 	const result = getStandardResponse({
-		data,
-		message: `CHES connection ${success ? "successful." : "failed."}`,
-		success,
+		message: `Rabbit connection ${connected ? "successful." : "failed."}`,
+		success: connected,
 	});
 
-	// Return health check result
-	return res.status(200).json(result);
+	res.status(connected ? 200 : 500).json(result);
 });
