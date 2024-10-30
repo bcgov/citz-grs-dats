@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
-import { addToTestQueue } from "@/modules/rabbit/controllers/addToTestQueue";
-import { addToQueue } from "@/modules/rabbit/utils";
+import { add } from "@/modules/rabbit/controllers/queue/test";
+import { addToTestQueue } from "@/modules/rabbit/utils";
 import type { StandardResponse, StandardResponseInput } from "@bcgov/citz-imb-express-utilities";
 
 // Mock addToQueue function
 jest.mock("@/modules/rabbit/utils", () => ({
-	addToQueue: jest.fn(),
+	addToTestQueue: jest.fn(),
 }));
 
 jest.mock("@bcgov/citz-imb-express-utilities", () => {
@@ -49,12 +49,12 @@ describe("addToTestQueue Controller", () => {
 		const next = jest.fn();
 
 		// Mock addToQueue function to resolve successfully
-		(addToQueue as jest.Mock).mockResolvedValueOnce(undefined);
+		(addToTestQueue as jest.Mock).mockResolvedValueOnce(undefined);
 
-		await addToTestQueue(req, res, next);
+		await add(req, res, next);
 
 		// Test case: Should call addToQueue with the correct job ID
-		expect(addToQueue).toHaveBeenCalledWith(expect.stringContaining("job-"));
+		expect(addToTestQueue).toHaveBeenCalledWith(expect.stringContaining("job-"));
 
 		// Test case: Should respond with success and job ID
 		expect(res.status).toHaveBeenCalledWith(200);

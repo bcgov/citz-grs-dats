@@ -3,7 +3,7 @@ import { getChannel } from "./connection";
 const QUEUE_NAME = "test_queue";
 
 // Add a message to the queue
-export const addToQueue = async (message: string): Promise<void> => {
+export const addToTestQueue = async (message: string): Promise<void> => {
 	const channel = await getChannel();
 	channel.sendToQueue(QUEUE_NAME, Buffer.from(message));
 };
