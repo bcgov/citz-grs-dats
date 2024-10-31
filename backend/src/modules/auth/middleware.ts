@@ -29,6 +29,8 @@ export const protectedRoute = (
 	options?: ProtectedRouteOptions,
 ): RequestHandler => {
 	const routeMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+		const { getStandardResponse } = req;
+
 		if (!SSO_CLIENT_ID || !SSO_CLIENT_SECRET)
 			throw new Error("SSO_CLIENT_ID and/or SSO_CLIENT_SECRET env variables are undefined.");
 
@@ -39,7 +41,12 @@ export const protectedRoute = (
 		// Check if Authorization header exists.
 		const header = req.headers.authorization;
 		if (!header)
-			return res.status(401).json({ success: false, message: "No authorization header found." });
+			return res.status(401).json(
+				getStandardResponse({
+					success: false,
+					message: "No authorization header found.",
+				}),
+			);
 
 		// Extract token from header and check if it is valid.
 		const token = header.split(" ")[1];
@@ -52,15 +59,20 @@ export const protectedRoute = (
 			ssoRealm: SSO_REALM,
 		});
 		if (!isTokenValid)
-			return res.status(401).json({
-				success: false,
-				message: "Unauthorized: Invalid token, re-log to get a new one.",
-			});
+			return res.status(401).json(
+				getStandardResponse({
+					success: false,
+					message: "Unauthorized: Invalid token, re-log to get a new one.",
+				}),
+			);
 
 		// Get user info and check role.
 		const userInfo = decodeJWT(token);
 		const normalizedUser = normalizeUser<unknown>(userInfo);
-		if (!userInfo || !normalizedUser) return res.status(404).json({ error: "User not found." });
+		if (!userInfo || !normalizedUser)
+			return res
+				.status(404)
+				.json(getStandardResponse({ success: false, message: "User not found." }));
 		const userRoles = userInfo?.client_roles;
 
 		// Check for roles.
@@ -68,18 +80,22 @@ export const protectedRoute = (
 			if (options?.requireAllRoles === false) {
 				if (!userRoles || !hasAtLeastOneRole(userRoles, roles)) {
 					// User does not have at least one of the required roles.
-					return res.status(403).json({
-						success: false,
-						message: `User must have at least one of the following roles: [${roles}]`,
-					});
+					return res.status(403).json(
+						getStandardResponse({
+							success: false,
+							message: `User must have at least one of the following roles: [${roles}]`,
+						}),
+					);
 				}
 			} else {
 				if (!userRoles || !hasAllRoles(userRoles, roles)) {
 					// User does not have all the required roles.
-					return res.status(403).json({
-						success: false,
-						message: `User must have all of the following roles: [${roles}]`,
-					});
+					return res.status(403).json(
+						getStandardResponse({
+							success: false,
+							message: `User must have all of the following roles: [${roles}]`,
+						}),
+					);
 				}
 			}
 		}

@@ -1,11 +1,13 @@
 import { S3Client, ListBucketsCommand } from "@aws-sdk/client-s3";
+import { HttpError } from "@bcgov/citz-imb-express-utilities";
 import { ENV } from "src/config";
 
 const { S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_ENDPOINT } = ENV;
 
 export const checkS3Connection = async (): Promise<boolean> => {
 	if (!S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY || !S3_ENDPOINT)
-		throw new Error(
+		throw new HttpError(
+			400,
 			"One or more of [S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_ENDPOINT] env variables is undefined.",
 		);
 
@@ -24,6 +26,6 @@ export const checkS3Connection = async (): Promise<boolean> => {
 		return true;
 	} catch (error) {
 		console.error("S3 connection error:", error);
-		return false;
+		throw error;
 	}
 };
