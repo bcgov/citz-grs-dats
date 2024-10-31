@@ -61,14 +61,14 @@ describe("health controller", () => {
 		});
 	});
 
-	// Test case: Should return 500 when S3 connection fails
-	it("should return 500 if S3 connection fails", async () => {
+	// Test case: Should return 503 when S3 connection fails
+	it("should return 503 if S3 connection fails", async () => {
 		(checkS3Connection as jest.Mock).mockResolvedValue(false);
 
 		await health(req as Request, res as Response, next);
 
 		expect(checkS3Connection).toHaveBeenCalled();
-		expect(statusMock).toHaveBeenCalledWith(500);
+		expect(statusMock).toHaveBeenCalledWith(503);
 		expect(jsonMock).toHaveBeenCalledWith({
 			success: false,
 			message: "S3 connection failed. Ensure you are on the BC Gov network or VPN.",

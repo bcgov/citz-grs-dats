@@ -1,15 +1,15 @@
 import type { Request, Response } from "express";
 import { errorWrapper } from "@bcgov/citz-imb-express-utilities";
-import { addToTestQueue as addToQueue } from "../utils";
+import { addToTestQueue } from "src/modules/rabbit/utils";
 
 // Adds to test queue which processes one request per 10 seconds.
-export const addToTestQueue = errorWrapper(async (req: Request, res: Response) => {
+export const add = errorWrapper(async (req: Request, res: Response) => {
 	const { getStandardResponse } = req;
 
 	const jobID = `job-${Date.now()}`;
 
 	// Add the job ID to the RabbitMQ queue
-	await addToQueue(jobID);
+	await addToTestQueue(jobID);
 
 	const result = getStandardResponse({
 		data: { jobID },

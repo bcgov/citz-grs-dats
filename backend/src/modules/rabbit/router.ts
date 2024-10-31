@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { addToTestQueue } from "./controllers";
+import { health } from "./controllers";
+import { add as addToTestQueue } from "./controllers/queue/test";
 
 const router = Router();
 
-router.post("/addToTestQueue", addToTestQueue);
+router.get("/health", health);
+router.post("/queue/test", addToTestQueue);
 
 export default router;

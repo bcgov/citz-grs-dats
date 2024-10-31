@@ -9,7 +9,7 @@ import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { CORS_OPTIONS, RATE_LIMIT_OPTIONS } from "./config";
 import { ENV } from "./config";
-import { authRouter, chesRouter, rabbitRouter, s3Router } from "./modules";
+import { authRouter, chesRouter, healthRouter, rabbitRouter, s3Router } from "./modules";
 import { protectedRoute } from "./modules/auth/middleware";
 import type { Request, Response } from "express";
 
@@ -32,14 +32,15 @@ app.use(expressUtilitiesMiddleware);
 // Disabled because it exposes information about the used framework to potential attackers.
 app.disable("x-powered-by");
 
+// Routing
+healthModule(app); // Route (/health)
+configModule(app, { ENVIRONMENT }); // Route (/config)
+
 app.use("/auth", authRouter);
 app.use("/rabbit", rabbitRouter);
 app.use("/s3", s3Router);
 app.use("/ches", chesRouter);
-
-// Routing
-healthModule(app); // Route (/health)
-configModule(app, { ENVIRONMENT }); // Route (/config)
+app.use("/health", healthRouter); // Includes (/health/services)
 
 app.use("/test", protectedRoute(["Admin"]), (req: Request, res: Response) => {
 	res.json({ message: "YES" });
