@@ -1,6 +1,8 @@
 {
-	"name": "desktop",
+	"name": "dats",
 	"version": "1.0.0",
+	"description": "Digital Archives Transfer Service",
+	"author": "CITZ IMB/CIRMO",
 	"main": "./out/main/index.js",
 	"type": "module",
 	"build": {
@@ -9,7 +11,8 @@
 				"from": "out/cjs-workers/copyWorker.cjs",
 				"to": "resources/copyWorker.cjs"
 			}
-		]
+		],
+		"productName": "DATS"
 	},
 	"scripts": {
 		"typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
