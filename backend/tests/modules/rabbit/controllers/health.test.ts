@@ -74,7 +74,7 @@ describe("Test suite for health endpoint", () => {
 		await health(req, res, next);
 
 		expect(checkRabbitConnection).toHaveBeenCalled();
-		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.status).toHaveBeenCalledWith(503);
 		expect(res.json).toHaveBeenCalledWith({
 			message,
 			success: false,

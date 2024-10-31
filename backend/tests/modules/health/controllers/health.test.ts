@@ -97,7 +97,7 @@ describe("Test suite for health services endpoint", () => {
 		expect(checkS3Connection).toHaveBeenCalled();
 		expect(checkRabbitConnection).toHaveBeenCalled();
 		expect(checkChesHealth).toHaveBeenCalled();
-		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.status).toHaveBeenCalledWith(503);
 		expect(res.json).toHaveBeenCalledWith({
 			data: {
 				s3: false,
@@ -125,7 +125,7 @@ describe("Test suite for health services endpoint", () => {
 		expect(checkS3Connection).toHaveBeenCalled();
 		expect(checkRabbitConnection).toHaveBeenCalled();
 		expect(checkChesHealth).toHaveBeenCalled();
-		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.status).toHaveBeenCalledWith(503);
 		expect(res.json).toHaveBeenCalledWith({
 			data: {
 				s3: true,
@@ -153,7 +153,7 @@ describe("Test suite for health services endpoint", () => {
 		expect(checkS3Connection).toHaveBeenCalled();
 		expect(checkRabbitConnection).toHaveBeenCalled();
 		expect(checkChesHealth).toHaveBeenCalled();
-		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.status).toHaveBeenCalledWith(503);
 		expect(res.json).toHaveBeenCalledWith({
 			data: {
 				s3: true,

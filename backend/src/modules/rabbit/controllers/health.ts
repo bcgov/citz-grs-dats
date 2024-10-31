@@ -12,5 +12,5 @@ export const health = errorWrapper(async (req: Request, res: Response) => {
 		success: connected,
 	});
 
-	res.status(connected ? 200 : 500).json(result);
+	res.status(connected ? 200 : 503).json(result);
 });
