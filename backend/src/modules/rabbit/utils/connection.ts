@@ -8,13 +8,15 @@ const QUEUE_NAME = "test_queue";
 
 let channelPromise: Promise<amqp.Channel> | null = null;
 let connection: amqp.Connection | null = null;
+let isConnected = false;
 
 // Connect to RabbitMQ and create a channel
-export const connectToRabbitMQ = async (): Promise<void> => {
+const connectToRabbitMQ = async (): Promise<void> => {
 	try {
 		if (!RABBITMQ_URL) throw new Error("RABBITMQ_URL env variable is undefined.");
 		if (!connection) {
 			connection = await amqp.connect(RABBITMQ_URL);
+			isConnected = true;
 			console.log(RABBITMQ_CONNECTION_SUCCESS);
 		}
 		if (!channelPromise) {
@@ -53,12 +55,17 @@ export const closeRabbitMQConnection = async (): Promise<void> => {
 		if (connection) {
 			await connection.close();
 			connection = null;
+			isConnected = false;
 			console.log("RabbitMQ connection closed.");
 		}
 	} catch (error) {
 		console.error("Failed to close RabbitMQ connection:", error);
 		throw error;
 	}
+};
+
+export const checkRabbitConnection = (): boolean => {
+	return isConnected;
 };
 
 // Add a message to the queue
