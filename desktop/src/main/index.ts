@@ -11,6 +11,8 @@ import { is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
 import { createWorkerPool, processFolder } from "./fileProcessing";
 
+app.setName("Digital Archives Transfer Service");
+
 const DEBUG = is.dev;
 
 let mainWindow: BrowserWindow;
@@ -48,8 +50,8 @@ const setApiUrl = (apiUrl: string) => {
 
 function createWindow(): void {
 	mainWindow = new BrowserWindow({
-		width: 900,
-		height: 670,
+		width: 1200,
+		height: 750,
 		show: false,
 		autoHideMenuBar: false,
 		...(process.platform === "linux" ? { icon } : {}),
@@ -62,6 +64,7 @@ function createWindow(): void {
 	mainWindow.on("ready-to-show", () => {
 		const menu = Menu.buildFromTemplate(menuTemplate as MenuItemConstructorOptions[]);
 		Menu.setApplicationMenu(menu);
+		mainWindow.setTitle(app.getName()); // Sets name in top left corner of window.
 		mainWindow.show();
 	});
 
