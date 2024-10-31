@@ -10,6 +10,10 @@
 			{
 				"from": "out/cjs-workers/copyWorker.cjs",
 				"to": "resources/copyWorker.cjs"
+			},
+			{
+				"from": "out/cjs-workers/metadataWorker.cjs",
+				"to": "resources/metadataWorker.cjs"
 			}
 		],
 		"productName": "DATS"

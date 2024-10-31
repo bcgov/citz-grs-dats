@@ -174,11 +174,14 @@ ipcMain.handle("start-logout-process", async (_, idToken: string) => {
 	});
 });
 
-ipcMain.handle("process-folder", async (_, { filePath }: { filePath: string }) => {
-	debug('Beginning "process-folder" of main process.');
+ipcMain.handle(
+	"process-folder",
+	async (_, { filePath, transfer }: { filePath: string; transfer: string }) => {
+		debug('Beginning "process-folder" of main process.');
 
-	await processFolder(pool, filePath, is.dev);
-});
+		await processFolder(pool, filePath, transfer, is.dev);
+	},
+);
 
 const clearAuthState = () => {
 	debug("Beginning clearAuthState function of main process.");

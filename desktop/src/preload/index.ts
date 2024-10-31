@@ -19,8 +19,8 @@ const api = {
 		safePromise,
 	},
 	workers: {
-		processFolder: ({ filePath }: { filePath: string }) =>
-			ipcRenderer.invoke("process-folder", { filePath }),
+		processFolder: ({ filePath, transfer }: { filePath: string; transfer: string }) =>
+			ipcRenderer.invoke("process-folder", { filePath, transfer }),
 	},
 };
 

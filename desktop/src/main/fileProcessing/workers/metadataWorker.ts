@@ -9,9 +9,8 @@ const { stat, readdir, writeFile } = fsPromises;
 const execPromise = promisify(exec);
 
 type WorkerData = {
-	filepath: string;
+	source: string;
 	destination: string;
-	baseMetadata: Record<string, unknown>;
 	batchSize?: number;
 };
 
@@ -68,10 +67,9 @@ const calculateChecksum = async (filePath: string): Promise<string> => {
 // Generate metadata in batches
 const generateMetadataInBatches = async (
 	rootDir: string,
-	baseMetadata: Record<string, unknown>,
 	batchSize = 10,
 ): Promise<{ metadata: Record<string, unknown>; fileCount: number; totalSize: number }> => {
-	const metadata = { ...baseMetadata, files: [] as Record<string, unknown>[] };
+	const metadata = { files: [] as Record<string, unknown>[] };
 	let fileCount = 0;
 	let totalSize = 0;
 
@@ -86,14 +84,16 @@ const generateMetadataInBatches = async (
 				const fileOwner = await getFileOwner(filePath);
 
 				if (fileStat.isDirectory()) {
-					const subMetadata = await generateMetadataInBatches(filePath, baseMetadata, batchSize);
+					const subMetadata = await generateMetadataInBatches(filePath, batchSize);
 					metadata.files.push(...(subMetadata.metadata.files as Record<string, unknown>[]));
 					fileCount += subMetadata.fileCount;
 					totalSize += subMetadata.totalSize;
 				} else {
+					console.log(`[metadataWorker] Processing file: ${filePath}`);
 					const fileChecksum = await calculateChecksum(filePath);
 					metadata.files.push({
-						filepath: path.relative(rootDir, filePath),
+						filepath: path.join(rootDir, filePath),
+						filename: path.relative(rootDir, filePath),
 						size: formatFileSize(fileStat.size),
 						birthtime: new Date(fileStat.birthtime).toISOString(),
 						lastModified: new Date(fileStat.mtime).toISOString(),
@@ -128,15 +128,11 @@ const writeMetadataToFile = async (
  */
 (async () => {
 	if (!workerData) return;
-	const { filepath, baseMetadata, batchSize, destination } = workerData as WorkerData;
+	const { source, batchSize, destination } = workerData as WorkerData;
 
 	try {
-		console.log(`Generating metadata for ${filepath}`);
-		const { metadata, fileCount, totalSize } = await generateMetadataInBatches(
-			filepath,
-			baseMetadata,
-			batchSize,
-		);
+		console.log(`Generating metadata for ${source}`);
+		const { metadata, fileCount, totalSize } = await generateMetadataInBatches(source, batchSize);
 
 		// Ensure the directory for metadata file exists
 		await ensureDirectoryExists(path.dirname(destination));
