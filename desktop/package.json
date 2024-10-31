@@ -1,6 +1,6 @@
 {
 	"name": "dats",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"description": "Digital Archives Transfer Service",
 	"author": "CITZ IMB/CIRMO",
 	"main": "./out/main/index.js",
@@ -10,6 +10,13 @@
 			{
 				"from": "out/cjs-workers/copyWorker.cjs",
 				"to": "resources/copyWorker.cjs"
+			}
+		],
+		"publish": [
+			{
+				"provider": "github",
+				"owner": "bcgov",
+				"repo": "citz-grs-dats"
 			}
 		],
 		"productName": "DATS"
@@ -31,7 +38,8 @@
 		"@bcgov/citz-imb-sso-js-core": "1.0.0",
 		"@electron-toolkit/preload": "3.0.1",
 		"@electron-toolkit/utils": "3.0.0",
-		"electron-cookies": "1.1.0"
+		"electron-cookies": "1.1.0",
+		"electron-updater": "6.3.9"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.3",

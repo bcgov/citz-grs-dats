@@ -10,6 +10,7 @@ import { join } from "node:path";
 import { is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
 import { createWorkerPool, processFolder } from "./fileProcessing";
+import { autoUpdater } from "electron-updater";
 
 app.setName("Digital Archives Transfer Service");
 
@@ -287,7 +288,45 @@ const menuTemplate = [
 	},
 ];
 
-app.whenReady().then(createWindow);
+autoUpdater.on("checking-for-update", () => {
+	console.log("Checking for updates...");
+});
+
+autoUpdater.on("update-available", (info) => {
+	console.log("Update available:", info);
+	mainWindow.webContents.send("update-available", info);
+});
+
+autoUpdater.on("update-not-available", (info) => {
+	console.log("No updates available:", info);
+});
+
+autoUpdater.on("download-progress", (progressObj) => {
+	const logMessage = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}% (${progressObj.transferred}/${progressObj.total})`;
+	console.log(logMessage);
+	mainWindow.webContents.send("download-progress", progressObj);
+});
+
+autoUpdater.on("update-downloaded", () => {
+	console.log("Update downloaded; will install now.");
+	mainWindow.webContents.send("update-downloaded");
+
+	// Prompt the user and install updates
+	autoUpdater.quitAndInstall();
+});
+
+autoUpdater.on("error", (err) => {
+	console.error("Error in auto-updater:", err);
+	mainWindow.webContents.send("update-error", err);
+});
+
+app.whenReady().then(() => {
+	createWindow();
+
+	// Start checking for updates after the window is ready
+	autoUpdater.checkForUpdatesAndNotify();
+});
+
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
 		app.quit();
