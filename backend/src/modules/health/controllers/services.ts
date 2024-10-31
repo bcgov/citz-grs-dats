@@ -27,5 +27,5 @@ export const services = errorWrapper(async (req: Request, res: Response) => {
 		success: allServicesHealthy,
 	});
 
-	res.status(allServicesHealthy ? 200 : 500).json(result);
+	res.status(allServicesHealthy ? 200 : 503).json(result);
 });
