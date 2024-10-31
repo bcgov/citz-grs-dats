@@ -66,8 +66,8 @@ describe("health controller", () => {
 		});
 	});
 
-	// Test case: Should return 200 when CHES connection is unsuccessful
-	it("should return 200 if CHES connection is unsuccessful", async () => {
+	// Test case: Should return 503 when CHES connection is unsuccessful
+	it("should return 503 if CHES connection is unsuccessful", async () => {
 		(checkChesHealth as jest.Mock).mockResolvedValue({
 			data: { success: false },
 			success: false,
@@ -76,7 +76,7 @@ describe("health controller", () => {
 		await health(req as Request, res as Response, next);
 
 		expect(checkChesHealth).toHaveBeenCalled();
-		expect(statusMock).toHaveBeenCalledWith(200);
+		expect(statusMock).toHaveBeenCalledWith(503);
 		expect(jsonMock).toHaveBeenCalledWith({
 			success: false,
 			data: { success: false },

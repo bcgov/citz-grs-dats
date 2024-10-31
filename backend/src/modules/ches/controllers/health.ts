@@ -14,5 +14,5 @@ export const health = errorWrapper(async (req: Request, res: Response) => {
 	});
 
 	// Return health check result
-	return res.status(200).json(result);
+	return res.status(success ? 200 : 503).json(result);
 });

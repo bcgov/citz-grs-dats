@@ -34,5 +34,15 @@ export const checkChesHealth = async (): Promise<{ data: unknown; success: boole
 
 	const data = await healthResponse.json();
 
-	return { data, success: true };
+	type Dependency = {
+		name: string;
+		healthy: boolean;
+		info: string;
+	};
+
+	const allDependenciesHealthy = data.dependencies.every(
+		(dependency: Dependency) => dependency.healthy,
+	);
+
+	return { data, success: allDependenciesHealthy };
 };
