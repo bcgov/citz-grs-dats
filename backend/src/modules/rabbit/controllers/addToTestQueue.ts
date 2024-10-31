@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { errorWrapper } from "@bcgov/citz-imb-express-utilities";
-import { addToQueue } from "../utils";
+import { addToTestQueue as addToQueue } from "../utils";
 
 // Adds to test queue which processes one request per 10 seconds.
 export const addToTestQueue = errorWrapper(async (req: Request, res: Response) => {

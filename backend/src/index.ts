@@ -3,6 +3,7 @@ import app from "./express";
 import { serverStartupLogs } from "@bcgov/citz-imb-express-utilities";
 import { ENV } from "./config";
 import { handleTermination, logs } from "./utils";
+import { connectToRabbitMQ } from "./modules/rabbit/utils";
 
 const { PORT, MONGO_USER, MONGO_PASSWORD, MONGO_DATABASE_NAME, MONGO_HOST } = ENV;
 const { DATABASE_CONNECTION_SUCCESS, DATABASE_CONNECTION_ERROR } = logs;
