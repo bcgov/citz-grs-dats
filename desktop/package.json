@@ -1,6 +1,6 @@
 {
 	"name": "dats",
-	"version": "0.1.0",
+	"version": "0.0.0",
 	"description": "Digital Archives Transfer Service",
 	"author": "CITZ IMB/CIRMO",
 	"main": "./out/main/index.js",
@@ -32,7 +32,10 @@
 		"build:unpack": "npm run build && electron-builder --dir",
 		"build:win": "npm run build && electron-builder --win",
 		"build:mac": "electron-vite build && electron-builder --mac",
-		"build:linux": "electron-vite build && electron-builder --linux"
+		"build:linux": "electron-vite build && electron-builder --linux",
+		"bump:patch": "node bump-version patch",
+		"bump:minor": "node bump-version minor",
+		"bump:major": "node bump-version major"
 	},
 	"dependencies": {
 		"@bcgov/citz-imb-sso-js-core": "1.0.0",
