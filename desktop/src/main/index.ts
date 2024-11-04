@@ -255,7 +255,7 @@ const menuTemplate = [
 		label: "Edit",
 		submenu: [
 			{
-				label: "Select API URL",
+				label: "Select Environment",
 				submenu: [
 					{
 						label: "Local",
