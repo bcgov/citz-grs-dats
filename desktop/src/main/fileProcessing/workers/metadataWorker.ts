@@ -2,37 +2,13 @@ import { parentPort, workerData } from "node:worker_threads";
 import path from "node:path";
 import { promises as fsPromises, createReadStream, type Stats } from "node:fs";
 import crypto, { type BinaryLike } from "node:crypto";
-import { promisify } from "node:util";
-import { exec } from "node:child_process";
 
 const { stat, readdir, writeFile } = fsPromises;
-const execPromise = promisify(exec);
 
 type WorkerData = {
 	source: string;
 	destination: string;
 	batchSize?: number;
-};
-
-// Function to get file owner based on platform
-export const getFileOwner = async (filePath: string) => {
-	try {
-		let command: string;
-
-		if (process.platform === "win32") {
-			// Windows PowerShell command to get file owner
-			command = `powershell -Command "(Get-Acl '${filePath}').Owner"`;
-		} else {
-			// Linux/macOS command to get file owner
-			command = `stat -c '%U' '${filePath}'`;
-		}
-
-		const { stdout } = await execPromise(command);
-		return stdout.trim(); // Return the owner name
-	} catch (error) {
-		console.error(`Error getting owner for file ${filePath}:`, error);
-		return null; // Return null if owner could not be retrieved
-	}
 };
 
 // Helper to format file size to human-readable format
@@ -81,7 +57,6 @@ const generateMetadataInBatches = async (
 			batch.map(async (file) => {
 				const filePath = path.join(rootDir, file);
 				const fileStat: Stats = await stat(filePath);
-				const fileOwner = await getFileOwner(filePath);
 
 				if (fileStat.isDirectory()) {
 					const subMetadata = await generateMetadataInBatches(filePath, batchSize);
@@ -98,7 +73,6 @@ const generateMetadataInBatches = async (
 						birthtime: new Date(fileStat.birthtime).toISOString(),
 						lastModified: new Date(fileStat.mtime).toISOString(),
 						lastAccessed: new Date(fileStat.atime).toISOString(),
-						owner: fileOwner,
 						checksum: fileChecksum,
 					});
 					totalSize += fileStat.size;
