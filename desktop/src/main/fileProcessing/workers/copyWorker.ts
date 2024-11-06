@@ -111,6 +111,9 @@ const copyDirectoryInBatches = async (
 						await copyFileStream(sourcePath, destinationPath);
 						fileCount += 1;
 					}
+				} catch (err) {
+					console.error(`[copyWorker] Error processing file: ${file}`, err);
+					throw err; // Propagate the error to ensure the Promise fails
 				} finally {
 					semaphore.release(); // Release semaphore after processing
 				}
