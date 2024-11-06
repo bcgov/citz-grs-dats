@@ -57,7 +57,7 @@ function App(): JSX.Element {
 		<BrowserRouter>
 			<div style={{ display: "flex" }}>
 				<SideNav />
-				<main style={{ flexGrow: 1, padding: "16px" }}>
+				<main style={{ flexGrow: 1 }}>
 					<Routes>
 						<Route path="/" element={<HomePage />} />
 						<Route path="/file-list" element={<FileListPage />} />
