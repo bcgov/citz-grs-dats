@@ -28,8 +28,10 @@ declare global {
 			workers: {
 				processFolder: ({
 					filePath,
+					transfer,
 				}: {
 					filePath: string;
+					transfer: string;
 				}) => Promise<void>;
 			};
 		};

@@ -86,6 +86,7 @@ const copyDirectoryInBatches = async (
 	batchSize = 10,
 	concurrencyLimit = 5,
 ): Promise<void> => {
+	let fileCount = 0;
 	await ensureDirectoryExists(destination);
 	const files = await readdir(source);
 	const semaphore = new Semaphore(concurrencyLimit); // Create a semaphore for concurrency control
@@ -106,8 +107,9 @@ const copyDirectoryInBatches = async (
 					if (fileStat.isDirectory()) {
 						await copyDirectoryInBatches(sourcePath, destinationPath, batchSize, concurrencyLimit);
 					} else {
-						console.log(`Copying file: ${sourcePath}`);
+						console.log(`[copyWorker] Processing file: ${sourcePath}`);
 						await copyFileStream(sourcePath, destinationPath);
+						fileCount += 1;
 					}
 				} finally {
 					semaphore.release(); // Release semaphore after processing
@@ -136,10 +138,11 @@ const copyDirectoryInBatches = async (
 (async () => {
 	if (!workerData) return;
 	const { source, destination, batchSize } = workerData as WorkerData;
+	const folderName = path.basename(source);
 
 	try {
 		console.log(`Copying from ${source}`);
-		await copyDirectoryInBatches(source, destination, batchSize);
+		await copyDirectoryInBatches(source, path.join(destination, folderName), batchSize);
 
 		if (parentPort) {
 			parentPort.postMessage({ success: true });
