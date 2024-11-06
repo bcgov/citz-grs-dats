@@ -5,8 +5,6 @@ body {
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-	background-image: url("./wavy-lines.svg");
-	background-size: cover;
 	user-select: none;
 }
 
@@ -21,8 +19,7 @@ code {
 	padding: 3px 5px;
 	border-radius: 2px;
 	background-color: var(--color-background-mute);
-	font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas,
-		"Liberation Mono", monospace;
+	font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, "Liberation Mono", monospace;
 	font-size: 85%;
 }
 
@@ -70,102 +67,6 @@ code {
 	line-height: 24px;
 	color: var(--ev-c-text-2);
 	font-weight: 600;
-}
-
-.react {
-	background: -webkit-linear-gradient(315deg, #087ea4 55%, #7c93ee);
-	background-clip: text;
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-	font-weight: 700;
-}
-
-.ts {
-	background: -webkit-linear-gradient(315deg, #3178c6 45%, #f0dc4e);
-	background-clip: text;
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-	font-weight: 700;
-}
-
-.actions {
-	display: flex;
-	padding-top: 32px;
-	margin: -6px;
-	flex-wrap: wrap;
-	justify-content: flex-start;
-}
-
-.action {
-	flex-shrink: 0;
-	padding: 6px;
-}
-
-.action button {
-	cursor: pointer;
-	text-decoration: none;
-	display: inline-block;
-	border: 1px solid transparent;
-	text-align: center;
-	font-weight: 600;
-	white-space: nowrap;
-	border-radius: 20px;
-	padding: 0 20px;
-	line-height: 38px;
-	font-size: 14px;
-	border-color: var(--ev-button-alt-border);
-	color: var(--ev-button-alt-text);
-	background-color: var(--ev-button-alt-bg);
-}
-
-.action a {
-	cursor: pointer;
-	text-decoration: none;
-	display: inline-block;
-	border: 1px solid transparent;
-	text-align: center;
-	font-weight: 600;
-	white-space: nowrap;
-	border-radius: 20px;
-	padding: 0 20px;
-	line-height: 38px;
-	font-size: 14px;
-	border-color: var(--ev-button-alt-border);
-	color: var(--ev-button-alt-text);
-	background-color: var(--ev-button-alt-bg);
-}
-
-.action a:hover {
-	border-color: var(--ev-button-alt-hover-border);
-	color: var(--ev-button-alt-hover-text);
-	background-color: var(--ev-button-alt-hover-bg);
-}
-
-.versions {
-	position: absolute;
-	bottom: 30px;
-	margin: 0 auto;
-	padding: 15px 0;
-	font-family: "Menlo", "Lucida Console", monospace;
-	display: inline-flex;
-	overflow: hidden;
-	align-items: center;
-	border-radius: 22px;
-	background-color: #202127;
-	backdrop-filter: blur(24px);
-}
-
-.versions li {
-	display: block;
-	float: left;
-	border-right: 1px solid var(--ev-c-gray-1);
-	padding: 0 20px;
-	font-size: 14px;
-	line-height: 14px;
-	opacity: 0.8;
-	&:last-child {
-		border: none;
-	}
 }
 
 .vpn-popup-overlay {
