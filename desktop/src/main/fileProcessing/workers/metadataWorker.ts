@@ -40,6 +40,30 @@ const calculateChecksum = async (filePath: string): Promise<string> => {
 	});
 };
 
+// Global total file count and processed file count for progress tracking
+let totalFileCount = 0;
+let processedFileCount = 0;
+
+// Function to count all files in the directory structure recursively
+const countFiles = async (dir: string): Promise<number> => {
+	let count = 0;
+	const files = await readdir(dir);
+
+	for (const file of files) {
+		const filePath = path.join(dir, file);
+		const fileStat: Stats = await stat(filePath);
+
+		if (fileStat.isDirectory()) {
+			// Recursively count files in subdirectory
+			count += await countFiles(filePath);
+		} else {
+			count += 1; // Count file
+		}
+	}
+
+	return count;
+};
+
 // Generate metadata in batches
 const generateMetadataInBatches = async (
 	rootDir: string,
@@ -75,8 +99,20 @@ const generateMetadataInBatches = async (
 						lastAccessed: new Date(fileStat.atime).toISOString(),
 						checksum: fileChecksum,
 					});
+
 					totalSize += fileStat.size;
 					fileCount += 1;
+					processedFileCount += 1; // Increment the processed file count
+
+					// Calculate progress percentage
+					const progressPercentage = Math.round((processedFileCount / totalFileCount) * 100);
+
+					// Send message to WorkerPool about progress with percentage
+					parentPort?.postMessage({
+						type: "progress",
+						fileProcessed: filePath,
+						progressPercentage: `${progressPercentage}%`,
+					});
 				}
 			}),
 		);
@@ -105,6 +141,8 @@ const writeMetadataToFile = async (
 	const { source, batchSize, destination } = workerData as WorkerData;
 
 	try {
+		totalFileCount = await countFiles(source);
+
 		console.log(`Generating metadata for ${source}`);
 		const { metadata, fileCount, totalSize } = await generateMetadataInBatches(source, batchSize);
 
