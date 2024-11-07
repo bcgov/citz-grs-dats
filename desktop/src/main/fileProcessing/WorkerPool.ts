@@ -43,20 +43,30 @@ export class WorkerPool {
 		return new Promise<U>((resolve, reject) => {
 			const timer = setTimeout(() => reject(new Error("Task timeout")), timeout);
 
-			this.tasks.push({
-				workerScript,
-				workerData,
-				resolve: (value) => {
-					clearTimeout(timer);
-					resolve(value as U | PromiseLike<U>);
-				},
-				reject: (reason) => {
-					clearTimeout(timer);
-					reject(reason);
-				},
+			const worker = this.getOrCreateWorker(workerScript, workerData);
+			this.workers.add(worker);
+
+			worker.on("message", (message) => {
+				clearTimeout(timer);
+				if (message.success) {
+					resolve(message as U);
+				} else {
+					reject(new Error(message.error || "Worker task failed"));
+				}
 			});
 
-			this.runNext();
+			worker.on("error", (err: Error) => {
+				clearTimeout(timer);
+				reject(err);
+			});
+
+			worker.on("exit", (code) => {
+				if (code !== 0) {
+					reject(new Error(`Worker stopped with exit code ${code}`));
+				}
+				this.workers.delete(worker);
+				this.runNext(); // Start the next task
+			});
 		});
 	}
 
