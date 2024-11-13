@@ -41,6 +41,10 @@ export const processFolder = async (
 	};
 
 	try {
+		pool.on("progress", (data) => {
+			console.log(`Progress on ${data.task}: ${data.progress}`);
+		});
+
 		// Run the worker tasks using the WorkerPool
 		const copyPromise = pool.runTask(copyWorkerScript, copyWorkerData);
 		const metadataPromise = pool.runTask(metadataWorkerScript, metadataWorkerData);
