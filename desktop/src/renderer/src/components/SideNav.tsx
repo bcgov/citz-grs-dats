@@ -1,4 +1,4 @@
-import { Drawer, List, ListItem, Divider, Typography } from "@mui/material";
+import { Drawer, List, ListItem, Divider, Typography, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import {
 	HomeOutlined as HomeOutlinedIcon,
@@ -6,6 +6,7 @@ import {
 	DriveFileMoveOutlined as SendRecordsIcon,
 } from "@mui/icons-material";
 import { type ReactNode, useState } from "react";
+import { AuthButton } from "./AuthButton";
 
 type NavItemProps = {
 	path: string;
@@ -13,7 +14,12 @@ type NavItemProps = {
 	icon: ReactNode;
 };
 
-export const SideNav: React.FC = () => {
+type Props = {
+	accessToken: string | undefined;
+	idToken: string | undefined;
+};
+
+export const SideNav = ({ accessToken, idToken }: Props) => {
 	const navigate = useNavigate();
 	const [currentPage, setCurrentPage] = useState("/");
 
@@ -58,20 +64,30 @@ export const SideNav: React.FC = () => {
 				},
 			}}
 		>
-			<List>
-				<NavItem path="/" label="Home" icon={<HomeOutlinedIcon sx={{ color: "#6e6e6e" }} />} />
-				<Divider sx={{ margin: "5px 0" }} />
-				<NavItem
-					path="/file-list"
-					label="Create File List"
-					icon={<FileListIcon sx={{ color: "#6e6e6e" }} />}
-				/>
-				<NavItem
-					path="/send-records"
-					label="Send Records"
-					icon={<SendRecordsIcon sx={{ color: "#6e6e6e" }} />}
-				/>
-			</List>
+			<Box
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "space-between",
+					height: "100%",
+				}}
+			>
+				<List>
+					<NavItem path="/" label="Home" icon={<HomeOutlinedIcon sx={{ color: "#6e6e6e" }} />} />
+					<Divider sx={{ margin: "5px 0" }} />
+					<NavItem
+						path="/file-list"
+						label="Create File List"
+						icon={<FileListIcon sx={{ color: "#6e6e6e" }} />}
+					/>
+					<NavItem
+						path="/send-records"
+						label="Send Records"
+						icon={<SendRecordsIcon sx={{ color: "#6e6e6e" }} />}
+					/>
+				</List>
+				<AuthButton accessToken={accessToken} idToken={idToken} />
+			</Box>
 		</Drawer>
 	);
 };
