@@ -1,4 +1,5 @@
 import { Worker } from "node:worker_threads";
+import { EventEmitter } from "node:events";
 
 type WorkerData<T = unknown> = {
 	[key: string]: T;
@@ -23,13 +24,14 @@ type Task<T = unknown, U = unknown> = {
  * - Reuses idle workers for similar tasks to improve performance.
  * - Provides a method to shut down all active workers gracefully.
  */
-export class WorkerPool {
+export class WorkerPool extends EventEmitter {
 	private maxWorkers: number;
 	private tasks: Task[];
 	private workers: Set<Worker>;
 	private workerMap: Map<string, Worker[]>; // For reusing workers
 
 	constructor(maxWorkers: number) {
+		super();
 		this.maxWorkers = maxWorkers;
 		this.tasks = [];
 		this.workers = new Set();
@@ -47,10 +49,14 @@ export class WorkerPool {
 			this.workers.add(worker);
 
 			worker.on("message", (message) => {
-				clearTimeout(timer);
-				if (message.success) {
+				if (message.type === "progress") {
+					const task = workerScript.includes("metadata") ? "metadata" : "copy";
+					this.emit("progress", { task, progress: message.progressPercentage });
+				} else if (message.success) {
+					clearTimeout(timer);
 					resolve(message as U);
 				} else {
+					clearTimeout(timer);
 					reject(new Error(message.error || "Worker task failed"));
 				}
 			});
