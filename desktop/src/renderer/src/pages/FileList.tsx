@@ -1,9 +1,9 @@
-import { Typography } from "@mui/material";
+import { FolderDisplayGrid } from "@renderer/components/file-list";
 
 export const FileListPage = () => {
 	return (
 		<>
-			<Typography>File List</Typography>
+			<FolderDisplayGrid />
 		</>
 	);
 };
