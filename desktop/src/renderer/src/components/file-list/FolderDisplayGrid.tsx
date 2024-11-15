@@ -18,30 +18,13 @@ import {
 	type InputBaseProps,
 	Box,
 } from "@mui/material";
-import { useState } from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import type { Dayjs } from "dayjs";
 import { styled } from "@mui/material/styles";
 
-const initialRows = [
-	{
-		id: 1,
-		folder: "D:/test-folders/100",
-		schedule: "144009",
-		classification: "41200-20",
-		file: "",
-		opr: false,
-		startDate: null,
-		endDate: null,
-		soDate: null,
-		fdDate: null,
-		progress: 80,
-	},
-];
-
-type FolderRow = {
+export type FolderRow = {
 	id: number;
 	folder: string;
 	schedule: string;
@@ -85,13 +68,12 @@ const GridEditDateCell = ({
 	);
 };
 
-export const FolderDisplayGrid = () => {
-	const [rows, setRows] = useState(initialRows);
+type Props = {
+	rows: FolderRow[];
+	onFolderDelete: (folder: string) => Promise<void> | void;
+};
 
-	const onDelete = (folder: string) => {
-		alert(folder);
-	};
-
+export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 	const columns: GridColDef<(typeof rows)[number]>[] = [
 		{
 			field: "progress",
@@ -153,10 +135,14 @@ export const FolderDisplayGrid = () => {
 		{
 			field: "delete",
 			headerName: "",
-			width: 60,
+			width: 50,
 			renderCell: (params) => (
 				<Tooltip title="Delete folder.">
-					<IconButton color="error" onClick={() => onDelete(params.row.folder)} aria-label="delete">
+					<IconButton
+						color="error"
+						onClick={() => onFolderDelete(params.row.folder)}
+						aria-label="delete"
+					>
 						<DeleteIcon />
 					</IconButton>
 				</Tooltip>
@@ -165,8 +151,8 @@ export const FolderDisplayGrid = () => {
 	];
 
 	return (
-		<Box sx={{ width: "100%" }}>
-			<LocalizationProvider dateAdapter={AdapterDayjs}>
+		<LocalizationProvider dateAdapter={AdapterDayjs}>
+			<Box sx={{ width: "100%" }}>
 				<DataGrid
 					rows={rows}
 					columns={columns}
@@ -176,7 +162,7 @@ export const FolderDisplayGrid = () => {
 					editMode="row"
 					hideFooter
 				/>
-			</LocalizationProvider>
-		</Box>
+			</Box>
+		</LocalizationProvider>
 	);
 };
