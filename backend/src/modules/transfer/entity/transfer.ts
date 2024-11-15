@@ -2,14 +2,12 @@ import { Schema, model, type InferSchemaType } from "mongoose";
 import { z } from "zod";
 
 // Mongoose Schema
-const fileListSchema = new Schema({
-	jobID: { type: String, required: true },
+const transferSchema = new Schema({
 	createdOn: { type: String, required: false, default: () => new Date().toDateString() },
-	outputFileType: { type: String, required: true },
 	metadata: {
 		admin: {
-			application: { type: String, default: "N/A" },
-			accession: { type: String, default: "N/A" },
+			application: { type: String, required: true },
+			accession: { type: String, required: true },
 			submittedBy: {
 				name: { type: String, required: true },
 				email: { type: String, required: true },
@@ -21,17 +19,16 @@ const fileListSchema = new Schema({
 });
 
 // Mongoose Model
-export const FileListModel = model("FileList", fileListSchema);
+export const TransferModel = model("FileList", transferSchema);
 
 // Zod Schema
-export const fileListZodSchema = z.object({
-	jobID: z.string(),
+export const transferZodSchema = z.object({
 	createdOn: z.string().optional(),
 	outputFileType: z.string(),
 	metadata: z.object({
 		admin: z.object({
-			application: z.string().default("N/A"),
-			accession: z.string().default("N/A"),
+			application: z.string(),
+			accession: z.string(),
 			submittedBy: z.object({
 				name: z.string(),
 				email: z.string(),
@@ -43,5 +40,5 @@ export const fileListZodSchema = z.object({
 });
 
 // TypeScript Types
-export type FileListMongoose = InferSchemaType<typeof fileListSchema>;
-export type FileListZod = z.infer<typeof fileListZodSchema>;
+export type TransferMongoose = InferSchemaType<typeof transferSchema>;
+export type TransferZod = z.infer<typeof transferZodSchema>;

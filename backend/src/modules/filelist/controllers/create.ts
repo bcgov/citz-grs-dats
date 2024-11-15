@@ -4,6 +4,7 @@ import { addToCreateFileListQueue } from "src/modules/rabbit/utils";
 import { createFileListBodySchema } from "../schemas";
 import type { FileListMongoose } from "../entity";
 import { FileListService } from "../service";
+import type { TransferMongoose } from "src/modules/transfer/entity";
 
 // Create file list.
 export const create = errorWrapper(async (req: Request, res: Response) => {
@@ -15,22 +16,38 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	// Save data for queue consumer to access later
 	const fileListDatabasesEntry: FileListMongoose = {
 		jobID,
-		submittedBy: {
-			name: user?.display_name ?? "",
-			email: user?.email ?? "",
-		},
-		transfer: {
-			application: body?.application ?? "N/A",
-			accession: body?.accession ?? "N/A",
-		},
 		outputFileType: body.outputFileType,
-		metadata: body.metadata,
+		metadata: {
+			admin: {
+				application: body.metadata?.admin?.application ?? "N/A",
+				accession: body.metadata?.admin?.accession ?? "N/A",
+				submittedBy: {
+					name: user?.display_name ?? "",
+					email: user?.email ?? "",
+				},
+			},
+			folders: body.metadata.folders,
+			files: body.metadata.files,
+		},
 	};
 
 	await FileListService.createFileListEntry(fileListDatabasesEntry);
 
 	// Save data for transfer
-	const transferDatabaseEntry = {};
+	const transferDatabaseEntry: TransferMongoose = {
+		metadata: {
+			admin: {
+				application: body.metadata?.admin?.application ?? "N/A",
+				accession: body.metadata?.admin?.accession ?? "N/A",
+				submittedBy: {
+					name: user?.display_name ?? "",
+					email: user?.email ?? "",
+				},
+			},
+			folders: body.metadata.folders,
+			files: body.metadata.files,
+		},
+	};
 
 	// Add the job ID to the RabbitMQ queue
 	await addToCreateFileListQueue(jobID);
