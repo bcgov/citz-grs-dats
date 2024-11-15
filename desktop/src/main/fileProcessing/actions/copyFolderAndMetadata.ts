@@ -41,8 +41,20 @@ export const copyFolderAndMetadata = async (
 	};
 
 	try {
+		// State to track progress of individual tasks
+		const progressState: Record<string, number> = {
+			copy: 0,
+			metadata: 0,
+		};
+
 		pool.on("progress", (data) => {
-			console.log(`Progress on ${data.task}: ${data.progress}`);
+			// Update the progress of the respective task
+			progressState[data.task] = data.progress;
+
+			// Calculate combined progress as the average of both tasks
+			const combinedProgress = (progressState.copy + progressState.metadata) / 2;
+
+			console.log(`Progress: ${combinedProgress.toFixed(1)}%`);
 		});
 
 		// Run the worker tasks using the WorkerPool

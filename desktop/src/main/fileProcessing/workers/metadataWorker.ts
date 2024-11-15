@@ -69,7 +69,7 @@ const generateMetadataInBatches = async (
 	rootDir: string,
 	batchSize = 10,
 ): Promise<{ metadata: Record<string, unknown>; fileCount: number; totalSize: number }> => {
-	const metadata = { files: [] as Record<string, unknown>[] };
+	const metadata: Record<string, unknown> = { [rootDir]: [] };
 	let fileCount = 0;
 	let totalSize = 0;
 
@@ -84,14 +84,16 @@ const generateMetadataInBatches = async (
 
 				if (fileStat.isDirectory()) {
 					const subMetadata = await generateMetadataInBatches(filePath, batchSize);
-					metadata.files.push(...(subMetadata.metadata.files as Record<string, unknown>[]));
+
+					// Merge subdirectory metadata under its own key
+					Object.assign(metadata, subMetadata.metadata);
 					fileCount += subMetadata.fileCount;
 					totalSize += subMetadata.totalSize;
 				} else {
 					console.log(`[metadataWorker] Processing file: ${filePath}`);
 					const fileChecksum = await calculateChecksum(filePath);
-					metadata.files.push({
-						filepath: path.join(rootDir, filePath),
+					(metadata[rootDir] as Record<string, unknown>[]).push({
+						filepath: filePath,
 						filename: path.relative(rootDir, filePath),
 						size: formatFileSize(fileStat.size),
 						birthtime: new Date(fileStat.birthtime).toISOString(),
@@ -111,7 +113,7 @@ const generateMetadataInBatches = async (
 					parentPort?.postMessage({
 						type: "progress",
 						fileProcessed: filePath,
-						progressPercentage: `${progressPercentage}%`,
+						progressPercentage: progressPercentage,
 					});
 				}
 			}),
@@ -121,12 +123,39 @@ const generateMetadataInBatches = async (
 	return { metadata, fileCount, totalSize };
 };
 
-// Write metadata to a file
-const writeMetadataToFile = async (
+const fileExists = async (filePath: string): Promise<boolean> => {
+	try {
+		await fsPromises.access(filePath);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+// Write or append metadata to a file
+const writeOrAppendMetadata = async (
 	metadataFilePath: string,
-	metadata: Record<string, unknown>,
+	newMetadata: Record<string, unknown>,
 ): Promise<void> => {
-	await writeFile(metadataFilePath, JSON.stringify(metadata, null, 2));
+	let finalMetadata: Record<string, unknown>;
+
+	if (await fileExists(metadataFilePath)) {
+		// If the file exists, read and merge metadata
+		const existingMetadataRaw = await fsPromises.readFile(metadataFilePath, "utf8");
+		const existingMetadata = JSON.parse(existingMetadataRaw) as Record<string, unknown>;
+
+		// Merge the new metadata with the existing metadata
+		finalMetadata = {
+			...existingMetadata,
+			...newMetadata,
+		};
+	} else {
+		// If the file doesn't exist, use the new metadata
+		finalMetadata = newMetadata;
+	}
+
+	// Write the combined metadata back to the file
+	await writeFile(metadataFilePath, JSON.stringify(finalMetadata, null, 2));
 };
 
 /**
@@ -149,8 +178,8 @@ const writeMetadataToFile = async (
 		// Ensure the directory for metadata file exists
 		await ensureDirectoryExists(path.dirname(destination));
 
-		// Write metadata to the file
-		await writeMetadataToFile(destination, { ...metadata, totalSize });
+		// Write or append the metadata to the file
+		await writeOrAppendMetadata(destination, { ...metadata, totalSize });
 
 		if (parentPort) {
 			parentPort.postMessage({ success: true, metadata, fileCount, totalSize });

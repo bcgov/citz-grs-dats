@@ -178,7 +178,7 @@ ipcMain.handle("start-logout-process", async (_, idToken: string) => {
 ipcMain.handle(
 	"copy-folder-and-metadata",
 	async (_, { filePath, transfer }: { filePath: string; transfer: string }) => {
-		debug('Beginning "process-folder" of main process.');
+		debug('Beginning "copy-folder-and-metadata" of main process.');
 
 		await copyFolderAndMetadata(pool, filePath, transfer, is.dev);
 	},
