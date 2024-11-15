@@ -21,6 +21,8 @@ const api = {
 	workers: {
 		copyFolderAndMetadata: ({ filePath, transfer }: { filePath: string; transfer: string }) =>
 			ipcRenderer.invoke("copy-folder-and-metadata", { filePath, transfer }),
+		getFolderMetadata: ({ filePath }: { filePath: string }) =>
+			ipcRenderer.invoke("get-folder-metadata", { filePath }),
 	},
 };
 

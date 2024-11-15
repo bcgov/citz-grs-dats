@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
 import { createWorkerPool } from "./fileProcessing";
-import { copyFolderAndMetadata } from "./fileProcessing/actions";
+import { copyFolderAndMetadata, getFolderMetadata } from "./fileProcessing/actions";
 
 app.setName("Digital Archives Transfer Service");
 
@@ -183,6 +183,12 @@ ipcMain.handle(
 		await copyFolderAndMetadata(pool, filePath, transfer, is.dev);
 	},
 );
+
+ipcMain.handle("get-folder-metadata", async (_, { filePath }: { filePath: string }) => {
+	debug('Beginning "get-folder-metadata" of main process.');
+
+	await getFolderMetadata(pool, filePath, is.dev);
+});
 
 const clearAuthState = () => {
 	debug("Beginning clearAuthState function of main process.");
