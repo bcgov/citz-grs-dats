@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { WorkerPool } from "./WorkerPool";
+import type { WorkerPool } from "../WorkerPool";
 import { app } from "electron";
 
 /**
@@ -11,7 +11,7 @@ import { app } from "electron";
  * @param isDev - Is running in the development build (npm run dev).
  * @returns A Promise that resolves when the worker processes complete.
  */
-export const processFolder = async (
+export const copyFolderAndMetadata = async (
 	pool: WorkerPool,
 	filePath: string,
 	transfer: string,

@@ -26,7 +26,7 @@ declare global {
 			};
 
 			workers: {
-				processFolder: ({
+				copyFolderAndMetadata: ({
 					filePath,
 					transfer,
 				}: {
