@@ -1,5 +1,11 @@
 import { Schema, model, type InferSchemaType } from "mongoose";
 import { z } from "zod";
+import {
+	fileMetadataSchema,
+	fileMetadataZodSchema,
+	folderMetadataSchema,
+	folderMetadataZodSchema,
+} from "../schemas";
 
 // Mongoose Schema
 const fileListSchema = new Schema({
@@ -15,8 +21,8 @@ const fileListSchema = new Schema({
 				email: { type: String, required: true },
 			},
 		},
-		folders: { type: Schema.Types.Mixed, required: true },
-		files: { type: Schema.Types.Mixed, required: true },
+		folders: { type: Map, of: folderMetadataSchema, required: true }, // Record<string, folderMetadataSchema>
+		files: { type: Map, of: [fileMetadataSchema], required: true }, // Record<string, fileMetadataSchema[]>
 	},
 });
 
@@ -30,15 +36,15 @@ export const fileListZodSchema = z.object({
 	outputFileType: z.string(),
 	metadata: z.object({
 		admin: z.object({
-			application: z.string().default("N/A"),
-			accession: z.string().default("N/A"),
+			application: z.string().optional(),
+			accession: z.string().optional(),
 			submittedBy: z.object({
 				name: z.string(),
 				email: z.string(),
 			}),
 		}),
-		folders: z.any(),
-		files: z.any(),
+		folders: z.record(folderMetadataZodSchema),
+		files: z.record(z.array(fileMetadataZodSchema)),
 	}),
 });
 

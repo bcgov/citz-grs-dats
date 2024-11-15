@@ -1,15 +1,9 @@
 import amqp from "amqplib";
 import { ENV } from "src/config";
 import { logs } from "src/utils";
-import { createFileListConsumer, testConsumer } from "./queue";
 
 const { RABBITMQ_URL } = ENV;
 const { RABBITMQ_CONNECTION_SUCCESS, RABBITMQ_CONNECTION_ERROR } = logs;
-
-const consumers: Record<string, (msg: amqp.ConsumeMessage, channel: amqp.Channel) => void> = {
-	TEST_QUEUE: testConsumer,
-	CREATE_FILE_LIST_QUEUE: createFileListConsumer,
-};
 
 let connection: amqp.Connection | null = null;
 let isConnected = false;
@@ -73,25 +67,4 @@ export const closeRabbitMQConnection = async (): Promise<void> => {
 
 export const checkRabbitConnection = (): boolean => {
 	return isConnected;
-};
-
-// Start consuming messages from a specific queue
-export const startQueueConsumer = async (queue: string): Promise<void> => {
-	try {
-		console.log(`[${queue}] Starting queue consumer...`);
-		const channel = await getChannel(queue);
-		channel.prefetch(1); // Only process one message at a time
-		channel.consume(
-			queue,
-			(msg) => {
-				if (msg) {
-					consumers[queue](msg, channel);
-				}
-			},
-			{ noAck: false },
-		);
-		console.log(`[${queue}] Consumer started.`);
-	} catch (error) {
-		console.error(`[${queue}] Failed to consume messages from RabbitMQ:`, error);
-	}
 };

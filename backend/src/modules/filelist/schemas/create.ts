@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fileMetadataZodSchema, folderMetadataZodSchema } from "./metadata";
 
 export const createFileListBodySchema = z.object({
 	outputFileType: z.string(),
@@ -9,8 +10,8 @@ export const createFileListBodySchema = z.object({
 				accession: z.string().optional(),
 			})
 			.optional(),
-		folders: z.any(),
-		files: z.any(),
+		folders: z.record(folderMetadataZodSchema),
+		files: z.record(z.array(fileMetadataZodSchema)),
 	}),
 });
 

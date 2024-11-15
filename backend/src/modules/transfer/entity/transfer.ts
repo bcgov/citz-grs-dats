@@ -19,7 +19,7 @@ const transferSchema = new Schema({
 });
 
 // Mongoose Model
-export const TransferModel = model("FileList", transferSchema);
+export const TransferModel = model("Transfer", transferSchema);
 
 // Zod Schema
 export const transferZodSchema = z.object({

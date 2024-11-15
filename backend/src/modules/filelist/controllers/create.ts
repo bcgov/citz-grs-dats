@@ -1,10 +1,11 @@
 import type { Request, Response } from "express";
-import { errorWrapper } from "@bcgov/citz-imb-express-utilities";
+import { errorWrapper, HTTP_STATUS_CODES } from "@bcgov/citz-imb-express-utilities";
 import { addToCreateFileListQueue } from "src/modules/rabbit/utils";
 import { createFileListBodySchema } from "../schemas";
 import type { FileListMongoose } from "../entity";
 import { FileListService } from "../service";
 import type { TransferMongoose } from "src/modules/transfer/entity";
+import { TransferService } from "src/modules/transfer/service";
 
 // Create file list.
 export const create = errorWrapper(async (req: Request, res: Response) => {
@@ -14,7 +15,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	const jobID = `job-${Date.now()}`;
 
 	// Save data for queue consumer to access later
-	const fileListDatabasesEntry: FileListMongoose = {
+	const fileListDatabaseEntry: FileListMongoose = {
 		jobID,
 		outputFileType: body.outputFileType,
 		metadata: {
@@ -22,8 +23,8 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 				application: body.metadata?.admin?.application ?? "N/A",
 				accession: body.metadata?.admin?.accession ?? "N/A",
 				submittedBy: {
-					name: user?.display_name ?? "",
-					email: user?.email ?? "",
+					name: user?.display_name ?? "N/A",
+					email: user?.email ?? "N/A",
 				},
 			},
 			folders: body.metadata.folders,
@@ -31,23 +32,28 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 		},
 	};
 
-	await FileListService.createFileListEntry(fileListDatabasesEntry);
+	await FileListService.createFileListEntry(fileListDatabaseEntry);
 
-	// Save data for transfer
-	const transferDatabaseEntry: TransferMongoose = {
-		metadata: {
-			admin: {
-				application: body.metadata?.admin?.application ?? "N/A",
-				accession: body.metadata?.admin?.accession ?? "N/A",
-				submittedBy: {
-					name: user?.display_name ?? "",
-					email: user?.email ?? "",
+	// Create transfer if application/accession numbers provided
+	if (body.metadata?.admin?.application && body.metadata?.admin?.accession) {
+		// Save data for transfer
+		const transferDatabaseEntry: TransferMongoose = {
+			metadata: {
+				admin: {
+					application: body.metadata?.admin?.application,
+					accession: body.metadata?.admin?.accession,
+					submittedBy: {
+						name: user?.display_name ?? "",
+						email: user?.email ?? "",
+					},
 				},
+				folders: body.metadata.folders,
+				files: body.metadata.files,
 			},
-			folders: body.metadata.folders,
-			files: body.metadata.files,
-		},
-	};
+		};
+
+		await TransferService.createTransferEntry(transferDatabaseEntry);
+	}
 
 	// Add the job ID to the RabbitMQ queue
 	await addToCreateFileListQueue(jobID);
@@ -58,5 +64,5 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 		success: true,
 	});
 
-	res.status(200).json(result);
+	res.status(HTTP_STATUS_CODES.CREATED).json(result);
 });
