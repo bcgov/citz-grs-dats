@@ -110,6 +110,12 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 			width: 135,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
+			valueFormatter: (value) => {
+				if (value) {
+					return (value as Dayjs).format("MM/DD/YYYY");
+				}
+				return "";
+			},
 		},
 		{
 			field: "endDate",
@@ -117,6 +123,12 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 			width: 135,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
+			valueFormatter: (value) => {
+				if (value) {
+					return (value as Dayjs).format("MM/DD/YYYY");
+				}
+				return "";
+			},
 		},
 		{
 			field: "soDate",
@@ -124,6 +136,12 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 			width: 135,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
+			valueFormatter: (value) => {
+				if (value) {
+					return (value as Dayjs).format("MM/DD/YYYY");
+				}
+				return "";
+			},
 		},
 		{
 			field: "fdDate",
@@ -131,6 +149,12 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 			width: 135,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
+			valueFormatter: (value) => {
+				if (value) {
+					return (value as Dayjs).format("MM/DD/YYYY");
+				}
+				return "";
+			},
 		},
 		{
 			field: "delete",
