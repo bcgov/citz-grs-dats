@@ -56,10 +56,8 @@ function App(): JSX.Element {
 	return (
 		<BrowserRouter>
 			<div style={{ display: "flex" }}>
-				<div style={{ flexGrow: 1 }}>
-					<SideNav accessToken={accessToken} idToken={idToken} />
-				</div>
-				<main style={{ flexGrow: 3 }}>
+				<SideNav accessToken={accessToken} idToken={idToken} />
+				<main>
 					<Routes>
 						<Route path="/" element={<HomePage />} />
 						<Route path="/file-list" element={<FileListPage />} />
