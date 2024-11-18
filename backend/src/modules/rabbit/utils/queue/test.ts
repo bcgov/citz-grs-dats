@@ -9,7 +9,7 @@ export const addToTestQueue = async (message: string): Promise<void> => {
 	channel.sendToQueue(QUEUE_NAME, Buffer.from(message));
 };
 
-export const testConsumer = (msg: amqp.ConsumeMessage, channel: amqp.Channel) => {
+const consumer = (msg: amqp.ConsumeMessage, channel: amqp.Channel) => {
 	const jobID = msg.content.toString();
 	console.log(`[${QUEUE_NAME}] Processed job: ${jobID}`);
 	setTimeout(() => channel.ack(msg), 10 * 1000);
@@ -25,7 +25,7 @@ const startQueueConsumer = async (): Promise<void> => {
 			QUEUE_NAME,
 			(msg) => {
 				if (msg) {
-					testConsumer(msg, channel);
+					consumer(msg, channel);
 				}
 			},
 			{ noAck: false },

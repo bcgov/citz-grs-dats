@@ -9,9 +9,10 @@ export const addToCreateFileListQueue = async (message: string): Promise<void> =
 	channel.sendToQueue(QUEUE_NAME, Buffer.from(message));
 };
 
-export const consumer = (msg: amqp.ConsumeMessage, channel: amqp.Channel) => {
+const consumer = (msg: amqp.ConsumeMessage, channel: amqp.Channel) => {
 	const jobID = msg.content.toString();
 	console.log(`[${QUEUE_NAME}] Processed job: ${jobID}`);
+	channel.ack(msg);
 };
 
 // Start consuming messages from a specific queue
