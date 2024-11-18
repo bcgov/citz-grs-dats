@@ -65,9 +65,10 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 			anchor="left"
 			sx={{
 				flexShrink: 0,
+				width: "15%",
 				background: theme.palette.secondary.light,
 				"& .MuiDrawer-paper": {
-					width: "20%",
+					width: "15%",
 					flexShrink: 0,
 					boxSizing: "border-box",
 					padding: 1,
