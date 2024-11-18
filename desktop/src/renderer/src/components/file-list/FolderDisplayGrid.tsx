@@ -87,7 +87,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 						{params.row.progress === 100 ? (
 							<CheckIcon color="success" />
 						) : (
-							<LoadingIcon style={{ color: `${theme.palette.warning.light}` }} />
+							<LoadingIcon style={{ color: `${theme.palette.warning.main}` }} />
 						)}
 						<Typography>{params.row.progress}%</Typography>
 					</Stack>
