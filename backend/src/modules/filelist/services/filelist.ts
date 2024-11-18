@@ -1,5 +1,5 @@
-import { FileListModel } from "../entity";
-import type { FileListMongoose } from "../entity";
+import { FileListModel } from "../entities";
+import type { FileListMongoose } from "../entities";
 
 export const FileListService = {
 	/**

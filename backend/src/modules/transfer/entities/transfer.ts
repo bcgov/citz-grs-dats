@@ -24,7 +24,6 @@ export const TransferModel = model("Transfer", transferSchema);
 // Zod Schema
 export const transferZodSchema = z.object({
 	createdOn: z.string().optional(),
-	outputFileType: z.string(),
 	metadata: z.object({
 		admin: z.object({
 			application: z.string(),

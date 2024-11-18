@@ -1,5 +1,5 @@
-import { TransferModel } from "../entity";
-import type { TransferMongoose } from "../entity";
+import { TransferModel } from "../entities";
+import type { TransferMongoose } from "../entities";
 
 export const TransferService = {
 	/**

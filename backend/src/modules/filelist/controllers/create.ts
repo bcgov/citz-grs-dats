@@ -2,10 +2,10 @@ import type { Request, Response } from "express";
 import { errorWrapper, HTTP_STATUS_CODES } from "@bcgov/citz-imb-express-utilities";
 import { addToCreateFileListQueue } from "src/modules/rabbit/utils";
 import { createFileListBodySchema } from "../schemas";
-import type { FileListMongoose } from "../entity";
-import { FileListService } from "../service";
-import type { TransferMongoose } from "src/modules/transfer/entity";
-import { TransferService } from "src/modules/transfer/service";
+import type { FileListMongoose } from "../entities";
+import { FileListService } from "../services";
+import type { TransferMongoose } from "@/modules/transfer/entities";
+import { TransferService } from "@/modules/transfer/services";
 
 // Create file list.
 export const create = errorWrapper(async (req: Request, res: Response) => {
