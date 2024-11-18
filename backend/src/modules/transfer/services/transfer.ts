@@ -1,5 +1,14 @@
+import type { SSOUser } from "@bcgov/citz-imb-sso-js-core";
 import { TransferModel } from "../entities";
 import type { TransferMongoose } from "../entities";
+
+type CreateTransferData = {
+	user: SSOUser<unknown> | undefined;
+	application: string;
+	accession: string;
+	folders: NonNullable<TransferMongoose["metadata"]>["folders"];
+	files: NonNullable<TransferMongoose["metadata"]>["files"];
+};
 
 export const TransferService = {
 	/**
@@ -8,10 +17,25 @@ export const TransferService = {
 	 * @returns The inserted document.
 	 * @throws Error if the insertion fails.
 	 */
-	async createTransferEntry(entry: TransferMongoose) {
+	async createTransferEntry({ user, application, accession, folders, files }: CreateTransferData) {
 		try {
+			const transferDatabaseEntry: TransferMongoose = {
+				metadata: {
+					admin: {
+						application,
+						accession,
+						submittedBy: {
+							name: user?.display_name ?? "",
+							email: user?.email ?? "",
+						},
+					},
+					folders,
+					files,
+				},
+			};
+
 			// Insert the document into the database
-			const createdDocument = await TransferModel.create(entry);
+			const createdDocument = await TransferModel.create(transferDatabaseEntry);
 			return createdDocument;
 		} catch (error) {
 			console.error("Error creating Transfer entry:", error);
@@ -27,14 +51,28 @@ export const TransferService = {
 	 * @returns The upserted or updated document.
 	 * @throws Error if the operation fails.
 	 */
-	async createOrUpdateTransferEntry(entry: TransferMongoose) {
+	async createOrUpdateTransferEntry({
+		user,
+		application,
+		accession,
+		folders,
+		files,
+	}: CreateTransferData) {
 		try {
-			// Ensure metadata and admin exist
-			if (!entry.metadata || !entry.metadata.admin) {
-				throw new Error("Invalid entry: metadata and admin fields are required.");
-			}
-
-			const { application, accession } = entry.metadata.admin;
+			const transferDatabaseEntry: TransferMongoose = {
+				metadata: {
+					admin: {
+						application,
+						accession,
+						submittedBy: {
+							name: user?.display_name ?? "",
+							email: user?.email ?? "",
+						},
+					},
+					folders,
+					files,
+				},
+			};
 
 			// Find an existing entry by `application` and `accession`
 			const existingEntry = await TransferModel.findOne({
@@ -44,12 +82,12 @@ export const TransferService = {
 
 			if (existingEntry) {
 				// Update the existing entry
-				existingEntry.set(entry);
+				existingEntry.set(transferDatabaseEntry);
 				const updatedEntry = await existingEntry.save();
 				return updatedEntry;
 			}
 			// Create a new entry if no match is found
-			const createdEntry = await TransferModel.create(entry);
+			const createdEntry = await TransferModel.create(transferDatabaseEntry);
 			return createdEntry;
 		} catch (error) {
 			console.error("Error in createOrUpdateTransferEntry:", error);

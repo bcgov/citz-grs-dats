@@ -18,15 +18,17 @@ export const folderMetadataSchema = new Schema(
 
 // Folder Metadata Zod Schema
 export const folderMetadataZodSchema = z.object({
-	schedule: z.string().optional(),
-	classification: z.string().optional(),
-	file: z.string().optional(),
-	opr: z.boolean().optional(),
-	startDate: z.string().optional(),
-	endDate: z.string().optional(),
-	soDate: z.string().optional(),
-	fdDate: z.string().optional(),
+	schedule: z.union([z.string(), z.null()]).optional(),
+	classification: z.union([z.string(), z.null()]).optional(),
+	file: z.union([z.string(), z.null()]).optional(),
+	opr: z.union([z.boolean(), z.null()]).optional(),
+	startDate: z.union([z.string(), z.null()]).optional(),
+	endDate: z.union([z.string(), z.null()]).optional(),
+	soDate: z.union([z.string(), z.null()]).optional(),
+	fdDate: z.union([z.string(), z.null()]).optional(),
 });
+
+export type FolderMetadataZodType = z.infer<typeof folderMetadataZodSchema>;
 
 // File Metadata Schema
 export const fileMetadataSchema = new Schema(
@@ -52,3 +54,5 @@ export const fileMetadataZodSchema = z.object({
 	lastAccessed: z.string(),
 	checksum: z.string(),
 });
+
+export type FileMetadataZodType = z.infer<typeof fileMetadataZodSchema>;

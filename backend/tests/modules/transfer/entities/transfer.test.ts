@@ -8,7 +8,7 @@ import {
 describe("Transfer Schema and Zod Validation", () => {
 	describe("Mongoose Schema Validation", () => {
 		it("should validate a valid Transfer document", () => {
-			const validTransfer: TransferMongoose = {
+			const validTransfer = {
 				metadata: {
 					admin: {
 						application: "TestApp",
@@ -18,8 +18,37 @@ describe("Transfer Schema and Zod Validation", () => {
 							email: "test@example.com",
 						},
 					},
-					folders: { folder1: "data1", folder2: "data2" },
-					files: { file1: ["data1"], file2: ["data2"] },
+					folders: new Map([
+						[
+							"folder1",
+							{
+								schedule: "Schedule A",
+								classification: "Class A",
+								file: "File A",
+								opr: true,
+								startDate: "2023-01-01",
+								endDate: "2023-12-31",
+								soDate: null,
+								fdDate: "2024-01-01",
+							},
+						],
+					]),
+					files: new Map([
+						[
+							"file1",
+							[
+								new TransferModel({
+									filepath: "/path/to/file1",
+									filename: "file1.txt",
+									size: "10KB",
+									birthtime: "2023-01-01",
+									lastModified: "2023-11-15",
+									lastAccessed: "2023-11-16",
+									checksum: "abc123",
+								}).metadata?.files?.get("file1"),
+							],
+						],
+					]),
 				},
 			};
 
@@ -38,8 +67,27 @@ describe("Transfer Schema and Zod Validation", () => {
 							email: "test@example.com",
 						},
 					},
-					folders: { folder1: "data1" },
-					files: { file1: ["data1"] },
+					folders: new Map([
+						[
+							"folder1",
+							{
+								classification: "Class A",
+								file: "File A",
+							},
+						],
+					]),
+					files: new Map([
+						[
+							"file1",
+							[
+								{
+									filepath: "/path/to/file1",
+									filename: "file1.txt",
+									size: "10KB",
+								},
+							],
+						],
+					]),
 				},
 			};
 
@@ -68,8 +116,52 @@ describe("Transfer Schema and Zod Validation", () => {
 							email: "test@example.com",
 						},
 					},
-					folders: { folder1: "data1", folder2: "data2" },
-					files: { file1: ["data1"], file2: ["data2"] },
+					folders: {
+						folder1: {
+							schedule: "Schedule A",
+							classification: "Class A",
+							file: "File A",
+							opr: true,
+							startDate: "2023-01-01",
+							endDate: "2023-12-31",
+							soDate: null,
+							fdDate: "2024-01-01",
+						},
+						folder2: {
+							schedule: null,
+							classification: "Class B",
+							file: "File B",
+							opr: false,
+							startDate: null,
+							endDate: "2023-06-30",
+							soDate: "2023-07-01",
+							fdDate: null,
+						},
+					},
+					files: {
+						file1: [
+							{
+								filepath: "/path/to/file1",
+								filename: "file1.txt",
+								size: "10KB",
+								birthtime: "2023-01-01",
+								lastModified: "2023-11-15",
+								lastAccessed: "2023-11-16",
+								checksum: "abc123",
+							},
+						],
+						file2: [
+							{
+								filepath: "/path/to/file2",
+								filename: "file2.txt",
+								size: "20KB",
+								birthtime: "2023-01-02",
+								lastModified: "2023-11-14",
+								lastAccessed: "2023-11-15",
+								checksum: "def456",
+							},
+						],
+					},
 				},
 			};
 
@@ -87,8 +179,21 @@ describe("Transfer Schema and Zod Validation", () => {
 							email: "test@example.com",
 						},
 					},
-					folders: { folder1: "data1" },
-					files: { file1: ["data1"] },
+					folders: {
+						folder1: {
+							classification: "Class A",
+							file: "File A",
+						},
+					},
+					files: {
+						file1: [
+							{
+								filepath: "/path/to/file1",
+								filename: "file1.txt",
+								size: "10KB",
+							},
+						],
+					},
 				},
 			};
 

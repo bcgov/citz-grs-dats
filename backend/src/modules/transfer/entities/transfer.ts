@@ -1,3 +1,9 @@
+import {
+	fileMetadataSchema,
+	fileMetadataZodSchema,
+	folderMetadataSchema,
+	folderMetadataZodSchema,
+} from "src/modules/filelist/schemas";
 import { Schema, model, type InferSchemaType } from "mongoose";
 import { z } from "zod";
 
@@ -13,8 +19,8 @@ const transferSchema = new Schema({
 				email: { type: String, required: true },
 			},
 		},
-		folders: { type: Schema.Types.Mixed, required: true },
-		files: { type: Schema.Types.Mixed, required: true },
+		folders: { type: Map, of: folderMetadataSchema, required: true }, // Record<string, folderMetadataSchema>
+		files: { type: Map, of: [fileMetadataSchema], required: true }, // Record<string, fileMetadataSchema[]>
 	},
 });
 
@@ -33,8 +39,8 @@ export const transferZodSchema = z.object({
 				email: z.string(),
 			}),
 		}),
-		folders: z.any(),
-		files: z.any(),
+		folders: z.record(folderMetadataZodSchema),
+		files: z.record(z.array(fileMetadataZodSchema)),
 	}),
 });
 
