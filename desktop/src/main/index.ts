@@ -65,6 +65,7 @@ function createWindow(): void {
 		const menu = Menu.buildFromTemplate(menuTemplate as MenuItemConstructorOptions[]);
 		Menu.setApplicationMenu(menu);
 		mainWindow.setTitle(app.getName()); // Sets name in top left corner of window.
+		mainWindow.maximize();
 		mainWindow.show();
 	});
 
