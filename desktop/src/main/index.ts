@@ -50,8 +50,6 @@ const setApiUrl = (apiUrl: string) => {
 
 function createWindow(): void {
 	mainWindow = new BrowserWindow({
-		width: 1200,
-		height: 750,
 		minWidth: 1200,
 		minHeight: 750,
 		show: false,
@@ -67,6 +65,7 @@ function createWindow(): void {
 		const menu = Menu.buildFromTemplate(menuTemplate as MenuItemConstructorOptions[]);
 		Menu.setApplicationMenu(menu);
 		mainWindow.setTitle(app.getName()); // Sets name in top left corner of window.
+		mainWindow.maximize();
 		mainWindow.show();
 	});
 
