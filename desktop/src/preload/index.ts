@@ -19,8 +19,10 @@ const api = {
 		safePromise,
 	},
 	workers: {
-		processFolder: ({ filePath, transfer }: { filePath: string; transfer: string }) =>
-			ipcRenderer.invoke("process-folder", { filePath, transfer }),
+		copyFolderAndMetadata: ({ filePath, transfer }: { filePath: string; transfer: string }) =>
+			ipcRenderer.invoke("copy-folder-and-metadata", { filePath, transfer }),
+		getFolderMetadata: ({ filePath }: { filePath: string }) =>
+			ipcRenderer.invoke("get-folder-metadata", { filePath }),
 	},
 };
 
