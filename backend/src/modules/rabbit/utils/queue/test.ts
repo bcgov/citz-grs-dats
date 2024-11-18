@@ -16,7 +16,7 @@ export const testConsumer = (msg: amqp.ConsumeMessage, channel: amqp.Channel) =>
 };
 
 // Start consuming messages from a specific queue
-export const startQueueConsumer = async (): Promise<void> => {
+const startQueueConsumer = async (): Promise<void> => {
 	try {
 		console.log(`[${QUEUE_NAME}] Starting queue consumer...`);
 		const channel = await getChannel(QUEUE_NAME);
