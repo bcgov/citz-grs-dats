@@ -14,7 +14,7 @@ export const FileListPage = () => {
 		<Box
 			sx={{
 				height: "100vh",
-				padding: 1,
+				padding: 2,
 				flexShrink: 0,
 				background: `${theme.palette.primary}`,
 			}}
