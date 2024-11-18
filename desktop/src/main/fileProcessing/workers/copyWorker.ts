@@ -138,7 +138,7 @@ const copyDirectoryInBatches = async (
 						parentPort?.postMessage({
 							type: "progress",
 							fileProcessed: sourcePath,
-							progressPercentage: `${progressPercentage}%`,
+							progressPercentage: progressPercentage,
 						});
 					}
 				} catch (err) {

@@ -1,26 +1,19 @@
-//@ts-ignore
+
 import { Typography, Box, Drawer, useTheme, type SxProps } from "@mui/material";
+import { Box } from "@mui/material";
+import { FolderDisplayGrid, type FolderRow } from "@renderer/components/file-list";
+import { useState } from "react";
 
 export const FileListPage = () => {
-	const theme = useTheme();
+	const [rows, setRows] = useState<FolderRow[]>([]);
+  const theme = useTheme();
+	const onFolderDelete = (folder: string) => {
+		alert(folder); // TBD
+	};
+
 	return (
-		<Drawer
-			variant="permanent"
-			anchor="right"
-			sx={{
-				width: "80%", // sets width of main view area
-				flexShrink: 0,
-				"& .MuiDrawer-paper": {
-					width: "80%",
-					flexShrink: 0,
-					boxSizing: "border-box",
-					padding: 1,
-					background: `${theme.palette.primary}`,
-				},
-			}}
-		>
-			<Typography>File List</Typography>
-			<button type="button">Add Folder(s)</button>
-		</Drawer>
+		<Box sx={{ height: "100vh", width: "80%", padding: "60px 1.5%", flexShrink: 0, background: `${theme.palette.primary}`}}>
+			<FolderDisplayGrid rows={rows} onFolderDelete={onFolderDelete} />
+		</Box>
 	);
 };

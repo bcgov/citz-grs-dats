@@ -9,7 +9,8 @@ import {
 import { join } from "node:path";
 import { is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
-import { createWorkerPool, processFolder } from "./fileProcessing";
+import { createWorkerPool } from "./fileProcessing";
+import { copyFolderAndMetadata, getFolderMetadata } from "./fileProcessing/actions";
 
 app.setName("Digital Archives Transfer Service");
 
@@ -176,13 +177,19 @@ ipcMain.handle("start-logout-process", async (_, idToken: string) => {
 });
 
 ipcMain.handle(
-	"process-folder",
+	"copy-folder-and-metadata",
 	async (_, { filePath, transfer }: { filePath: string; transfer: string }) => {
-		debug('Beginning "process-folder" of main process.');
+		debug('Beginning "copy-folder-and-metadata" of main process.');
 
-		await processFolder(pool, filePath, transfer, is.dev);
+		await copyFolderAndMetadata(pool, filePath, transfer, is.dev);
 	},
 );
+
+ipcMain.handle("get-folder-metadata", async (_, { filePath }: { filePath: string }) => {
+	debug('Beginning "get-folder-metadata" of main process.');
+
+	await getFolderMetadata(pool, filePath, is.dev);
+});
 
 const clearAuthState = () => {
 	debug("Beginning clearAuthState function of main process.");
