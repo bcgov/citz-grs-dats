@@ -48,9 +48,8 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 			>
 				<Typography sx={{ color: `${theme.palette.secondary.dark}` }}>{icon}</Typography>
 				<Typography
+					variant="h4"
 					sx={{
-						fontWeight: `${theme.typography.h4.fontWeight}`,
-						fontSize: `${theme.typography.h4.fontSize}`,
 						color: `${theme.palette.secondary}`,
 					}}
 				>
