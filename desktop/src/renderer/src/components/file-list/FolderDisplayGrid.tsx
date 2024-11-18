@@ -17,6 +17,7 @@ import {
 	InputBase,
 	type InputBaseProps,
 	Box,
+	useTheme,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -74,6 +75,7 @@ type Props = {
 };
 
 export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
+	const theme = useTheme();
 	const columns: GridColDef<(typeof rows)[number]>[] = [
 		{
 			field: "progress",
@@ -85,7 +87,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 						{params.row.progress === 100 ? (
 							<CheckIcon color="success" />
 						) : (
-							<LoadingIcon sx={{ color: "#f7d219" }} />
+							<LoadingIcon style={{ color: `${theme.palette.warning.light}` }} />
 						)}
 						<Typography>{params.row.progress}%</Typography>
 					</Stack>

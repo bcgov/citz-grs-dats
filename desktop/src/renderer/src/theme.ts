@@ -3,6 +3,11 @@ import "@bcgov/bc-sans/css/BC_Sans.css";
 
 export const theme = createTheme({
 	palette: {
+		warning: {
+			main: "#f7d219",
+			light: "#f9dc4a",
+			dark: "#d6b307",
+		},
 		primary: {
 			// colour palette for main view area of app
 			main: "#ececec",

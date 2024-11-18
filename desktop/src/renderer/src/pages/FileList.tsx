@@ -3,7 +3,6 @@ import { FolderDisplayGrid, type FolderRow } from "@renderer/components/file-lis
 import { useState } from "react";
 
 export const FileListPage = () => {
-	//@ts-ignore
 	const [rows, setRows] = useState<FolderRow[]>([]);
 	const theme = useTheme();
 	const onFolderDelete = (folder: string) => {
