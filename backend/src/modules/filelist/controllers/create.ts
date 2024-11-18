@@ -52,7 +52,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 			},
 		};
 
-		await TransferService.createTransferEntry(transferDatabaseEntry);
+		await TransferService.createOrUpdateTransferEntry(transferDatabaseEntry);
 	}
 
 	// Add the job ID to the RabbitMQ queue

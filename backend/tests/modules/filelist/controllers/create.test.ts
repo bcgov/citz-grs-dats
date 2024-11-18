@@ -2,7 +2,6 @@ import type { NextFunction, Request, Response } from "express";
 import { create } from "@/modules/filelist/controllers/create";
 import { FileListService } from "@/modules/filelist/services";
 import { TransferService } from "@/modules/transfer/services";
-import { createFileListBodySchema } from "@/modules/filelist/schemas";
 import {
 	HTTP_STATUS_CODES,
 	type StandardResponse,
@@ -18,7 +17,7 @@ jest.mock("@/modules/filelist/services", () => ({
 
 jest.mock("@/modules/transfer/services", () => ({
 	TransferService: {
-		createTransferEntry: jest.fn(),
+		createOrUpdateTransferEntry: jest.fn(),
 	},
 }));
 
@@ -85,7 +84,7 @@ describe("Test suite for create function", () => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		jest.spyOn(FileListService, "createFileListEntry").mockResolvedValue({} as any);
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		jest.spyOn(TransferService, "createTransferEntry").mockResolvedValue({} as any);
+		jest.spyOn(TransferService, "createOrUpdateTransferEntry").mockResolvedValue({} as any);
 		jest
 			.spyOn(require("@/modules/rabbit/utils/queue"), "addToCreateFileListQueue")
 			.mockResolvedValue(undefined);
@@ -120,7 +119,7 @@ describe("Test suite for create function", () => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		jest.spyOn(FileListService, "createFileListEntry").mockResolvedValue({} as any);
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		jest.spyOn(TransferService, "createTransferEntry").mockResolvedValue({} as any);
+		jest.spyOn(TransferService, "createOrUpdateTransferEntry").mockResolvedValue({} as any);
 		jest
 			.spyOn(require("@/modules/rabbit/utils/queue"), "addToCreateFileListQueue")
 			.mockResolvedValue(undefined);
@@ -155,7 +154,7 @@ describe("Test suite for create function", () => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		jest.spyOn(FileListService, "createFileListEntry").mockResolvedValue({} as any);
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		jest.spyOn(TransferService, "createTransferEntry").mockResolvedValue({} as any);
+		jest.spyOn(TransferService, "createOrUpdateTransferEntry").mockResolvedValue({} as any);
 		jest
 			.spyOn(require("@/modules/rabbit/utils/queue"), "addToCreateFileListQueue")
 			.mockResolvedValue(undefined);
