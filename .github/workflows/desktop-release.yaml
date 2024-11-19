@@ -37,7 +37,7 @@ jobs:
       # Get the new version number
       - name: Get the version from package.json
         id: package_version
-        run: echo VERSION=$(node -p \"require('./package.json').version\") >> $GITHUB_OUTPUT
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
         working-directory: desktop
 
       # Commit changes to the repo
