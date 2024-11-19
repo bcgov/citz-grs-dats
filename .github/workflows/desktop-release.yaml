@@ -1,6 +1,6 @@
 name: Build and Publish Electron App
 
-# REQUIRES: Repo Admins allowed to bypass branch protection policies and push directly to main. 
+# REQUIRES: Repo Admins allowed to bypass branch protection policies and push directly to main.
 # REQUIRES: A Repo Admin creates a PAT (Personal Access Token) and sets it as GIT_PAT secret.
 
 on:
@@ -37,7 +37,7 @@ jobs:
       # Get the new version number
       - name: Get the version from package.json
         id: package_version
-        run: echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+        run: echo VERSION=$(node -p \"require('./package.json').version\") >> $GITHUB_OUTPUT
         working-directory: desktop
 
       # Commit changes to the repo
