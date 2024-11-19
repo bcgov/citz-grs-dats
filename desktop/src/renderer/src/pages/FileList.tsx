@@ -1,4 +1,3 @@
-import { CurrencyBitcoin } from "@mui/icons-material";
 import { Box, useTheme } from "@mui/material";
 import {
 	FolderDisplayGrid,
