@@ -7,7 +7,7 @@ type CreateFileListData = {
 	user: SSOUser<unknown> | undefined;
 	application: string;
 	accession: string;
-	outputFileType: string;
+	outputFileType: "excel" | "json";
 	folders: NonNullable<FileListMongoose["metadata"]>["folders"];
 	files: NonNullable<FileListMongoose["metadata"]>["files"];
 };
