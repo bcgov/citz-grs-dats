@@ -70,6 +70,21 @@ code {
 	font-weight: 600;
 }
 
+.file-list-button {
+	background-color: var(--ev-c-white-mute);
+	color: var(--ev-c-black);
+	padding: 5px 30px;
+	text-align: center;
+	display: inline-block;
+	font-size: 16px;
+	border-radius: 6px;
+	transition-duration: 0.4s;
+	border: 1.5px solid var(--ev-c-black);
+}
+.file-list-button:hover {
+	background-color: var(--ev-c-gray-4);
+}
+
 .vpn-popup-overlay {
 	position: fixed;
 	top: 0;
