@@ -8,21 +8,10 @@ import {
 import { useState } from "react";
 
 export const FileListPage = () => {
-	//@ts-ignore
 	const [rows, setRows] = useState<FolderRow[]>([]);
 	const theme = useTheme();
 	const onFolderDelete = (folder: string) => {
 		alert(folder); // TBD
-	};
-
-	const handleRowChange = (fileList: FolderRow[]): FolderRow[] => {
-		try {
-			setRows(fileList);
-			return fileList;
-		} catch (error) {
-			setRows([]);
-			return [];
-		}
 	};
 
 	return (
@@ -37,7 +26,7 @@ export const FileListPage = () => {
 					background: `${theme.palette.primary}`,
 				}}
 			>
-				<SelectFolderButton />
+				<SelectFolderButton rows={rows} />
 				<ContinueButton />
 			</Box>
 			<Box
@@ -48,7 +37,7 @@ export const FileListPage = () => {
 					background: `${theme.palette.primary}`,
 				}}
 			>
-				<FolderDisplayGrid rows={handleRowChange} onFolderDelete={onFolderDelete} />
+				<FolderDisplayGrid rows={rows} onFolderDelete={onFolderDelete} />
 			</Box>
 		</>
 	);
