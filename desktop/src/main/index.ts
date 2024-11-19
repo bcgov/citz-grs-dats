@@ -9,6 +9,7 @@ import {
 import { join } from "node:path";
 import { is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
+import electronUpdater, { type AppUpdater } from "electron-updater";
 import { createWorkerPool } from "./fileProcessing";
 import { copyFolderAndMetadata, getFolderMetadata } from "./fileProcessing/actions";
 
@@ -298,7 +299,21 @@ const menuTemplate = [
 	},
 ];
 
-app.whenReady().then(createWindow);
+export function getAutoUpdater(): AppUpdater {
+	// Using destructuring to access autoUpdater due to the CommonJS module of 'electron-updater'.
+	// It is a workaround for ESM compatibility issues, see https://github.com/electron-userland/electron-builder/issues/7976.
+	const { autoUpdater } = electronUpdater;
+	return autoUpdater;
+}
+
+app.whenReady().then(() => {
+	createWindow();
+
+	// Start checking for updates after the window is ready
+	const autoUpdater = getAutoUpdater();
+	autoUpdater.checkForUpdatesAndNotify();
+});
+
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
 		app.quit();
