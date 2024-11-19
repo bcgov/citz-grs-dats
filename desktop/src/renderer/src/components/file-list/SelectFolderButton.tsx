@@ -12,7 +12,11 @@ export const SelectFolderButton = ({ onRowChange }): JSX.Element => {
 	};
 
 	return (
-		<Button className="file-list-button" type="button" onPress={handleClick}>
+		<Button
+			variant="primary"
+			style={{ justifyContent: "center", width: "15%" }}
+			onPress={handleClick}
+		>
 			Select Folders
 		</Button>
 	);
