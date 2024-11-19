@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Button } from "@bcgov/design-system-react-components";
 
 export const SelectFolderButton = ({ onRowChange }): JSX.Element => {
 	const [api] = useState(window.api); // preload scripts
@@ -11,8 +12,8 @@ export const SelectFolderButton = ({ onRowChange }): JSX.Element => {
 	};
 
 	return (
-		<button className="file-list-button" type="button" onClick={handleClick}>
+		<Button className="file-list-button" type="button" onPress={handleClick}>
 			Select Folders
-		</button>
+		</Button>
 	);
 };
