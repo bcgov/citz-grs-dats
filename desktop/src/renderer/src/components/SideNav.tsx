@@ -1,4 +1,4 @@
-import { Drawer, List, ListItem, Divider, Typography } from "@mui/material";
+import { Drawer, List, ListItem, Divider, Typography, useTheme, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import {
 	HomeOutlined as HomeOutlinedIcon,
@@ -6,6 +6,7 @@ import {
 	DriveFileMoveOutlined as SendRecordsIcon,
 } from "@mui/icons-material";
 import { type ReactNode, useState } from "react";
+import { AuthButton } from "./AuthButton";
 
 type NavItemProps = {
 	path: string;
@@ -13,8 +14,14 @@ type NavItemProps = {
 	icon: ReactNode;
 };
 
-export const SideNav: React.FC = () => {
+type Props = {
+	accessToken: string | undefined;
+	idToken: string | undefined;
+};
+
+export const SideNav = ({ accessToken, idToken }: Props) => {
 	const navigate = useNavigate();
+	const theme = useTheme();
 	const [currentPage, setCurrentPage] = useState("/");
 
 	const handleSelection = (path: string) => {
@@ -23,22 +30,31 @@ export const SideNav: React.FC = () => {
 	};
 
 	const NavItem = ({ path, label, icon }: NavItemProps) => {
+		const theme = useTheme();
 		return (
 			<ListItem
 				sx={{
 					gap: 1,
 					border: "none",
 					borderRadius: "5px",
-					background: currentPage === path ? "#ececec" : "#f9f9f9",
+					background:
+						currentPage === path ? theme.palette.secondary.light : theme.palette.secondary.main,
 					"&:hover": {
-						background: "#ececec",
+						background: theme.palette.secondary.dark,
 					},
 				}}
 				component="button"
 				onClick={() => handleSelection(path)}
 			>
-				{icon}
-				<Typography sx={{ fontWeight: 600, fontSize: "1em", color: "#6e6e6e" }}>{label}</Typography>
+				<Typography sx={{ color: `${theme.palette.secondary.dark}` }}>{icon}</Typography>
+				<Typography
+					variant="h4"
+					sx={{
+						color: `${theme.palette.secondary}`,
+					}}
+				>
+					{label}
+				</Typography>
 			</ListItem>
 		);
 	};
@@ -48,30 +64,34 @@ export const SideNav: React.FC = () => {
 			variant="permanent"
 			anchor="left"
 			sx={{
-				width: 240,
 				flexShrink: 0,
+				width: "15%",
+				background: theme.palette.secondary.light,
 				"& .MuiDrawer-paper": {
-					width: 240,
+					width: "15%",
+					flexShrink: 0,
 					boxSizing: "border-box",
 					padding: 1,
-					background: "#f9f9f9",
 				},
 			}}
 		>
-			<List>
-				<NavItem path="/" label="Home" icon={<HomeOutlinedIcon sx={{ color: "#6e6e6e" }} />} />
-				<Divider sx={{ margin: "5px 0" }} />
-				<NavItem
-					path="/file-list"
-					label="Create File List"
-					icon={<FileListIcon sx={{ color: "#6e6e6e" }} />}
-				/>
-				<NavItem
-					path="/send-records"
-					label="Send Records"
-					icon={<SendRecordsIcon sx={{ color: "#6e6e6e" }} />}
-				/>
-			</List>
+			<Box
+				sx={{
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "space-between",
+					height: "100%",
+					background: theme.palette.secondary.light,
+				}}
+			>
+				<List>
+					<NavItem path="/" label="Home" icon={<HomeOutlinedIcon />} />
+					<Divider sx={{ margin: "5px 0" }} />
+					<NavItem path="/file-list" label="Create File List" icon={<FileListIcon />} />
+					<NavItem path="/send-records" label="Send Records" icon={<SendRecordsIcon />} />
+				</List>
+				<AuthButton accessToken={accessToken} idToken={idToken} />
+			</Box>
 		</Drawer>
 	);
 };

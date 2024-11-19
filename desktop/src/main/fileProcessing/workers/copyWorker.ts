@@ -24,6 +24,29 @@ const ensureDirectoryExists = async (dirPath: string): Promise<void> => {
 	}
 };
 
+// Global counters for total file count and processed file count
+let totalFileCount = 0;
+let processedFileCount = 0;
+
+// Recursively count all files in the directory structure
+const countFiles = async (dir: string): Promise<number> => {
+	let count = 0;
+	const files = await readdir(dir);
+
+	for (const file of files) {
+		const filePath = path.join(dir, file);
+		const fileStat: Stats = await stat(filePath);
+
+		if (fileStat.isDirectory()) {
+			count += await countFiles(filePath); // Count files in subdirectory
+		} else {
+			count += 1; // Count file
+		}
+	}
+
+	return count;
+};
+
 // Copy a file using streams
 const copyFileStream = (sourcePath: string, destinationPath: string): Promise<void> => {
 	return new Promise<void>((resolve, reject) => {
@@ -86,7 +109,6 @@ const copyDirectoryInBatches = async (
 	batchSize = 10,
 	concurrencyLimit = 5,
 ): Promise<void> => {
-	let fileCount = 0;
 	await ensureDirectoryExists(destination);
 	const files = await readdir(source);
 	const semaphore = new Semaphore(concurrencyLimit); // Create a semaphore for concurrency control
@@ -109,7 +131,15 @@ const copyDirectoryInBatches = async (
 					} else {
 						console.log(`[copyWorker] Processing file: ${sourcePath}`);
 						await copyFileStream(sourcePath, destinationPath);
-						fileCount += 1;
+						processedFileCount += 1;
+
+						// Calculate and send progress percentage
+						const progressPercentage = Math.round((processedFileCount / totalFileCount) * 100);
+						parentPort?.postMessage({
+							type: "progress",
+							fileProcessed: sourcePath,
+							progressPercentage: progressPercentage,
+						});
 					}
 				} catch (err) {
 					console.error(`[copyWorker] Error processing file: ${file}`, err);
@@ -144,6 +174,8 @@ const copyDirectoryInBatches = async (
 	const folderName = path.basename(source);
 
 	try {
+		totalFileCount = await countFiles(source);
+
 		console.log(`Copying from ${source}`);
 		await copyDirectoryInBatches(source, path.join(destination, folderName), batchSize);
 

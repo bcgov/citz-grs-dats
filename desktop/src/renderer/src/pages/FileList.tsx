@@ -1,9 +1,24 @@
-import { Typography } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
+import { FolderDisplayGrid, type FolderRow } from "@renderer/components/file-list";
+import { useState } from "react";
 
 export const FileListPage = () => {
+	const [rows, setRows] = useState<FolderRow[]>([]);
+	const theme = useTheme();
+	const onFolderDelete = (folder: string) => {
+		alert(folder); // TBD
+	};
+
 	return (
-		<>
-			<Typography>File List</Typography>
-		</>
+		<Box
+			sx={{
+				height: "100vh",
+				padding: 2,
+				flexShrink: 0,
+				background: `${theme.palette.primary}`,
+			}}
+		>
+			<FolderDisplayGrid rows={rows} onFolderDelete={onFolderDelete} />
+		</Box>
 	);
 };

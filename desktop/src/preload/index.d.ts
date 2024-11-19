@@ -26,12 +26,17 @@ declare global {
 			};
 
 			workers: {
-				processFolder: ({
+				copyFolderAndMetadata: ({
 					filePath,
 					transfer,
 				}: {
 					filePath: string;
 					transfer: string;
+				}) => Promise<void>;
+				getFolderMetadata: ({
+					filePath,
+				}: {
+					filePath: string;
 				}) => Promise<void>;
 			};
 		};
