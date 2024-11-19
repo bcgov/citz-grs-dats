@@ -19,6 +19,8 @@ module.exports = {
 		"modules/ches/utils/",
 		"modules/rabbit/utils/",
 		"modules/s3/utils/",
+		"modules/filelist/services/",
+		"modules/transfer/services/",
 	],
 	coverageDirectory: "coverage",
 	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths || {}, {
