@@ -56,4 +56,40 @@ export const FileListService = {
 			);
 		}
 	},
+
+	/**
+	 * Retrieves a document from the FileList collection by jobID.
+	 * @param jobID - The ID of the job to fetch.
+	 * @returns The matching document or null if not found.
+	 * @throws Error if the retrieval fails.
+	 */
+	async getFileListByJobID(jobID: string) {
+		try {
+			const document = await FileListModel.findOne({ jobID }).exec();
+			return document;
+		} catch (error) {
+			console.error("Error retrieving FileList entry:", error);
+			throw new Error(
+				`Failed to retrieve FileList entry: ${error instanceof Error ? error.message : error}`,
+			);
+		}
+	},
+
+	/**
+	 * Deletes a document from the FileList collection by jobID.
+	 * @param jobID - The ID of the job to delete.
+	 * @returns The result of the delete operation.
+	 * @throws Error if the deletion fails.
+	 */
+	async deleteFileListByJobID(jobID: string) {
+		try {
+			const deleteResult = await FileListModel.deleteOne({ jobID }).exec();
+			return deleteResult;
+		} catch (error) {
+			console.error("Error deleting FileList entry:", error);
+			throw new Error(
+				`Failed to delete FileList entry: ${error instanceof Error ? error.message : error}`,
+			);
+		}
+	},
 };
