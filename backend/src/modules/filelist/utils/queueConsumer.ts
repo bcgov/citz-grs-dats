@@ -5,6 +5,8 @@ import type { JsonFileList } from "../schemas";
 import { createJsonFileList } from "./createJsonFileList";
 import type { Workbook } from "exceljs";
 import { createExcelWorkbook } from "./excel";
+import { sendEmail } from "@/modules/ches/utils";
+import { filelistEmail } from "./email";
 
 const QUEUE_NAME = "CREATE_FILE_LIST_QUEUE";
 
@@ -29,10 +31,13 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 	// Format file rows
 	const fileRows = Object.values(filelist.metadata.files).flat();
 
+	const email = filelist.metadata.admin?.submittedBy?.email;
+	if (!email) throw new HttpError(HTTP_STATUS_CODES.NOT_FOUND, "Email not found in filelist.");
+
 	// Handle output file type
 	switch (filelist.outputFileType) {
 		case "excel": {
-			const fileName = `ARS662_File_List_${new Date().toLocaleDateString().replace(/\//g, "-")}.xlsx`;
+			const filename = `ARS662_File_List_${new Date().toLocaleDateString().replace(/\//g, "-")}.xlsx`;
 
 			// Create Excel workbook
 			const workbook: Workbook = createExcelWorkbook({
@@ -45,12 +50,30 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 			// Generate the Excel file as a buffer
 			const buffer = await workbook.xlsx.writeBuffer();
 
+			// Convert the buffer to Base64 for email attachment
+			const base64Buffer = Buffer.from(buffer).toString("base64");
+
 			// Send filelist via email
+			sendEmail({
+				attachments: [
+					{
+						filename,
+						content: base64Buffer,
+						contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+						encoding: "base64",
+					},
+				],
+				bodyType: "html",
+				body: filelistEmail,
+				to: [email],
+				subject: "DATS - File List",
+			});
+
 			return channel.ack(msg);
 		}
 
 		case "json": {
-			const fileName = `ARS662_File_List_${new Date().toLocaleDateString().replace(/\//g, "-")}.json`;
+			const filename = `ARS662_File_List_${new Date().toLocaleDateString().replace(/\//g, "-")}.json`;
 
 			// Create JSON file list
 			const jsonFile: JsonFileList = createJsonFileList({
@@ -64,6 +87,21 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 			const jsonBuffer = Buffer.from(JSON.stringify(jsonFile, null, 2));
 
 			// Send filelist via email
+			sendEmail({
+				attachments: [
+					{
+						filename,
+						content: jsonBuffer.toString("base64"),
+						contentType: "application/json",
+						encoding: "base64",
+					},
+				],
+				bodyType: "html",
+				body: filelistEmail,
+				to: [email],
+				subject: "DATS - File List",
+			});
+
 			return channel.ack(msg);
 		}
 
