@@ -17,7 +17,7 @@ export const SelectFolderButton = ({ onRowChange }): JSX.Element => {
 			style={{ justifyContent: "center", width: "15%" }}
 			onPress={handleClick}
 		>
-			Select Folders
+			Select Folder(s)
 		</Button>
 	);
 };
