@@ -2,7 +2,7 @@ import { z } from "zod";
 import { fileMetadataZodSchema, folderMetadataZodSchema } from "./metadata";
 
 export const createFileListBodySchema = z.object({
-	outputFileType: z.string(),
+	outputFileType: z.enum(["excel", "json"]),
 	metadata: z.object({
 		admin: z
 			.object({
