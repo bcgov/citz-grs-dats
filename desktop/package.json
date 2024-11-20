@@ -56,7 +56,6 @@
 		"@mui/x-data-grid": "7.22.1",
 		"@mui/x-date-pickers": "7.22.2",
 		"dayjs": "1.11.13",
-		"electron-cookies": "1.1.0",
 		"react-router-dom": "6.27.0"
 	},
 	"devDependencies": {
