@@ -5,7 +5,7 @@ import type { JsonFileList } from "../schemas";
 import { createJsonFileList } from "./createJsonFileList";
 import type { Workbook } from "exceljs";
 import { createExcelWorkbook } from "./excel";
-import { sendEmail } from "@/modules/ches/utils";
+import { sendEmail } from "src/modules/ches/utils";
 import { filelistEmail } from "./email";
 
 const QUEUE_NAME = "CREATE_FILE_LIST_QUEUE";
@@ -20,6 +20,8 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		throw new HttpError(HTTP_STATUS_CODES.NOT_FOUND, "filelist not found in queueConsumer.");
 
 	// Delete database record
+	console.log("Calling getFileListByJobID:", FileListService.getFileListByJobID);
+
 	await FileListService.deleteFileListByJobID(jobID);
 
 	// Format folder rows

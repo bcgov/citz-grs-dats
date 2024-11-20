@@ -20,6 +20,7 @@ module.exports = {
 		"modules/rabbit/utils/",
 		"modules/s3/utils/",
 		"modules/filelist/services/",
+		"modules/filelist/utils/queueConsumer",
 		"modules/transfer/services/",
 	],
 	coverageDirectory: "coverage",
