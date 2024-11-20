@@ -65,7 +65,7 @@ export const FileListService = {
 	 */
 	async getFileListByJobID(jobID: string) {
 		try {
-			const document = await FileListModel.findOne({ jobID }).exec();
+			const document = await FileListModel.findOne({ jobID }).lean().exec();
 			return document;
 		} catch (error) {
 			console.error("Error retrieving FileList entry:", error);

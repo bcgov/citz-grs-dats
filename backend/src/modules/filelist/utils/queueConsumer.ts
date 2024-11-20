@@ -16,12 +16,12 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 
 	// Get database record
 	const filelist = await FileListService.getFileListByJobID(jobID);
-	if (!filelist)
-		throw new HttpError(HTTP_STATUS_CODES.NOT_FOUND, "filelist not found in queueConsumer.");
+	if (!filelist) {
+		channel.ack(msg);
+		return console.error("filelist not found in queueConsumer.");
+	}
 
 	// Delete database record
-	console.log("Calling getFileListByJobID:", FileListService.getFileListByJobID);
-
 	await FileListService.deleteFileListByJobID(jobID);
 
 	// Format folder rows
@@ -34,7 +34,10 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 	const fileRows = Object.values(filelist.metadata.files).flat();
 
 	const email = filelist.metadata.admin?.submittedBy?.email;
-	if (!email) throw new HttpError(HTTP_STATUS_CODES.NOT_FOUND, "Email not found in filelist.");
+	if (!email) {
+		channel.ack(msg);
+		return console.error("Email not found in filelist.");
+	}
 
 	// Handle output file type
 	switch (filelist.outputFileType) {
