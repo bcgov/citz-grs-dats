@@ -1,6 +1,6 @@
 {
 	"name": "dats",
-	"version": "1.0.0",
+	"version": "0.0.0",
 	"description": "Digital Archives Transfer Service",
 	"author": "CITZ IMB/CIRMO",
 	"main": "./out/main/index.js",
@@ -16,6 +16,13 @@
 				"to": "resources/metadataWorker.cjs"
 			}
 		],
+		"publish": [
+			{
+				"provider": "github",
+				"owner": "bcgov",
+				"repo": "citz-grs-dats"
+			}
+		],
 		"productName": "DATS"
 	},
 	"scripts": {
@@ -29,7 +36,10 @@
 		"build:unpack": "npm run build && electron-builder --dir",
 		"build:win": "npm run build && electron-builder --win",
 		"build:mac": "electron-vite build && electron-builder --mac",
-		"build:linux": "electron-vite build && electron-builder --linux"
+		"build:linux": "electron-vite build && electron-builder --linux",
+		"bump:patch": "node bump-version patch",
+		"bump:minor": "node bump-version minor",
+		"bump:major": "node bump-version major"
 	},
 	"dependencies": {
 		"@bcgov/bc-sans": "2.1.0",
@@ -37,6 +47,8 @@
 		"@bcgov/design-system-react-components": "0.4.0",
 		"@electron-toolkit/preload": "3.0.1",
 		"@electron-toolkit/utils": "3.0.0",
+		"electron-cookies": "1.1.0",
+		"electron-updater": "6.3.9",
 		"@emotion/react": "11.13.3",
 		"@emotion/styled": "11.13.0",
 		"@mui/icons-material": "6.1.6",
@@ -44,7 +56,6 @@
 		"@mui/x-data-grid": "7.22.1",
 		"@mui/x-date-pickers": "7.22.2",
 		"dayjs": "1.11.13",
-		"electron-cookies": "1.1.0",
 		"react-router-dom": "6.27.0"
 	},
 	"devDependencies": {

@@ -29,11 +29,15 @@ function App(): JSX.Element {
 		// Triggered upon logout
 		window.electron.ipcRenderer.on("auth-logout", () => setAccessToken(undefined));
 
+		// Alert when auth token copied.
+		window.electron.ipcRenderer.on("auth-token-copied", (_, obj) => alert(obj.message));
+
 		// Cleanup
 		return () => {
 			window.electron.ipcRenderer.removeAllListeners("auth-success");
 			window.electron.ipcRenderer.removeAllListeners("auth-logout");
 			window.electron.ipcRenderer.removeAllListeners("token-refresh-success");
+			window.electron.ipcRenderer.removeAllListeners("auth-token-copied");
 		};
 	}, []);
 
