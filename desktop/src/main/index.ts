@@ -4,6 +4,7 @@ import {
 	BrowserWindow,
 	ipcMain,
 	Menu,
+	clipboard,
 	type MenuItemConstructorOptions,
 } from "electron";
 import { join } from "node:path";
@@ -297,6 +298,30 @@ const menuTemplate = [
 			},
 		],
 	},
+	...(is.dev
+		? [
+				{
+					label: "Developer",
+					submenu: [
+						{
+							label: "Copy Auth Token",
+							click: () => {
+								if (tokens.accessToken) {
+									clipboard.writeText(tokens.accessToken);
+									mainWindow.webContents.send("auth-token-copied", {
+										message: "Access token copied to clipboard!",
+									});
+								} else {
+									mainWindow.webContents.send("auth-token-copied", {
+										message: "No access token available to copy.",
+									});
+								}
+							},
+						},
+					],
+				},
+			]
+		: []),
 ];
 
 export function getAutoUpdater(): AppUpdater {
