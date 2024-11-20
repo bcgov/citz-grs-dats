@@ -3,6 +3,7 @@ import {
 	type GridColDef,
 	useGridApiContext,
 	type GridRenderEditCellParams,
+	type useGridApiRef,
 } from "@mui/x-data-grid";
 import {
 	HighlightOff as DeleteIcon,
@@ -72,9 +73,10 @@ const GridEditDateCell = ({
 type Props = {
 	rows: FolderRow[];
 	onFolderDelete: (folder: string) => Promise<void> | void;
+	apiRef: ReturnType<typeof useGridApiRef>;
 };
 
-export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
+export const FolderDisplayGrid = ({ rows, onFolderDelete, apiRef }: Props) => {
 	const theme = useTheme();
 	const columns: GridColDef<(typeof rows)[number]>[] = [
 		{
@@ -94,22 +96,22 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 				</Box>
 			),
 		},
-		{ field: "folder", headerName: "Folder", width: 150 },
-		{ field: "schedule", headerName: "Schedule", width: 90, editable: true },
+		{ field: "folder", headerName: "Folder", width: 200 },
+		{ field: "schedule", headerName: "Schedule", width: 110, editable: true },
 		{ field: "classification", headerName: "Primary/Secondary", width: 150, editable: true },
-		{ field: "file", headerName: "FILE", width: 100, editable: true },
+		{ field: "file", headerName: "FILE ID", width: 90, editable: true },
 		{
 			field: "opr",
 			headerName: "OPR",
 			type: "boolean",
 			description: "Office of Primary Responsibility",
-			width: 80,
+			width: 60,
 			editable: true,
 		},
 		{
 			field: "startDate",
 			headerName: "Start Date",
-			width: 135,
+			width: 125,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
 			valueFormatter: (value) => {
@@ -122,7 +124,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 		{
 			field: "endDate",
 			headerName: "End Date",
-			width: 135,
+			width: 125,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
 			valueFormatter: (value) => {
@@ -135,7 +137,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 		{
 			field: "soDate",
 			headerName: "SO Date",
-			width: 135,
+			width: 125,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
 			valueFormatter: (value) => {
@@ -148,7 +150,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 		{
 			field: "fdDate",
 			headerName: "FD Date",
-			width: 135,
+			width: 125,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
 			valueFormatter: (value) => {
@@ -182,6 +184,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete }: Props) => {
 				<DataGrid
 					rows={rows}
 					columns={columns}
+					apiRef={apiRef}
 					disableRowSelectionOnClick
 					disableColumnFilter
 					disableColumnMenu

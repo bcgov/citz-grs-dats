@@ -9,6 +9,7 @@ const api = {
 	checkApiStatus,
 	checkIpRange,
 	getCurrentApiUrl: () => ipcRenderer.invoke("get-current-api-url"),
+	selectDirectory: () => ipcRenderer.invoke("select-directory"),
 	sso: {
 		getUser,
 		fetchProtectedRoute,
