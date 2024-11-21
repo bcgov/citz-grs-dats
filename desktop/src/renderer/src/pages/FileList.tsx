@@ -5,38 +5,109 @@ import {
 	SelectFolderButton,
 	ContinueButton,
 } from "@renderer/components/file-list";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGridApiRef } from "@mui/x-data-grid";
 
 export const FileListPage = () => {
+	const [workers] = useState(window.api.workers);
 	const [rows, setRows] = useState<FolderRow[]>([]);
+	const [metadata, setMetadata] = useState<Record<string, unknown>>({});
+	const [pendingPaths, setPendingPaths] = useState<string[]>([]); // Tracks paths needing metadata processing
 	const theme = useTheme();
 	const apiRef = useGridApiRef();
 
+	useEffect(() => {
+		console.log(metadata); // TEMP
+	}, [metadata]);
+
+	useEffect(() => {
+		const handleProgress = (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
+			const { source, progressPercentage } = event.detail;
+			setRows((prevRows) =>
+				prevRows.map((row) =>
+					row.folder === source ? { ...row, progress: progressPercentage } : row,
+				),
+			);
+		};
+
+		const handleCompletion = (
+			event: CustomEvent<{
+				source: string;
+				success: boolean;
+				metadata?: Record<string, unknown>;
+				error?: unknown;
+			}>,
+		) => {
+			const { source, success, metadata: newMetadata } = event.detail;
+
+			if (success && newMetadata) {
+				setMetadata((prev) => ({
+					...prev,
+					[source]: newMetadata[source],
+				}));
+				console.log(`Successfully processed folder: ${source}`);
+			} else {
+				console.error(`Failed to process folder: ${source}`);
+			}
+		};
+
+		window.addEventListener("folder-metadata-progress", handleProgress as EventListener);
+		window.addEventListener("folder-metadata-completion", handleCompletion as EventListener);
+
+		return () => {
+			window.removeEventListener("folder-metadata-progress", handleProgress as EventListener);
+			window.removeEventListener("folder-metadata-completion", handleCompletion as EventListener);
+		};
+	}, []);
+
+	useEffect(() => {
+		// Process pending paths for metadata
+		if (pendingPaths.length > 0) {
+			const pathsToProcess = [...pendingPaths];
+			setPendingPaths([]); // Clear pending paths to avoid duplicates
+
+			pathsToProcess.forEach((filePath) => {
+				getFolderMetadata(filePath).catch((error) =>
+					console.error(`Failed to fetch metadata for folder ${filePath}:`, error),
+				);
+			});
+		}
+	}, [pendingPaths]);
+
+	const getFolderMetadata = async (filePath: string) => {
+		try {
+			await workers.getFolderMetadata({
+				filePath,
+			});
+		} catch (error) {
+			console.error(`Failed to fetch metadata for folder ${filePath}:`, error);
+		}
+	};
+
 	const onFolderDelete = (folder: string) => {
-		alert(folder); // TBD
+		setRows((prevRows) => prevRows.filter((row) => row.folder !== folder));
+		setMetadata((prevMetadata) => {
+			const { [folder]: _, ...remainingMetadata } = prevMetadata; // Remove the deleted folder
+			return remainingMetadata;
+		});
+		console.log(`Deleted folder: ${folder}`);
 	};
 
 	const handleAddPathArrayToRows = (inputPaths: string[]) => {
 		const newRows: FolderRow[] = [...rows];
 		let index = rows.length; // Start IDs based on the current rows
-		const newRowIds: number[] = []; // Track IDs of the newly added rows
+		const pathsToProcess: string[] = [];
 
 		try {
-			for (let i = 0; i < inputPaths.length; i++) {
-				const currentFolderPath = inputPaths[i];
-				let skipFlag = false;
+			for (const filePath of inputPaths) {
+				// Check if filePath is already in the rows
+				const isAlreadyInRows = rows.some((row) => row.folder === filePath);
 
-				// check if file path is already in the rows
-				for (let j = 0; j < rows.length; j++) {
-					if (currentFolderPath === rows[j].folder) skipFlag = true;
-				}
-				// if the path is already in the list, skip it
-				if (skipFlag === true) continue;
+				if (isAlreadyInRows) continue; // Skip if filePath is already in rows
 
 				const curFolderRow: FolderRow = {
 					id: index, // Unique IDs for new rows
-					folder: currentFolderPath,
+					folder: filePath,
 					schedule: "",
 					classification: "",
 					file: "",
@@ -47,26 +118,29 @@ export const FileListPage = () => {
 					fdDate: null,
 					progress: 0,
 				};
-				// Track new row IDs
-				newRowIds.push(index);
-				index++;
-				// add new folder row to list to be displayed
+
 				newRows.push(curFolderRow);
+				pathsToProcess.push(filePath); // Add path to pending processing
+				index++;
 			}
-			// set the new list of folder rows
-			setRows(newRows);
+
+			setRows(newRows); // Update rows first
+			setPendingPaths((prev) => [...prev, ...pathsToProcess]); // Add paths to pendingPaths
 
 			// Set all newly added rows to edit mode
-			if (apiRef.current && newRowIds.length > 0) {
+			if (apiRef.current && newRows.length > 0) {
 				setTimeout(() => {
-					newRowIds.forEach((rowId) => {
-						apiRef.current.startRowEditMode({ id: rowId });
+					newRows.forEach(({ id }) => {
+						const isRowInEditMode = apiRef.current.getRowMode(id) === "edit";
+						if (!isRowInEditMode) {
+							apiRef.current.startRowEditMode({ id });
+						}
 					});
 				});
 			}
 		} catch (error) {
 			setRows(rows); // Revert rows on error
-			console.log("Hit error:", error);
+			console.error("Error adding rows:", error);
 		}
 	};
 

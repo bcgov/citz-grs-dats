@@ -7,11 +7,10 @@ const { stat, readdir, writeFile } = fsPromises;
 
 type WorkerData = {
 	source: string;
-	destination: string;
+	destination?: string;
 	batchSize?: number;
 };
 
-// Helper to format file size to human-readable format
 export const formatFileSize = (size: number) => {
 	if (size < 1024) return `${size} B`;
 	const i = Math.floor(Math.log(size) / Math.log(1024));
@@ -19,7 +18,6 @@ export const formatFileSize = (size: number) => {
 	return `${(size / 1024 ** i).toFixed(2)} ${sizes[i]}`;
 };
 
-// Ensure a directory exists or create it
 const ensureDirectoryExists = async (dirPath: string): Promise<void> => {
 	try {
 		await fsPromises.mkdir(dirPath, { recursive: true });
@@ -28,7 +26,6 @@ const ensureDirectoryExists = async (dirPath: string): Promise<void> => {
 	}
 };
 
-// Calculate file checksum
 const calculateChecksum = async (filePath: string): Promise<string> => {
 	return new Promise((resolve, reject) => {
 		const hash = crypto.createHash("sha256");
@@ -40,11 +37,9 @@ const calculateChecksum = async (filePath: string): Promise<string> => {
 	});
 };
 
-// Global total file count and processed file count for progress tracking
 let totalFileCount = 0;
 let processedFileCount = 0;
 
-// Function to count all files in the directory structure recursively
 const countFiles = async (dir: string): Promise<number> => {
 	let count = 0;
 	const files = await readdir(dir);
@@ -54,22 +49,22 @@ const countFiles = async (dir: string): Promise<number> => {
 		const fileStat: Stats = await stat(filePath);
 
 		if (fileStat.isDirectory()) {
-			// Recursively count files in subdirectory
 			count += await countFiles(filePath);
 		} else {
-			count += 1; // Count file
+			count += 1;
 		}
 	}
 
 	return count;
 };
 
-// Generate metadata in batches
 const generateMetadataInBatches = async (
 	rootDir: string,
+	originalSource: string,
 	batchSize = 10,
-): Promise<{ metadata: Record<string, unknown>; fileCount: number; totalSize: number }> => {
-	const metadata: Record<string, unknown> = { [rootDir]: [] };
+): Promise<{ metadata: Record<string, unknown[]>; fileCount: number; totalSize: number }> => {
+	// Ensure all metadata is stored under the original source
+	const metadata: Record<string, unknown[]> = { [originalSource]: [] };
 	let fileCount = 0;
 	let totalSize = 0;
 
@@ -83,18 +78,17 @@ const generateMetadataInBatches = async (
 				const fileStat: Stats = await stat(filePath);
 
 				if (fileStat.isDirectory()) {
-					const subMetadata = await generateMetadataInBatches(filePath, batchSize);
+					const subMetadata = await generateMetadataInBatches(filePath, originalSource, batchSize);
 
-					// Merge subdirectory metadata under its own key
-					Object.assign(metadata, subMetadata.metadata);
+					// Merge file metadata from subdirectories into the original source key
+					metadata[originalSource].push(...subMetadata.metadata[originalSource]);
 					fileCount += subMetadata.fileCount;
 					totalSize += subMetadata.totalSize;
 				} else {
-					console.log(`[metadataWorker] Processing file: ${filePath}`);
 					const fileChecksum = await calculateChecksum(filePath);
-					(metadata[rootDir] as Record<string, unknown>[]).push({
+					metadata[originalSource].push({
 						filepath: filePath,
-						filename: path.relative(rootDir, filePath),
+						filename: path.relative(originalSource, filePath),
 						size: formatFileSize(fileStat.size),
 						birthtime: new Date(fileStat.birthtime).toISOString(),
 						lastModified: new Date(fileStat.mtime).toISOString(),
@@ -104,16 +98,15 @@ const generateMetadataInBatches = async (
 
 					totalSize += fileStat.size;
 					fileCount += 1;
-					processedFileCount += 1; // Increment the processed file count
+					processedFileCount += 1;
 
-					// Calculate progress percentage
 					const progressPercentage = Math.round((processedFileCount / totalFileCount) * 100);
 
-					// Send message to WorkerPool about progress with percentage
 					parentPort?.postMessage({
 						type: "progress",
+						source: originalSource,
 						fileProcessed: filePath,
-						progressPercentage: progressPercentage,
+						progressPercentage,
 					});
 				}
 			}),
@@ -123,48 +116,24 @@ const generateMetadataInBatches = async (
 	return { metadata, fileCount, totalSize };
 };
 
-const fileExists = async (filePath: string): Promise<boolean> => {
-	try {
-		await fsPromises.access(filePath);
-		return true;
-	} catch {
-		return false;
-	}
-};
-
-// Write or append metadata to a file
 const writeOrAppendMetadata = async (
 	metadataFilePath: string,
 	newMetadata: Record<string, unknown>,
 ): Promise<void> => {
 	let finalMetadata: Record<string, unknown>;
 
-	if (await fileExists(metadataFilePath)) {
-		// If the file exists, read and merge metadata
+	try {
 		const existingMetadataRaw = await fsPromises.readFile(metadataFilePath, "utf8");
 		const existingMetadata = JSON.parse(existingMetadataRaw) as Record<string, unknown>;
 
-		// Merge the new metadata with the existing metadata
-		finalMetadata = {
-			...existingMetadata,
-			...newMetadata,
-		};
-	} else {
-		// If the file doesn't exist, use the new metadata
+		finalMetadata = { ...existingMetadata, ...newMetadata };
+	} catch {
 		finalMetadata = newMetadata;
 	}
 
-	// Write the combined metadata back to the file
 	await writeFile(metadataFilePath, JSON.stringify(finalMetadata, null, 2));
 };
 
-/**
- * Metadata Worker
- *
- * This worker generates metadata for files and directories within a specified path.
- * It processes files in batches, calculates checksums, collects file properties,
- * and saves the results to a specified file.
- */
 (async () => {
 	if (!workerData) return;
 	const { source, batchSize, destination } = workerData as WorkerData;
@@ -172,26 +141,30 @@ const writeOrAppendMetadata = async (
 	try {
 		totalFileCount = await countFiles(source);
 
-		console.log(`Generating metadata for ${source}`);
-		const { metadata, fileCount, totalSize } = await generateMetadataInBatches(source, batchSize);
+		const { metadata, fileCount, totalSize } = await generateMetadataInBatches(
+			source,
+			source,
+			batchSize,
+		);
 
-		// Ensure the directory for metadata file exists
-		await ensureDirectoryExists(path.dirname(destination));
-
-		// Write or append the metadata to the file
-		await writeOrAppendMetadata(destination, { ...metadata, totalSize });
-
-		if (parentPort) {
-			parentPort.postMessage({ success: true, metadata, fileCount, totalSize });
-		} else {
-			process.exit(0); // Graceful exit if no parent port
+		if (destination) {
+			await ensureDirectoryExists(path.dirname(destination));
+			await writeOrAppendMetadata(destination, { ...metadata, totalSize });
 		}
+
+		parentPort?.postMessage({
+			type: "completion",
+			success: true,
+			source,
+			metadata,
+			fileCount,
+			totalSize,
+		});
 	} catch (error) {
-		console.error(`Error during metadata generation: ${(error as Error).message}`);
-		if (parentPort) {
-			parentPort.postMessage({ success: false, error: (error as Error).message });
-		} else {
-			process.exit(1); // Exit with error code if no parent port
-		}
+		parentPort?.postMessage({
+			type: "completion",
+			success: false,
+			error: (error as Error).message,
+		});
 	}
 })();
