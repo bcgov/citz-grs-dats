@@ -49,7 +49,12 @@ export const test = errorWrapper(async (req: Request, res: Response) => {
 			const fileName = `ARS662_File_List_${new Date().toLocaleDateString().replace(/\//g, "-")}.json`;
 
 			// Create JSON file list
-			const jsonFile: JsonFileList = createJsonFileList({ body });
+			const jsonFile: JsonFileList = createJsonFileList({
+				accession: body.metadata?.admin?.accession,
+				application: body.metadata?.admin?.application,
+				folders: body.metadata.folders,
+				files: body.metadata.files,
+			});
 
 			// Generate JSON string and buffer
 			const jsonBuffer = Buffer.from(JSON.stringify(jsonFile, null, 2));

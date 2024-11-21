@@ -13,16 +13,19 @@ const fileListSchema = new Schema({
 	createdOn: { type: String, required: false, default: () => new Date().toDateString() },
 	outputFileType: { type: String, enum: ["excel", "json"], required: true },
 	metadata: {
-		admin: {
-			application: { type: String, default: "N/A" },
-			accession: { type: String, default: "N/A" },
-			submittedBy: {
-				name: { type: String, required: true },
-				email: { type: String, required: true },
+		type: new Schema({
+			admin: {
+				application: { type: String, default: "N/A" },
+				accession: { type: String, default: "N/A" },
+				submittedBy: {
+					name: { type: String, required: true },
+					email: { type: String, required: true },
+				},
 			},
-		},
-		folders: { type: Map, of: folderMetadataSchema, required: true }, // Record<string, folderMetadataSchema>
-		files: { type: Map, of: [fileMetadataSchema], required: true }, // Record<string, fileMetadataSchema[]>
+			folders: { type: Map, of: folderMetadataSchema, required: true }, // Record<string, folderMetadataSchema>
+			files: { type: Map, of: [fileMetadataSchema], required: true }, // Record<string, fileMetadataSchema[]>
+		}),
+		required: true,
 	},
 });
 

@@ -1,4 +1,4 @@
-import type amqp from "amqplib";
+import { queueConsumer } from "@/modules/filelist/utils";
 import { getChannel } from "../connection";
 
 const QUEUE_NAME = "CREATE_FILE_LIST_QUEUE";
@@ -7,12 +7,6 @@ const QUEUE_NAME = "CREATE_FILE_LIST_QUEUE";
 export const addToCreateFileListQueue = async (message: string): Promise<void> => {
 	const channel = await getChannel(QUEUE_NAME);
 	channel.sendToQueue(QUEUE_NAME, Buffer.from(message));
-};
-
-const consumer = (msg: amqp.ConsumeMessage, channel: amqp.Channel) => {
-	const jobID = msg.content.toString();
-	console.log(`[${QUEUE_NAME}] Processed job: ${jobID}`);
-	channel.ack(msg);
 };
 
 // Start consuming messages from a specific queue
@@ -25,7 +19,7 @@ const startQueueConsumer = async (): Promise<void> => {
 			QUEUE_NAME,
 			(msg) => {
 				if (msg) {
-					consumer(msg, channel);
+					queueConsumer(msg, channel);
 				}
 			},
 			{ noAck: false },

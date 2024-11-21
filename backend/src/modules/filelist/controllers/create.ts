@@ -28,8 +28,8 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 		// Save data for transfer
 		await TransferService.createOrUpdateTransferEntry({
 			user,
-			application: body.metadata?.admin?.application ?? "N/A",
-			accession: body.metadata?.admin?.accession ?? "N/A",
+			application: body.metadata?.admin?.application,
+			accession: body.metadata?.admin?.accession,
 			folders: body.metadata.folders,
 			files: body.metadata.files,
 		});

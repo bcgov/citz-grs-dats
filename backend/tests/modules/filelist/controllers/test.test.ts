@@ -144,7 +144,12 @@ describe("Test suite for test function", () => {
 
 		await test(mockReq as Request, mockRes as Response, mockNext);
 
-		expect(createJsonFileList).toHaveBeenCalledWith({ body });
+		expect(createJsonFileList).toHaveBeenCalledWith({
+			accession: body.metadata.admin.accession,
+			application: body.metadata.admin.application,
+			folders: body.metadata.folders,
+			files: body.metadata.files,
+		});
 
 		expect(mockRes.set).toHaveBeenCalledWith({
 			"Content-Type": "application/json",
