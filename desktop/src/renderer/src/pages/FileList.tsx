@@ -24,9 +24,19 @@ export const FileListPage = () => {
 
 		try {
 			for (let i = 0; i < inputPaths.length; i++) {
+				const currentFolderPath = inputPaths[i];
+				let skipFlag = false;
+
+				// check if file path is already in the rows
+				for (let j = 0; j < rows.length; j++) {
+					if (currentFolderPath === rows[j].folder) skipFlag = true;
+				}
+				// if the path is already in the list, skip it
+				if (skipFlag === true) continue;
+
 				const curFolderRow: FolderRow = {
 					id: index, // Unique IDs for new rows
-					folder: inputPaths[i],
+					folder: currentFolderPath,
 					schedule: "",
 					classification: "",
 					file: "",
@@ -37,10 +47,13 @@ export const FileListPage = () => {
 					fdDate: null,
 					progress: 0,
 				};
-				newRowIds.push(index); // Track new row IDs
+				// Track new row IDs
+				newRowIds.push(index);
 				index++;
+				// add new folder row to list to be displayed
 				newRows.push(curFolderRow);
 			}
+			// set the new list of folder rows
 			setRows(newRows);
 
 			// Set all newly added rows to edit mode
