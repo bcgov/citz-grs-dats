@@ -103,7 +103,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, processRowUpdate, apiR
 		{ field: "folder", headerName: "Folder", width: 200 },
 		{ field: "schedule", headerName: "Schedule", width: 110, editable: true },
 		{ field: "classification", headerName: "Primary/Secondary", width: 150, editable: true },
-		{ field: "file", headerName: "FILE ID", width: 90, editable: true },
+		{ field: "file", headerName: "File ID", width: 90, editable: true },
 		{
 			field: "opr",
 			headerName: "OPR",

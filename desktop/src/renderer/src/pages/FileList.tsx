@@ -175,14 +175,6 @@ export const FileListPage = () => {
 						put it in 'Edit Mode'.
 					</Typography>
 				</Stack>
-				<Stack direction="row" spacing={1}>
-					<TipIcon sx={{ fontSize: "0.9em", color: "var(--bcgov-yellow)" }} />
-					<Typography sx={{ fontSize: "0.75em", color: "var(--tip)" }}>
-						<b>Copy Contents:</b> To copy a value to empty rows below it, first make sure the row is
-						in 'Edit Mode'. Then you can press the 'Down' key twice to copy its contents to empty
-						cells below it.
-					</Typography>
-				</Stack>
 			</Stack>
 			<Box
 				sx={{
