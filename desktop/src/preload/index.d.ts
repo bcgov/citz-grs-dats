@@ -9,6 +9,7 @@ declare global {
 			checkApiStatus: (url: string) => Promise<boolean>;
 			checkIpRange: () => Promise<boolean>;
 			getCurrentApiUrl: () => Promise<string>;
+			selectDirectory: () => Promise<string[]>;
 
 			sso: {
 				startLoginProcess: () => Promise<void>;
