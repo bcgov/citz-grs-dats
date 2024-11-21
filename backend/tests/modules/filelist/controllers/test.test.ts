@@ -6,10 +6,12 @@ import {
 	type StandardResponse,
 } from "@bcgov/citz-imb-express-utilities";
 import { createExcelWorkbook } from "@/modules/filelist/utils";
+import { createJsonFileList } from "@/modules/filelist/utils";
 import type { Workbook } from "exceljs";
 
 jest.mock("@/modules/filelist/utils", () => ({
 	createExcelWorkbook: jest.fn(),
+	createJsonFileList: jest.fn(),
 }));
 
 jest.mock("@bcgov/citz-imb-express-utilities", () => {
@@ -105,6 +107,53 @@ describe("Test suite for test function", () => {
 
 		expect(mockRes.status).toHaveBeenCalledWith(HTTP_STATUS_CODES.CREATED);
 		expect(mockRes.send).toHaveBeenCalledWith(Buffer.from("test buffer"));
+	});
+
+	it('Test case: Should return a created JSON file when outputFileType is "json"', async () => {
+		const body = {
+			outputFileType: "json",
+			metadata: {
+				admin: {
+					application: "TestApp",
+					accession: "TestAccession",
+				},
+				folders: {
+					folder1: { size: 100 },
+				},
+				files: {
+					file1: [{ name: "file1.txt", size: 50 }],
+				},
+			},
+		};
+
+		mockReq.getZodValidatedBody = jest.fn().mockReturnValue(body);
+
+		const mockJsonFile = {
+			admin: {
+				lastRevised: expect.any(String),
+				application: "TestApp",
+				accession: "TestAccession",
+				ministry: "",
+				branch: "",
+			},
+			folderList: body.metadata.folders,
+			metadata: body.metadata.files,
+		};
+
+		(createJsonFileList as jest.Mock).mockReturnValue(mockJsonFile);
+
+		await test(mockReq as Request, mockRes as Response, mockNext);
+
+		expect(createJsonFileList).toHaveBeenCalledWith({ body });
+
+		expect(mockRes.set).toHaveBeenCalledWith({
+			"Content-Type": "application/json",
+			"Content-Disposition": expect.stringContaining("attachment;"),
+			"Content-Length": expect.any(Number),
+		});
+
+		expect(mockRes.status).toHaveBeenCalledWith(HTTP_STATUS_CODES.CREATED);
+		expect(mockRes.send).toHaveBeenCalledWith(Buffer.from(JSON.stringify(mockJsonFile, null, 2)));
 	});
 
 	it("Test case: Should return a bad request for an invalid outputFileType", async () => {
