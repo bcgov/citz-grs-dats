@@ -1,4 +1,4 @@
-import { Box, useTheme } from "@mui/material";
+import { Box, Stack, Typography, useTheme } from "@mui/material";
 import {
 	FolderDisplayGrid,
 	type FolderRow,
@@ -7,6 +7,7 @@ import {
 } from "@renderer/components/file-list";
 import { useEffect, useState } from "react";
 import { useGridApiRef } from "@mui/x-data-grid";
+import { Lightbulb as TipIcon } from "@mui/icons-material";
 
 export const FileListPage = () => {
 	const [workers] = useState(window.api.workers);
@@ -84,6 +85,12 @@ export const FileListPage = () => {
 		}
 	};
 
+	const processRowUpdate = (newRow: FolderRow) => {
+		// Update the row in the state
+		setRows((prevRows) => prevRows.map((row) => (row.id === newRow.id ? newRow : row)));
+		return newRow;
+	};
+
 	const onFolderDelete = (folder: string) => {
 		setRows((prevRows) => prevRows.filter((row) => row.folder !== folder));
 		setMetadata((prevMetadata) => {
@@ -146,29 +153,52 @@ export const FileListPage = () => {
 
 	return (
 		<>
-			<Box
+			<Stack
+				direction="column"
+				spacing={1}
 				sx={{
+					width: "100%",
 					minHeight: "7vh",
-					display: "flex",
-					justifyContent: "flex-end",
-					gap: 1,
 					padding: 2,
 					flexShrink: 0,
 					background: `${theme.palette.primary}`,
 				}}
 			>
-				<SelectFolderButton onRowChange={handleAddPathArrayToRows} />
-				<ContinueButton />
-			</Box>
+				<Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+					<SelectFolderButton onRowChange={handleAddPathArrayToRows} />
+					<ContinueButton />
+				</Box>
+				<Stack direction="row" spacing={1}>
+					<TipIcon sx={{ fontSize: "0.9em", color: "var(--bcgov-yellow)" }} />
+					<Typography sx={{ fontSize: "0.75em", color: "var(--tip)" }}>
+						<b>View/Edit Mode:</b> If a row is in 'View Mode' you can double click on any cell to
+						put it in 'Edit Mode'.
+					</Typography>
+				</Stack>
+				<Stack direction="row" spacing={1}>
+					<TipIcon sx={{ fontSize: "0.9em", color: "var(--bcgov-yellow)" }} />
+					<Typography sx={{ fontSize: "0.75em", color: "var(--tip)" }}>
+						<b>Copy Contents:</b> To copy a value to empty rows below it, first make sure the row is
+						in 'Edit Mode'. Then you can press the 'Down' key twice to copy its contents to empty
+						cells below it.
+					</Typography>
+				</Stack>
+			</Stack>
 			<Box
 				sx={{
 					height: "90vh",
-					padding: 2,
+					paddingLeft: 2,
+					paddingRight: 2,
 					flexShrink: 0,
 					background: `${theme.palette.primary}`,
 				}}
 			>
-				<FolderDisplayGrid rows={rows} onFolderDelete={onFolderDelete} apiRef={apiRef} />
+				<FolderDisplayGrid
+					rows={rows}
+					onFolderDelete={onFolderDelete}
+					processRowUpdate={processRowUpdate}
+					apiRef={apiRef}
+				/>
 			</Box>
 		</>
 	);

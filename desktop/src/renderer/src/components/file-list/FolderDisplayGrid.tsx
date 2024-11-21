@@ -4,6 +4,8 @@ import {
 	useGridApiContext,
 	type GridRenderEditCellParams,
 	type useGridApiRef,
+	type GridCellParams,
+	type MuiEvent,
 } from "@mui/x-data-grid";
 import {
 	HighlightOff as DeleteIcon,
@@ -73,11 +75,13 @@ const GridEditDateCell = ({
 type Props = {
 	rows: FolderRow[];
 	onFolderDelete: (folder: string) => Promise<void> | void;
+	processRowUpdate: (newRow: FolderRow) => FolderRow;
 	apiRef: ReturnType<typeof useGridApiRef>;
 };
 
-export const FolderDisplayGrid = ({ rows, onFolderDelete, apiRef }: Props) => {
+export const FolderDisplayGrid = ({ rows, onFolderDelete, processRowUpdate, apiRef }: Props) => {
 	const theme = useTheme();
+
 	const columns: GridColDef<(typeof rows)[number]>[] = [
 		{
 			field: "progress",
@@ -178,6 +182,32 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, apiRef }: Props) => {
 		},
 	];
 
+	const handleCellKeyDown = (params: GridCellParams, event: MuiEvent<React.KeyboardEvent>) => {
+		if (event.key === "ArrowDown") {
+			const { id, field, value, isEditable } = params;
+
+			if (!value || !isEditable) return;
+
+			const currentRowIndex = Number(id);
+
+			// Iterate through all rows below the current one
+			for (let i = currentRowIndex + 1; i < rows.length; i++) {
+				const targetValue = apiRef.current.getCellValue(i, field);
+
+				if (targetValue === undefined || targetValue === null || targetValue === "") {
+					const isRowInEditMode = apiRef.current.getRowMode(i) === "edit";
+					if (!isRowInEditMode) apiRef.current.startRowEditMode({ id: i });
+
+					apiRef.current.setEditCellValue({ id: i, field, value });
+				} else {
+					break; // Stop when a non-empty row is found
+				}
+			}
+
+			event.stopPropagation(); // Prevent default handling of the ArrowDown key
+		}
+	};
+
 	return (
 		<LocalizationProvider dateAdapter={AdapterDayjs}>
 			<Box sx={{ width: "100%" }}>
@@ -190,6 +220,8 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, apiRef }: Props) => {
 					disableColumnMenu
 					editMode="row"
 					hideFooter
+					processRowUpdate={processRowUpdate}
+					onCellKeyDown={handleCellKeyDown}
 				/>
 			</Box>
 		</LocalizationProvider>
