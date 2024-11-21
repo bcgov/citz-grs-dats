@@ -29,6 +29,12 @@ jobs:
         with:
           persist-credentials: false
 
+      # Check for TypeScript errors
+      - name: Check for TypeScript errors
+        run: |
+          npm ci
+          npm run typecheck
+
       # Bump version
       - name: Bump version in package.json
         run: npm run bump:${{ github.event.inputs.versionChange }}
