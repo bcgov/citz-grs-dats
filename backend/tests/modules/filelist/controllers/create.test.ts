@@ -72,7 +72,7 @@ describe("Test suite for create function", () => {
 
 	it("Test case: Should return continue with undefined application and accession", async () => {
 		const body = {
-			outputFileType: "pdf",
+			outputFileType: "json",
 			metadata: {
 				folders: ["folder1"],
 				files: ["file1"],
@@ -103,7 +103,7 @@ describe("Test suite for create function", () => {
 		mockReq.user = {} as SSOUser<unknown>;
 
 		const body = {
-			outputFileType: "pdf",
+			outputFileType: "json",
 			metadata: {
 				admin: {
 					application: "TestApp",
@@ -138,7 +138,7 @@ describe("Test suite for create function", () => {
 		jest.spyOn(Date, "now").mockReturnValue(1234567890); // Mock Date.now()
 		const jobID = "job-1234567890";
 		const body = {
-			outputFileType: "pdf",
+			outputFileType: "json",
 			metadata: {
 				admin: {
 					application: "TestApp",

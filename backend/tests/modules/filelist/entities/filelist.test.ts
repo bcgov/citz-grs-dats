@@ -76,7 +76,7 @@ describe("FileListModel and Schemas", () => {
 		it("should validate FileList with correct folder and file metadata", () => {
 			const validFileList: FileListZod = {
 				jobID: "job-123",
-				outputFileType: "pdf",
+				outputFileType: "json",
 				metadata: {
 					admin: {
 						application: "TestApp",
@@ -117,7 +117,7 @@ describe("FileListModel and Schemas", () => {
 		it("should reject FileList with invalid metadata", () => {
 			const invalidFileList = {
 				jobID: "job-123",
-				outputFileType: "pdf",
+				outputFileType: "json",
 				metadata: {
 					admin: {
 						application: "TestApp",

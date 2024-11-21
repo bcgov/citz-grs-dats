@@ -1,21 +1,10 @@
 import type { Worksheet } from "exceljs";
 import type { FileMetadataZodType } from "../../schemas";
+import { formatDate } from "src/utils";
 
 type Data = {
 	worksheet: Worksheet;
 	rows: FileMetadataZodType[];
-};
-
-const formatDate = (date: string): string => {
-	if (date === "") return "";
-	const parsedDate = new Date(date);
-	if (Number.isNaN(parsedDate.getTime())) {
-		return date; // Return the original value if it's not a valid date
-	}
-	const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
-	const day = String(parsedDate.getDate()).padStart(2, "0");
-	const year = parsedDate.getFullYear();
-	return `${month}-${day}-${year}`;
 };
 
 export const addFileMetadata = ({ worksheet, rows }: Data) => {

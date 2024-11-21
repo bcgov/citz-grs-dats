@@ -11,7 +11,7 @@ import {
 const fileListSchema = new Schema({
 	jobID: { type: String, required: true },
 	createdOn: { type: String, required: false, default: () => new Date().toDateString() },
-	outputFileType: { type: String, required: true },
+	outputFileType: { type: String, enum: ["excel", "json"], required: true },
 	metadata: {
 		admin: {
 			application: { type: String, default: "N/A" },
@@ -33,7 +33,7 @@ export const FileListModel = model("FileList", fileListSchema);
 export const fileListZodSchema = z.object({
 	jobID: z.string(),
 	createdOn: z.string().optional(),
-	outputFileType: z.string(),
+	outputFileType: z.enum(["excel", "json"]),
 	metadata: z.object({
 		admin: z.object({
 			application: z.string().optional(),

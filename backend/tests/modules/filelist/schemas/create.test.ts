@@ -3,7 +3,7 @@ import { createFileListBodySchema, type CreateFileListBody } from "@/modules/fil
 describe("createFileListBodySchema", () => {
 	it("should validate correct input", () => {
 		const validInput: CreateFileListBody = {
-			outputFileType: "pdf",
+			outputFileType: "json",
 			metadata: {
 				admin: {
 					application: "TestApp",
@@ -66,7 +66,7 @@ describe("createFileListBodySchema", () => {
 
 	it("should reject input with invalid folder metadata", () => {
 		const invalidInput = {
-			outputFileType: "pdf",
+			outputFileType: "json",
 			metadata: {
 				folders: {
 					folder1: {
@@ -95,7 +95,7 @@ describe("createFileListBodySchema", () => {
 
 	it("should reject input with invalid file metadata", () => {
 		const invalidInput = {
-			outputFileType: "pdf",
+			outputFileType: "json",
 			metadata: {
 				folders: {
 					folder1: {
@@ -120,7 +120,7 @@ describe("createFileListBodySchema", () => {
 
 	it("should allow missing optional admin metadata", () => {
 		const validInput: CreateFileListBody = {
-			outputFileType: "pdf",
+			outputFileType: "json",
 			metadata: {
 				folders: {
 					folder1: {
