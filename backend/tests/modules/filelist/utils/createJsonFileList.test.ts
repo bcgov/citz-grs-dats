@@ -53,7 +53,12 @@ describe("Test suite for createJsonFileList", () => {
 			},
 		};
 
-		const result = createJsonFileList({ body });
+		const result = createJsonFileList({
+			accession: body.metadata?.admin?.accession,
+			application: body.metadata?.admin?.application,
+			folders: body.metadata.folders,
+			files: body.metadata.files,
+		});
 
 		expect(formatDate).toHaveBeenCalledWith(new Date().toDateString());
 		expect(result).toEqual({
@@ -96,7 +101,12 @@ describe("Test suite for createJsonFileList", () => {
 			},
 		};
 
-		const result = createJsonFileList({ body });
+		const result = createJsonFileList({
+			accession: body.metadata?.admin?.accession,
+			application: body.metadata?.admin?.application,
+			folders: body.metadata.folders,
+			files: body.metadata.files,
+		});
 
 		expect(formatDate).toHaveBeenCalledWith(new Date().toDateString());
 		expect(result).toEqual({
@@ -128,7 +138,12 @@ describe("Test suite for createJsonFileList", () => {
 			},
 		};
 
-		const result = createJsonFileList({ body });
+		const result = createJsonFileList({
+			accession: body.metadata?.admin?.accession,
+			application: body.metadata?.admin?.application,
+			folders: body.metadata.folders,
+			files: body.metadata.files,
+		});
 
 		expect(formatDate).toHaveBeenCalledWith(new Date().toDateString());
 		expect(result).toEqual({
@@ -141,6 +156,57 @@ describe("Test suite for createJsonFileList", () => {
 			},
 			folderList: {},
 			metadata: {},
+		});
+	});
+
+	it("Test case: Should set accession and application to empty strings when they are null", () => {
+		const mockFormatDate = "2024-11-19";
+		(formatDate as jest.Mock).mockReturnValue(mockFormatDate);
+
+		const body: CreateFileListBody = {
+			outputFileType: "json",
+			metadata: {
+				admin: {
+					application: null as unknown as string | undefined,
+					accession: null as unknown as string | undefined,
+				},
+				folders: {
+					folder1: { classification: "Class1", opr: false },
+				},
+				files: {
+					file1: [
+						{
+							filepath: "/path/to/file1.txt",
+							filename: "file1.txt",
+							size: "50KB",
+							birthtime: "2024-01-01T00:00:00Z",
+							lastModified: "2024-01-02T00:00:00Z",
+							lastAccessed: "2024-01-03T00:00:00Z",
+							checksum: "abcd1234",
+						},
+					],
+				},
+			},
+		};
+
+		const result = createJsonFileList({
+			accession: body.metadata?.admin?.accession,
+			application: body.metadata?.admin?.application,
+			folders: body.metadata.folders,
+			files: body.metadata.files,
+		});
+
+		expect(formatDate).toHaveBeenCalledWith(new Date().toDateString());
+		expect(result).toEqual({
+			admin: {
+				lastRevised: mockFormatDate,
+				accession: "",
+				application: "",
+				ministry: "",
+				branch: "",
+			},
+			folderList: body.metadata.folders,
+			metadata: body.metadata.files,
 		});
 	});
 });
