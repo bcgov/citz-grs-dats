@@ -17,6 +17,10 @@ export const FileListPage = () => {
 	const apiRef = useGridApiRef();
 
 	useEffect(() => {
+		console.log(metadata); // TEMP
+	}, [metadata]);
+
+	useEffect(() => {
 		const handleProgress = (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
 			const { source, progressPercentage } = event.detail;
 			setRows((prevRows) =>
@@ -96,6 +100,11 @@ export const FileListPage = () => {
 
 		try {
 			for (const filePath of inputPaths) {
+				// Check if filePath is already in the rows
+				const isAlreadyInRows = rows.some((row) => row.folder === filePath);
+
+				if (isAlreadyInRows) continue; // Skip if filePath is already in rows
+
 				const curFolderRow: FolderRow = {
 					id: index, // Unique IDs for new rows
 					folder: filePath,
@@ -109,6 +118,7 @@ export const FileListPage = () => {
 					fdDate: null,
 					progress: 0,
 				};
+
 				newRows.push(curFolderRow);
 				pathsToProcess.push(filePath); // Add path to pending processing
 				index++;
@@ -116,6 +126,18 @@ export const FileListPage = () => {
 
 			setRows(newRows); // Update rows first
 			setPendingPaths((prev) => [...prev, ...pathsToProcess]); // Add paths to pendingPaths
+
+			// Set all newly added rows to edit mode
+			if (apiRef.current && newRows.length > 0) {
+				setTimeout(() => {
+					newRows.forEach(({ id }) => {
+						const isRowInEditMode = apiRef.current.getRowMode(id) === "edit";
+						if (!isRowInEditMode) {
+							apiRef.current.startRowEditMode({ id });
+						}
+					});
+				});
+			}
 		} catch (error) {
 			setRows(rows); // Revert rows on error
 			console.error("Error adding rows:", error);
