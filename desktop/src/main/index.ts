@@ -191,10 +191,30 @@ ipcMain.handle(
 	},
 );
 
-ipcMain.handle("get-folder-metadata", async (_, { filePath }: { filePath: string }) => {
+ipcMain.on("get-folder-metadata", async (event, { filePath }: { filePath: string }) => {
 	debug('Beginning "get-folder-metadata" of main process.');
 
-	await getFolderMetadata(pool, filePath, is.dev);
+	const onProgress = (data: {
+		progressPercentage: number;
+		source: string;
+	}) => {
+		event.sender.send("folder-metadata-progress", data);
+	};
+
+	const onCompletion = (data: {
+		success: boolean;
+		metadata?: Record<string, unknown>;
+		error?: unknown;
+	}) => {
+		event.sender.send("folder-metadata-completion", data);
+	};
+
+	try {
+		await getFolderMetadata(pool, filePath, is.dev, false, onProgress, onCompletion);
+	} catch (error) {
+		console.error(`Error in get-folder-metadata: ${error}`);
+		onCompletion({ success: false, error });
+	}
 });
 
 ipcMain.handle("select-directory", () => {

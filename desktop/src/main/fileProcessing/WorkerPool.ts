@@ -49,15 +49,31 @@ export class WorkerPool extends EventEmitter {
 			this.workers.add(worker);
 
 			worker.on("message", (message) => {
+				const task = workerScript.includes("metadata") ? "metadata" : "copy";
+				// Handle progress updates
 				if (message.type === "progress") {
-					const task = workerScript.includes("metadata") ? "metadata" : "copy";
-					this.emit("progress", { task, progress: message.progressPercentage });
-				} else if (message.success) {
+					this.emit("progress", {
+						task,
+						...message,
+					});
+				}
+				// Handle completion messages
+				else if (message.type === "completion") {
 					clearTimeout(timer);
-					resolve(message as U);
-				} else {
+					if (message.success) {
+						this.emit("completion", {
+							task,
+							...message,
+						});
+						resolve(message as U);
+					} else {
+						reject(new Error(message.error || "Worker task failed"));
+					}
+				}
+				// Handle unexpected messages
+				else {
 					clearTimeout(timer);
-					reject(new Error(message.error || "Worker task failed"));
+					reject(new Error("Unexpected message type from worker."));
 				}
 			});
 

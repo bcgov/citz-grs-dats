@@ -34,11 +34,7 @@ declare global {
 					filePath: string;
 					transfer: string;
 				}) => Promise<void>;
-				getFolderMetadata: ({
-					filePath,
-				}: {
-					filePath: string;
-				}) => Promise<void>;
+				getFolderMetadata: ({ filePath }: { filePath: string }) => Promise<void>;
 			};
 		};
 	}

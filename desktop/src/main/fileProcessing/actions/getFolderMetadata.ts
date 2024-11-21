@@ -2,20 +2,38 @@ import path from "node:path";
 import type { WorkerPool } from "../WorkerPool";
 import { app } from "electron";
 
+type WorkerData = {
+	source: string;
+	destination?: string;
+	batchSize?: number;
+};
+
 /**
  * Processes a folder by running the workers using the WorkerPool.
  *
  * @param workerPool - The WorkerPool instance to manage worker threads.
  * @param filePath - The source folder path to be processed.
  * @param isDev - Is running in the development build (npm run dev).
+ * @param storeFile - If the file should be stored in the app data.
+ * @param onProgress - Callback for progress updates.
+ * @param onCompletion - Callback for final completion data.
  * @returns A Promise that resolves when the worker processes complete.
  */
 export const getFolderMetadata = async (
 	pool: WorkerPool,
 	filePath: string,
-	isDev = false,
+	isDev: boolean,
+	storeFile: boolean,
+	onProgress?: (data: {
+		progressPercentage: number;
+		source: string;
+	}) => void,
+	onCompletion?: (data: {
+		success: boolean;
+		metadata?: Record<string, unknown>;
+		error?: unknown;
+	}) => void,
 ): Promise<void> => {
-	// Worker script path
 	const metadataWorkerScript = isDev
 		? path.resolve(__dirname, "../es-workers/metadataWorker.js")
 		: path.join(app.getAppPath(), "../../resources/metadataWorker.cjs");
@@ -24,21 +42,24 @@ export const getFolderMetadata = async (
 		? path.resolve(__dirname, "../../resources/file-list")
 		: path.join(app.getAppPath(), "../../resources/file-list");
 
-	const metadataWorkerData = {
+	const metadataWorkerData: WorkerData = {
 		source: filePath,
-		destination: path.join(destinationPath, "/metadata.json"),
 	};
+
+	if (storeFile) metadataWorkerData.destination = path.join(destinationPath, "/metadata.json");
 
 	try {
 		pool.on("progress", (data) => {
-			console.log(`Progress: ${data.progress}%`);
+			if (onProgress) onProgress(data);
 		});
 
-		// Run the worker tasks using the WorkerPool
-		await pool.runTask(metadataWorkerScript, metadataWorkerData);
+		pool.on("completion", (data) => {
+			if (onCompletion) onCompletion(data);
+		});
 
-		console.log(`Successfully processed folder from ${filePath} to ${destinationPath}`);
+		await pool.runTask(metadataWorkerScript, metadataWorkerData);
 	} catch (error) {
 		console.error(`Failed to process folder ${filePath}:`, error);
+		if (onCompletion) onCompletion({ success: false, error });
 	}
 };

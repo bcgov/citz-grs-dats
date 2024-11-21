@@ -106,6 +106,7 @@ class Semaphore {
 const copyDirectoryInBatches = async (
 	source: string,
 	destination: string,
+	originalSource: string,
 	batchSize = 10,
 	concurrencyLimit = 5,
 ): Promise<void> => {
@@ -127,7 +128,13 @@ const copyDirectoryInBatches = async (
 					const fileStat: Stats = await stat(sourcePath);
 
 					if (fileStat.isDirectory()) {
-						await copyDirectoryInBatches(sourcePath, destinationPath, batchSize, concurrencyLimit);
+						await copyDirectoryInBatches(
+							sourcePath,
+							destinationPath,
+							originalSource,
+							batchSize,
+							concurrencyLimit,
+						);
 					} else {
 						console.log(`[copyWorker] Processing file: ${sourcePath}`);
 						await copyFileStream(sourcePath, destinationPath);
@@ -137,6 +144,7 @@ const copyDirectoryInBatches = async (
 						const progressPercentage = Math.round((processedFileCount / totalFileCount) * 100);
 						parentPort?.postMessage({
 							type: "progress",
+							source: originalSource,
 							fileProcessed: sourcePath,
 							progressPercentage: progressPercentage,
 						});
@@ -177,17 +185,26 @@ const copyDirectoryInBatches = async (
 		totalFileCount = await countFiles(source);
 
 		console.log(`Copying from ${source}`);
-		await copyDirectoryInBatches(source, path.join(destination, folderName), batchSize);
+		await copyDirectoryInBatches(source, path.join(destination, folderName), source, batchSize);
 
 		if (parentPort) {
 			parentPort.postMessage({ success: true });
+			parentPort?.postMessage({
+				type: "completion",
+				source,
+				success: true,
+			});
 		} else {
 			process.exit(0); // Graceful exit if no parent port
 		}
 	} catch (error) {
 		console.error(`Error during copying: ${(error as Error).message}`);
 		if (parentPort) {
-			parentPort.postMessage({ success: false, error: (error as Error).message });
+			parentPort?.postMessage({
+				type: "completion",
+				success: false,
+				error: (error as Error).message,
+			});
 		} else {
 			process.exit(1); // Exit with error code if no parent port
 		}
