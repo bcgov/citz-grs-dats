@@ -1,0 +1,6 @@
+# Add reviewers on PR
+addReviewers: true
+
+# Assign PR author
+addAssignees: author
+
