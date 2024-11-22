@@ -37,7 +37,7 @@ jobs:
       # Install dependencies
       - name: Install dependencies
         run: |
-          npm ci
+          npm i
 
       # Check for TypeScript errors
       - name: Check for TypeScript errors
