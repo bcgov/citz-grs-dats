@@ -18,6 +18,32 @@ on:
           - major
 
 jobs:
+  check_typescript_errors:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      # Check for TypeScript errors
+      - name: Check for TypeScript errors
+        run: |
+          npm run typecheck
+
   version_bump:
     runs-on: ubuntu-latest
     outputs:
@@ -28,12 +54,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-
-      # Check for TypeScript errors
-      - name: Check for TypeScript errors
-        run: |
-          npm ci
-          npm run typecheck
 
       # Bump version
       - name: Bump version in package.json
