@@ -1,3 +1,4 @@
+# Trivial test comment
 name: Build and Publish Electron App
 
 # REQUIRES: Repo Admins allowed to bypass branch protection policies and push directly to main.
