@@ -19,7 +19,7 @@ describe("Folder and File Metadata Schemas", () => {
 
 			const document = new FolderModel(invalidFolderMetadata);
 
-			// Use validateSync with `runValidators` explicitly to catch type errors
+			// Validate and catch errors
 			try {
 				document.validateSync({ pathsToSkip: [], runValidators: true });
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -47,7 +47,7 @@ describe("Folder and File Metadata Schemas", () => {
 
 			const document = new FileModel(invalidFileMetadata);
 
-			// Use validateSync with `runValidators` explicitly to catch type errors
+			// Validate and catch errors
 			try {
 				document.validateSync({ pathsToSkip: [], runValidators: true });
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -91,14 +91,73 @@ describe("Folder and File Metadata Schemas", () => {
 					filepath: "/path/to/file",
 					filename: "file.txt",
 					size: "1024",
+					checksum: "abcd1234",
 					birthtime: "2023-01-01T00:00:00Z",
 					lastModified: "2023-01-02T00:00:00Z",
 					lastAccessed: "2023-01-03T00:00:00Z",
-					checksum: "abcd1234",
+					lastSaved: "2023-01-04T00:00:00Z",
+					authors: "Author Name",
+					owner: "Owner Name",
+					company: "Company Name",
+					computer: "Computer Name",
+					contentType: "text/plain",
+					programName: "Text Editor",
 				},
 			};
 
 			const document = new FileModel(validFileMetadata);
+			expect(() => document.validateSync()).not.toThrow();
+		});
+
+		it("should handle optional and null fields in folder metadata", () => {
+			const testSchema = new Schema({
+				folder: folderMetadataSchema,
+			});
+			const FolderModel = mongoose.model("FolderOptionalTest", testSchema);
+
+			const folderMetadataWithNulls = {
+				folder: {
+					schedule: null,
+					classification: null,
+					file: null,
+					opr: null,
+					startDate: null,
+					endDate: null,
+					soDate: null,
+					fdDate: null,
+				},
+			};
+
+			const document = new FolderModel(folderMetadataWithNulls);
+			expect(() => document.validateSync()).not.toThrow();
+		});
+
+		it("should handle optional and null fields in file metadata", () => {
+			const testSchema = new Schema({
+				file: fileMetadataSchema,
+			});
+			const FileModel = mongoose.model("FileOptionalTest", testSchema);
+
+			const fileMetadataWithNulls = {
+				file: {
+					filepath: "/path/to/file",
+					filename: "file.txt",
+					size: "1024",
+					checksum: "abcd1234",
+					birthtime: "2023-01-01T00:00:00Z",
+					lastModified: "2023-01-02T00:00:00Z",
+					lastAccessed: "2023-01-03T00:00:00Z",
+					lastSaved: null,
+					authors: null,
+					owner: null,
+					company: null,
+					computer: null,
+					contentType: null,
+					programName: null,
+				},
+			};
+
+			const document = new FileModel(fileMetadataWithNulls);
 			expect(() => document.validateSync()).not.toThrow();
 		});
 	});
