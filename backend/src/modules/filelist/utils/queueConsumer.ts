@@ -42,7 +42,7 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 	// Handle output file type
 	switch (filelist.outputFileType) {
 		case "excel": {
-			const filename = `ARS662_File_List_${new Date().toLocaleDateString().replace(/\//g, "-")}.xlsx`;
+			const filename = `File_List_${new Date().toLocaleDateString().replace(/\//g, "-")}.xlsx`;
 
 			// Create Excel workbook
 			const workbook: Workbook = createExcelWorkbook({
@@ -78,7 +78,7 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		}
 
 		case "json": {
-			const filename = `ARS662_File_List_${new Date().toLocaleDateString().replace(/\//g, "-")}.json`;
+			const filename = `File_List_${new Date().toLocaleDateString().replace(/\//g, "-")}.json`;
 
 			// Create JSON file list
 			const jsonFile: JsonFileList = createJsonFileList({
