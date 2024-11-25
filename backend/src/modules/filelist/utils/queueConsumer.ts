@@ -40,7 +40,7 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		return console.error("Email not found in filelist.");
 	}
 
-	const date = formatDate(new Date().toDateString());
+	const date = formatDate(new Date().toISOString());
 
 	// Handle output file type
 	switch (filelist.outputFileType) {
