@@ -1,21 +1,34 @@
 import type { Worksheet } from "exceljs";
-import type { FolderMetadataZodType } from "../../schemas";
+import type { FolderMetadataZodType } from "../../../schemas";
 import { formatDate } from "src/utils";
 
 type FolderRow = FolderMetadataZodType & { folder: string };
 
 type Data = {
 	worksheet: Worksheet;
-	rows: FolderRow[];
+	folders: FolderRow[];
 };
 
-export const addFolderData = ({ worksheet, rows }: Data) => {
+export const setupFolderList = ({ worksheet, folders }: Data) => {
+	// Set column widths
+	worksheet.columns = [
+		{ width: 40 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+	];
+
 	// Add column headers
 	const headers = [
 		"Folder",
 		"Schedule",
-		"Primary/Secondary",
-		"FILE ID",
+		"Classification",
+		"File ID",
 		"OPR (Y/N)",
 		"Start Date",
 		"End Date",
@@ -41,14 +54,14 @@ export const addFolderData = ({ worksheet, rows }: Data) => {
 		};
 	});
 
-	// Enable sorting for the table
+	// Enable sorting for the table headers
 	worksheet.autoFilter = {
-		from: "A3",
-		to: "I3",
+		from: "A1",
+		to: "I1",
 	};
 
 	// Populate rows with data
-	rows.forEach((row) => {
+	folders.forEach((row) => {
 		worksheet.addRow([
 			row.folder,
 			row.schedule,

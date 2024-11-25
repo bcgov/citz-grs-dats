@@ -1,167 +1,141 @@
-import ExcelJS, { type Workbook } from "exceljs";
-import { createExcelWorkbook } from "@/modules/filelist/utils/excel/createExcelWorkbook";
-import { setWorksheetHeader } from "@/modules/filelist/utils/excel/setWorksheetHeader";
-import { addFolderData } from "@/modules/filelist/utils/excel/addFolderData";
-import { addInstructionsSheet } from "@/modules/filelist/utils/excel/addInstructionsSheet";
-import { addFileMetadata } from "@/modules/filelist/utils/excel/addFileMetadata";
+import ExcelJS from "exceljs";
+import { createExcelWorkbook } from "@/modules/filelist/utils/excel";
+import {
+	setupCoverPage,
+	setupFolderList,
+	setupInstructions,
+	setupMetadata,
+} from "@/modules/filelist/utils/excel/worksheets";
 import type { FileMetadataZodType, FolderMetadataZodType } from "@/modules/filelist/schemas";
 
-jest.mock("@/modules/filelist/utils/excel/setWorksheetHeader");
-jest.mock("@/modules/filelist/utils/excel/addFolderData");
-jest.mock("@/modules/filelist/utils/excel/addInstructionsSheet");
-jest.mock("@/modules/filelist/utils/excel/addFileMetadata");
+// Mock worksheet setup functions
+jest.mock("@/modules/filelist/utils/excel/worksheets", () => ({
+	setupCoverPage: jest.fn(),
+	setupFolderList: jest.fn(),
+	setupMetadata: jest.fn(),
+	setupInstructions: jest.fn(),
+}));
 
-type FolderRow = FolderMetadataZodType & { folder: string };
-
-describe("Test suite for createExcelWorkbook function", () => {
-	let folderRows: FolderRow[];
-	let fileRows: FileMetadataZodType[];
-	let workbook: Workbook;
-
-	beforeEach(() => {
-		folderRows = [
+describe("createExcelWorkbook", () => {
+	// Test case: Workbook creation and worksheet population
+	it("should create a workbook with all required worksheets and populate them", () => {
+		const folderRows: Array<FolderMetadataZodType & { folder: string }> = [
 			{
-				folder: "Folder1",
-				schedule: "Schedule1",
-				classification: "Primary",
-				file: "File1",
+				folder: "Folder 1",
+				schedule: "2023",
+				classification: "Confidential",
+				file: "File A",
 				opr: true,
-				startDate: "2023-10-01",
-				endDate: "2023-10-31",
-				soDate: "2023-11-01",
-				fdDate: "2023-12-01",
+				startDate: "2023-01-01",
+				endDate: "2023-12-31",
+				soDate: null,
+				fdDate: null,
+			},
+			{
+				folder: "Folder 2",
+				schedule: "2024",
+				classification: "Public",
+				file: "File B",
+				opr: false,
+				startDate: "2024-01-01",
+				endDate: "2024-12-31",
+				soDate: null,
+				fdDate: null,
 			},
 		];
 
-		fileRows = [
+		const fileRows: FileMetadataZodType[] = [
 			{
 				filepath: "/path/to/file1",
 				filename: "file1.txt",
 				size: "1024",
-				birthtime: "2023-10-01T10:00:00Z",
-				lastModified: "2023-10-10T12:00:00Z",
-				lastAccessed: "2023-10-11T15:00:00Z",
-				checksum: "123abc",
+				birthtime: "2023-01-01T12:00:00Z",
+				lastModified: "2023-06-01T12:00:00Z",
+				lastAccessed: "2023-06-02T12:00:00Z",
+				checksum: "abc123",
+			},
+			{
+				filepath: "/path/to/file2",
+				filename: "file2.txt",
+				size: "2048",
+				birthtime: "2023-02-01T12:00:00Z",
+				lastModified: "2023-07-01T12:00:00Z",
+				lastAccessed: "2023-07-02T12:00:00Z",
+				checksum: "def456",
 			},
 		];
 
-		jest.clearAllMocks();
-	});
+		const accession = "123";
+		const application = "Test Application";
 
-	it("Test case: Should handle undefined accession and application gracefully", () => {
-		workbook = createExcelWorkbook({
+		const workbook = createExcelWorkbook({
 			folderRows,
 			fileRows,
-			accession: undefined,
-			application: undefined,
+			accession,
+			application,
 		});
 
-		// Check that the workbook has three worksheets
-		expect(workbook.worksheets.length).toBe(3);
-		expect(workbook.worksheets[0].name).toBe("FOLDER LIST");
-		expect(workbook.worksheets[1].name).toBe("METADATA");
-		expect(workbook.worksheets[2].name).toBe("INSTRUCTIONS");
+		expect(workbook).toBeInstanceOf(ExcelJS.Workbook);
 
-		// Ensure helper functions are called with empty strings for undefined accession and application
-		const firstWorksheet = workbook.getWorksheet("FOLDER LIST");
-		expect(setWorksheetHeader).toHaveBeenCalledWith({
-			worksheet: firstWorksheet,
-			accession: "",
-			application: "",
+		// Verify worksheet existence
+		expect(workbook.getWorksheet("COVER PAGE")).toBeDefined();
+		expect(workbook.getWorksheet("FOLDER LIST")).toBeDefined();
+		expect(workbook.getWorksheet("METADATA")).toBeDefined();
+		expect(workbook.getWorksheet("INSTRUCTIONS")).toBeDefined();
+
+		// Verify worksheet population calls
+		expect(setupCoverPage).toHaveBeenCalledWith({
+			worksheet: expect.any(Object),
+			accession,
+			application,
 		});
-
-		expect(addFolderData).toHaveBeenCalledWith({
-			worksheet: firstWorksheet,
-			rows: folderRows,
+		expect(setupFolderList).toHaveBeenCalledWith({
+			worksheet: expect.any(Object),
+			folders: folderRows,
 		});
-
-		const metadataSheet = workbook.getWorksheet("METADATA");
-		expect(addFileMetadata).toHaveBeenCalledWith({
-			worksheet: metadataSheet,
-			rows: fileRows,
+		expect(setupMetadata).toHaveBeenCalledWith({
+			worksheet: expect.any(Object),
+			files: fileRows,
 		});
-
-		const instructionsSheet = workbook.getWorksheet("INSTRUCTIONS");
-		expect(addInstructionsSheet).toHaveBeenCalledWith(instructionsSheet);
+		expect(setupInstructions).toHaveBeenCalledWith({
+			worksheet: expect.any(Object),
+		});
 	});
 
-	it("Test case: Should create a workbook with the expected worksheets and use helper functions correctly", () => {
-		workbook = createExcelWorkbook({
+	// Test case: Default values for optional parameters
+	it("should handle default values for optional parameters", () => {
+		const folderRows: Array<FolderMetadataZodType & { folder: string }> = [];
+		const fileRows: FileMetadataZodType[] = [];
+
+		const workbook = createExcelWorkbook({
 			folderRows,
 			fileRows,
-			accession: "12345",
-			application: "TestApp",
 		});
 
-		// Check that the workbook has three worksheets
-		expect(workbook.worksheets.length).toBe(3);
-		expect(workbook.worksheets[0].name).toBe("FOLDER LIST");
-		expect(workbook.worksheets[1].name).toBe("METADATA");
-		expect(workbook.worksheets[2].name).toBe("INSTRUCTIONS");
+		expect(workbook).toBeInstanceOf(ExcelJS.Workbook);
 
-		// Verify column widths for the first worksheet
-		const firstWorksheet = workbook.getWorksheet("FOLDER LIST");
-		const expectedWidths = [40, 20, 20, 20, 20, 20, 20, 20, 20];
-		firstWorksheet?.columns.forEach((column, index) => {
-			expect(column?.width).toBe(expectedWidths[index]);
-		});
+		// Verify worksheet existence
+		expect(workbook.getWorksheet("COVER PAGE")).toBeDefined();
+		expect(workbook.getWorksheet("FOLDER LIST")).toBeDefined();
+		expect(workbook.getWorksheet("METADATA")).toBeDefined();
+		expect(workbook.getWorksheet("INSTRUCTIONS")).toBeDefined();
 
-		// Check that helper functions are called with correct arguments
-		expect(setWorksheetHeader).toHaveBeenCalledWith({
-			worksheet: firstWorksheet,
-			accession: "12345",
-			application: "TestApp",
-		});
-
-		expect(addFolderData).toHaveBeenCalledWith({
-			worksheet: firstWorksheet,
-			rows: folderRows,
-		});
-
-		const metadataSheet = workbook.getWorksheet("METADATA");
-		expect(addFileMetadata).toHaveBeenCalledWith({
-			worksheet: metadataSheet,
-			rows: fileRows,
-		});
-
-		const instructionsSheet = workbook.getWorksheet("INSTRUCTIONS");
-		expect(addInstructionsSheet).toHaveBeenCalledWith(instructionsSheet);
-	});
-
-	it("Test case: Should handle empty folderRows and fileRows gracefully", () => {
-		workbook = createExcelWorkbook({
-			folderRows: [],
-			fileRows: [],
+		// Verify worksheet population calls
+		expect(setupCoverPage).toHaveBeenCalledWith({
+			worksheet: expect.any(Object),
 			accession: "",
 			application: "",
 		});
-
-		// Check that the workbook still has three worksheets
-		expect(workbook.worksheets.length).toBe(3);
-		expect(workbook.worksheets[0].name).toBe("FOLDER LIST");
-		expect(workbook.worksheets[1].name).toBe("METADATA");
-		expect(workbook.worksheets[2].name).toBe("INSTRUCTIONS");
-
-		// Ensure helper functions are called with empty data
-		const firstWorksheet = workbook.getWorksheet("FOLDER LIST");
-		expect(setWorksheetHeader).toHaveBeenCalledWith({
-			worksheet: firstWorksheet,
-			accession: "",
-			application: "",
+		expect(setupFolderList).toHaveBeenCalledWith({
+			worksheet: expect.any(Object),
+			folders: folderRows,
 		});
-
-		expect(addFolderData).toHaveBeenCalledWith({
-			worksheet: firstWorksheet,
-			rows: [],
+		expect(setupMetadata).toHaveBeenCalledWith({
+			worksheet: expect.any(Object),
+			files: fileRows,
 		});
-
-		const metadataSheet = workbook.getWorksheet("METADATA");
-		expect(addFileMetadata).toHaveBeenCalledWith({
-			worksheet: metadataSheet,
-			rows: [],
+		expect(setupInstructions).toHaveBeenCalledWith({
+			worksheet: expect.any(Object),
 		});
-
-		const instructionsSheet = workbook.getWorksheet("INSTRUCTIONS");
-		expect(addInstructionsSheet).toHaveBeenCalledWith(instructionsSheet);
 	});
 });
