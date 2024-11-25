@@ -13,10 +13,17 @@ export const setupMetadata = ({ worksheet, files }: Data) => {
 		{ width: 50 },
 		{ width: 30 },
 		{ width: 20 },
-		{ width: 20 },
-		{ width: 20 },
-		{ width: 20 },
 		{ width: 50 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
+		{ width: 20 },
 	];
 
 	// Add column headers
@@ -24,10 +31,17 @@ export const setupMetadata = ({ worksheet, files }: Data) => {
 		"Path",
 		"Name",
 		"Size",
+		"Checksum",
 		"Created On",
 		"Last Modified",
 		"Last Accessed",
-		"Checksum",
+		"Last Saved",
+		"Authors",
+		"Owner",
+		"Company",
+		"Computer",
+		"Content-Type",
+		"Program Name",
 	];
 	const headerRow = worksheet.addRow(headers);
 
@@ -51,7 +65,7 @@ export const setupMetadata = ({ worksheet, files }: Data) => {
 	// Enable sorting for the table headers
 	worksheet.autoFilter = {
 		from: "A1",
-		to: "G1",
+		to: "N1",
 	};
 
 	// Populate rows with data
@@ -60,10 +74,10 @@ export const setupMetadata = ({ worksheet, files }: Data) => {
 			row.filepath,
 			row.filename,
 			row.size,
+			row.checksum,
 			formatDate(row.birthtime),
 			formatDate(row.lastModified),
 			formatDate(row.lastAccessed),
-			row.checksum,
 		]);
 	});
 };

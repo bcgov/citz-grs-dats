@@ -39,7 +39,9 @@ describe("setupMetadata", () => {
 		setupMetadata({ worksheet, files });
 
 		// Check column widths
-		expect(worksheet.columns?.map((col) => col?.width)).toEqual([50, 30, 20, 20, 20, 20, 50]);
+		expect(worksheet.columns?.map((col) => col?.width)).toEqual([
+			50, 30, 20, 50, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+		]);
 
 		// Check header row
 		const headerRow = worksheet.getRow(1);
@@ -47,10 +49,17 @@ describe("setupMetadata", () => {
 			"Path",
 			"Name",
 			"Size",
+			"Checksum",
 			"Created On",
 			"Last Modified",
 			"Last Accessed",
-			"Checksum",
+			"Last Saved",
+			"Authors",
+			"Owner",
+			"Company",
+			"Computer",
+			"Content-Type",
+			"Program Name",
 		];
 		headers.forEach((header, index) => {
 			const cell = headerRow.getCell(index + 1);
@@ -73,7 +82,7 @@ describe("setupMetadata", () => {
 		// Check autoFilter
 		expect(worksheet.autoFilter).toEqual({
 			from: "A1",
-			to: "G1",
+			to: "N1",
 		});
 
 		// Check data rows
@@ -85,10 +94,10 @@ describe("setupMetadata", () => {
 			expect(row.getCell(1).value).toBe(fileData.filepath);
 			expect(row.getCell(2).value).toBe(fileData.filename);
 			expect(row.getCell(3).value).toBe(fileData.size);
-			expect(row.getCell(4).value).toBe(formatDate(fileData.birthtime));
-			expect(row.getCell(5).value).toBe(formatDate(fileData.lastModified));
-			expect(row.getCell(6).value).toBe(formatDate(fileData.lastAccessed));
-			expect(row.getCell(7).value).toBe(fileData.checksum);
+			expect(row.getCell(4).value).toBe(fileData.checksum);
+			expect(row.getCell(5).value).toBe(formatDate(fileData.birthtime));
+			expect(row.getCell(6).value).toBe(formatDate(fileData.lastModified));
+			expect(row.getCell(7).value).toBe(formatDate(fileData.lastAccessed));
 		});
 	});
 
@@ -103,6 +112,24 @@ describe("setupMetadata", () => {
 		const rows = worksheet.getRows(1, worksheet.rowCount) ?? [];
 		expect(rows.length).toBe(1); // Only header row
 		const headerRow = rows[0];
-		expect(headerRow.getCell(1).value).toBe("Path");
+		const headers = [
+			"Path",
+			"Name",
+			"Size",
+			"Checksum",
+			"Created On",
+			"Last Modified",
+			"Last Accessed",
+			"Last Saved",
+			"Authors",
+			"Owner",
+			"Company",
+			"Computer",
+			"Content-Type",
+			"Program Name",
+		];
+		headers.forEach((header, index) => {
+			expect(headerRow.getCell(index + 1).value).toBe(header);
+		});
 	});
 });
