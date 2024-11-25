@@ -7,6 +7,7 @@ import type { Workbook } from "exceljs";
 import { createExcelWorkbook } from "./excel";
 import { sendEmail } from "src/modules/ches/utils";
 import { filelistEmail } from "./email";
+import { formatDate } from "src/utils";
 
 const QUEUE_NAME = "CREATE_FILE_LIST_QUEUE";
 
@@ -39,10 +40,12 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		return console.error("Email not found in filelist.");
 	}
 
+	const date = formatDate(new Date().toDateString());
+
 	// Handle output file type
 	switch (filelist.outputFileType) {
 		case "excel": {
-			const filename = `File_List_${new Date().toLocaleDateString().replace(/\//g, "-")}.xlsx`;
+			const filename = `File_List_${date}.xlsx`;
 
 			// Create Excel workbook
 			const workbook: Workbook = createExcelWorkbook({
@@ -78,7 +81,7 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		}
 
 		case "json": {
-			const filename = `File_List_${new Date().toLocaleDateString().replace(/\//g, "-")}.json`;
+			const filename = `File_List_${date}.json`;
 
 			// Create JSON file list
 			const jsonFile: JsonFileList = createJsonFileList({
