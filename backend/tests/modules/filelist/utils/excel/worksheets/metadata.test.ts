@@ -98,6 +98,13 @@ describe("setupMetadata", () => {
 			expect(row.getCell(5).value).toBe(formatDate(fileData.birthtime));
 			expect(row.getCell(6).value).toBe(formatDate(fileData.lastModified));
 			expect(row.getCell(7).value).toBe(formatDate(fileData.lastAccessed));
+			expect(row.getCell(8).value).toBe("");
+			expect(row.getCell(9).value).toBe("");
+			expect(row.getCell(10).value).toBe("");
+			expect(row.getCell(11).value).toBe("");
+			expect(row.getCell(12).value).toBe("");
+			expect(row.getCell(13).value).toBe("");
+			expect(row.getCell(14).value).toBe("");
 		});
 	});
 
