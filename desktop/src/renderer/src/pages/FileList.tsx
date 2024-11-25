@@ -84,7 +84,7 @@ export const FileListPage = () => {
 				}}
 			>
 				<SelectFolderButton onRowChange={handleAddPathArrayToRows} />
-				<ContinueButton />
+				<ContinueButton rows={rows} />
 			</Box>
 			<Box
 				sx={{
