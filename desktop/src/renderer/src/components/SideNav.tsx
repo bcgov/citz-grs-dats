@@ -87,8 +87,13 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 				<List>
 					<NavItem path="/" label="Home" icon={<HomeOutlinedIcon />} />
 					<Divider sx={{ margin: "5px 0" }} />
-					<NavItem path="/file-list" label="Create File List" icon={<FileListIcon />} />
-					<NavItem path="/send-records" label="Send Records" icon={<SendRecordsIcon />} />
+					{/* REQUIRE AUTH */}
+					{accessToken && (
+						<>
+							<NavItem path="/file-list" label="Create File List" icon={<FileListIcon />} />
+							<NavItem path="/send-records" label="Send Records" icon={<SendRecordsIcon />} />
+						</>
+					)}
 				</List>
 				<AuthButton accessToken={accessToken} idToken={idToken} />
 			</Box>
