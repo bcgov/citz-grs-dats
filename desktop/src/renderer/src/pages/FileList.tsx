@@ -14,9 +14,8 @@ export const FileListPage = () => {
 	// setOpen state controls continue modal
 	const [open, setOpen] = useState(false);
 	// setRows state controls rows displayed
-	const [workers] = useState(window.api.workers);
 	const [rows, setRows] = useState<FolderRow[]>([]);
-  const [workers] = useState(window.api.workers);
+	const [workers] = useState(window.api.workers);
 	const [metadata, setMetadata] = useState<Record<string, unknown>>({});
 	const [pendingPaths, setPendingPaths] = useState<string[]>([]); // Tracks paths needing metadata processing
 	const theme = useTheme();
@@ -189,12 +188,9 @@ export const FileListPage = () => {
 					background: `${theme.palette.primary}`,
 				}}
 			>
-				<SelectFolderButton onRowChange={handleAddPathArrayToRows} />
-				<ContinueButton onContinue={handleOpen} />
-			</Box>
 				<Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
 					<SelectFolderButton onRowChange={handleAddPathArrayToRows} />
-					<ContinueButton />
+					<ContinueButton onContinue={handleOpen} />
 				</Box>
 				<Stack direction="row" spacing={1}>
 					<TipIcon sx={{ fontSize: "0.9em", color: "var(--bcgov-yellow)" }} />
