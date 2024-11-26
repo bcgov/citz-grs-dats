@@ -41,28 +41,50 @@ export class WorkerPool extends EventEmitter {
 	/**
 	 * Adds a task to the queue and runs it when a worker is available
 	 */
-	runTask<T, U>(workerScript: string, workerData: WorkerData<T>, timeout = 60000): Promise<U> {
+	runTask<T, U>(workerScript: string, workerData: WorkerData<T>, timeout?: number): Promise<U> {
 		return new Promise<U>((resolve, reject) => {
-			const timer = setTimeout(() => reject(new Error("Task timeout")), timeout);
+			let timer: NodeJS.Timeout | undefined;
+
+			if (timeout !== undefined) {
+				timer = setTimeout(() => {
+					reject(new Error("Task timeout"));
+				}, timeout);
+			}
 
 			const worker = this.getOrCreateWorker(workerScript, workerData);
 			this.workers.add(worker);
 
 			worker.on("message", (message) => {
+				const task = workerScript.includes("metadata") ? "metadata" : "copy";
+				// Handle progress updates
 				if (message.type === "progress") {
-					const task = workerScript.includes("metadata") ? "metadata" : "copy";
-					this.emit("progress", { task, progress: message.progressPercentage });
-				} else if (message.success) {
-					clearTimeout(timer);
-					resolve(message as U);
-				} else {
-					clearTimeout(timer);
-					reject(new Error(message.error || "Worker task failed"));
+					this.emit("progress", {
+						task,
+						...message,
+					});
+				}
+				// Handle completion messages
+				else if (message.type === "completion") {
+					if (timer) clearTimeout(timer);
+					if (message.success) {
+						this.emit("completion", {
+							task,
+							...message,
+						});
+						resolve(message as U);
+					} else {
+						reject(new Error(message.error || "Worker task failed"));
+					}
+				}
+				// Handle unexpected messages
+				else {
+					if (timer) clearTimeout(timer);
+					reject(new Error("Unexpected message type from worker."));
 				}
 			});
 
 			worker.on("error", (err: Error) => {
-				clearTimeout(timer);
+				if (timer) clearTimeout(timer);
 				reject(err);
 			});
 

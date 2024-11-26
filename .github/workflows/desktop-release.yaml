@@ -18,8 +18,38 @@ on:
           - major
 
 jobs:
+  check_typescript_errors:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            desktop
+
+      # Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Install dependencies
+      - name: Install dependencies
+        working-directory: desktop
+        run: |
+          npm i
+
+      # Check for TypeScript errors
+      - name: Check for TypeScript errors
+        working-directory: desktop
+        run: |
+          npm run typecheck
+
   version_bump:
     runs-on: ubuntu-latest
+    needs: check_typescript_errors
     outputs:
       VERSION: ${{ steps.package_version.outputs.VERSION }}
     steps:

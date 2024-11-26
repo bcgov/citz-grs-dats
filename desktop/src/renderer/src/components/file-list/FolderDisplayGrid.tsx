@@ -4,6 +4,8 @@ import {
 	useGridApiContext,
 	type GridRenderEditCellParams,
 	type useGridApiRef,
+	type GridCellParams,
+	type MuiEvent,
 } from "@mui/x-data-grid";
 import {
 	HighlightOff as DeleteIcon,
@@ -73,11 +75,13 @@ const GridEditDateCell = ({
 type Props = {
 	rows: FolderRow[];
 	onFolderDelete: (folder: string) => Promise<void> | void;
+	processRowUpdate: (newRow: FolderRow) => FolderRow;
 	apiRef: ReturnType<typeof useGridApiRef>;
 };
 
-export const FolderDisplayGrid = ({ rows, onFolderDelete, apiRef }: Props) => {
+export const FolderDisplayGrid = ({ rows, onFolderDelete, processRowUpdate, apiRef }: Props) => {
 	const theme = useTheme();
+
 	const columns: GridColDef<(typeof rows)[number]>[] = [
 		{
 			field: "progress",
@@ -96,21 +100,42 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, apiRef }: Props) => {
 				</Box>
 			),
 		},
-		{ field: "folder", headerName: "Folder", width: 200 },
-		{ field: "schedule", headerName: "Schedule", width: 110, editable: true },
-		{ field: "classification", headerName: "Primary/Secondary", width: 150, editable: true },
-		{ field: "file", headerName: "FILE ID", width: 90, editable: true },
+		{ field: "folder", headerName: "Folder", width: 200, description: "Automatically populated." },
+		{
+			field: "schedule",
+			headerName: "Schedule",
+			description: "Information Schedule number (e.g. 100001 for ARCS).",
+			width: 110,
+			editable: true,
+		},
+		{
+			field: "classification",
+			headerName: "Classification",
+			description: "Classification number (e.g. 201-40 for Cabinet Submissions).",
+			width: 150,
+			editable: true,
+		},
+		{
+			field: "file",
+			headerName: "File ID",
+			description:
+				"File identifier to link multiple folders, if used (e.g. PEP for Provincial Emergency Program).",
+			width: 90,
+			editable: true,
+		},
 		{
 			field: "opr",
 			headerName: "OPR",
 			type: "boolean",
-			description: "Office of Primary Responsibility",
+			description:
+				"Office of Primary Responsibility (OPR) maintains the official copy of the records.",
 			width: 60,
 			editable: true,
 		},
 		{
 			field: "startDate",
 			headerName: "Start Date",
+			description: "Date the file was opened.",
 			width: 125,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
@@ -124,6 +149,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, apiRef }: Props) => {
 		{
 			field: "endDate",
 			headerName: "End Date",
+			description: "Date the file was closed.",
 			width: 125,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
@@ -137,6 +163,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, apiRef }: Props) => {
 		{
 			field: "soDate",
 			headerName: "SO Date",
+			description: "Date the file became Superseded or Obsolete (SO), if applicable.",
 			width: 125,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
@@ -150,6 +177,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, apiRef }: Props) => {
 		{
 			field: "fdDate",
 			headerName: "FD Date",
+			description: "Date the file was eligible for Final Disposition (FD).",
 			width: 125,
 			editable: true,
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
@@ -178,6 +206,32 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, apiRef }: Props) => {
 		},
 	];
 
+	const handleCellKeyDown = (params: GridCellParams, event: MuiEvent<React.KeyboardEvent>) => {
+		if (event.key === "ArrowDown") {
+			const { id, field, value, isEditable } = params;
+
+			if (!value || !isEditable) return;
+
+			const currentRowIndex = Number(id);
+
+			// Iterate through all rows below the current one
+			for (let i = currentRowIndex + 1; i < rows.length; i++) {
+				const targetValue = apiRef.current.getCellValue(i, field);
+
+				if (targetValue === undefined || targetValue === null || targetValue === "") {
+					const isRowInEditMode = apiRef.current.getRowMode(i) === "edit";
+					if (!isRowInEditMode) apiRef.current.startRowEditMode({ id: i });
+
+					apiRef.current.setEditCellValue({ id: i, field, value });
+				} else {
+					break; // Stop when a non-empty row is found
+				}
+			}
+
+			event.stopPropagation(); // Prevent default handling of the ArrowDown key
+		}
+	};
+
 	return (
 		<LocalizationProvider dateAdapter={AdapterDayjs}>
 			<Box sx={{ width: "100%" }}>
@@ -190,6 +244,8 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, apiRef }: Props) => {
 					disableColumnMenu
 					editMode="row"
 					hideFooter
+					processRowUpdate={processRowUpdate}
+					onCellKeyDown={handleCellKeyDown}
 				/>
 			</Box>
 		</LocalizationProvider>

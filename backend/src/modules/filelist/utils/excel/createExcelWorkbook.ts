@@ -1,9 +1,6 @@
 import ExcelJS, { type Workbook } from "exceljs";
 import type { FileMetadataZodType, FolderMetadataZodType } from "../../schemas";
-import { setWorksheetHeader } from "./setWorksheetHeader";
-import { addFolderData } from "./addFolderData";
-import { addInstructionsSheet } from "./addInstructionsSheet";
-import { addFileMetadata } from "./addFileMetadata";
+import { setupCoverPage, setupFolderList, setupInstructions, setupMetadata } from "./worksheets";
 
 type FolderRow = FolderMetadataZodType & { folder: string };
 
@@ -22,34 +19,18 @@ export const createExcelWorkbook = ({
 }: Data): Workbook => {
 	// Create a workbook and worksheet
 	const workbook = new ExcelJS.Workbook();
-	const worksheet = workbook.addWorksheet("FOLDER LIST");
 
-	// Set column widths
-	worksheet.columns = [
-		{ width: 40 },
-		{ width: 20 },
-		{ width: 20 },
-		{ width: 20 },
-		{ width: 20 },
-		{ width: 20 },
-		{ width: 20 },
-		{ width: 20 },
-		{ width: 20 },
-	];
+	// Create worksheets
+	const coverPageWS = workbook.addWorksheet("COVER PAGE");
+	const folderListWS = workbook.addWorksheet("FOLDER LIST");
+	const metadataWS = workbook.addWorksheet("METADATA");
+	const instructionsWS = workbook.addWorksheet("INSTRUCTIONS");
 
-	// Set headers for Ministry, Branch, Accession #, and Application #
-	setWorksheetHeader({ worksheet, accession, application });
-
-	// Add folder headers and data to the worksheet
-	addFolderData({ worksheet, rows: folderRows });
-
-	// Add file list metadata
-	const metadataSheet = workbook.addWorksheet("METADATA");
-	addFileMetadata({ worksheet: metadataSheet, rows: fileRows });
-
-	// Add Instructions worksheet
-	const instructionsSheet = workbook.addWorksheet("INSTRUCTIONS");
-	addInstructionsSheet(instructionsSheet);
+	// Populate worksheets
+	setupCoverPage({ worksheet: coverPageWS, accession, application });
+	setupFolderList({ worksheet: folderListWS, folders: folderRows });
+	setupMetadata({ worksheet: metadataWS, files: fileRows });
+	setupInstructions({ worksheet: instructionsWS });
 
 	return workbook;
 };

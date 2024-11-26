@@ -1,13 +1,14 @@
 import type { Worksheet } from "exceljs";
-import type { FileMetadataZodType } from "../../schemas";
+import type { FileMetadataZodType } from "../../../schemas";
 import { formatDate } from "src/utils";
 
 type Data = {
 	worksheet: Worksheet;
-	rows: FileMetadataZodType[];
+	files: FileMetadataZodType[];
 };
 
-export const addFileMetadata = ({ worksheet, rows }: Data) => {
+export const setupMetadata = ({ worksheet, files }: Data) => {
+	// Set column widths
 	worksheet.columns = [
 		{ width: 50 },
 		{ width: 30 },
@@ -47,14 +48,14 @@ export const addFileMetadata = ({ worksheet, rows }: Data) => {
 		};
 	});
 
-	// Enable sorting for the table
+	// Enable sorting for the table headers
 	worksheet.autoFilter = {
 		from: "A1",
 		to: "G1",
 	};
 
 	// Populate rows with data
-	rows.forEach((row) => {
+	files.forEach((row) => {
 		worksheet.addRow([
 			row.filepath,
 			row.filename,
