@@ -88,8 +88,10 @@ export const HomePage = ({ authenticated }: Props) => {
 				)}
 			</Stack>
 
-			<Stack gap={1} sx={{ marginTop: 1 }}>
-				<Typography variant="h3">Need Assistance?</Typography>
+			<Stack sx={{ marginTop: 1 }}>
+				<Typography variant="h3" sx={{ marginBottom: "10px" }}>
+					Need Assistance?
+				</Typography>
 
 				<Stack direction="row" gap={"5px"} sx={{ alignItems: "center", marginLeft: 2 }}>
 					<Typography variant="h4">For assistance, contact your</Typography>
@@ -97,7 +99,7 @@ export const HomePage = ({ authenticated }: Props) => {
 						href="https://www2.gov.bc.ca/gov/content/governments/services-for-government/information-management-technology/records-management/records-contacts/ministries"
 						target="_blank"
 					>
-						GIM Specialists.
+						Government Information Management (GIM) Specialists.
 					</Link>
 				</Stack>
 
