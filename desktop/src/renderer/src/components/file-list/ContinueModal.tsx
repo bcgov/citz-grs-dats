@@ -112,15 +112,15 @@ export const ContinueModal = ({ modalOpen, modalClose, modalSubmit }) => {
 		return (
 			<Box sx={{ gap: 10, padding: 2 }}>
 				<Box>
-					<Typography sx={{ mt: 1 }} variant="h5">
+					<Typography sx={{ mt: 1 }} variant="h2">
 						File List Submitted
 					</Typography>
-					<Typography sx={{ mt: 2 }} variant="h6">
+					<Typography sx={{ mt: 3 }} variant="h3">
 						Your request is being processed. You will receive an email with the generated file list
 						shortly.
 					</Typography>
 				</Box>
-				<Box sx={{ gap: 1, padding: 1, mt: 2 }}>
+				<Box sx={{ gap: 1, padding: 1, mt: 3 }}>
 					<HomeButton />
 				</Box>
 			</Box>
