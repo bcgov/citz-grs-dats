@@ -67,6 +67,7 @@ const GridEditDateCell = ({
 		<DatePicker
 			value={value}
 			onChange={handleChange}
+			format="YYYY/MM/DD"
 			slots={{ textField: WrappedGridEditDateInput }}
 		/>
 	);
