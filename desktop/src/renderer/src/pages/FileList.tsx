@@ -4,17 +4,41 @@ import {
 	type FolderRow,
 	SelectFolderButton,
 	ContinueButton,
+	ContinueModal,
 } from "@renderer/components/file-list";
 import { useState } from "react";
 import { useGridApiRef } from "@mui/x-data-grid";
 
 export const FileListPage = () => {
+	// setOpen state controls continue modal
+	const [open, setOpen] = useState(false);
+	// setRows state controls rows displayed
 	const [rows, setRows] = useState<FolderRow[]>([]);
 	const theme = useTheme();
 	const apiRef = useGridApiRef();
 
 	const onFolderDelete = (folder: string) => {
 		alert(folder); // TBD
+	};
+
+	const handleOpen = () => {
+		if (rows.length <= 0) {
+			console.log("No rows selected");
+			// TODO: add popup to suggest adding folder before cont
+			setOpen(false);
+		} else {
+			setOpen(true);
+		}
+	};
+	const handleClose = () => {
+		setOpen(false);
+	};
+
+	const handleFormSubmit = (formData) => {
+		// on form submit print the data we currently have and reset rows to empty list
+		console.log("form submitted");
+		console.log(formData);
+		// TODO: process submitted form data
 	};
 
 	const handleAddPathArrayToRows = (inputPaths: string[]) => {
@@ -84,7 +108,7 @@ export const FileListPage = () => {
 				}}
 			>
 				<SelectFolderButton onRowChange={handleAddPathArrayToRows} />
-				<ContinueButton rows={rows} />
+				<ContinueButton onContinue={handleOpen} />
 			</Box>
 			<Box
 				sx={{
@@ -96,6 +120,13 @@ export const FileListPage = () => {
 			>
 				<FolderDisplayGrid rows={rows} onFolderDelete={onFolderDelete} apiRef={apiRef} />
 			</Box>
+			{open && (
+				<ContinueModal
+					modalOpen={handleOpen}
+					modalClose={handleClose}
+					modalSubmit={handleFormSubmit}
+				/>
+			)}
 		</>
 	);
 };
