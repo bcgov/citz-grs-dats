@@ -36,10 +36,17 @@ export const fileMetadataSchema = new Schema(
 		filepath: { type: String, required: true },
 		filename: { type: String, required: true },
 		size: { type: String, required: true },
+		checksum: { type: String, required: true },
 		birthtime: { type: String, required: true },
 		lastModified: { type: String, required: true },
 		lastAccessed: { type: String, required: true },
-		checksum: { type: String, required: true },
+		lastSaved: { type: String, required: false },
+		authors: { type: String, required: false },
+		owner: { type: String, required: false },
+		company: { type: String, required: false },
+		computer: { type: String, required: false },
+		contentType: { type: String, required: false },
+		programName: { type: String, required: false },
 	},
 	{ _id: false }, // Prevents Mongoose from automatically creating an _id for each folder
 );
@@ -49,10 +56,17 @@ export const fileMetadataZodSchema = z.object({
 	filepath: z.string(),
 	filename: z.string(),
 	size: z.string(),
+	checksum: z.string(),
 	birthtime: z.string(),
 	lastModified: z.string(),
 	lastAccessed: z.string(),
-	checksum: z.string(),
+	lastSaved: z.union([z.string(), z.null()]).optional(),
+	authors: z.union([z.string(), z.null()]).optional(),
+	owner: z.union([z.string(), z.null()]).optional(),
+	company: z.union([z.string(), z.null()]).optional(),
+	computer: z.union([z.string(), z.null()]).optional(),
+	contentType: z.union([z.string(), z.null()]).optional(),
+	programName: z.union([z.string(), z.null()]).optional(),
 });
 
 export type FileMetadataZodType = z.infer<typeof fileMetadataZodSchema>;
