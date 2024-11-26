@@ -20,7 +20,7 @@ export const FileListPage = ({ authenticated }: Props) => {
 	// setRows state controls rows displayed
 	const [rows, setRows] = useState<FolderRow[]>([]);
 	// set showContinue state controlls if the continue button is enabled
-	const [showContinue, setShowContinue] = useState<boolean>(false);
+	const [enableContinue, setEnableContinue] = useState<boolean>(false);
 	const [workers] = useState(window.api.workers);
 	const [metadata, setMetadata] = useState<Record<string, unknown>>({});
 	const [pendingPaths, setPendingPaths] = useState<string[]>([]); // Tracks paths needing metadata processing
@@ -57,6 +57,7 @@ export const FileListPage = ({ authenticated }: Props) => {
 					[source]: newMetadata[source],
 				}));
 				console.log(`Successfully processed folder: ${source}`);
+				handleShowContinue();
 			} else {
 				console.error(`Failed to process folder: ${source}`);
 			}
@@ -85,6 +86,28 @@ export const FileListPage = ({ authenticated }: Props) => {
 		}
 	}, [pendingPaths]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		handleShowContinue();
+	}, [rows, authenticated]);
+
+	const handleShowContinue = () => {
+		let enabled: boolean;
+		const allProgressComplete = rows.every((obj) => obj.progress === 100);
+		// if the user is not authenticated,
+		//    or there are no folders selected,
+		//    or the metadata is not finished loading
+		// the continue button should be disabled
+		if (!authenticated || rows.length <= 0 || !allProgressComplete) {
+			enabled = false;
+		} else {
+			// if all of the above passes we should enable the continue button
+			enabled = true;
+		}
+		setEnableContinue(enabled);
+		return enabled;
+	};
+
 	const getFolderMetadata = async (filePath: string) => {
 		try {
 			await workers.getFolderMetadata({
@@ -111,20 +134,15 @@ export const FileListPage = ({ authenticated }: Props) => {
 	};
 
 	const handleOpen = () => {
-		let isOpen = false;
-		// if we are authenticated, and there are folders we can open the continue modal
-		if (!authenticated || rows.length <= 0) {
-			setShowContinue(false);
-			setOpen(isOpen);
-		} else {
-			isOpen = true;
-			setShowContinue(true);
-			setOpen(isOpen);
-		}
+		let isOpen: boolean;
+		// check if all requirements are met to continue
+		if (!enableContinue) isOpen = false;
+		else isOpen = true;
+		setOpen(isOpen);
 		return isOpen;
 	};
 	const handleClose = () => {
-		setShowContinue(false);
+		handleShowContinue();
 		setOpen(false);
 	};
 
@@ -201,7 +219,7 @@ export const FileListPage = ({ authenticated }: Props) => {
 			>
 				<Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
 					<SelectFolderButton onRowChange={handleAddPathArrayToRows} />
-					<ContinueButton onContinue={handleOpen} isEnabled={showContinue} />
+					<ContinueButton onContinue={handleOpen} isEnabled={enableContinue} />
 				</Box>
 				<Stack direction="row" spacing={1}>
 					<TipIcon sx={{ fontSize: "0.9em", color: "var(--bcgov-yellow)" }} />
@@ -228,11 +246,7 @@ export const FileListPage = ({ authenticated }: Props) => {
 				/>
 			</Box>
 			{open && (
-				<ContinueModal
-					modalOpen={handleOpen}
-					modalClose={handleClose}
-					modalSubmit={handleFormSubmit}
-				/>
+				<ContinueModal modalOpen={open} modalClose={handleClose} modalSubmit={handleFormSubmit} />
 			)}
 		</>
 	);

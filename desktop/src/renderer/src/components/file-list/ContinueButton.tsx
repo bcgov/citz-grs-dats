@@ -3,11 +3,11 @@ import { Button, Tooltip, TooltipTrigger } from "@bcgov/design-system-react-comp
 export const ContinueButton = ({ onContinue, isEnabled }): JSX.Element => {
 	const ContDisabled = () => {
 		return (
-			<TooltipTrigger>
+			<TooltipTrigger delay={0}>
 				<Button
-					variant="secondary"
-					style={{ justifyContent: "center", width: "15%", background: "gray" }}
-					onPress={onContinue}
+					className="disabled-button"
+					variant="primary"
+					style={{ minWidth: "15%" }}
 					preventFocusOnPress={true}
 				>
 					Continue
@@ -22,8 +22,8 @@ export const ContinueButton = ({ onContinue, isEnabled }): JSX.Element => {
 	const ContEnabled = () => {
 		return (
 			<Button
-				variant="secondary"
-				style={{ justifyContent: "center", width: "15%" }}
+				variant="primary"
+				style={{ justifyContent: "center", minWidth: "15%" }}
 				onPress={onContinue}
 			>
 				Continue

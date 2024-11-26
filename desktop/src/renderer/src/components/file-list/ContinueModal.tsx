@@ -39,12 +39,6 @@ export const ContinueModal = ({ modalOpen, modalClose, modalSubmit }) => {
 		setsubmitted(true);
 	};
 
-	const handleOpen = () => {
-		// set contForm state based on if the modal opened successfully
-		const isOpen = modalOpen();
-		return isOpen;
-	};
-
 	const HomeButton = () => {
 		return (
 			<Button
@@ -73,8 +67,8 @@ export const ContinueModal = ({ modalOpen, modalClose, modalSubmit }) => {
 					Entering this information is optional.
 				</Typography>
 				<Box sx={innerBoxStyle}>
+					<TextField name="accessionNumber" label="Accession" />
 					<TextField name="applicationNumber" label="Application" />
-					<TextField name="accentionNumber" label="Accention" />
 				</Box>
 
 				<Typography sx={{ mt: 1 }} variant="subtitle1">
@@ -86,10 +80,10 @@ export const ContinueModal = ({ modalOpen, modalClose, modalSubmit }) => {
 						items={[
 							{ id: "1", label: "Excel (.xlsx)" },
 							{ id: "2", label: "JSON (.json)" },
-							{ id: "3", label: "PDF (.pdf)" },
 						]}
 						name="outputFormat"
 						label="Output format"
+						defaultSelectedKey={"1"}
 					/>
 				</Box>
 
@@ -134,7 +128,7 @@ export const ContinueModal = ({ modalOpen, modalClose, modalSubmit }) => {
 	};
 
 	return (
-		<Modal open={handleOpen()} onClose={modalClose}>
+		<Modal open={modalOpen} onClose={modalClose}>
 			<Box sx={modalStyle}>
 				{!submitted && <ContinueForm />}
 				{submitted && <ConfirmSubmit />}
