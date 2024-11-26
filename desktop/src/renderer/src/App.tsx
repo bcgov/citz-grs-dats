@@ -64,7 +64,7 @@ function App(): JSX.Element {
 				<main style={{ width: "85%", marginLeft: "15%" }}>
 					<Routes>
 						<Route path="/" element={<HomePage />} />
-						<Route path="/file-list" element={<FileListPage />} />
+						<Route path="/file-list" element={<FileListPage authenticated={!!accessToken} />} />
 						<Route path="/send-records" element={<SendRecordsPage />} />
 					</Routes>
 				</main>

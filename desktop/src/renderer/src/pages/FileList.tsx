@@ -10,11 +10,17 @@ import { useEffect, useState } from "react";
 import { useGridApiRef } from "@mui/x-data-grid";
 import { Lightbulb as TipIcon } from "@mui/icons-material";
 
-export const FileListPage = () => {
+type Props = {
+	authenticated: boolean;
+};
+
+export const FileListPage = ({ authenticated }: Props) => {
 	// setOpen state controls continue modal
 	const [open, setOpen] = useState(false);
 	// setRows state controls rows displayed
 	const [rows, setRows] = useState<FolderRow[]>([]);
+	// set showContinue state controlls if the continue button is enabled
+	const [showContinue, setShowContinue] = useState<boolean>(false);
 	const [workers] = useState(window.api.workers);
 	const [metadata, setMetadata] = useState<Record<string, unknown>>({});
 	const [pendingPaths, setPendingPaths] = useState<string[]>([]); // Tracks paths needing metadata processing
@@ -105,15 +111,20 @@ export const FileListPage = () => {
 	};
 
 	const handleOpen = () => {
-		if (rows.length <= 0) {
-			console.log("No rows selected");
-			// TODO: add popup to suggest adding folder before cont
-			setOpen(false);
+		let isOpen = false;
+		// if we are authenticated, and there are folders we can open the continue modal
+		if (!authenticated || rows.length <= 0) {
+			setShowContinue(false);
+			setOpen(isOpen);
 		} else {
-			setOpen(true);
+			isOpen = true;
+			setShowContinue(true);
+			setOpen(isOpen);
 		}
+		return isOpen;
 	};
 	const handleClose = () => {
+		setShowContinue(false);
 		setOpen(false);
 	};
 
@@ -190,7 +201,7 @@ export const FileListPage = () => {
 			>
 				<Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
 					<SelectFolderButton onRowChange={handleAddPathArrayToRows} />
-					<ContinueButton onContinue={handleOpen} />
+					<ContinueButton onContinue={handleOpen} isEnabled={showContinue} />
 				</Box>
 				<Stack direction="row" spacing={1}>
 					<TipIcon sx={{ fontSize: "0.9em", color: "var(--bcgov-yellow)" }} />

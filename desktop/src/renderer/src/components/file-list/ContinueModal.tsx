@@ -40,8 +40,23 @@ export const ContinueModal = ({ modalOpen, modalClose, modalSubmit }) => {
 	};
 
 	const handleOpen = () => {
-		modalOpen;
-		return true;
+		// set contForm state based on if the modal opened successfully
+		const isOpen = modalOpen();
+		return isOpen;
+	};
+
+	const HomeButton = () => {
+		return (
+			<Button
+				variant="secondary"
+				style={{ justifyContent: "center", width: "40%", height: "10%" }}
+				onPress={() => {
+					navigate("/");
+				}}
+			>
+				Return to Home
+			</Button>
+		);
 	};
 
 	const ContinueForm = () => {
@@ -112,15 +127,7 @@ export const ContinueModal = ({ modalOpen, modalClose, modalSubmit }) => {
 					</Typography>
 				</Box>
 				<Box sx={{ gap: 1, padding: 1, mt: 2 }}>
-					<Button
-						variant="secondary"
-						style={{ justifyContent: "center", width: "40%", height: "10%" }}
-						onPress={() => {
-							navigate("/");
-						}}
-					>
-						Return to Home
-					</Button>
+					<HomeButton />
 				</Box>
 			</Box>
 		);
