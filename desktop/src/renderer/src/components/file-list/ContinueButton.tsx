@@ -1,17 +1,40 @@
-import { Button } from "@bcgov/design-system-react-components";
+import { Button, Tooltip, TooltipTrigger } from "@bcgov/design-system-react-components";
 
-export const ContinueButton = (): JSX.Element => {
-	const handleClick = async () => {
-		console.log("TODO: THIS");
+export const ContinueButton = ({ onContinue, isEnabled }): JSX.Element => {
+	const ContDisabled = () => {
+		return (
+			<TooltipTrigger delay={0}>
+				<Button
+					className="disabled-button"
+					variant="primary"
+					style={{ minWidth: "15%" }}
+					preventFocusOnPress={true}
+				>
+					Continue
+				</Button>
+				<Tooltip placement="bottom">
+					Ensure folders are selected, loading is complete, and you are logged in before continuing.
+				</Tooltip>
+			</TooltipTrigger>
+		);
+	};
+
+	const ContEnabled = () => {
+		return (
+			<Button
+				variant="primary"
+				style={{ justifyContent: "center", minWidth: "15%" }}
+				onPress={onContinue}
+			>
+				Continue
+			</Button>
+		);
 	};
 
 	return (
-		<Button
-			variant="primary"
-			style={{ justifyContent: "center", width: "15%" }}
-			onPress={handleClick}
-		>
-			Continue
-		</Button>
+		<>
+			{isEnabled && <ContEnabled />}
+			{!isEnabled && <ContDisabled />}
+		</>
 	);
 };

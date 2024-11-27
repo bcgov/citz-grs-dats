@@ -4,14 +4,24 @@ import {
 	type FolderRow,
 	SelectFolderButton,
 	ContinueButton,
+	ContinueModal,
 } from "@renderer/components/file-list";
 import { useEffect, useState } from "react";
 import { useGridApiRef } from "@mui/x-data-grid";
 import { Lightbulb as TipIcon } from "@mui/icons-material";
 
-export const FileListPage = () => {
-	const [workers] = useState(window.api.workers);
+type Props = {
+	authenticated: boolean;
+};
+
+export const FileListPage = ({ authenticated }: Props) => {
+	// setOpen state controls continue modal
+	const [open, setOpen] = useState(false);
+	// setRows state controls rows displayed
 	const [rows, setRows] = useState<FolderRow[]>([]);
+	// set showContinue state controlls if the continue button is enabled
+	const [enableContinue, setEnableContinue] = useState<boolean>(false);
+	const [workers] = useState(window.api.workers);
 	const [metadata, setMetadata] = useState<Record<string, unknown>>({});
 	const [pendingPaths, setPendingPaths] = useState<string[]>([]); // Tracks paths needing metadata processing
 	const theme = useTheme();
@@ -47,6 +57,7 @@ export const FileListPage = () => {
 					[source]: newMetadata[source],
 				}));
 				console.log(`Successfully processed folder: ${source}`);
+				handleShowContinue();
 			} else {
 				console.error(`Failed to process folder: ${source}`);
 			}
@@ -75,6 +86,28 @@ export const FileListPage = () => {
 		}
 	}, [pendingPaths]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		handleShowContinue();
+	}, [rows, authenticated]);
+
+	const handleShowContinue = () => {
+		let enabled: boolean;
+		const allProgressComplete = rows.every((obj) => obj.progress === 100);
+		// if the user is not authenticated,
+		//    or there are no folders selected,
+		//    or the metadata is not finished loading
+		// the continue button should be disabled
+		if (!authenticated || rows.length <= 0 || !allProgressComplete) {
+			enabled = false;
+		} else {
+			// if all of the above passes we should enable the continue button
+			enabled = true;
+		}
+		setEnableContinue(enabled);
+		return enabled;
+	};
+
 	const getFolderMetadata = async (filePath: string) => {
 		try {
 			await workers.getFolderMetadata({
@@ -98,6 +131,26 @@ export const FileListPage = () => {
 			return remainingMetadata;
 		});
 		console.log(`Deleted folder: ${folder}`);
+	};
+
+	const handleOpen = () => {
+		let isOpen: boolean;
+		// check if all requirements are met to continue
+		if (!enableContinue) isOpen = false;
+		else isOpen = true;
+		setOpen(isOpen);
+		return isOpen;
+	};
+	const handleClose = () => {
+		handleShowContinue();
+		setOpen(false);
+	};
+
+	const handleFormSubmit = (formData) => {
+		// on form submit print the data we currently have and reset rows to empty list
+		console.log("form submitted");
+		console.log(formData);
+		// TODO: process submitted form data
 	};
 
 	const handleAddPathArrayToRows = (inputPaths: string[]) => {
@@ -166,7 +219,7 @@ export const FileListPage = () => {
 			>
 				<Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
 					<SelectFolderButton onRowChange={handleAddPathArrayToRows} />
-					<ContinueButton />
+					<ContinueButton onContinue={handleOpen} isEnabled={enableContinue} />
 				</Box>
 				<Stack direction="row" spacing={1}>
 					<TipIcon sx={{ fontSize: "0.9em", color: "var(--bcgov-yellow)" }} />
@@ -192,6 +245,9 @@ export const FileListPage = () => {
 					apiRef={apiRef}
 				/>
 			</Box>
+			{open && (
+				<ContinueModal modalOpen={open} modalClose={handleClose} modalSubmit={handleFormSubmit} />
+			)}
 		</>
 	);
 };
