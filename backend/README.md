@@ -34,20 +34,20 @@ You can test the creation of a file list ARS662 by following these steps.
         "classification": "654321-10",
         "file": "",
         "opr": true,
-        "startDate": "01-01-2024",
-        "endDate": "12-31-2024",
-        "soDate": "02-01-2024",
-        "fdDate": "12-01-2024"
+        "startDate": "2024/01/01",
+        "endDate": "2024/12/31",
+        "soDate": "2024/02/01",
+        "fdDate": "2024/12/01"
       },
       "D:/test/Folder2": {
         "schedule": "654321",
         "classification": "123456-20",
         "file": "",
         "opr": false,
-        "startDate": "03-01-2024",
-        "endDate": "11-30-2024",
-        "soDate": "04-01-2024",
-        "fdDate": "10-31-2024"
+        "startDate": "2024/01/01",
+        "endDate": "2024/12/31",
+        "soDate": "2024/02/01",
+        "fdDate": "2024/12/01"
       }
     },
     "files": {
@@ -112,20 +112,20 @@ curl -X POST http://localhost:3200/filelist/test \
         "classification": "654321-10",
         "file": "",
         "opr": true,
-        "startDate": "01-01-2024",
-        "endDate": "12-31-2024",
-        "soDate": "02-01-2024",
-        "fdDate": "12-01-2024"
+        "startDate": "2024/01/01",
+        "endDate": "2024/12/31",
+        "soDate": "2024/02/01",
+        "fdDate": "2024/12/01"
       },
       "D:/test/Folder2": {
         "schedule": "654321",
         "classification": "123456-20",
         "file": "",
         "opr": false,
-        "startDate": "03-01-2024",
-        "endDate": "11-30-2024",
-        "soDate": "04-01-2024",
-        "fdDate": "10-31-2024"
+        "startDate": "2024/01/01",
+        "endDate": "2024/12/31",
+        "soDate": "2024/02/01",
+        "fdDate": "2024/12/01"
       }
     },
     "files": {

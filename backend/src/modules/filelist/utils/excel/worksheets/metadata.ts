@@ -78,7 +78,7 @@ export const setupMetadata = ({ worksheet, files }: Data) => {
 			formatDate(row.birthtime),
 			formatDate(row.lastModified),
 			formatDate(row.lastAccessed),
-			row.lastSaved ? formatDate(row.lastSaved) : "",
+			row?.lastSaved ? formatDate(row.lastSaved) : "",
 			row?.authors ?? "",
 			row?.owner ?? "",
 			row?.company ?? "",

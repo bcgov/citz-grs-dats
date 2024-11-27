@@ -110,7 +110,7 @@ export const FileListPage = () => {
 				// Check if filePath is already in the rows
 				const isAlreadyInRows = rows.some((row) => row.folder === filePath);
 
-				if (isAlreadyInRows) continue; // Skip if filePath is already in rows
+				if (isAlreadyInRows || filePath === "") continue; // Skip if filePath is already in rows
 
 				const curFolderRow: FolderRow = {
 					id: index, // Unique IDs for new rows
