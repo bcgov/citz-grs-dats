@@ -61,7 +61,7 @@ export const ContinueModal = ({ modalOpen, modalClose, modalSubmit }) => {
 				}}
 			>
 				<Typography sx={{ mt: 1 }} variant="subtitle1">
-					You can provide an application and accession number to improve the transfer process.
+					You can provide an accession and application number to improve the transfer process.
 				</Typography>
 				<Typography sx={{ mt: 1 }} variant="subtitle2">
 					Entering this information is optional.
