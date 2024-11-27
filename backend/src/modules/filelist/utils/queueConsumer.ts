@@ -45,7 +45,7 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 	// Handle output file type
 	switch (filelist.outputFileType) {
 		case "excel": {
-			const filename = `File_List_${date}.xlsx`;
+			const filename = `Digital_File_List_${date}.xlsx`;
 
 			// Create Excel workbook
 			const workbook: Workbook = createExcelWorkbook({
@@ -74,14 +74,14 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 				bodyType: "html",
 				body: filelistEmail,
 				to: [email],
-				subject: "DATS - File List",
+				subject: "DATS - Digital File List Created",
 			});
 
 			return channel.ack(msg);
 		}
 
 		case "json": {
-			const filename = `File_List_${date}.json`;
+			const filename = `Digital_File_List_${date}.json`;
 
 			// Create JSON file list
 			const jsonFile: JsonFileList = createJsonFileList({
