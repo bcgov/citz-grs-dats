@@ -67,6 +67,7 @@ const GridEditDateCell = ({
 		<DatePicker
 			value={value}
 			onChange={handleChange}
+			format="YYYY/MM/DD"
 			slots={{ textField: WrappedGridEditDateInput }}
 		/>
 	);
@@ -141,7 +142,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, processRowUpdate, apiR
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
 			valueFormatter: (value) => {
 				if (value) {
-					return (value as Dayjs).format("MM/DD/YYYY");
+					return (value as Dayjs).format("YYYY/MM/DD");
 				}
 				return "";
 			},
@@ -155,7 +156,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, processRowUpdate, apiR
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
 			valueFormatter: (value) => {
 				if (value) {
-					return (value as Dayjs).format("MM/DD/YYYY");
+					return (value as Dayjs).format("YYYY/MM/DD");
 				}
 				return "";
 			},
@@ -169,7 +170,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, processRowUpdate, apiR
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
 			valueFormatter: (value) => {
 				if (value) {
-					return (value as Dayjs).format("MM/DD/YYYY");
+					return (value as Dayjs).format("YYYY/MM/DD");
 				}
 				return "";
 			},
@@ -183,7 +184,7 @@ export const FolderDisplayGrid = ({ rows, onFolderDelete, processRowUpdate, apiR
 			renderEditCell: (params) => <GridEditDateCell {...params} />,
 			valueFormatter: (value) => {
 				if (value) {
-					return (value as Dayjs).format("MM/DD/YYYY");
+					return (value as Dayjs).format("YYYY/MM/DD");
 				}
 				return "";
 			},
