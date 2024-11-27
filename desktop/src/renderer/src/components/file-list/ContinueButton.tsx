@@ -13,7 +13,7 @@ export const ContinueButton = ({ onContinue, isEnabled }): JSX.Element => {
 					Continue
 				</Button>
 				<Tooltip placement="bottom">
-					Ensure folders are selected, loading is completed, and you are logged in before continuing
+					Ensure folders are selected, loading is complete, and you are logged in before continuing.
 				</Tooltip>
 			</TooltipTrigger>
 		);
