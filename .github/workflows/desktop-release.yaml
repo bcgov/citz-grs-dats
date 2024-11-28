@@ -111,7 +111,7 @@ jobs:
 
       # Install wine to build windows artifact
       - name: Install wine for windows build
-        if: ${{ matrix.os == windows-latest }}
+        if: ${{ matrix.os == 'windows-latest' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends wine-stable wine64 libwine
