@@ -85,7 +85,7 @@ jobs:
     needs: version_bump
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, macos-latest]
     steps:
       # Checkout the code
       - name: Checkout repository
@@ -108,13 +108,6 @@ jobs:
         run: |
           npm install
         working-directory: desktop
-
-      # Install wine to build windows artifact
-      - name: Install wine for windows build
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          choco install wine-stable wine64 libwine
 
       # Build for the platform
       - name: Build Electron App for ${{ matrix.os }}
