@@ -108,6 +108,13 @@ jobs:
         run: npm install
         working-directory: desktop
 
+      # Install wine to build windows artifact
+      - name: Install wine
+        run: |
+          dpkg --add-architecture i386
+          apt-get update
+          apt-get install -y wine32 wine64 libwine
+
       # Build for the platform
       - name: Build Electron App for ${{ matrix.platform }}
         run: npm run build:${{ matrix.platform }}
