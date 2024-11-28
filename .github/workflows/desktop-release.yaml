@@ -81,11 +81,11 @@ jobs:
           git push origin main
 
   build_app:
-    runs-on: ubuntu-latest
+    runs-on: {{ matrix.os }}
     needs: version_bump
     strategy:
       matrix:
-        platform: [win, mac, linux]
+        os: [windows-latest, macos-latest, ubuntu-latest]
     steps:
       # Checkout the code
       - name: Checkout repository
@@ -117,15 +117,15 @@ jobs:
           sudo apt-get install -y --no-install-recommends wine-stable wine64 libwine
 
       # Build for the platform
-      - name: Build Electron App for ${{ matrix.platform }}
-        run: npm run build:${{ matrix.platform }}
+      - name: Build Electron App for ${{ matrix.os }}
+        run: npm run build:${{ matrix.os }}
         working-directory: desktop
 
       # Upload artifacts for debugging
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.platform }}
+          name: build-${{ matrix.os }}
           path: desktop/dist/
 
   publish_release:
