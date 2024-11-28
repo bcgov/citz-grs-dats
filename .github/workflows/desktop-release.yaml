@@ -107,7 +107,6 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          npm install dmg-license
         working-directory: desktop
 
       # Install wine to build windows artifact
