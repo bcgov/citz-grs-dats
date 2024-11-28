@@ -120,7 +120,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts-$(date +%s)
+          name: build-artifacts-${{ github.job }}-${{ github.run_number }}
           path: desktop/dist/
 
   publish_release:
@@ -137,7 +137,7 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
+          path: desktop/dist/
 
       # Create a GitHub release
       - name: Create GitHub Release
