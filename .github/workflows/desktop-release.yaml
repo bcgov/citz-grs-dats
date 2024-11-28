@@ -112,7 +112,7 @@ jobs:
       - name: Install wine
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends wine32 wine64 libwine
+          sudo apt-get install -y --no-install-recommends wine-stable wine64 libwine
 
       # Build for the platform
       - name: Build Electron App for ${{ matrix.platform }}
