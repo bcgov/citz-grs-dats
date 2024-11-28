@@ -116,11 +116,11 @@ jobs:
         run: npm run build:${{ matrix.os }}
         working-directory: desktop
 
-      # Upload artifacts for debugging
+      # Upload artifacts
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.os }}
+          name: build-artifacts
           path: desktop/dist/
 
   publish_release:
@@ -137,8 +137,7 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          path: desktop/dist
-          github-token: ${{ secrets.GIT_PAT }}
+          name: build-artifacts
 
       # Create a GitHub release
       - name: Create GitHub Release
