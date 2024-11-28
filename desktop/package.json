@@ -34,9 +34,9 @@
     "build:workers": "vite build --config es.workers.vite.config.ts && vite build --config cjs.workers.vite.config.ts",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run build && electron-builder --win",
-    "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux",
+    "build:windows-latest": "npm run build && electron-builder --win",
+    "build:macos-latest": "electron-vite build && electron-builder --mac",
+    "build:ubuntu-latest": "electron-vite build && electron-builder --linux",
     "bump:patch": "node bump-version patch",
     "bump:minor": "node bump-version minor",
     "bump:major": "node bump-version major"
