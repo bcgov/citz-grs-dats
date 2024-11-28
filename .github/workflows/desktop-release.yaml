@@ -81,7 +81,7 @@ jobs:
           git push origin main
 
   build_app:
-    runs-on: {{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     needs: version_bump
     strategy:
       matrix:
