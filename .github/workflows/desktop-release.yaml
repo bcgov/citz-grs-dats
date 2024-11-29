@@ -145,7 +145,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            $(find . -type f \( -iname "*.exe" -o -iname "*.dmg" \) ! -name "elevate.exe")
+            ./desktop/dist/**/*.exe
+            ./desktop/dist/**/*.dmg
           tag_name: ${{ needs.version_bump.outputs.VERSION }}
           name: Release ${{ needs.version_bump.outputs.VERSION }}
           body: "Release ${{ needs.version_bump.outputs.VERSION }} for electron-updater"
