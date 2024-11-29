@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
 	HomeOutlined as HomeOutlinedIcon,
 	DescriptionOutlined as FileListIcon,
-	DriveFileMoveOutlined as SendRecordsIcon,
+	HandshakeOutlined as HandshakeIcon,
 } from "@mui/icons-material";
 import { type ReactNode, useState } from "react";
 import { AuthButton } from "./AuthButton";
@@ -37,6 +37,7 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 					gap: 1,
 					border: "none",
 					borderRadius: "5px",
+					marginTop: 1,
 					background:
 						currentPage === path ? theme.palette.secondary.light : theme.palette.secondary.main,
 					"&:hover": {
@@ -91,7 +92,11 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 					{accessToken && (
 						<>
 							<NavItem path="/file-list" label="Create File List" icon={<FileListIcon />} />
-							<NavItem path="/send-records" label="Send Records" icon={<SendRecordsIcon />} />
+							<NavItem
+								path="/submission-agreement"
+								label="Submission Agreement"
+								icon={<HandshakeIcon />}
+							/>
 						</>
 					)}
 				</List>

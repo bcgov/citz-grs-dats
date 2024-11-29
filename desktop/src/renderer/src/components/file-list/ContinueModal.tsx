@@ -32,6 +32,7 @@ export const ContinueModal = ({ modalOpen, modalClose, modalSubmit }) => {
 	// setSubmitted controls what modal is being shown, additional information or conformation
 	const [submitted, setsubmitted] = useState<boolean>(false);
 	const navigate = useNavigate();
+
 	const submitForm = (event) => {
 		event.preventDefault();
 		const data = Object.fromEntries(new FormData(event.currentTarget));
@@ -67,8 +68,8 @@ export const ContinueModal = ({ modalOpen, modalClose, modalSubmit }) => {
 					Entering this information is optional.
 				</Typography>
 				<Box sx={innerBoxStyle}>
-					<TextField name="accessionNumber" label="Accession" />
-					<TextField name="applicationNumber" label="Application" />
+					<TextField name="accessionNumber" label="Accession #" />
+					<TextField name="applicationNumber" label="Application #" />
 				</Box>
 
 				<Typography sx={{ mt: 1 }} variant="subtitle1">

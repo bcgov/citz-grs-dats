@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { SideNav, VPNPopup } from "./components";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { FileListPage, HomePage, SendRecordsPage } from "./pages";
+import { FileListPage, HomePage, SendRecordsPage, SubmissionAgreementPage } from "./pages";
 
 function App(): JSX.Element {
 	const [api] = useState(window.api); // Preload scripts
@@ -63,9 +63,10 @@ function App(): JSX.Element {
 				<SideNav accessToken={accessToken} idToken={idToken} />
 				<main style={{ width: "85%", marginLeft: "15%" }}>
 					<Routes>
-            <Route path="/" element={<HomePage authenticated={!!accessToken} />} />
+						<Route path="/" element={<HomePage authenticated={!!accessToken} />} />
 						<Route path="/file-list" element={<FileListPage authenticated={!!accessToken} />} />
 						<Route path="/send-records" element={<SendRecordsPage />} />
+						<Route path="/submission-agreement" element={<SubmissionAgreementPage />} />
 					</Routes>
 				</main>
 				{showVPNPopup && <VPNPopup />}
