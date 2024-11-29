@@ -137,16 +137,14 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          path: desktop/dist/
+          path: ./desktop/dist/
 
       # Create a GitHub release
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            desktop/dist/*.exe
-            desktop/dist/*.dmg
+          files: ./desktop/dist/**/*
           tag_name: ${{ needs.version_bump.outputs.VERSION }}
           name: Release ${{ needs.version_bump.outputs.VERSION }}
           body: "Release ${{ needs.version_bump.outputs.VERSION }} for electron-updater"
