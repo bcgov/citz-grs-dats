@@ -45,7 +45,7 @@ export const createAgreementPDF = async ({
 			doc
 				.font("BCSans-Bold")
 				.fontSize(12)
-				.text("BC GOVERNMENT DIGITAL ARCHIVES\nDRAFT SUBMISSION AGREEMENT", {
+				.text("BC GOVERNMENT DIGITAL ARCHIVES\nSUBMISSION AGREEMENT", {
 					align: "center",
 				})
 				.moveDown(1);
@@ -67,11 +67,50 @@ The Ministry and Digital Archives agree that:
 			const agreementDetails = `
 1.  The Ministry currently holds legal and physical custody of the government records being transferred, and declares that the records are authentic evidence of government actions and decisions.
 
-2.  The government records are subject to the Information Management Act (IMA), Freedom of Information and Protection of Privacy Act (FIPPA), and other relevant legislation.
-
-3.  The government records meet all conditions outlined in the `;
+2.  The government records are subject to the `;
 
 			doc.fontSize(10).text(agreementDetails, {
+				align: "left",
+				lineGap: 1.5,
+				continued: true,
+			});
+
+			const IMA_link = "https://www.bclaws.gov.bc.ca/civix/document/id/complete/statreg/15027";
+			const FIPPA_link = "https://www.bclaws.gov.bc.ca/civix/document/id/complete/statreg/96165_00";
+			const MGIP_link =
+				"https://www2.gov.bc.ca/gov/content/governments/services-for-government/policies-procedures/government-records";
+			const RIM_3_3_link =
+				"https://www2.gov.bc.ca/gov/content/governments/services-for-government/policies-procedures/government-records/rim-manual/rim-manual-3-3";
+
+			// Add hyperlinks
+			doc
+				.fillColor("blue")
+				.text("Information Management Act (IMA)", {
+					link: IMA_link,
+					underline: true,
+					continued: true,
+				})
+				.fillColor("black")
+				.text(", ", {
+					underline: false,
+					continued: true,
+				})
+				.fillColor("blue")
+				.text("Freedom of Information and Protection of Privacy Act (FIPPA)", {
+					link: FIPPA_link,
+					underline: true,
+					continued: true,
+				})
+				.fillColor("black")
+				.text(", and other relevant legislation.", {
+					underline: false,
+				});
+
+			// Agreement Details Continued
+			const agreementDetailsCont = `
+3.  The government records meet all conditions outlined in the `;
+
+			doc.fontSize(10).text(agreementDetailsCont, {
 				align: "left",
 				lineGap: 1.5,
 				continued: true,
@@ -81,7 +120,7 @@ The Ministry and Digital Archives agree that:
 			doc
 				.fillColor("blue")
 				.text("Managing Government Information Policy (MGIP)", {
-					link: "https://www2.gov.bc.ca/gov/content/governments/services-for-government/policies-procedures/government-records",
+					link: MGIP_link,
 					underline: true,
 					continued: true,
 				})
@@ -92,7 +131,7 @@ The Ministry and Digital Archives agree that:
 				})
 				.fillColor("blue")
 				.text("RIM Manual Section 3.3 Transfer to Archives.", {
-					link: "https://www2.gov.bc.ca/gov/content/governments/services-for-government/policies-procedures/government-records/rim-manual/rim-manual-3-3",
+					link: RIM_3_3_link,
 					underline: true,
 				});
 
@@ -157,26 +196,6 @@ The Ministry and Digital Archives agree that:
 				.fontSize(12)
 				.text("Ministry Representative", ministryRepX, lineBottomY)
 				.text("Date", dateX, lineBottomY);
-
-			// Move down for the next section
-			doc.moveDown(2);
-
-			// Draw lines for "Digital Archives Representative" and "Date"
-			doc
-				.moveTo(ministryRepX, doc.y)
-				.lineTo(ministryRepX + signatureWidth, doc.y)
-				.stroke();
-
-			doc
-				.moveTo(dateX, doc.y)
-				.lineTo(dateX + signatureWidth, doc.y)
-				.stroke();
-
-			// Add labels directly under the lines
-			const lineBottomY2 = doc.y + labelYOffset;
-			doc
-				.text("Digital Archives Representative", ministryRepX, lineBottomY2)
-				.text("Date", dateX, lineBottomY2);
 
 			// Finalize the document
 			doc.end();

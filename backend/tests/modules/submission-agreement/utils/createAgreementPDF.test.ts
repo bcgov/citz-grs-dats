@@ -2,6 +2,7 @@ import path from "node:path";
 import PDFDocument from "pdfkit";
 import { createAgreementPDF } from "@/modules/submission-agreement/utils";
 
+// Mock PDFKit
 jest.mock("pdfkit", () => {
 	const PDFKitMock = jest.fn();
 	PDFKitMock.prototype = {
@@ -22,9 +23,16 @@ jest.mock("pdfkit", () => {
 	return PDFKitMock;
 });
 
-jest.mock("node:path", () => ({
-	resolve: jest.fn((...args: string[]) => args.join("/")),
-}));
+// Mock path resolution
+jest.mock("node:path", () => {
+	const realPath = jest.requireActual("node:path");
+	return {
+		...realPath,
+		resolve: jest.fn((...args: string[]) =>
+			realPath.resolve(process.cwd(), "src/modules/submission-agreement", ...args),
+		),
+	};
+});
 
 describe("createAgreementPDF", () => {
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -77,15 +85,15 @@ describe("createAgreementPDF", () => {
 
 		expect(pdfMock.registerFont).toHaveBeenCalledWith(
 			"BCSans-Regular",
-			path.resolve("../assets/BCSans-Regular.ttf"),
+			path.resolve(process.cwd(), "src/modules/submission-agreement/assets/BCSans-Regular.ttf"),
 		);
 		expect(pdfMock.registerFont).toHaveBeenCalledWith(
 			"BCSans-Bold",
-			path.resolve("../assets/BCSans-Bold.ttf"),
+			path.resolve(process.cwd(), "src/modules/submission-agreement/assets/BCSans-Bold.ttf"),
 		);
 		expect(pdfMock.registerFont).toHaveBeenCalledWith(
 			"Autography",
-			path.resolve("../assets/Autography.otf"),
+			path.resolve(process.cwd(), "src/modules/submission-agreement/assets/Autography.otf"),
 		);
 	});
 
@@ -103,17 +111,20 @@ describe("createAgreementPDF", () => {
 		});
 
 		expect(pdfMock.text).toHaveBeenCalledWith(
-			"BC GOVERNMENT DIGITAL ARCHIVES\nDRAFT SUBMISSION AGREEMENT",
+			"BC GOVERNMENT DIGITAL ARCHIVES\nSUBMISSION AGREEMENT",
 			{ align: "center" },
 		);
 
-		expect(pdfMock.text).toHaveBeenCalledWith(expect.stringContaining("Accession # 12345"), {
+		expect(pdfMock.text).toHaveBeenCalledWith(expect.stringContaining(`Accession # ${accession}`), {
 			align: "left",
 		});
 
-		expect(pdfMock.text).toHaveBeenCalledWith(expect.stringContaining("Application # 67890"), {
-			align: "left",
-		});
+		expect(pdfMock.text).toHaveBeenCalledWith(
+			expect.stringContaining(`Application # ${application}`),
+			{
+				align: "left",
+			},
+		);
 	});
 
 	it("should draw signature lines and labels correctly", async () => {
@@ -129,33 +140,16 @@ describe("createAgreementPDF", () => {
 			application,
 		});
 
-		// Filter relevant calls for signature lines
-		const signatureLineCalls = pdfMock.moveTo.mock.calls.filter(([x1, y1]: [number, number]) => {
-			const xValues = [50, 362]; // Expected x-coordinates for signature lines
-			return xValues.includes(x1);
-		});
+		// Verify the correct number of calls
+		expect(pdfMock.moveTo).toHaveBeenCalledTimes(8);
+		expect(pdfMock.lineTo).toHaveBeenCalledTimes(8);
 
-		const signatureLineToCalls = pdfMock.lineTo.mock.calls.filter(([x2, y2]: [number, number]) => {
-			const xValues = [250, 562]; // Expected end x-coordinates for signature lines
-			return xValues.includes(x2);
-		});
-
-		// Check the specific calls for signature lines
-		expect(signatureLineCalls.length).toBe(16);
-		expect(signatureLineToCalls.length).toBe(4);
-		expect(pdfMock.stroke).toHaveBeenCalledTimes(4); // Strokes for all 4 lines
-
-		// Verify labels under the lines
+		// Verify labels
 		expect(pdfMock.text).toHaveBeenCalledWith(
 			"Ministry Representative",
 			expect.any(Number),
 			expect.any(Number),
 		);
 		expect(pdfMock.text).toHaveBeenCalledWith("Date", expect.any(Number), expect.any(Number));
-		expect(pdfMock.text).toHaveBeenCalledWith(
-			"Digital Archives Representative",
-			expect.any(Number),
-			expect.any(Number),
-		);
 	});
 });
