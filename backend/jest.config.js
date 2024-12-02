@@ -22,6 +22,7 @@ module.exports = {
 		"modules/filelist/services/",
 		"modules/filelist/utils/queueConsumer",
 		"modules/transfer/services/",
+		"modules/submission-agreement/assets/",
 	],
 	coverageDirectory: "coverage",
 	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths || {}, {
