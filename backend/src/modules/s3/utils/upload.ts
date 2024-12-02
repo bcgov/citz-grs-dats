@@ -25,7 +25,7 @@ export const upload = async ({ bucketName = S3_BUCKET, key, content }: Props): P
 			accessKeyId: S3_ACCESS_KEY_ID,
 			secretAccessKey: S3_SECRET_ACCESS_KEY,
 		},
-		forcePathStyle: true,
+		forcePathStyle: true, // Important
 	});
 
 	if (!bucketName || !key || !content)
