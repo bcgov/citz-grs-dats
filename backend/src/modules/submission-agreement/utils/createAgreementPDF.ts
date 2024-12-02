@@ -23,9 +23,9 @@ export const createAgreementPDF = async ({
 			});
 
 			// Load BC Sans font files
-			const bcSansRegular = path.resolve("../assets/BCSans-Regular.ttf");
-			const bcSansBold = path.resolve("../assets/BCSans-Bold.ttf");
-			const autographyFontPath = path.resolve("../assets/Autography.otf");
+			const bcSansRegular = path.resolve(__dirname, "../assets/BCSans-Regular.ttf");
+			const bcSansBold = path.resolve(__dirname, "../assets/BCSans-Bold.ttf");
+			const autographyFontPath = path.resolve(__dirname, "../assets/Autography.otf");
 
 			// Register fonts
 			doc.registerFont("BCSans-Regular", bcSansRegular);

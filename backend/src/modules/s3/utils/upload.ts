@@ -3,21 +3,15 @@ import { HttpError } from "@bcgov/citz-imb-express-utilities";
 import { ENV } from "src/config";
 import type { Readable } from "node:stream";
 
-const { S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_ENDPOINT } = ENV;
+const { S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_ENDPOINT, S3_BUCKET } = ENV;
 
 type Props = {
-	bucketName: string;
+	bucketName?: string;
 	key: string;
 	content: Buffer | Uint8Array | Blob | string | Readable;
-	contentType: string;
 };
 
-export const upload = async ({
-	bucketName,
-	key,
-	content,
-	contentType = "application/octet-stream",
-}: Props): Promise<string> => {
+export const upload = async ({ bucketName = S3_BUCKET, key, content }: Props): Promise<string> => {
 	if (!S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY || !S3_ENDPOINT)
 		throw new HttpError(
 			400,
@@ -31,6 +25,7 @@ export const upload = async ({
 			accessKeyId: S3_ACCESS_KEY_ID,
 			secretAccessKey: S3_SECRET_ACCESS_KEY,
 		},
+		forcePathStyle: true,
 	});
 
 	if (!bucketName || !key || !content)
@@ -41,7 +36,6 @@ export const upload = async ({
 			Bucket: bucketName,
 			Key: key,
 			Body: content,
-			ContentType: contentType,
 		});
 
 		await s3Client.send(command);
@@ -49,6 +43,6 @@ export const upload = async ({
 		console.log(`File uploaded successfully to bucket: ${bucketName}, key: ${key}`);
 		return `${S3_ENDPOINT}/${bucketName}/${key}`;
 	} catch (error) {
-		throw new HttpError(500, "Failed to upload file to S3.");
+		throw new HttpError(500, `Failed to upload file to S3. ${error}`);
 	}
 };

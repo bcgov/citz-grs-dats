@@ -3,6 +3,10 @@ import { errorWrapper, HTTP_STATUS_CODES } from "@bcgov/citz-imb-express-utiliti
 import { createSubmissionAgreementBodySchema } from "../schemas";
 import { createAgreementPDF } from "../utils";
 import { formatDate } from "src/utils";
+import { upload } from "src/modules/s3/utils";
+import { ENV } from "src/config";
+
+const { S3_BUCKET } = ENV;
 
 // Create/accept submission agreement.
 export const create = errorWrapper(async (req: Request, res: Response) => {
@@ -18,7 +22,11 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	});
 
 	// Save to s3
-	// TODO: Requires ticket DAP-1017
+	const s3Location = await upload({
+		bucketName: S3_BUCKET,
+		key: `submission-agreements/${body.accession}-${body.application}`,
+		content: pdfBuffer,
+	});
 
 	const result = getStandardResponse({
 		data: {
@@ -26,6 +34,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 			date: formatDate(new Date().toISOString()),
 			accession: body.accession,
 			application: body.application,
+			fileLocation: s3Location,
 		},
 		message: "Submission agreement created/accepted.",
 		success: true,
