@@ -23,9 +23,9 @@ export const createAgreementPDF = async ({
 			});
 
 			// Load BC Sans font files
-			const bcSansRegular = path.resolve("../assets/BCSans-Regular.ttf");
-			const bcSansBold = path.resolve("../assets/BCSans-Bold.ttf");
-			const autographyFontPath = path.resolve("../assets/Autography.otf");
+			const bcSansRegular = path.resolve(__dirname, "../assets/BCSans-Regular.ttf");
+			const bcSansBold = path.resolve(__dirname, "../assets/BCSans-Bold.ttf");
+			const autographyFontPath = path.resolve(__dirname, "../assets/Autography.otf");
 
 			// Register fonts
 			doc.registerFont("BCSans-Regular", bcSansRegular);
@@ -67,7 +67,7 @@ The Ministry and Digital Archives agree that:
 			const agreementDetails = `
 1.  The Ministry currently holds legal and physical custody of the government records being transferred, and declares that the records are authentic evidence of government actions and decisions.
 
-2.  The government records are subject to the`;
+2.  The government records are subject to the `;
 
 			doc.fontSize(10).text(agreementDetails, {
 				align: "left",
@@ -99,16 +99,16 @@ The Ministry and Digital Archives agree that:
 				.text("Freedom of Information and Protection of Privacy Act (FIPPA)", {
 					link: FIPPA_link,
 					underline: true,
+					continued: true,
 				})
 				.fillColor("black")
 				.text(", and other relevant legislation.", {
 					underline: false,
-					continued: true,
 				});
 
 			// Agreement Details Continued
 			const agreementDetailsCont = `
-      3.  The government records meet all conditions outlined in the `;
+3.  The government records meet all conditions outlined in the `;
 
 			doc.fontSize(10).text(agreementDetailsCont, {
 				align: "left",

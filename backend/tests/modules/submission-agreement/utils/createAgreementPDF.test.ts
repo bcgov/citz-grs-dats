@@ -24,9 +24,15 @@ jest.mock("pdfkit", () => {
 });
 
 // Mock path resolution
-jest.mock("node:path", () => ({
-	resolve: jest.fn((...args: string[]) => args.join("/")),
-}));
+jest.mock("node:path", () => {
+	const realPath = jest.requireActual("node:path");
+	return {
+		...realPath,
+		resolve: jest.fn((...args: string[]) =>
+			realPath.resolve(process.cwd(), "src/modules/submission-agreement", ...args),
+		),
+	};
+});
 
 describe("createAgreementPDF", () => {
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -79,15 +85,15 @@ describe("createAgreementPDF", () => {
 
 		expect(pdfMock.registerFont).toHaveBeenCalledWith(
 			"BCSans-Regular",
-			path.resolve("../assets/BCSans-Regular.ttf"),
+			path.resolve(process.cwd(), "src/modules/submission-agreement/assets/BCSans-Regular.ttf"),
 		);
 		expect(pdfMock.registerFont).toHaveBeenCalledWith(
 			"BCSans-Bold",
-			path.resolve("../assets/BCSans-Bold.ttf"),
+			path.resolve(process.cwd(), "src/modules/submission-agreement/assets/BCSans-Bold.ttf"),
 		);
 		expect(pdfMock.registerFont).toHaveBeenCalledWith(
 			"Autography",
-			path.resolve("../assets/Autography.otf"),
+			path.resolve(process.cwd(), "src/modules/submission-agreement/assets/Autography.otf"),
 		);
 	});
 
