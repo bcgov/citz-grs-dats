@@ -144,7 +144,9 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          files: ./desktop/dist/**/*
+          files: |
+            ./desktop/dist/**/*.exe
+            ./desktop/dist/**/*.dmg
           tag_name: ${{ needs.version_bump.outputs.VERSION }}
           name: Release ${{ needs.version_bump.outputs.VERSION }}
           body: "Release ${{ needs.version_bump.outputs.VERSION }} for electron-updater"
