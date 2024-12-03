@@ -61,7 +61,7 @@ npm run build:ubuntu-latest
 5. **Test App Launch**: Ensure the desktop app opens correctly, then close it.
 
 6. **Run in Console**:
-    a. Windows: Open Command Prompt and run `<file-location>/desktop.exe`
+    a. Windows: Open Command Prompt and run `<file-location>/DATS.exe`
         e.g., `C:\Users\<username>\AppData\Local\Programs\DATS\DATS.exe`
     b. Mac: Open Terminal and run `<file location>`
         e.g., `/Applications/DATS.app/Contents/MacOS/DATS`
