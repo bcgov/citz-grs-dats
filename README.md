@@ -53,7 +53,7 @@ npm run build:ubuntu-latest
 ```
 
 3. **Uninstall Previous Version**: Remove existing installation
-    - Windows: in `C:\Users\<username>\AppData\Local\Programs\DATS`.
+    - Windows: in `C:\Users\<username>\AppData\Local\Programs\DATS.exe`.
     - Mac: `/Applications/DATS.app`.
 
 4. **Locate Build**: In VSCode, right-click `desktop/dist/` and select `Reveal in Finder/File Explorer`. Run the setup executable.
