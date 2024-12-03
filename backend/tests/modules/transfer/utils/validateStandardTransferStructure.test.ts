@@ -5,6 +5,7 @@ import { HttpError, HTTP_STATUS_CODES } from "@bcgov/citz-imb-express-utilities"
 
 jest.mock("yauzl");
 
+// Test suite for validateStandardTransferStructure
 describe("validateStandardTransferStructure", () => {
 	// Test case: Valid zip file with correct structure
 	it("should resolve when the zip file has the correct structure", async () => {
@@ -13,6 +14,7 @@ describe("validateStandardTransferStructure", () => {
 		const mockEntries = [
 			{ fileName: "content/sample.txt" },
 			{ fileName: "documentation/Digital_File_List_.xlsx" },
+			{ fileName: "documentation/Transfer_Form_.xlsx" },
 			{ fileName: "documentation/Submission_Agreement_.pdf" },
 			{ fileName: "metadata/admin.json" },
 			{ fileName: "metadata/files.json" },
@@ -70,7 +72,7 @@ describe("validateStandardTransferStructure", () => {
 
 		const mockEntries = [
 			{ fileName: "content/sample.txt" },
-			{ fileName: "documentation/Submission_Agreement_.pdf" },
+			{ fileName: "documentation/Transfer_Form_.xlsx" },
 			{ fileName: "metadata/admin.json" },
 		];
 
@@ -91,7 +93,7 @@ describe("validateStandardTransferStructure", () => {
 		await expect(validateStandardTransferStructure({ buffer })).rejects.toThrow(
 			new HttpError(
 				HTTP_STATUS_CODES.BAD_REQUEST,
-				"The zip file is missing required files: Digital File List must be included and have a .xlsx or .json extension in the documentation directory. files.json must be included in the metadata directory. folders.json must be included in the metadata directory.",
+				`The zip file is missing required files: Digital File List (beginning with 'Digital_File_List_') must be included and have a .xlsx or .json extension in the documentation directory. Submission Agreement (beginning with 'Submission_Agreement_') must be included and have a .pdf extension in the documentation directory. files.json must be included in the metadata directory. folders.json must be included in the metadata directory.`,
 			),
 		);
 	});
