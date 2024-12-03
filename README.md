@@ -62,7 +62,7 @@ npm run build:ubuntu-latest
 
 6. **Run in Console**:
     a. Windows: Open Command Prompt and run `<file-location>/desktop.exe`
-        e.g., `C:\Users\<username>\AppData\Local\Programs\desktop\desktop.exe`
+        e.g., `C:\Users\<username>\AppData\Local\Programs\DATS\DATS.exe`
     b. Mac: Open Terminal and run `<file location>`
         e.g., `/Applications/DATS.app/Contents/MacOS/DATS`
 
