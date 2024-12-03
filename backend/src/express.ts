@@ -16,6 +16,7 @@ import {
 	rabbitRouter,
 	s3Router,
 	filelistRouter,
+	submissionAgreementRouter,
 } from "./modules";
 import { protectedRoute } from "./modules/auth/middleware";
 import type { Request, Response } from "express";
@@ -44,6 +45,7 @@ healthModule(app); // Route (/health)
 configModule(app, { ENVIRONMENT }); // Route (/config)
 
 app.use("/filelist", protectedRoute(), filelistRouter);
+app.use("/submission-agreement", protectedRoute(), submissionAgreementRouter);
 app.use("/auth", authRouter);
 app.use("/rabbit", rabbitRouter);
 app.use("/s3", s3Router);
