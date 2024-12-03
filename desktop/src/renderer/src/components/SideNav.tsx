@@ -7,6 +7,7 @@ import {
 } from "@mui/icons-material";
 import { type ReactNode, useState } from "react";
 import { AuthButton } from "./AuthButton";
+import { LeavePageModal } from "./LeavePageModal";
 
 type NavItemProps = {
 	path: string;
@@ -23,10 +24,24 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 	const navigate = useNavigate();
 	const theme = useTheme();
 	const [currentPage, setCurrentPage] = useState("/");
+	const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
+	const [newPagePath, setNewPagePath] = useState("/");
+
+	const onConfirmLeavePage = () => {
+		setLeavePageModalOpen(false);
+		setCurrentPage(newPagePath);
+		navigate(newPagePath);
+	};
 
 	const handleSelection = (path: string) => {
-		setCurrentPage(path);
-		navigate(path);
+		if (currentPage === path) return;
+		if (currentPage === "/") {
+			setCurrentPage(path);
+			navigate(path);
+		} else {
+			setNewPagePath(path);
+			setLeavePageModalOpen(true);
+		}
 	};
 
 	const NavItem = ({ path, label, icon }: NavItemProps) => {
@@ -60,43 +75,50 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 	};
 
 	return (
-		<Drawer
-			variant="permanent"
-			anchor="left"
-			sx={{
-				flexShrink: 0,
-				width: "15%",
-				background: theme.palette.secondary.light,
-				"& .MuiDrawer-paper": {
-					width: "15%",
-					flexShrink: 0,
-					boxSizing: "border-box",
-					padding: 1,
-				},
-			}}
-		>
-			<Box
+		<>
+			<Drawer
+				variant="permanent"
+				anchor="left"
 				sx={{
-					display: "flex",
-					flexDirection: "column",
-					justifyContent: "space-between",
-					height: "100%",
+					flexShrink: 0,
+					width: "15%",
 					background: theme.palette.secondary.light,
+					"& .MuiDrawer-paper": {
+						width: "15%",
+						flexShrink: 0,
+						boxSizing: "border-box",
+						padding: 1,
+					},
 				}}
 			>
-				<List>
-					<NavItem path="/" label="Home" icon={<HomeOutlinedIcon />} />
-					<Divider sx={{ margin: "5px 0" }} />
-					{/* REQUIRE AUTH */}
-					{accessToken && (
-						<>
-							<NavItem path="/file-list" label="Create File List" icon={<FileListIcon />} />
-							<NavItem path="/send-records" label="Send Records" icon={<SendRecordsIcon />} />
-						</>
-					)}
-				</List>
-				<AuthButton accessToken={accessToken} idToken={idToken} />
-			</Box>
-		</Drawer>
+				<Box
+					sx={{
+						display: "flex",
+						flexDirection: "column",
+						justifyContent: "space-between",
+						height: "100%",
+						background: theme.palette.secondary.light,
+					}}
+				>
+					<List>
+						<NavItem path="/" label="Home" icon={<HomeOutlinedIcon />} />
+						<Divider sx={{ margin: "5px 0" }} />
+						{/* REQUIRE AUTH */}
+						{accessToken && (
+							<>
+								<NavItem path="/file-list" label="Create File List" icon={<FileListIcon />} />
+								<NavItem path="/send-records" label="Send Records" icon={<SendRecordsIcon />} />
+							</>
+						)}
+					</List>
+					<AuthButton accessToken={accessToken} idToken={idToken} />
+				</Box>
+			</Drawer>
+			<LeavePageModal
+				open={leavePageModalOpen}
+				onClose={() => setLeavePageModalOpen(false)}
+				onConfirm={onConfirmLeavePage}
+			/>
+		</>
 	);
 };
