@@ -19,14 +19,21 @@ const fileChecks: FileCheck[] = [
 		allowedExtensions: ["xlsx", "json"],
 		parentDirectory: "documentation",
 		errorMessage:
-			"Digital File List must be included and have a .xlsx or .json extension in the documentation directory.",
+			"Digital File List (beginning with 'Digital_File_List_') must be included and have a .xlsx or .json extension in the documentation directory.",
+	},
+	{
+		regex: /^Transfer_Form_/,
+		allowedExtensions: ["xlsx", "xlsm"],
+		parentDirectory: "documentation",
+		errorMessage:
+			"Transfer Form ARS 617 (beginning with 'Transfer_Form_') must be included and have a .xlsx or .xlsm extension in the documentation directory.",
 	},
 	{
 		regex: /^Submission_Agreement_/,
 		allowedExtensions: ["pdf"],
 		parentDirectory: "documentation",
 		errorMessage:
-			"Submission Agreement must be included and have a .pdf extension in the documentation directory.",
+			"Submission Agreement (beginning with 'Submission_Agreement_') must be included and have a .pdf extension in the documentation directory.",
 	},
 	{
 		regex: /^admin/,
