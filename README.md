@@ -47,24 +47,24 @@ To switch API environments:
   - Run from `desktop/` as an Administrator:
 
 ```
-npm run build:win
-npm run build:mac
-npm run build:linux
+npm run build:windows-latest
+npm run build:macos-latest
+npm run build:ubuntu-latest
 ```
 
 3. **Uninstall Previous Version**: Remove existing installation
-    a. Windows: in `C:\Users\<username>\AppData\Local\Programs\desktop`.
-    b. Mac: `/Applications/desktop.app`.
+    - Windows: in `C:\Users\<username>\AppData\Local\Programs\DATS.exe`.
+    - Mac: `/Applications/DATS.app`.
 
 4. **Locate Build**: In VSCode, right-click `desktop/dist/` and select `Reveal in Finder/File Explorer`. Run the setup executable.
 
 5. **Test App Launch**: Ensure the desktop app opens correctly, then close it.
 
 6. **Run in Console**:
-    a. Windows: Open Command Prompt and run `<file-location>/desktop.exe`
-        e.g., `C:\Users\<username>\AppData\Local\Programs\desktop\desktop.exe`
+    a. Windows: Open Command Prompt and run `<file-location>/DATS.exe`
+        e.g., `C:\Users\<username>\AppData\Local\Programs\DATS\DATS.exe`
     b. Mac: Open Terminal and run `<file location>`
-        e.g., `/Applications/desktop.app/Contents/MacOS/desktop.app`
+        e.g., `/Applications/DATS.app/Contents/MacOS/DATS`
 
 <br />
 
