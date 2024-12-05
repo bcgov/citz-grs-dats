@@ -9,6 +9,7 @@ jest.mock("@/utils", () => ({
 	formatDate: jest.fn((date) => (date ? `Formatted: ${date}` : "")),
 }));
 
+// Test suite for setupMetadata
 describe("setupMetadata", () => {
 	// Test case: Proper setup of metadata worksheet
 	it("should set up the worksheet with the correct structure and populate rows", () => {
@@ -24,6 +25,13 @@ describe("setupMetadata", () => {
 				lastModified: "2023-06-01T12:00:00Z",
 				lastAccessed: "2023-06-02T12:00:00Z",
 				checksum: "abc123",
+				authors: "John Doe",
+				owner: "Owner1",
+				company: "Company1",
+				computer: "Computer1",
+				contentType: "text/plain",
+				programName: "Program1",
+				lastSaved: "2023-06-03T12:00:00Z",
 			},
 			{
 				filepath: "/path/to/file2",
@@ -33,6 +41,13 @@ describe("setupMetadata", () => {
 				lastModified: "",
 				lastAccessed: "",
 				checksum: "def456",
+				authors: "",
+				owner: "",
+				company: "",
+				computer: "",
+				contentType: "",
+				programName: "",
+				lastSaved: "",
 			},
 		];
 
@@ -46,8 +61,8 @@ describe("setupMetadata", () => {
 		// Check header row
 		const headerRow = worksheet.getRow(1);
 		const headers = [
-			"Path",
-			"Name",
+			"File Path",
+			"File Name",
 			"Size",
 			"Checksum",
 			"Created On",
@@ -64,11 +79,11 @@ describe("setupMetadata", () => {
 		headers.forEach((header, index) => {
 			const cell = headerRow.getCell(index + 1);
 			expect(cell.value).toBe(header);
-			expect(cell.font).toEqual({ bold: true, color: { argb: "FF000000" } });
+			expect(cell.font).toEqual({ name: "BC Sans", bold: true, color: { argb: "FF000000" } });
 			expect(cell.fill).toEqual({
 				type: "pattern",
 				pattern: "solid",
-				fgColor: { argb: "FFD6F2B3" },
+				fgColor: { argb: "FFC1DDFC" },
 			});
 			expect(cell.alignment).toEqual({ horizontal: "left" });
 			expect(cell.border).toEqual({
@@ -98,13 +113,13 @@ describe("setupMetadata", () => {
 			expect(row.getCell(5).value).toBe(formatDate(fileData.birthtime));
 			expect(row.getCell(6).value).toBe(formatDate(fileData.lastModified));
 			expect(row.getCell(7).value).toBe(formatDate(fileData.lastAccessed));
-			expect(row.getCell(8).value).toBe("");
-			expect(row.getCell(9).value).toBe("");
-			expect(row.getCell(10).value).toBe("");
-			expect(row.getCell(11).value).toBe("");
-			expect(row.getCell(12).value).toBe("");
-			expect(row.getCell(13).value).toBe("");
-			expect(row.getCell(14).value).toBe("");
+			expect(row.getCell(8).value).toBe(formatDate(fileData.lastSaved || ""));
+			expect(row.getCell(9).value).toBe(fileData.authors || "");
+			expect(row.getCell(10).value).toBe(fileData.owner || "");
+			expect(row.getCell(11).value).toBe(fileData.company || "");
+			expect(row.getCell(12).value).toBe(fileData.computer || "");
+			expect(row.getCell(13).value).toBe(fileData.contentType || "");
+			expect(row.getCell(14).value).toBe(fileData.programName || "");
 		});
 	});
 
@@ -120,8 +135,8 @@ describe("setupMetadata", () => {
 		expect(rows.length).toBe(1); // Only header row
 		const headerRow = rows[0];
 		const headers = [
-			"Path",
-			"Name",
+			"File Path",
+			"File Name",
 			"Size",
 			"Checksum",
 			"Created On",

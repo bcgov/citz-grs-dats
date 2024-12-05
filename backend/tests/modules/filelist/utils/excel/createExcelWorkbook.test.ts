@@ -79,7 +79,7 @@ describe("createExcelWorkbook", () => {
 
 		// Verify worksheet existence
 		expect(workbook.getWorksheet("COVER PAGE")).toBeDefined();
-		expect(workbook.getWorksheet("FOLDER LIST")).toBeDefined();
+		expect(workbook.getWorksheet("FILE LIST")).toBeDefined();
 		expect(workbook.getWorksheet("METADATA")).toBeDefined();
 		expect(workbook.getWorksheet("INSTRUCTIONS")).toBeDefined();
 
@@ -116,7 +116,7 @@ describe("createExcelWorkbook", () => {
 
 		// Verify worksheet existence
 		expect(workbook.getWorksheet("COVER PAGE")).toBeDefined();
-		expect(workbook.getWorksheet("FOLDER LIST")).toBeDefined();
+		expect(workbook.getWorksheet("FILE LIST")).toBeDefined();
 		expect(workbook.getWorksheet("METADATA")).toBeDefined();
 		expect(workbook.getWorksheet("INSTRUCTIONS")).toBeDefined();
 

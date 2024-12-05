@@ -6,8 +6,6 @@ export const jsonFileListSchema = z.object({
 		lastRevised: z.string(),
 		application: z.string(),
 		accession: z.string(),
-		ministry: z.string(),
-		branch: z.string(),
 	}),
 	folderList: z.record(folderMetadataZodSchema),
 	metadata: z.record(z.array(fileMetadataZodSchema)),
