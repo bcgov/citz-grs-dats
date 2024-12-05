@@ -46,10 +46,18 @@ export const validateDigitalFileList = async ({
 			);
 		}
 
-		const cellB5 = coverPage.B5?.v;
-		const cellB6 = coverPage.B6?.v;
+		const cellB2 = coverPage.B2?.v;
+		const cellB3 = coverPage.B3?.v;
+		const cellB4 = coverPage.B4?.v;
 
-		if (cellB5 !== accession || cellB6 !== application) {
+		if (cellB2 === "") {
+			throw new HttpError(
+				HTTP_STATUS_CODES.BAD_REQUEST,
+				"The Digital File List is missing the Last Revised Date.",
+			);
+		}
+
+		if (cellB3 !== accession || cellB4 !== application) {
 			throw new HttpError(
 				HTTP_STATUS_CODES.BAD_REQUEST,
 				"The Digital File List is missing or has incorrect accession and application numbers.",
@@ -58,13 +66,21 @@ export const validateDigitalFileList = async ({
 	} else if (isJson) {
 		// Handle JSON validation
 		const jsonData = JSON.parse(buffer.toString("utf-8"));
+		const jsonLastRevised = jsonData?.admin?.lastRevised;
 		const jsonAccession = jsonData?.admin?.accession;
 		const jsonApplication = jsonData?.admin?.application;
 
-		if (!jsonAccession || !jsonApplication) {
+		if (!jsonAccession || !jsonApplication || !jsonLastRevised) {
 			throw new HttpError(
 				HTTP_STATUS_CODES.BAD_REQUEST,
-				'The Digital File List is missing "admin.accession" or "admin.application" numbers.',
+				'The Digital File List is missing "admin.accession", "admin.application" numbers, or "admin.lastRevised".',
+			);
+		}
+
+		if (jsonLastRevised === "") {
+			throw new HttpError(
+				HTTP_STATUS_CODES.BAD_REQUEST,
+				'The Digital File List is missing "admin.lastRevised".',
 			);
 		}
 
