@@ -14,7 +14,7 @@ describe("validateStandardTransferStructure", () => {
 		const mockEntries = [
 			{ fileName: "content/sample.txt" },
 			{ fileName: "documentation/Digital_File_List_.xlsx" },
-			{ fileName: "documentation/Transfer_Form_.xlsx" },
+			{ fileName: "documentation/Transfer_Form_.pdf" },
 			{ fileName: "documentation/Submission_Agreement_.pdf" },
 			{ fileName: "metadata/admin.json" },
 			{ fileName: "metadata/files.json" },
@@ -72,7 +72,7 @@ describe("validateStandardTransferStructure", () => {
 
 		const mockEntries = [
 			{ fileName: "content/sample.txt" },
-			{ fileName: "documentation/Transfer_Form_.xlsx" },
+			{ fileName: "documentation/Transfer_Form_.pdf" },
 			{ fileName: "metadata/admin.json" },
 		];
 
@@ -93,7 +93,7 @@ describe("validateStandardTransferStructure", () => {
 		await expect(validateStandardTransferStructure({ buffer })).rejects.toThrow(
 			new HttpError(
 				HTTP_STATUS_CODES.BAD_REQUEST,
-				`The zip file is missing required files: Digital File List (beginning with 'Digital_File_List_') must be included and have a .xlsx or .json extension in the documentation directory. Submission Agreement (beginning with 'Submission_Agreement_') must be included and have a .pdf extension in the documentation directory. files.json must be included in the metadata directory. folders.json must be included in the metadata directory.`,
+				`The zip file is missing required files: Digital File List (beginning with 'Digital_File_List_' or 'File List') must be included and have a .xlsx or .json extension in the documentation directory. Submission Agreement (beginning with 'Submission_Agreement_') must be included and have a .pdf extension in the documentation directory. files.json must be included in the metadata directory. folders.json must be included in the metadata directory.`,
 			),
 		);
 	});
