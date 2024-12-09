@@ -1,11 +1,11 @@
-import { queueConsumer } from "@/modules/filelist/utils";
+import { queueConsumer } from "src/modules/transfer/utils";
 import { getChannel } from "../connection";
 
-const QUEUE_NAME = "CREATE_FILE_LIST_QUEUE";
-export const FILELIST_QUEUE_NAME = QUEUE_NAME;
+const QUEUE_NAME = "STANDARD_TRANSFER_QUEUE";
+export const TRANSFER_QUEUE_NAME = QUEUE_NAME;
 
 // Add a message to the queue
-export const addToCreateFileListQueue = async (message: string): Promise<void> => {
+export const addToStandardTransferQueue = async (message: string): Promise<void> => {
 	const channel = await getChannel(QUEUE_NAME);
 	channel.sendToQueue(QUEUE_NAME, Buffer.from(message));
 };

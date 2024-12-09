@@ -8,8 +8,7 @@ import { createExcelWorkbook } from "./excel";
 import { sendEmail } from "src/modules/ches/utils";
 import { filelistEmail } from "./email";
 import { formatDate } from "src/utils";
-
-const QUEUE_NAME = "CREATE_FILE_LIST_QUEUE";
+import { FILELIST_QUEUE_NAME as QUEUE_NAME } from "@/modules/rabbit/utils/queue/filelist";
 
 export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Channel) => {
 	const jobID = msg.content.toString();
