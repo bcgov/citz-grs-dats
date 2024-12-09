@@ -1,6 +1,6 @@
 import type { SSOUser } from "@bcgov/citz-imb-sso-js-core";
 import { TransferModel } from "../entities";
-import type { TransferMongoose } from "../entities";
+import type { TRANSFER_STATUSES, TransferMongoose } from "../entities";
 
 type CreateTransferData = {
 	user: SSOUser<unknown> | undefined;
@@ -8,6 +8,7 @@ type CreateTransferData = {
 	accession: string;
 	folders: NonNullable<TransferMongoose["metadata"]>["folders"];
 	files: NonNullable<TransferMongoose["metadata"]>["files"];
+	status?: (typeof TRANSFER_STATUSES)[number];
 };
 
 export const TransferService = {
@@ -17,9 +18,17 @@ export const TransferService = {
 	 * @returns The inserted document.
 	 * @throws Error if the insertion fails.
 	 */
-	async createTransferEntry({ user, application, accession, folders, files }: CreateTransferData) {
+	async createTransferEntry({
+		user,
+		application,
+		accession,
+		folders,
+		files,
+		status = "Pre-Transfer",
+	}: CreateTransferData) {
 		try {
 			const transferDatabaseEntry: TransferMongoose = {
+				status,
 				metadata: {
 					admin: {
 						application,
@@ -57,9 +66,11 @@ export const TransferService = {
 		accession,
 		folders,
 		files,
+		status = "Pre-Transfer",
 	}: CreateTransferData) {
 		try {
 			const transferDatabaseEntry: TransferMongoose = {
+				status,
 				metadata: {
 					admin: {
 						application,
