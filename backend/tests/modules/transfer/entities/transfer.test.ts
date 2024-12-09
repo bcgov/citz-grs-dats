@@ -1,14 +1,10 @@
-import {
-	TransferModel,
-	transferZodSchema,
-	type TransferMongoose,
-	type TransferZod,
-} from "@/modules/transfer/entities";
+import { TransferModel, transferZodSchema, type TransferZod } from "@/modules/transfer/entities";
 
 describe("Transfer Schema and Zod Validation", () => {
 	describe("Mongoose Schema Validation", () => {
 		it("should validate a valid Transfer document", () => {
 			const validTransfer = {
+				status: "Pre-Transfer",
 				metadata: {
 					admin: {
 						application: "TestApp",
@@ -58,6 +54,7 @@ describe("Transfer Schema and Zod Validation", () => {
 
 		it("should reject a Transfer document with missing required fields", () => {
 			const invalidTransfer = {
+				status: "Pre-Transfer",
 				metadata: {
 					admin: {
 						application: "TestApp",
@@ -106,6 +103,7 @@ describe("Transfer Schema and Zod Validation", () => {
 	describe("Zod Schema Validation", () => {
 		it("should validate correct input using Zod schema", () => {
 			const validTransfer: TransferZod = {
+				status: "Pre-Transfer",
 				createdOn: "2023-11-17",
 				metadata: {
 					admin: {
@@ -170,6 +168,7 @@ describe("Transfer Schema and Zod Validation", () => {
 
 		it("should reject input with missing required fields using Zod schema", () => {
 			const invalidTransfer = {
+				status: "Pre-Transfer",
 				metadata: {
 					admin: {
 						application: "TestApp",
