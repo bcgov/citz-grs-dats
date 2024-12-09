@@ -5,7 +5,8 @@
 	"scripts": {
 		"test": "jest",
 		"dev": "nodemon",
-		"build": "tsc"
+		"build": "tsc",
+		"run-node": "tsx -r tsconfig-paths/register"
 	},
 	"dependencies": {
 		"@aws-sdk/client-s3": "3.677.0",
