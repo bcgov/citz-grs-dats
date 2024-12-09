@@ -8,6 +8,7 @@ type CreateTransferData = {
 	accession: string;
 	folders: NonNullable<TransferMongoose["metadata"]>["folders"];
 	files: NonNullable<TransferMongoose["metadata"]>["files"];
+	jobID?: string | null;
 	status?: (typeof TRANSFER_STATUSES)[number];
 };
 
@@ -24,11 +25,13 @@ export const TransferService = {
 		accession,
 		folders,
 		files,
+		jobID,
 		status = "Pre-Transfer",
 	}: CreateTransferData) {
 		try {
 			const transferDatabaseEntry: TransferMongoose = {
 				status,
+				jobID: jobID as NonNullable<TransferMongoose["jobID"]>,
 				metadata: {
 					admin: {
 						application,
@@ -66,11 +69,13 @@ export const TransferService = {
 		accession,
 		folders,
 		files,
+		jobID,
 		status = "Pre-Transfer",
 	}: CreateTransferData) {
 		try {
 			const transferDatabaseEntry: TransferMongoose = {
 				status,
+				jobID: jobID as NonNullable<TransferMongoose["jobID"]>,
 				metadata: {
 					admin: {
 						application,
