@@ -16,34 +16,45 @@ export const setupFolderList = ({ worksheet, folders }: Data) => {
 		{ width: 20 },
 		{ width: 20 },
 		{ width: 20 },
+		{ width: 40 },
 		{ width: 20 },
 		{ width: 20 },
-		{ width: 20 },
-		{ width: 20 },
-		{ width: 20 },
+		{ width: 35 },
+		{ width: 30 },
 	];
 
 	// Add column headers
 	const headers = [
-		"Folder",
-		"Schedule",
-		"Classification",
+		"* Folder",
+		"* Schedule",
+		"* Classification",
 		"File ID",
-		"OPR (Y/N)",
-		"Start Date",
-		"End Date",
-		"SO Date",
-		"FD Date",
+		"* Office of Primary Responsibility (OPR) - (Y/N)",
+		"* Start Date",
+		"* End Date",
+		"Superseded/Obsolete (SO) Date",
+		"* Final Disposition (FD) Date",
 	];
 	const headerRow = worksheet.addRow(headers);
 
 	// Style headers
-	headerRow.eachCell((cell) => {
-		cell.font = { bold: true, color: { argb: "FF000000" } }; // Black text
+	headerRow.eachCell((cell, colNumber) => {
+		const headerText = headers[colNumber - 1]; // Get corresponding header text
+		if (headerText.startsWith("*")) {
+			// Apply richText formatting for headers starting with '*'
+			cell.value = {
+				richText: [
+					{ text: "*", font: { color: { argb: "FFFF0000" }, name: "BC Sans", bold: true } }, // Red for '*'
+					{ text: headerText.slice(1), font: { name: "BC Sans", bold: true } }, // Normal for the rest
+				],
+			};
+		} else {
+			cell.font = { name: "BC Sans", bold: true, color: { argb: "FF000000" } }; // Black text
+		}
 		cell.fill = {
 			type: "pattern",
 			pattern: "solid",
-			fgColor: { argb: "FFD6F2B3" }, // Background
+			fgColor: { argb: "FFC1DDFC" }, // Background
 		};
 		cell.alignment = { horizontal: "left" }; // Align to the left
 		cell.border = {
@@ -62,7 +73,7 @@ export const setupFolderList = ({ worksheet, folders }: Data) => {
 
 	// Populate rows with data
 	folders.forEach((row) => {
-		worksheet.addRow([
+		const newRow = worksheet.addRow([
 			row.folder,
 			row.schedule,
 			row.classification,
@@ -73,5 +84,10 @@ export const setupFolderList = ({ worksheet, folders }: Data) => {
 			formatDate(row.soDate),
 			formatDate(row.fdDate),
 		]);
+
+		// Apply font styling to all cells in the row
+		newRow.eachCell((cell) => {
+			cell.font = { name: "BC Sans" };
+		});
 	});
 };

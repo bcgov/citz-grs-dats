@@ -1,14 +1,16 @@
 import { Workbook } from "exceljs";
 import { setupCoverPage } from "@/modules/filelist/utils/excel/worksheets";
+import { formatDate } from "src/utils";
 import type { Worksheet } from "exceljs";
 
+// Test suite for setupCoverPage
 describe("setupCoverPage", () => {
 	it("should set up the worksheet with the correct structure and styles", () => {
 		const workbook = new Workbook();
 		const worksheet: Worksheet = workbook.addWorksheet("COVER PAGE");
 
 		const accession = "123";
-		const application = "123";
+		const application = "456";
 
 		setupCoverPage({ worksheet, accession, application });
 
@@ -17,47 +19,43 @@ describe("setupCoverPage", () => {
 
 		// Check header row
 		const headerRow = worksheet.getRow(1);
-		expect(headerRow.getCell(1).value).toBe("Cover Page");
-		expect(worksheet.getCell("A1").font).toEqual({ bold: true });
-		expect(worksheet.getCell("A1").alignment).toEqual({
-			horizontal: "center",
-			vertical: "middle",
-		});
+		expect(headerRow.getCell(1).value).toBe("Description");
+		expect(headerRow.getCell(2).value).toBe("Value");
 
-		// Check header background fill
-		expect(worksheet.getCell("A1").fill).toEqual({
-			type: "pattern",
-			pattern: "solid",
-			fgColor: { argb: "FFD6F2B3" },
+		headerRow.eachCell((cell) => {
+			expect(cell.font).toEqual({ name: "BC Sans", bold: true });
+			expect(cell.fill).toEqual({
+				type: "pattern",
+				pattern: "solid",
+				fgColor: { argb: "FFC1DDFC" },
+			});
 		});
-
-		// Check merged cells
-		expect(worksheet.getCell("A1").value).toBe("Cover Page");
-		expect(worksheet.getCell("B1").value).toBe("Cover Page"); // Merged cell retains the same value
 
 		// Check data rows
 		const expectedRows = [
-			["ARS662 Last Revised:"],
-			["Ministry:"],
-			["Branch:"],
-			["Accession #:", accession],
-			["Application #:", application],
+			["* ARS662 Last Revised Date:", formatDate(new Date().toISOString())],
+			["* Accession #:", accession],
+			["* Application #:", application],
 		];
 
 		expectedRows.forEach((expectedRow, index) => {
 			const rowIndex = index + 2; // Data rows start at index 2
 			const row = worksheet.getRow(rowIndex);
 
-			expect(row.getCell(1).value).toBe(expectedRow[0]);
-			expect(row.getCell(1).font).toEqual({ bold: true, color: { argb: "FF000080" } });
-			if (expectedRow[1] !== undefined) {
-				expect(row.getCell(2).value).toBe(expectedRow[1]);
-			}
-		});
+			const firstCell = row.getCell(1);
+			const secondCell = row.getCell(2);
 
-		// Check formula for "Last Revised" date
-		expect(worksheet.getCell("B2").value).toEqual({
-			formula: 'TEXT(TODAY(), "MM-DD-YYYY")',
+			// Check first cell rich text formatting
+			expect(firstCell.value).toEqual({
+				richText: [
+					{ text: expectedRow[0][0], font: { color: { argb: "FFFF0000" }, bold: true } },
+					{ text: expectedRow[0].slice(1), font: { name: "BC Sans", bold: true } },
+				],
+			});
+
+			// Check second cell value and font
+			expect(secondCell.value).toBe(expectedRow[1]);
+			expect(secondCell.font).toEqual({ name: "BC Sans" });
 		});
 	});
 
@@ -67,11 +65,28 @@ describe("setupCoverPage", () => {
 
 		setupCoverPage({ worksheet });
 
-		const rowAccession = worksheet.getRow(5);
-		expect(rowAccession.getCell(2).value).toBe("");
+		const expectedRows = [
+			["* ARS662 Last Revised Date:", formatDate(new Date().toISOString())],
+			["* Accession #:", ""],
+			["* Application #:", ""],
+		];
 
-		const rowApplication = worksheet.getRow(6);
-		expect(rowApplication.getCell(2).value).toBe("");
+		expectedRows.forEach((expectedRow, index) => {
+			const rowIndex = index + 2;
+			const row = worksheet.getRow(rowIndex);
+
+			const firstCell = row.getCell(1);
+			const secondCell = row.getCell(2);
+
+			expect(firstCell.value).toEqual({
+				richText: [
+					{ text: expectedRow[0][0], font: { color: { argb: "FFFF0000" }, bold: true } },
+					{ text: expectedRow[0].slice(1), font: { name: "BC Sans", bold: true } },
+				],
+			});
+
+			expect(secondCell.value).toBe(expectedRow[1]);
+		});
 	});
 
 	it("should handle null values for accession and application as empty strings", () => {
@@ -81,22 +96,26 @@ describe("setupCoverPage", () => {
 		setupCoverPage({ worksheet, accession: null, application: null });
 
 		const expectedRows = [
-			["ARS662 Last Revised:"],
-			["Ministry:"],
-			["Branch:"],
-			["Accession #:", ""],
-			["Application #:", ""],
+			["* ARS662 Last Revised Date:", formatDate(new Date().toISOString())],
+			["* Accession #:", ""],
+			["* Application #:", ""],
 		];
 
 		expectedRows.forEach((expectedRow, index) => {
-			const rowIndex = index + 2; // Data rows start at index 2
+			const rowIndex = index + 2;
 			const row = worksheet.getRow(rowIndex);
 
-			expect(row.getCell(1).value).toBe(expectedRow[0]);
-			expect(row.getCell(1).font).toEqual({ bold: true, color: { argb: "FF000080" } });
-			if (expectedRow[1] !== undefined) {
-				expect(row.getCell(2).value).toBe(expectedRow[1]);
-			}
+			const firstCell = row.getCell(1);
+			const secondCell = row.getCell(2);
+
+			expect(firstCell.value).toEqual({
+				richText: [
+					{ text: expectedRow[0][0], font: { color: { argb: "FFFF0000" }, bold: true } },
+					{ text: expectedRow[0].slice(1), font: { name: "BC Sans", bold: true } },
+				],
+			});
+
+			expect(secondCell.value).toBe(expectedRow[1]);
 		});
 	});
 });

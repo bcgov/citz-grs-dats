@@ -32,6 +32,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 			accession: body.metadata?.admin?.accession,
 			folders: body.metadata.folders,
 			files: body.metadata.files,
+			jobID,
 		});
 	}
 
