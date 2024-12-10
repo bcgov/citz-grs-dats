@@ -28,8 +28,8 @@ export const setupMetadata = ({ worksheet, files }: Data) => {
 
 	// Add column headers
 	const headers = [
-		"Path",
-		"Name",
+		"File Path",
+		"File Name",
 		"Size",
 		"Checksum",
 		"Created On",
@@ -47,11 +47,11 @@ export const setupMetadata = ({ worksheet, files }: Data) => {
 
 	// Style headers
 	headerRow.eachCell((cell) => {
-		cell.font = { bold: true, color: { argb: "FF000000" } }; // Black text
+		cell.font = { name: "BC Sans", bold: true, color: { argb: "FF000000" } }; // Black text with 'BC Sans'
 		cell.fill = {
 			type: "pattern",
 			pattern: "solid",
-			fgColor: { argb: "FFD6F2B3" }, // Background
+			fgColor: { argb: "FFC1DDFC" }, // Background
 		};
 		cell.alignment = { horizontal: "left" }; // Align to the left
 		cell.border = {
@@ -70,7 +70,7 @@ export const setupMetadata = ({ worksheet, files }: Data) => {
 
 	// Populate rows with data
 	files.forEach((row) => {
-		worksheet.addRow([
+		const newRow = worksheet.addRow([
 			row.filepath,
 			row.filename,
 			row.size,
@@ -86,5 +86,10 @@ export const setupMetadata = ({ worksheet, files }: Data) => {
 			row?.contentType ?? "",
 			row?.programName ?? "",
 		]);
+
+		// Apply font styling to all cells in the row
+		newRow.eachCell((cell) => {
+			cell.font = { name: "BC Sans" }; // Apply 'BC Sans' to data cells
+		});
 	});
 };

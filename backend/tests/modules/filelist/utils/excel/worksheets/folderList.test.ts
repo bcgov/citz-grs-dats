@@ -9,6 +9,7 @@ jest.mock("@/utils", () => ({
 	formatDate: jest.fn((date) => (date ? `Formatted: ${date}` : "")),
 }));
 
+// Test suite for setupFolderList
 describe("setupFolderList", () => {
 	// Test case: Proper setup of folder list worksheet
 	it("should set up the worksheet with the correct structure and populate rows", () => {
@@ -44,30 +45,39 @@ describe("setupFolderList", () => {
 
 		// Check column widths
 		expect(worksheet.columns?.map((col) => col?.width)).toEqual([
-			40, 20, 20, 20, 20, 20, 20, 20, 20,
+			40, 20, 20, 20, 40, 20, 20, 35, 30,
 		]);
 
 		// Check header row
 		const headerRow = worksheet.getRow(1);
 		const headers = [
-			"Folder",
-			"Schedule",
-			"Classification",
+			"* Folder",
+			"* Schedule",
+			"* Classification",
 			"File ID",
-			"OPR (Y/N)",
-			"Start Date",
-			"End Date",
-			"SO Date",
-			"FD Date",
+			"* Office of Primary Responsibility (OPR) - (Y/N)",
+			"* Start Date",
+			"* End Date",
+			"Superseded/Obsolete (SO) Date",
+			"* Final Disposition (FD) Date",
 		];
 		headers.forEach((header, index) => {
 			const cell = headerRow.getCell(index + 1);
-			expect(cell.value).toBe(header);
-			expect(cell.font).toEqual({ bold: true, color: { argb: "FF000000" } });
+			if (header.startsWith("*")) {
+				expect(cell.value).toEqual({
+					richText: [
+						{ text: "*", font: { color: { argb: "FFFF0000" }, name: "BC Sans", bold: true } },
+						{ text: header.slice(1), font: { name: "BC Sans", bold: true } },
+					],
+				});
+			} else {
+				expect(cell.value).toBe(header);
+				expect(cell.font).toEqual({ name: "BC Sans", bold: true, color: { argb: "FF000000" } });
+			}
 			expect(cell.fill).toEqual({
 				type: "pattern",
 				pattern: "solid",
-				fgColor: { argb: "FFD6F2B3" },
+				fgColor: { argb: "FFC1DDFC" },
 			});
 			expect(cell.alignment).toEqual({ horizontal: "left" });
 			expect(cell.border).toEqual({
@@ -113,6 +123,11 @@ describe("setupFolderList", () => {
 		const rows = worksheet.getRows(1, worksheet.rowCount) ?? [];
 		expect(rows.length).toBe(1); // Only header row
 		const headerRow = rows[0];
-		expect(headerRow.getCell(1).value).toBe("Folder");
+		expect(headerRow.getCell(1).value).toEqual({
+			richText: [
+				{ text: "*", font: { color: { argb: "FFFF0000" }, name: "BC Sans", bold: true } },
+				{ text: " Folder", font: { name: "BC Sans", bold: true } },
+			],
+		});
 	});
 });

@@ -24,8 +24,6 @@ export const createJsonFileList = ({
 			lastRevised: formatDate(new Date().toDateString()),
 			accession: accession === null ? "" : accession,
 			application: application === null ? "" : application,
-			ministry: "",
-			branch: "",
 		},
 		folderList: folders as unknown as JsonFileList["folderList"],
 		metadata: files as unknown as JsonFileList["metadata"],
