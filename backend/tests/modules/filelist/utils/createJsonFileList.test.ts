@@ -206,8 +206,6 @@ describe("Test suite for createJsonFileList", () => {
 				lastRevised: mockFormatDate,
 				accession: "",
 				application: "",
-				ministry: "",
-				branch: "",
 			},
 			folderList: body.metadata.folders,
 			metadata: body.metadata.files,
