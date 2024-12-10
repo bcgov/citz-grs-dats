@@ -112,4 +112,22 @@ export const TransferService = {
 			);
 		}
 	},
+
+	/**
+	 * Retrieves a single Transfer entry that matches the given `where` clause.
+	 * @param where - The query conditions to find the Transfer document.
+	 * @returns The Transfer document or null if none found.
+	 * @throws Error if the retrieval fails.
+	 */
+	async getTransferWhere(where: Record<string, unknown>) {
+		try {
+			const transferDocument = await TransferModel.findOne(where);
+			return transferDocument;
+		} catch (error) {
+			console.error("Error in getTransferWhere:", error);
+			throw new Error(
+				`Failed to get Transfer entry: ${error instanceof Error ? error.message : error}`,
+			);
+		}
+	},
 };
