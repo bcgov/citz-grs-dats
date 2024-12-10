@@ -1,7 +1,6 @@
 import { Buffer } from "node:buffer";
 import xlsx from "xlsx";
 import { validateDigitalFileList } from "@/modules/transfer/utils/validateDigitalFileList";
-import { HttpError } from "@bcgov/citz-imb-express-utilities";
 
 jest.mock("xlsx", () => ({
 	read: jest.fn(),
