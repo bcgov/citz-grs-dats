@@ -47,8 +47,8 @@ export const validateDigitalFileList = async ({
 		}
 
 		const cellB2 = coverPage.B2?.v;
-		const cellB3 = coverPage.B3?.v;
-		const cellB4 = coverPage.B4?.v;
+		const cellB3 = String(coverPage.B3?.v);
+		const cellB4 = String(coverPage.B4?.v);
 
 		if (cellB2 === "") {
 			throw new HttpError(
