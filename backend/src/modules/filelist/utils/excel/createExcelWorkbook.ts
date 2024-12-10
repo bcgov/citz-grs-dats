@@ -22,7 +22,7 @@ export const createExcelWorkbook = ({
 
 	// Create worksheets
 	const coverPageWS = workbook.addWorksheet("COVER PAGE");
-	const folderListWS = workbook.addWorksheet("FOLDER LIST");
+	const folderListWS = workbook.addWorksheet("FILE LIST");
 	const metadataWS = workbook.addWorksheet("METADATA");
 	const instructionsWS = workbook.addWorksheet("INSTRUCTIONS");
 
