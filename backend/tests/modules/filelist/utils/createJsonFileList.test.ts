@@ -2,9 +2,13 @@ import { createJsonFileList } from "@/modules/filelist/utils";
 import { formatDate } from "@/utils";
 import type { CreateFileListBody } from "@/modules/filelist/schemas";
 
-jest.mock("@/utils", () => ({
-	formatDate: jest.fn(),
-}));
+jest.mock("@/utils", () => {
+	const originalModule = jest.requireActual("@/utils");
+	return {
+		...originalModule,
+		formatDate: jest.fn(),
+	};
+});
 
 describe("Test suite for createJsonFileList", () => {
 	beforeEach(() => {
