@@ -1,6 +1,6 @@
 import type { SSOUser } from "@bcgov/citz-imb-sso-js-core";
 import { TransferModel } from "../entities";
-import type { TransferMongoose } from "../entities";
+import type { TRANSFER_STATUSES, TransferMongoose } from "../entities";
 
 type CreateTransferData = {
 	user: SSOUser<unknown> | undefined;
@@ -8,6 +8,8 @@ type CreateTransferData = {
 	accession: string;
 	folders: NonNullable<TransferMongoose["metadata"]>["folders"];
 	files: NonNullable<TransferMongoose["metadata"]>["files"];
+	jobID?: string | null;
+	status?: (typeof TRANSFER_STATUSES)[number];
 };
 
 export const TransferService = {
@@ -17,9 +19,19 @@ export const TransferService = {
 	 * @returns The inserted document.
 	 * @throws Error if the insertion fails.
 	 */
-	async createTransferEntry({ user, application, accession, folders, files }: CreateTransferData) {
+	async createTransferEntry({
+		user,
+		application,
+		accession,
+		folders,
+		files,
+		jobID,
+		status = "Pre-Transfer",
+	}: CreateTransferData) {
 		try {
 			const transferDatabaseEntry: TransferMongoose = {
+				status,
+				jobID: jobID as NonNullable<TransferMongoose["jobID"]>,
 				metadata: {
 					admin: {
 						application,
@@ -57,9 +69,13 @@ export const TransferService = {
 		accession,
 		folders,
 		files,
+		jobID,
+		status = "Pre-Transfer",
 	}: CreateTransferData) {
 		try {
 			const transferDatabaseEntry: TransferMongoose = {
+				status,
+				jobID: jobID as NonNullable<TransferMongoose["jobID"]>,
 				metadata: {
 					admin: {
 						application,
@@ -93,6 +109,24 @@ export const TransferService = {
 			console.error("Error in createOrUpdateTransferEntry:", error);
 			throw new Error(
 				`Failed to create or update Transfer entry: ${error instanceof Error ? error.message : error}`,
+			);
+		}
+	},
+
+	/**
+	 * Retrieves a single Transfer entry that matches the given `where` clause.
+	 * @param where - The query conditions to find the Transfer document.
+	 * @returns The Transfer document or null if none found.
+	 * @throws Error if the retrieval fails.
+	 */
+	async getTransferWhere(where: Record<string, unknown>) {
+		try {
+			const transferDocument = await TransferModel.findOne(where);
+			return transferDocument;
+		} catch (error) {
+			console.error("Error in getTransferWhere:", error);
+			throw new Error(
+				`Failed to get Transfer entry: ${error instanceof Error ? error.message : error}`,
 			);
 		}
 	},

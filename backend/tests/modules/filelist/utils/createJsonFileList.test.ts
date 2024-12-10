@@ -2,9 +2,13 @@ import { createJsonFileList } from "@/modules/filelist/utils";
 import { formatDate } from "@/utils";
 import type { CreateFileListBody } from "@/modules/filelist/schemas";
 
-jest.mock("@/utils", () => ({
-	formatDate: jest.fn(),
-}));
+jest.mock("@/utils", () => {
+	const originalModule = jest.requireActual("@/utils");
+	return {
+		...originalModule,
+		formatDate: jest.fn(),
+	};
+});
 
 describe("Test suite for createJsonFileList", () => {
 	beforeEach(() => {
@@ -66,8 +70,6 @@ describe("Test suite for createJsonFileList", () => {
 				lastRevised: mockFormatDate,
 				accession: "TestAccession",
 				application: "TestApp",
-				ministry: "",
-				branch: "",
 			},
 			folderList: body.metadata.folders,
 			metadata: body.metadata.files,
@@ -114,8 +116,6 @@ describe("Test suite for createJsonFileList", () => {
 				lastRevised: mockFormatDate,
 				accession: "",
 				application: "",
-				ministry: "",
-				branch: "",
 			},
 			folderList: body.metadata.folders,
 			metadata: body.metadata.files,
@@ -151,8 +151,6 @@ describe("Test suite for createJsonFileList", () => {
 				lastRevised: mockFormatDate,
 				accession: "TestAccession",
 				application: "TestApp",
-				ministry: "",
-				branch: "",
 			},
 			folderList: {},
 			metadata: {},

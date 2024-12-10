@@ -19,20 +19,19 @@ mongoose
 	.connect(mongoUri)
 	.then(() => {
 		console.log(DATABASE_CONNECTION_SUCCESS);
+		app.listen(PORT, () => {
+			try {
+				// Log server start information.
+				serverStartupLogs(PORT);
+			} catch (error) {
+				// Log any error that occurs during the server start.
+				console.error(error);
+			}
+		});
 	})
 	.catch((error) => {
 		console.error(`${DATABASE_CONNECTION_ERROR}:`, error);
 	});
-
-app.listen(PORT, () => {
-	try {
-		// Log server start information.
-		serverStartupLogs(PORT);
-	} catch (error) {
-		// Log any error that occurs during the server start.
-		console.error(error);
-	}
-});
 
 // Set up process termination handlers
 process.on("SIGINT", handleTermination);

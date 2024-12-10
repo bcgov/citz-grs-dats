@@ -16,7 +16,7 @@ const connectToRabbitMQ = async (queue: string): Promise<void> => {
 		if (!connection) {
 			connection = await amqp.connect(RABBITMQ_URL);
 			isConnected = true;
-			console.log(RABBITMQ_CONNECTION_SUCCESS);
+			console.log(`${RABBITMQ_CONNECTION_SUCCESS} ${queue}`);
 		}
 		if (!channelPromises.has(queue)) {
 			const channelPromise = connection.createChannel().then(async (chan) => {
