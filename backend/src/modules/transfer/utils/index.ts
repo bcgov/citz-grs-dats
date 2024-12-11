@@ -5,3 +5,4 @@ export * from "./sortPSPContent";
 export * from "./validateSubmissionAgreement";
 export * from "./createBagitFiles";
 export * from "./validateDigitalFileList";
+export * from "./isChecksumValid";
