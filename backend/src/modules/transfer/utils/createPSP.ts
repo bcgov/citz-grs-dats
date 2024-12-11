@@ -1,13 +1,17 @@
 import yauzl from "yauzl";
 import yazl from "yazl";
 import { createBagitFiles } from "./createBagitFiles";
+import type { AdminMetadataZodType } from "../schemas";
 import type { TransferZod } from "../entities";
-import path from "node:path";
 
 type Props = {
 	folderContent: string[];
-	buffer: Buffer;
-	metadata: TransferZod["metadata"];
+	buffer: Buffer; // Standard transfer zip
+	metadata: {
+		admin: AdminMetadataZodType | TransferZod["metadata"]["admin"];
+		folders: TransferZod["metadata"]["folders"];
+		files: TransferZod["metadata"]["files"];
+	};
 };
 
 export const createPSP = async ({ folderContent, buffer, metadata }: Props): Promise<Buffer> => {
@@ -16,7 +20,6 @@ export const createPSP = async ({ folderContent, buffer, metadata }: Props): Pro
 	const outputZip = new yazl.ZipFile();
 	const chunks: Buffer[] = [];
 
-	// Open the input ZIP file from the buffer
 	await new Promise<void>((resolve, reject) => {
 		yauzl.fromBuffer(buffer, { lazyEntries: true }, (err, zipFile) => {
 			if (err) return reject(err);
@@ -28,9 +31,7 @@ export const createPSP = async ({ folderContent, buffer, metadata }: Props): Pro
 				if (entryPath.startsWith("metadata/") || entryPath.startsWith("documentation/")) {
 					zipFile.openReadStream(entry, (err, readStream) => {
 						if (err) return reject(err);
-						const newPath = entryPath
-							.replace("metadata/", "metadata/")
-							.replace("documentation/", "documentation/");
+						const newPath = entryPath;
 						const entryChunks: Buffer[] = [];
 						readStream.on("data", (chunk) => entryChunks.push(chunk));
 						readStream.on("end", () => {
@@ -40,21 +41,21 @@ export const createPSP = async ({ folderContent, buffer, metadata }: Props): Pro
 						});
 					});
 				} else if (entryPath.startsWith("content/")) {
-					const folderName = path.basename(entryPath.split("/")[1]);
-					if (folderContent.includes(folderName)) {
+					const relativePath = entryPath.replace("content/", "data/");
+					if (!relativePath.endsWith("/")) {
+						// Ensure it's a file, not a directory
 						zipFile.openReadStream(entry, (err, readStream) => {
 							if (err) return reject(err);
-							const newPath = entryPath.replace("content/", "data/");
 							const entryChunks: Buffer[] = [];
 							readStream.on("data", (chunk) => entryChunks.push(chunk));
 							readStream.on("end", () => {
 								const fileBuffer = Buffer.concat(entryChunks);
-								outputZip.addBuffer(fileBuffer, newPath);
+								outputZip.addBuffer(fileBuffer, relativePath);
 								zipFile.readEntry();
 							});
 						});
 					} else {
-						zipFile.readEntry();
+						zipFile.readEntry(); // Skip directories
 					}
 				} else {
 					zipFile.readEntry();
@@ -70,7 +71,6 @@ export const createPSP = async ({ folderContent, buffer, metadata }: Props): Pro
 		});
 	});
 
-	// Collect the ZIP output
 	outputZip.outputStream.on("data", (chunk) => chunks.push(chunk));
 	await new Promise((resolve) => outputZip.outputStream.on("end", resolve));
 
