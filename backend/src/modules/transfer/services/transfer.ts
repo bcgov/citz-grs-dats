@@ -3,7 +3,7 @@ import { TransferModel } from "../entities";
 import type { TRANSFER_STATUSES, TransferMongoose } from "../entities";
 
 type CreateTransferData = {
-	user: SSOUser<unknown> | undefined;
+	user?: SSOUser<unknown> | undefined;
 	application: string;
 	accession: string;
 	folders: NonNullable<TransferMongoose["metadata"]>["folders"];
@@ -11,6 +11,8 @@ type CreateTransferData = {
 	jobID?: string | null;
 	status?: (typeof TRANSFER_STATUSES)[number];
 };
+
+type UpdateTransferData = Partial<Omit<CreateTransferData, "application" | "accession">>;
 
 export const TransferService = {
 	/**
@@ -127,6 +129,60 @@ export const TransferService = {
 			console.error("Error in getTransferWhere:", error);
 			throw new Error(
 				`Failed to get Transfer entry: ${error instanceof Error ? error.message : error}`,
+			);
+		}
+	},
+
+	/**
+	 * Updates a Transfer entry based on `application` and `accession`.
+	 * @param application - The application identifier.
+	 * @param accession - The accession identifier.
+	 * @param updates - The properties to update.
+	 * @returns The updated document.
+	 * @throws Error if the update fails.
+	 */
+	async updateTransferEntry(application: string, accession: string, updates: UpdateTransferData) {
+		try {
+			const transferDocument = await TransferModel.findOne({
+				"metadata.admin.application": application,
+				"metadata.admin.accession": accession,
+			});
+
+			if (!transferDocument) {
+				throw new Error("Transfer entry not found.");
+			}
+
+			if (updates.user && transferDocument.metadata?.admin) {
+				transferDocument.metadata.admin.submittedBy = {
+					// biome-ignore lint/style/noNonNullAssertion: <explanation>
+					name: updates.user.display_name ?? transferDocument.metadata?.admin?.submittedBy?.name!,
+					// biome-ignore lint/style/noNonNullAssertion: <explanation>
+					email: updates.user.email ?? transferDocument.metadata?.admin?.submittedBy?.email!,
+				};
+			}
+
+			if (updates.folders && transferDocument.metadata) {
+				transferDocument.metadata.folders = updates.folders;
+			}
+
+			if (updates.files && transferDocument.metadata) {
+				transferDocument.metadata.files = updates.files;
+			}
+
+			if (updates.jobID !== undefined) {
+				transferDocument.jobID = updates.jobID as NonNullable<TransferMongoose["jobID"]>;
+			}
+
+			if (updates.status) {
+				transferDocument.status = updates.status;
+			}
+
+			const updatedDocument = await transferDocument.save();
+			return updatedDocument;
+		} catch (error) {
+			console.error("Error updating Transfer entry:", error);
+			throw new Error(
+				`Failed to update Transfer entry: ${error instanceof Error ? error.message : error}`,
 			);
 		}
 	},
