@@ -18,7 +18,7 @@ export const createBagitFiles = ({
 	Object.entries(files).forEach(([folder, fileArray]) => {
 		if (folders.includes(folder)) {
 			fileArray.forEach((file: FileMetadataZodType) => {
-				manifestContent += `${file.checksum} data/${file.filepath}\n`;
+				manifestContent += `${file.checksum} data/${(file.filepath).replaceAll("\\", "/")}\n`;
 			});
 		}
 	});

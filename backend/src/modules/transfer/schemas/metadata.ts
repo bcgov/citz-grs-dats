@@ -6,4 +6,4 @@ export const adminMetadataZodSchema = z.object({
 	application: z.string(),
 });
 
-export type FolderMetadataZodType = z.infer<typeof adminMetadataZodSchema>;
+export type AdminMetadataZodType = z.infer<typeof adminMetadataZodSchema>;
