@@ -23,6 +23,7 @@ module.exports = {
 		"modules/filelist/utils/queueConsumer",
 		"modules/transfer/services/",
 		"modules/transfer/utils/queueConsumer",
+		"modules/transfer/utils/email",
 		"modules/submission-agreement/assets/",
 	],
 	coverageDirectory: "coverage",
