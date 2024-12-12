@@ -7,3 +7,4 @@ export * from "./createBagitFiles";
 export * from "./validateDigitalFileList";
 export * from "./isChecksumValid";
 export * from "./email";
+export * from "./getFileFromZipBuffer";
