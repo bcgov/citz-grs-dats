@@ -24,7 +24,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	// Save to s3
 	const s3Location = await upload({
 		bucketName: S3_BUCKET,
-		key: `submission-agreements/${body.accession}-${body.application}`,
+		key: `submission-agreements/${body.accession}_${body.application}`,
 		content: pdfBuffer,
 	});
 

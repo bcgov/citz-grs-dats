@@ -3,7 +3,8 @@ import { errorWrapper, HTTP_STATUS_CODES } from "@bcgov/citz-imb-express-utiliti
 import { addToCreateFileListQueue } from "src/modules/rabbit/utils";
 import { createFileListBodySchema } from "../schemas";
 import { FileListService } from "../services";
-import { TransferService } from "@/modules/transfer/services";
+import { TransferService } from "src/modules/transfer/services";
+import { formatDate } from "src/utils";
 
 // Create file list.
 export const create = errorWrapper(async (req: Request, res: Response) => {
@@ -40,7 +41,11 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	await addToCreateFileListQueue(jobID);
 
 	const result = getStandardResponse({
-		data: { jobID },
+		data: {
+			user: `${user?.first_name} ${user?.last_name}`,
+			date: formatDate(new Date().toISOString()),
+			jobID,
+		},
 		message: "Job added to queue.",
 		success: true,
 	});

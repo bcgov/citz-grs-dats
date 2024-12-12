@@ -25,6 +25,8 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 
 	const jobID = `job-${Date.now()}`;
 
+	// TODO check for Submission Agreement, add from s3 if not present
+
 	// Validate transfer buffer
 	validateStandardTransferStructure({ buffer: body.buffer });
 	validateMetadataFiles({
