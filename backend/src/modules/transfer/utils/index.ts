@@ -9,3 +9,4 @@ export * from "./isChecksumValid";
 export * from "./email";
 export * from "./getFileFromZipBuffer";
 export * from "./getMetadata";
+export * from "./createPSP";

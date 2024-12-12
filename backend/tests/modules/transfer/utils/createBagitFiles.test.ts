@@ -45,15 +45,31 @@ describe("createBagitFiles", () => {
 	// Test suite for createBagitFiles
 
 	it("should generate a valid bagit.txt buffer", () => {
-		const result = createBagitFiles(mockFiles);
+		const folders = ["group1", "group2"];
+		const result = createBagitFiles({ files: mockFiles, folders });
 		const expectedBagit = "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\n";
 		expect(result.bagit.toString()).toBe(expectedBagit);
 	});
 
-	it("should generate a valid manifest.txt buffer", () => {
-		const result = createBagitFiles(mockFiles);
+	it("should generate a valid manifest.txt buffer for included folders", () => {
+		const folders = ["group1", "group2"];
+		const result = createBagitFiles({ files: mockFiles, folders });
 		const expectedManifest =
 			"abc123def456 data/documents/report1.pdf\n" + "789ghi012jkl data/images/photo1.jpg\n";
+		expect(result.manifest.toString()).toBe(expectedManifest);
+	});
+
+	it("should generate an empty manifest.txt buffer if no folders match", () => {
+		const folders = ["group3"]; // Non-existent folder
+		const result = createBagitFiles({ files: mockFiles, folders });
+		const expectedManifest = ""; // No matching folders
+		expect(result.manifest.toString()).toBe(expectedManifest);
+	});
+
+	it("should only include files from specified folders in the manifest.txt buffer", () => {
+		const folders = ["group1"]; // Only include files from group1
+		const result = createBagitFiles({ files: mockFiles, folders });
+		const expectedManifest = "abc123def456 data/documents/report1.pdf\n"; // Only group1 files
 		expect(result.manifest.toString()).toBe(expectedManifest);
 	});
 });
