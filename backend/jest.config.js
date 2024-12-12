@@ -25,6 +25,7 @@ module.exports = {
 		"modules/transfer/utils/queueConsumer",
 		"modules/transfer/utils/email",
 		"modules/transfer/utils/getFileFromZipBuffer",
+		"modules/transfer/utils/getMetadata",
 		"modules/submission-agreement/assets/",
 	],
 	coverageDirectory: "coverage",
