@@ -11,6 +11,7 @@ import { sortPSPContent } from "./sortPSPContent";
 import type { TransferZod } from "../entities";
 import { createPSP } from "./createPSP";
 import type { AdminMetadataZodType } from "../schemas";
+import { getFilenameByRegex } from "./getFilenameByRegex";
 
 const { S3_BUCKET } = ENV;
 
@@ -78,8 +79,22 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 	//await upload({ bucketName: S3_BUCKET, key: `transfers/TR_${accession}_${application}`, content: newTransferBuffer });
 
 	// Get transfer files for email attachment
-	const fileListBuffer = await getFileFromZipBuffer(buffer, "documentation/"); // TODO: get filename
-	const submissionAgreementBuffer = await getFileFromZipBuffer(buffer, "documentation/");
+	const fileListPath = await getFilenameByRegex({
+		buffer,
+		directory: "documentation/",
+		regex: /^(Digital_File_List|File\sList)/,
+	});
+
+	const subAgreementPath = await getFilenameByRegex({
+		buffer,
+		directory: "documentation/",
+		regex: /^Submission_Agreement/,
+	});
+
+	// biome-ignore lint/style/noNonNullAssertion: <explanation>
+	const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath!);
+	// biome-ignore lint/style/noNonNullAssertion: <explanation>
+	const submissionAgreementBuffer = await getFileFromZipBuffer(buffer, subAgreementPath!);
 
 	// Convert the buffer to Base64 for email attachment
 	const fileListBase64Buffer = Buffer.from(fileListBuffer).toString("base64");

@@ -1,13 +1,14 @@
-import type { Request, Response } from "express";
-import { errorWrapper, HTTP_STATUS_CODES } from "@bcgov/citz-imb-express-utilities";
+import { application, type Request, type Response } from "express";
+import { errorWrapper, HTTP_STATUS_CODES, HttpError } from "@bcgov/citz-imb-express-utilities";
 import { createTransferBodySchema } from "../schemas";
 import { TransferService } from "src/modules/transfer/services";
-import { upload } from "src/modules/s3/utils";
+import { download, upload } from "src/modules/s3/utils";
 import { ENV } from "src/config";
-import { formatDate } from "src/utils";
+import { formatDate, streamToBuffer } from "src/utils";
 import { addToStandardTransferQueue } from "src/modules/rabbit/utils/queue/transfer";
 import {
 	getFileFromZipBuffer,
+	getFilenameByRegex,
 	getMetadata,
 	validateDigitalFileList,
 	validateMetadataFiles,
@@ -25,7 +26,28 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 
 	const jobID = `job-${Date.now()}`;
 
-	// TODO check for Submission Agreement, add from s3 if not present
+	let subAgreementPath = await getFilenameByRegex({
+		buffer: body.buffer,
+		directory: "documentation/",
+		regex: /^Submission_Agreement/,
+	});
+
+	if (!subAgreementPath) {
+		const subAgreementStream = await download({
+			bucketName: S3_BUCKET,
+			key: `submission-agreements/${body.accession}_${body.application}`,
+		});
+		if (!subAgreementStream)
+			throw new HttpError(
+				HTTP_STATUS_CODES.NOT_FOUND,
+				"Submission Agreement (beginning with 'Submission_Agreement') must be included and have a .pdf extension in the documentation directory.",
+			);
+		const s3SubAgreementBuffer = await streamToBuffer(subAgreementStream);
+		const newSubAgreementName = `Submission_Agreement_${body.accession}_${body.application}.pdf`;
+		subAgreementPath = `documentation\\${newSubAgreementName}`;
+
+		// TODO: Add agreement to zip buffer
+	}
 
 	// Validate transfer buffer
 	validateStandardTransferStructure({ buffer: body.buffer });
@@ -35,8 +57,16 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 		application: body.application,
 	});
 
-	const fileListBuffer = await getFileFromZipBuffer(body.buffer, "documentation/"); // TODO: get filename
-	const submissionAgreementBuffer = await getFileFromZipBuffer(body.buffer, "documentation/");
+	const fileListPath = await getFilenameByRegex({
+		buffer: body.buffer,
+		directory: "documentation/",
+		regex: /^(Digital_File_List|File\sList)/,
+	});
+
+	// biome-ignore lint/style/noNonNullAssertion: <explanation>
+	const fileListBuffer = await getFileFromZipBuffer(body.buffer, fileListPath!);
+	// biome-ignore lint/style/noNonNullAssertion: <explanation>
+	const submissionAgreementBuffer = await getFileFromZipBuffer(body.buffer, subAgreementPath!);
 
 	validateDigitalFileList({
 		buffer: fileListBuffer,
