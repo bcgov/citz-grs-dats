@@ -11,3 +11,4 @@ export * from "./getFileFromZipBuffer";
 export * from "./getMetadata";
 export * from "./createPSP";
 export * from "./getFilenameByRegex";
+export * from "./addFileToZipBuffer";

@@ -28,6 +28,7 @@ module.exports = {
 		"modules/transfer/utils/getMetadata",
 		"modules/transfer/utils/createPSP",
 		"modules/transfer/utils/getFilenameByRegex",
+		"modules/transfer/utils/addFileToZipBuffer",
 		"modules/submission-agreement/assets/",
 	],
 	coverageDirectory: "coverage",
