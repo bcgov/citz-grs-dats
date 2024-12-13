@@ -8,3 +8,4 @@ export * from "./validateDigitalFileList";
 export * from "./isChecksumValid";
 export * from "./createFinalTransfer";
 export * from "./getMetadata";
+export * from "./createPSP";

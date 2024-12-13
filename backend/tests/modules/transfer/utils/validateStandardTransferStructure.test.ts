@@ -13,9 +13,9 @@ describe("validateStandardTransferStructure", () => {
 
 		const mockEntries = [
 			{ fileName: "content/sample.txt" },
-			{ fileName: "documentation/Digital_File_List_.xlsx" },
-			{ fileName: "documentation/Transfer_Form_.pdf" },
-			{ fileName: "documentation/Submission_Agreement_.pdf" },
+			{ fileName: "documentation/Digital_File_List.xlsx" },
+			{ fileName: "documentation/Transfer_Form.pdf" },
+			{ fileName: "documentation/Submission_Agreement.pdf" },
 			{ fileName: "metadata/admin.json" },
 			{ fileName: "metadata/files.json" },
 			{ fileName: "metadata/folders.json" },
@@ -42,7 +42,7 @@ describe("validateStandardTransferStructure", () => {
 	it("should reject if the zip file is missing required directories", async () => {
 		const buffer = Buffer.from("fake buffer");
 
-		const mockEntries = [{ fileName: "documentation/Digital_File_List_.xlsx" }];
+		const mockEntries = [{ fileName: "documentation/Digital_File_List.xlsx" }];
 
 		(yauzl.fromBuffer as jest.Mock).mockImplementation((_, __, callback) => {
 			const mockZipFile = {
@@ -72,7 +72,7 @@ describe("validateStandardTransferStructure", () => {
 
 		const mockEntries = [
 			{ fileName: "content/sample.txt" },
-			{ fileName: "documentation/Transfer_Form_.pdf" },
+			{ fileName: "documentation/Transfer_Form.pdf" },
 			{ fileName: "metadata/admin.json" },
 		];
 
@@ -93,7 +93,7 @@ describe("validateStandardTransferStructure", () => {
 		await expect(validateStandardTransferStructure({ buffer })).rejects.toThrow(
 			new HttpError(
 				HTTP_STATUS_CODES.BAD_REQUEST,
-				`The zip file is missing required files: Digital File List (beginning with 'Digital_File_List_' or 'File List') must be included and have a .xlsx or .json extension in the documentation directory. Submission Agreement (beginning with 'Submission_Agreement_') must be included and have a .pdf extension in the documentation directory. files.json must be included in the metadata directory. folders.json must be included in the metadata directory.`,
+				`The zip file is missing required files: Digital File List (beginning with 'Digital_File_List' or 'File List') must be included and have a .xlsx or .json extension in the documentation directory. Submission Agreement (beginning with 'Submission_Agreement') must be included and have a .pdf extension in the documentation directory. files.json must be included in the metadata directory. folders.json must be included in the metadata directory.`,
 			),
 		);
 	});
