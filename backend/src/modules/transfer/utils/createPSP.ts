@@ -24,6 +24,14 @@ export const createPSP = async ({ folderContent, buffer, metadata }: Props): Pro
 		yauzl.fromBuffer(buffer, { lazyEntries: true }, (err, zipFile) => {
 			if (err) return reject(err);
 
+			const allowedFolders = new Set(
+				folderContent.map((folder) => {
+					const folderNameParts = folder.replaceAll("\\", "/").split("/");
+					const folderName = folderNameParts[folderNameParts.length - 1];
+					return `content/${folderName}/`;
+				}),
+			);
+
 			zipFile.readEntry();
 			zipFile.on("entry", (entry) => {
 				const entryPath = entry.fileName;
@@ -42,7 +50,13 @@ export const createPSP = async ({ folderContent, buffer, metadata }: Props): Pro
 					});
 				} else if (entryPath.startsWith("content/")) {
 					const relativePath = entryPath.replace("content/", "data/");
-					if (!relativePath.endsWith("/")) {
+
+					// Check if the entryPath belongs to an allowed folder or its subdirectory
+					const folderMatch = Array.from(allowedFolders).some((folder) =>
+						entryPath.startsWith(folder),
+					);
+
+					if (folderMatch && !relativePath.endsWith("/")) {
 						// Ensure it's a file, not a directory
 						zipFile.openReadStream(entry, (err, readStream) => {
 							if (err) return reject(err);
@@ -54,6 +68,8 @@ export const createPSP = async ({ folderContent, buffer, metadata }: Props): Pro
 								zipFile.readEntry();
 							});
 						});
+					} else if (!folderMatch) {
+						zipFile.readEntry(); // Skip directories or files not in allowed folders
 					} else {
 						zipFile.readEntry(); // Skip directories
 					}
