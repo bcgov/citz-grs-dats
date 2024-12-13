@@ -29,6 +29,7 @@ module.exports = {
 		"modules/transfer/utils/createPSP",
 		"modules/transfer/utils/getFilenameByRegex",
 		"modules/transfer/utils/addFileToZipBuffer",
+		"modules/transfer/utils/createFinalTransfer",
 		"modules/submission-agreement/assets/",
 	],
 	coverageDirectory: "coverage",

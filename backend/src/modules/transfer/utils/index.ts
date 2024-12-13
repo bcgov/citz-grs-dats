@@ -11,5 +11,5 @@ export * from "./getMetadata";
 export * from "./createPSP";
 export * from "./getFilenameByRegex";
 export * from "./addFileToZipBuffer";
-export * from "./createPSP";
 export * from "./isChecksumValid";
+export * from "./createFinalTransfer";
