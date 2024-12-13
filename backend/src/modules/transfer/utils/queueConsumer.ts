@@ -91,9 +91,9 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		regex: /^Submission_Agreement/,
 	});
 
-	// biome-ignore lint/style/noNonNullAssertion: <explanation>
+	// biome-ignore lint/style/noNonNullAssertion: Verified by validateStandardTransferStructure
 	const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath!);
-	// biome-ignore lint/style/noNonNullAssertion: <explanation>
+	// biome-ignore lint/style/noNonNullAssertion: Verified by validateStandardTransferStructure
 	const submissionAgreementBuffer = await getFileFromZipBuffer(buffer, subAgreementPath!);
 
 	// Convert the buffer to Base64 for email attachment

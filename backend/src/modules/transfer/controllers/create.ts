@@ -7,6 +7,7 @@ import { ENV } from "src/config";
 import { formatDate, streamToBuffer } from "src/utils";
 import { addToStandardTransferQueue } from "src/modules/rabbit/utils/queue/transfer";
 import {
+	addFileToZipBuffer,
 	getFileFromZipBuffer,
 	getFilenameByRegex,
 	getMetadata,
@@ -23,11 +24,12 @@ const { S3_BUCKET } = ENV;
 export const create = errorWrapper(async (req: Request, res: Response) => {
 	const { getStandardResponse, getZodValidatedBody, user } = req;
 	const body = getZodValidatedBody(createTransferBodySchema); // Validate request body
+	let buffer = body.buffer;
 
 	const jobID = `job-${Date.now()}`;
 
 	let subAgreementPath = await getFilenameByRegex({
-		buffer: body.buffer,
+		buffer,
 		directory: "documentation/",
 		regex: /^Submission_Agreement/,
 	});
@@ -46,27 +48,32 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 		const newSubAgreementName = `Submission_Agreement_${body.accession}_${body.application}.pdf`;
 		subAgreementPath = `documentation\\${newSubAgreementName}`;
 
-		// TODO: Add agreement to zip buffer
+		// Add agreement to zip buffer
+		buffer = await addFileToZipBuffer({
+			zipBuffer: buffer,
+			fileBuffer: s3SubAgreementBuffer,
+			filePath: subAgreementPath,
+		});
 	}
 
 	// Validate transfer buffer
-	validateStandardTransferStructure({ buffer: body.buffer });
+	validateStandardTransferStructure({ buffer });
 	validateMetadataFiles({
-		buffer: body.buffer,
+		buffer,
 		accession: body.accession,
 		application: body.application,
 	});
 
 	const fileListPath = await getFilenameByRegex({
-		buffer: body.buffer,
+		buffer,
 		directory: "documentation/",
 		regex: /^(Digital_File_List|File\sList)/,
 	});
 
-	// biome-ignore lint/style/noNonNullAssertion: <explanation>
-	const fileListBuffer = await getFileFromZipBuffer(body.buffer, fileListPath!);
-	// biome-ignore lint/style/noNonNullAssertion: <explanation>
-	const submissionAgreementBuffer = await getFileFromZipBuffer(body.buffer, subAgreementPath!);
+	// biome-ignore lint/style/noNonNullAssertion: Verified by validateStandardTransferStructure
+	const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath!);
+	// biome-ignore lint/style/noNonNullAssertion: Verified by validateStandardTransferStructure
+	const submissionAgreementBuffer = await getFileFromZipBuffer(buffer, subAgreementPath!);
 
 	validateDigitalFileList({
 		buffer: fileListBuffer,
@@ -79,7 +86,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 		application: body.application,
 	});
 
-	const metadata = await getMetadata(body.buffer);
+	const metadata = await getMetadata(buffer);
 
 	// Save data for transfer to Mongo
 	await TransferService.updateTransferEntry(body.accession, body.application, {
@@ -94,7 +101,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	const s3Location = await upload({
 		bucketName: S3_BUCKET,
 		key: `transfers/TR_${body.accession}_${body.application}`,
-		content: body.buffer,
+		content: buffer,
 	});
 
 	// Add the job ID to the RabbitMQ queue
