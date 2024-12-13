@@ -12,6 +12,7 @@ import type { TransferZod } from "../entities";
 import { createPSP } from "./createPSP";
 import type { AdminMetadataZodType } from "../schemas";
 import { getFilenameByRegex } from "./getFilenameByRegex";
+import { createFinalTransfer } from "./createFinalTransfer";
 
 const { S3_BUCKET } = ENV;
 
@@ -72,11 +73,14 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		});
 	}
 
-	// TODO
-	//const newTransferBuffer = await createFinalTransfer(pspBuffers);
+	const newTransferBuffer = await createFinalTransfer(pspBuffers);
 
 	// Save to s3
-	//await upload({ bucketName: S3_BUCKET, key: `transfers/TR_${accession}_${application}`, content: newTransferBuffer });
+	await upload({
+		bucketName: S3_BUCKET,
+		key: `transfers/TR_${accession}_${application}`,
+		content: newTransferBuffer,
+	});
 
 	// Get transfer files for email attachment
 	const fileListPath = await getFilenameByRegex({
