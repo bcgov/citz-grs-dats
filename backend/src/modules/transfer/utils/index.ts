@@ -6,3 +6,4 @@ export * from "./validateSubmissionAgreement";
 export * from "./createBagitFiles";
 export * from "./validateDigitalFileList";
 export * from "./isChecksumValid";
+export * from "./addFileToZipBuffer";
