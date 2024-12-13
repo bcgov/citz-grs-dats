@@ -7,3 +7,4 @@ export * from "./createBagitFiles";
 export * from "./validateDigitalFileList";
 export * from "./isChecksumValid";
 export * from "./createFinalTransfer";
+export * from "./getMetadata";
