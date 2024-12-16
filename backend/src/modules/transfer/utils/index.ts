@@ -8,3 +8,4 @@ export * from "./validateDigitalFileList";
 export * from "./createPSP";
 export * from "./isChecksumValid";
 export * from "./addFileToZipBuffer";
+export * from "./getFileFromZipBuffer";
