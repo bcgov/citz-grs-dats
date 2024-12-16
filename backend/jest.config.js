@@ -23,6 +23,7 @@ module.exports = {
 		"modules/filelist/utils/queueConsumer",
 		"modules/transfer/services/",
 		"modules/transfer/utils/queueConsumer",
+		"modules/transfer/utils/addFileToZipBuffer",
 		"modules/transfer/utils/getFilenameByRegex",
 		"modules/transfer/utils/email",
 		"modules/transfer/utils/getFileFromZipBuffer",
