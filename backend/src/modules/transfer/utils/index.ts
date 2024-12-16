@@ -13,3 +13,4 @@ export * from "./getFilenameByRegex";
 export * from "./addFileToZipBuffer";
 export * from "./isChecksumValid";
 export * from "./createFinalTransfer";
+export * from "./getFileFromZipBuffer";
