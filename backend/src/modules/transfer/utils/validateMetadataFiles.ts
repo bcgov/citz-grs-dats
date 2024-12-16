@@ -2,8 +2,8 @@ import { z } from "zod";
 import { fileMetadataZodSchema, folderMetadataZodSchema } from "src/modules/filelist/schemas";
 import { adminMetadataZodSchema } from "../schemas";
 import { HttpError, HTTP_STATUS_CODES } from "@bcgov/citz-imb-express-utilities";
-import type { Buffer } from "node:buffer";
-import JSZip from "jszip";
+import { Buffer } from "node:buffer";
+import yauzl from "yauzl";
 
 const foldersSchema = z.record(folderMetadataZodSchema);
 const filesSchema = z.record(z.array(fileMetadataZodSchema));
@@ -15,44 +15,75 @@ type Data = {
 	application: string;
 };
 
+const extractFileFromZip = (zipBuffer: Buffer, filePath: string): Promise<string> => {
+	return new Promise((resolve, reject) => {
+		yauzl.fromBuffer(zipBuffer, { lazyEntries: true }, (err, zipFile) => {
+			if (err) return reject(err);
+			if (!zipFile)
+				return reject(new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Invalid zip file."));
+
+			let fileFound = false;
+
+			zipFile.on("entry", (entry) => {
+				if (entry.fileName === filePath) {
+					fileFound = true;
+					zipFile.openReadStream(entry, (err, readStream) => {
+						if (err) {
+							zipFile.close();
+							return reject(err);
+						}
+						const chunks: Buffer[] = [];
+						readStream.on("data", (chunk) => chunks.push(chunk));
+						readStream.on("end", () => {
+							zipFile.close();
+							resolve(Buffer.concat(chunks).toString("utf-8"));
+						});
+					});
+				} else {
+					zipFile.readEntry();
+				}
+			});
+
+			zipFile.on("end", () => {
+				if (!fileFound) {
+					zipFile.close();
+					reject(
+						new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, `File ${filePath} not found in the zip.`),
+					);
+				}
+			});
+
+			zipFile.readEntry();
+		});
+	});
+};
+
 export const validateMetadataFiles = async ({
 	buffer,
 	accession,
 	application,
 }: Data): Promise<void> => {
-	const zip = await JSZip.loadAsync(buffer);
+	// Check for "metadata/" folder indirectly by looking for its required files
+	const requiredFiles = ["metadata/admin.json", "metadata/files.json", "metadata/folders.json"];
+	const extractedFiles: Record<string, string> = {};
 
-	// Check for "metadata/" folder
-	const metadataFolder = zip.folder("metadata");
-	if (!metadataFolder) {
-		throw new HttpError(
-			HTTP_STATUS_CODES.BAD_REQUEST,
-			'The zip file is missing the "metadata/" folder.',
-		);
+	for (const file of requiredFiles) {
+		try {
+			extractedFiles[file] = await extractFileFromZip(buffer, file);
+		} catch (err) {
+			if (err instanceof HttpError && err.statusCode === HTTP_STATUS_CODES.BAD_REQUEST) {
+				throw new HttpError(
+					HTTP_STATUS_CODES.BAD_REQUEST,
+					`The zip file is missing required file: ${file}`,
+				);
+			}
+			throw err;
+		}
 	}
 
-	// Check for required files in "metadata/"
-	const requiredFiles = ["admin.json", "files.json", "folders.json"];
-	const missingFiles = requiredFiles.filter((file) => !metadataFolder.file(file));
-
-	if (missingFiles.length > 0) {
-		throw new HttpError(
-			HTTP_STATUS_CODES.BAD_REQUEST,
-			`metadata/ is missing the following required files: ${missingFiles.join(", ")}.`,
-		);
-	}
-
-	// Read and parse each file in "metadata/"
-	// biome-ignore lint/style/noNonNullAssertion: <explanation>
-	const adminFile = JSON.parse(await metadataFolder.file("admin.json")!.async("string"));
-	// biome-ignore lint/style/noNonNullAssertion: <explanation>
-	const filesFile = JSON.parse(await metadataFolder.file("files.json")!.async("string"));
-	// biome-ignore lint/style/noNonNullAssertion: <explanation>
-	const foldersFile = JSON.parse(await metadataFolder.file("folders.json")!.async("string"));
-
-	// Validate each file against its schema
+	// Parse and validate each file
 	try {
-		adminSchema.parse(adminFile);
+		adminSchema.parse(JSON.parse(extractedFiles["metadata/admin.json"]));
 	} catch (err) {
 		throw new HttpError(
 			HTTP_STATUS_CODES.BAD_REQUEST,
@@ -61,7 +92,7 @@ export const validateMetadataFiles = async ({
 	}
 
 	try {
-		filesSchema.parse(filesFile);
+		filesSchema.parse(JSON.parse(extractedFiles["metadata/files.json"]));
 	} catch (err) {
 		throw new HttpError(
 			HTTP_STATUS_CODES.BAD_REQUEST,
@@ -70,7 +101,7 @@ export const validateMetadataFiles = async ({
 	}
 
 	try {
-		foldersSchema.parse(foldersFile);
+		foldersSchema.parse(JSON.parse(extractedFiles["metadata/folders.json"]));
 	} catch (err) {
 		throw new HttpError(
 			HTTP_STATUS_CODES.BAD_REQUEST,
@@ -79,6 +110,7 @@ export const validateMetadataFiles = async ({
 	}
 
 	// Validate accession and application values in admin.json
+	const adminFile = JSON.parse(extractedFiles["metadata/admin.json"]);
 	const { accession: adminAccession, application: adminApplication } = adminFile;
 
 	if (!adminAccession || !adminApplication) {
