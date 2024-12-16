@@ -5,5 +5,6 @@ export * from "./sortPSPContent";
 export * from "./validateSubmissionAgreement";
 export * from "./createBagitFiles";
 export * from "./validateDigitalFileList";
+export * from "./createPSP";
 export * from "./isChecksumValid";
 export * from "./email";

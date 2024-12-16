@@ -24,6 +24,7 @@ module.exports = {
 		"modules/transfer/services/",
 		"modules/transfer/utils/queueConsumer",
 		"modules/transfer/utils/email",
+		"modules/transfer/utils/createPSP",
 		"modules/submission-agreement/assets/",
 	],
 	coverageDirectory: "coverage",
