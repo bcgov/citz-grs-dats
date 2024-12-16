@@ -14,33 +14,25 @@ jobs:
     environment: dev
     runs-on: ubuntu-latest
     steps:
-    
+
       # check out the repo
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # login to the Openshift Cluster
-      - name: Login to Openshift
-        uses: redhat-actions/oc-login@v1
-        with:
-          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_URL }}
-          openshift_token: ${{ secrets.OPENSHIFT_SA_TOOLS_TOKEN }}
-          namespace: ${{ secrets.OPENSHIFT_TOOLS_NAMESPACE }}
-
-      # Login to BCGov Artifactory 
-      - name: Login to BCGov Artifactory 
+      # Login to BCGov OCP Silver
+      - name: Login to BCGov
         run: |
           docker login image-registry.apps.silver.devops.gov.bc.ca -u default -p ${{ secrets.OPENSHIFT_SA_TOOLS_TOKEN }}
 
-      # Build the GRS DATS Image 
+      # Build the GRS DATS Image
       - name: Build GRS DATS API Image
         run: |
          cd backend && docker build -t image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-api-v2:${{github.event.pull_request.number}} -f docker/Dockerfile.prod .
 
-      # Push the GRS DATS API Image to Artifactory
-      - name: Push the CoCo API Image to Artifactory
+      # Push the GRS DATS API Image to OCP ImageStream
+      - name: Push the DATS API V2 Image to OCP ImageStream
         run: |
           docker push image-registry.apps.silver.devops.gov.bc.ca/ede50e-tools/citz-grs-dats-api-v2:${{github.event.pull_request.number}}
 
@@ -50,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
-      
+
     steps:
       # Checkout the repository
       - name: Checkout
@@ -66,7 +58,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10' 
+          python-version: '3.10'
 
       # Run the update wiki Python script
       - name: Run update wiki Python script
