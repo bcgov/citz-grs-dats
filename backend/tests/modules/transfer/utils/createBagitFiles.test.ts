@@ -3,9 +3,9 @@ import type { TransferZod } from "@/modules/transfer/entities";
 
 // Mock files data for testing
 const mockFiles: TransferZod["metadata"]["files"] = {
-	group1: [
+	"C:/data/documents": [
 		{
-			filepath: "documents/report1.pdf",
+			filepath: "C:/data/documents/report1.pdf",
 			filename: "report1.pdf",
 			size: "1024",
 			checksum: "abc123def456",
@@ -21,9 +21,9 @@ const mockFiles: TransferZod["metadata"]["files"] = {
 			programName: "PDF Editor",
 		},
 	],
-	group2: [
+	"C:/data/images": [
 		{
-			filepath: "images/photo1.jpg",
+			filepath: "C:/data/images/photo1.jpg",
 			filename: "photo1.jpg",
 			size: "2048",
 			checksum: "789ghi012jkl",
@@ -45,14 +45,14 @@ describe("createBagitFiles", () => {
 	// Test suite for createBagitFiles
 
 	it("should generate a valid bagit.txt buffer", () => {
-		const folders = ["group1", "group2"];
+		const folders = ["C:/data/documents", "C:/data/images"];
 		const result = createBagitFiles({ files: mockFiles, folders });
 		const expectedBagit = "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\n";
 		expect(result.bagit.toString()).toBe(expectedBagit);
 	});
 
 	it("should generate a valid manifest.txt buffer for included folders", () => {
-		const folders = ["group1", "group2"];
+		const folders = ["C:/data/documents", "C:/data/images"];
 		const result = createBagitFiles({ files: mockFiles, folders });
 		const expectedManifest =
 			"abc123def456 data/documents/report1.pdf\n" + "789ghi012jkl data/images/photo1.jpg\n";
@@ -60,16 +60,23 @@ describe("createBagitFiles", () => {
 	});
 
 	it("should generate an empty manifest.txt buffer if no folders match", () => {
-		const folders = ["group3"]; // Non-existent folder
+		const folders = ["C:/data/nonexistent"]; // Non-existent folder
 		const result = createBagitFiles({ files: mockFiles, folders });
 		const expectedManifest = ""; // No matching folders
 		expect(result.manifest.toString()).toBe(expectedManifest);
 	});
 
 	it("should only include files from specified folders in the manifest.txt buffer", () => {
-		const folders = ["group1"]; // Only include files from group1
+		const folders = ["C:/data/documents"]; // Only include files from documents
 		const result = createBagitFiles({ files: mockFiles, folders });
-		const expectedManifest = "abc123def456 data/documents/report1.pdf\n"; // Only group1 files
+		const expectedManifest = "abc123def456 data/documents/report1.pdf\n"; // Only documents
+		expect(result.manifest.toString()).toBe(expectedManifest);
+	});
+
+	it("should correctly map folder names and replace paths in the manifest.txt buffer", () => {
+		const folders = ["C:/data/images"];
+		const result = createBagitFiles({ files: mockFiles, folders });
+		const expectedManifest = "789ghi012jkl data/images/photo1.jpg\n"; // Correctly mapped
 		expect(result.manifest.toString()).toBe(expectedManifest);
 	});
 });
