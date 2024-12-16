@@ -15,25 +15,25 @@ type FileCheck = {
 
 const fileChecks: FileCheck[] = [
 	{
-		regex: /^(Digital_File_List_|File\sList)/,
+		regex: /^(Digital_File_List|File\sList)/,
 		allowedExtensions: ["xlsx", "json"],
 		parentDirectory: "documentation",
 		errorMessage:
-			"Digital File List (beginning with 'Digital_File_List_' or 'File List') must be included and have a .xlsx or .json extension in the documentation directory.",
+			"Digital File List (beginning with 'Digital_File_List' or 'File List') must be included and have a .xlsx or .json extension in the documentation directory.",
 	},
 	{
-		regex: /^(Transfer_Form_|617)/,
+		regex: /^(Transfer_Form|617)/,
 		allowedExtensions: ["pdf"],
 		parentDirectory: "documentation",
 		errorMessage:
-			"Transfer Form ARS 617 (beginning with 'Transfer_Form_' or '617') must be included and have a .pdf extension in the documentation directory.",
+			"Transfer Form ARS 617 (beginning with 'Transfer_Form' or '617') must be included and have a .pdf extension in the documentation directory.",
 	},
 	{
-		regex: /^Submission_Agreement_/,
+		regex: /^Submission_Agreement/,
 		allowedExtensions: ["pdf"],
 		parentDirectory: "documentation",
 		errorMessage:
-			"Submission Agreement (beginning with 'Submission_Agreement_') must be included and have a .pdf extension in the documentation directory.",
+			"Submission Agreement (beginning with 'Submission_Agreement') must be included and have a .pdf extension in the documentation directory.",
 	},
 	{
 		regex: /^admin/,
