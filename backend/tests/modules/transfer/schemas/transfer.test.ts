@@ -14,21 +14,32 @@ describe("createTransferBodySchema", () => {
 		expect(() => createTransferBodySchema.parse(validData)).not.toThrow();
 	});
 
-	// Test case: Ensures optional fields can be undefined
-	it("should validate when optional fields are undefined", () => {
+	// Test case: Ensures buffer accepts any type
+	it("should validate when buffer is of any type", () => {
 		const validData = {
-			buffer: Buffer.from("test"),
+			buffer: "SomeString", // Can be any type
+			application: "TestApplication",
+			accession: "TestAccession",
 		};
 
 		expect(() => createTransferBodySchema.parse(validData)).not.toThrow();
 	});
 
-	// Test case: Fails when buffer is not an instance of Buffer
-	it("should throw an error when buffer is not a Buffer", () => {
+	// Test case: Throws an error when application is missing
+	it("should throw an error when application is missing", () => {
 		const invalidData = {
-			buffer: "NotABuffer",
-			application: "TestApplication",
+			buffer: Buffer.from("test"),
 			accession: "TestAccession",
+		};
+
+		expect(() => createTransferBodySchema.parse(invalidData)).toThrow(z.ZodError);
+	});
+
+	// Test case: Throws an error when accession is missing
+	it("should throw an error when accession is missing", () => {
+		const invalidData = {
+			buffer: Buffer.from("test"),
+			application: "TestApplication",
 		};
 
 		expect(() => createTransferBodySchema.parse(invalidData)).toThrow(z.ZodError);
