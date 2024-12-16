@@ -75,6 +75,7 @@ export const getMetadata = (zipBuffer: Buffer): Promise<Metadata> => {
 
 			zipFile.on("end", () => {
 				if (!metadata.admin || !metadata.folders || !metadata.files) {
+					zipFile.close();
 					reject(
 						new HttpError(HTTP_STATUS_CODES.NOT_FOUND, "One or more metadata files are missing."),
 					);
