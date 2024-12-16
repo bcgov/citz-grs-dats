@@ -34,6 +34,7 @@ jest.mock("@/modules/transfer/utils", () => ({
 	validateSubmissionAgreement: jest.fn(),
 	addFileToZipBuffer: jest.fn().mockResolvedValue(Buffer.from("updatedBuffer")),
 	getFileFromZipBuffer: jest.fn().mockResolvedValue(Buffer.from("fileBuffer")),
+	isChecksumValid: jest.fn().mockReturnValue(true),
 	getFilenameByRegex: jest
 		.fn()
 		.mockImplementation(({ regex }: { regex: RegExp }) =>
@@ -87,6 +88,7 @@ describe("Test suite for create function", () => {
 		jest.spyOn(Date, "now").mockReturnValue(1234567890); // Mock Date.now()
 		const jobID = "job-1234567890";
 		const validatedBody = {
+			checksum: "238c744a21f0db2a4ace004295607fa27b13d2f0d57881c7c5e9f1b3258b4b01",
 			accession: "TestAccession",
 			application: "TestApplication",
 		};
@@ -106,6 +108,7 @@ describe("Test suite for create function", () => {
 			accession: validatedBody.accession,
 			application: validatedBody.application,
 			jobID,
+			checksum: "238c744a21f0db2a4ace004295607fa27b13d2f0d57881c7c5e9f1b3258b4b01",
 			status: "Transferring",
 			user: mockReq.user,
 			folders: metadata.folders,

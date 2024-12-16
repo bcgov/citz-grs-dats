@@ -13,6 +13,7 @@ import { createPSP } from "./createPSP";
 import type { AdminMetadataZodType } from "../schemas";
 import { getFilenameByRegex } from "./getFilenameByRegex";
 import { createFinalTransfer } from "./createFinalTransfer";
+import { isChecksumValid } from "./isChecksumValid";
 
 const { S3_BUCKET } = ENV;
 
@@ -47,6 +48,11 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		key: `transfers/TR_${accession}_${application}.zip`,
 	});
 	const buffer = await streamToBuffer(stream);
+
+	// Check to make sure record was not editted in s3
+	// biome-ignore lint/style/noNonNullAssertion: <explanation>
+	if (!isChecksumValid({ buffer, checksum: transfer.checksum! }))
+		throw new Error("Checksum of buffer and transfer.checksum do not match in queueConsumer.");
 
 	// Process transfer
 	const pspContent = sortPSPContent(

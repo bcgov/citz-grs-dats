@@ -11,12 +11,14 @@ import {
 	getFileFromZipBuffer,
 	getFilenameByRegex,
 	getMetadata,
+	isChecksumValid,
 	validateDigitalFileList,
 	validateMetadataFiles,
 	validateStandardTransferStructure,
 	validateSubmissionAgreement,
 } from "../utils";
 import type { TransferMongoose } from "../entities";
+import { generateChecksum } from "@/utils/generateChecksum";
 
 const { S3_BUCKET } = ENV;
 
@@ -27,6 +29,12 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	let buffer = file?.buffer;
 
 	if (!buffer) throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Missing buffer.");
+
+	if (!isChecksumValid({ buffer, checksum: body.checksum }))
+		throw new HttpError(
+			HTTP_STATUS_CODES.BAD_REQUEST,
+			"Checksum of buffer and body.checksum do not match.",
+		);
 
 	const jobID = `job-${Date.now()}`;
 
@@ -90,11 +98,15 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 
 	const metadata = await getMetadata(buffer);
 
+	// Create new checksum incase changes were made to buffer
+	const newChecksum = generateChecksum(buffer);
+
 	// Save data for transfer to Mongo
 	await TransferService.createOrUpdateTransferEntry({
 		accession: body.accession,
 		application: body.application,
 		jobID,
+		checksum: newChecksum,
 		status: "Transferring",
 		user,
 		folders: metadata.folders as unknown as NonNullable<TransferMongoose["metadata"]>["folders"],
