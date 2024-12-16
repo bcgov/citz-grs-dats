@@ -1,10 +1,10 @@
-import { application, type Request, type Response } from "express";
+import type { Request, Response } from "express";
 import { errorWrapper, HTTP_STATUS_CODES, HttpError } from "@bcgov/citz-imb-express-utilities";
 import { createTransferBodySchema } from "../schemas";
 import { TransferService } from "src/modules/transfer/services";
 import { download, upload } from "src/modules/s3/utils";
 import { ENV } from "src/config";
-import { formatDate, streamToBuffer } from "src/utils";
+import { streamToBuffer } from "src/utils";
 import { addToStandardTransferQueue } from "src/modules/rabbit/utils/queue/transfer";
 import {
 	addFileToZipBuffer,
@@ -22,9 +22,11 @@ const { S3_BUCKET } = ENV;
 
 // Create standard transfer.
 export const create = errorWrapper(async (req: Request, res: Response) => {
-	const { getStandardResponse, getZodValidatedBody, user } = req;
+	const { getStandardResponse, getZodValidatedBody, user, file } = req;
 	const body = getZodValidatedBody(createTransferBodySchema); // Validate request body
-	let buffer = body.buffer;
+	let buffer = file?.buffer;
+
+	if (!buffer) throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Missing buffer.");
 
 	const jobID = `job-${Date.now()}`;
 
@@ -37,7 +39,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	if (!subAgreementPath) {
 		const subAgreementStream = await download({
 			bucketName: S3_BUCKET,
-			key: `submission-agreements/${body.accession}_${body.application}`,
+			key: `submission-agreements/${body.accession}_${body.application}.pdf`,
 		});
 		if (!subAgreementStream)
 			throw new HttpError(
@@ -89,7 +91,9 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	const metadata = await getMetadata(buffer);
 
 	// Save data for transfer to Mongo
-	await TransferService.updateTransferEntry(body.accession, body.application, {
+	await TransferService.createOrUpdateTransferEntry({
+		accession: body.accession,
+		application: body.application,
 		jobID,
 		status: "Transferring",
 		user,
@@ -100,7 +104,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	// Save to s3
 	const s3Location = await upload({
 		bucketName: S3_BUCKET,
-		key: `transfers/TR_${body.accession}_${body.application}`,
+		key: `transfers/TR_${body.accession}_${body.application}.zip`,
 		content: buffer,
 	});
 
@@ -111,7 +115,6 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 		data: {
 			user: `${user?.first_name} ${user?.last_name}`,
 			jobID,
-			date: formatDate(new Date().toISOString()),
 			accession: body.accession,
 			application: body.application,
 			fileLocation: s3Location,

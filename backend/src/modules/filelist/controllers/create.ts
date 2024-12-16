@@ -4,7 +4,6 @@ import { addToCreateFileListQueue } from "src/modules/rabbit/utils";
 import { createFileListBodySchema } from "../schemas";
 import { FileListService } from "../services";
 import { TransferService } from "src/modules/transfer/services";
-import { formatDate } from "src/utils";
 
 // Create file list.
 export const create = errorWrapper(async (req: Request, res: Response) => {
@@ -43,7 +42,6 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	const result = getStandardResponse({
 		data: {
 			user: `${user?.first_name} ${user?.last_name}`,
-			date: formatDate(new Date().toISOString()),
 			jobID,
 		},
 		message: "Job added to queue.",

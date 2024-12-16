@@ -32,8 +32,10 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		return console.error("transfer metadata not found in queueConsumer.");
 	}
 
-	const accession = transfer.metadata.admin?.accession ?? "";
-	const application = transfer.metadata.admin?.application ?? "";
+	const metadata = JSON.parse(JSON.stringify(transfer.metadata));
+
+	const accession = metadata.admin?.accession ?? "";
+	const application = metadata.admin?.application ?? "";
 	const date = formatDate(new Date().toISOString());
 
 	const file_list_filename = `Digital_File_List_${date}_${accession}_${application}.xlsx`;
@@ -42,13 +44,13 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 	// Get transfer from s3
 	const stream = await download({
 		bucketName: S3_BUCKET,
-		key: `transfers/TR_${accession}_${application}`,
+		key: `transfers/TR_${accession}_${application}.zip`,
 	});
 	const buffer = await streamToBuffer(stream);
 
 	// Process transfer
 	const pspContent = sortPSPContent(
-		transfer.metadata.folders as unknown as TransferZod["metadata"]["folders"],
+		metadata.folders as unknown as TransferZod["metadata"]["folders"],
 	);
 	const pspBuffers: {
 		buffer: Buffer;
@@ -60,7 +62,7 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		const pspBuffer = await createPSP({
 			folderContent: psp.content,
 			buffer,
-			metadata: transfer.metadata as unknown as {
+			metadata: metadata as unknown as {
 				admin: AdminMetadataZodType | TransferZod["metadata"]["admin"];
 				folders: TransferZod["metadata"]["folders"];
 				files: TransferZod["metadata"]["files"];
@@ -78,7 +80,7 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 	// Save to s3
 	await upload({
 		bucketName: S3_BUCKET,
-		key: `transfers/TR_${accession}_${application}`,
+		key: `transfers/TR_${accession}_${application}.zip`,
 		content: newTransferBuffer,
 	});
 
@@ -104,7 +106,7 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 	const fileListBase64Buffer = Buffer.from(fileListBuffer).toString("base64");
 	const subAgreementBase64Buffer = Buffer.from(submissionAgreementBuffer).toString("base64");
 
-	const email = transfer.metadata.admin?.submittedBy?.email;
+	const email = metadata.admin?.submittedBy?.email;
 	if (!email) {
 		channel.ack(msg);
 		return console.error("Email not found in transfer.");
@@ -132,5 +134,6 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		subject: "DATS - Records Sent to Digital Archives",
 	});
 
+	console.log(`Completed transfer of TR_${accession}_${application}`);
 	return channel.ack(msg);
 };

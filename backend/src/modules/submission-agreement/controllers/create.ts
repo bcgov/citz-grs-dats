@@ -24,14 +24,13 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	// Save to s3
 	const s3Location = await upload({
 		bucketName: S3_BUCKET,
-		key: `submission-agreements/${body.accession}_${body.application}`,
+		key: `submission-agreements/${body.accession}_${body.application}.pdf`,
 		content: pdfBuffer,
 	});
 
 	const result = getStandardResponse({
 		data: {
 			signee: `${user?.first_name} ${user?.last_name}`,
-			date: formatDate(new Date().toISOString()),
 			accession: body.accession,
 			application: body.application,
 			fileLocation: s3Location,
