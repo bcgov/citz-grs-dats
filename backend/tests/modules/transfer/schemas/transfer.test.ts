@@ -7,6 +7,7 @@ describe("createTransferBodySchema", () => {
 	it("should validate a valid input", () => {
 		const validData = {
 			buffer: Buffer.from("test"),
+			checksum: "123",
 			application: "TestApplication",
 			accession: "TestAccession",
 		};
@@ -18,6 +19,7 @@ describe("createTransferBodySchema", () => {
 	it("should validate when buffer is of any type", () => {
 		const validData = {
 			buffer: "SomeString", // Can be any type
+			checksum: "123",
 			application: "TestApplication",
 			accession: "TestAccession",
 		};
@@ -29,6 +31,7 @@ describe("createTransferBodySchema", () => {
 	it("should throw an error when application is missing", () => {
 		const invalidData = {
 			buffer: Buffer.from("test"),
+			checksum: "123",
 			accession: "TestAccession",
 		};
 
@@ -39,6 +42,18 @@ describe("createTransferBodySchema", () => {
 	it("should throw an error when accession is missing", () => {
 		const invalidData = {
 			buffer: Buffer.from("test"),
+			checksum: "123",
+			application: "TestApplication",
+		};
+
+		expect(() => createTransferBodySchema.parse(invalidData)).toThrow(z.ZodError);
+	});
+
+	// Test case: Throws an error when checkusum is missing
+	it("should throw an error when checksum is missing", () => {
+		const invalidData = {
+			buffer: Buffer.from("test"),
+			accession: "TestAccession",
 			application: "TestApplication",
 		};
 
