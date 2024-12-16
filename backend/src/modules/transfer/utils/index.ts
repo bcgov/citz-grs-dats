@@ -9,6 +9,8 @@ export * from "./isChecksumValid";
 export * from "./createFinalTransfer";
 export * from "./getMetadata";
 export * from "./createPSP";
+export * from "./getMetadata";
+export * from "./addFileToZipBuffer";
 export * from "./getFilenameByRegex";
 export * from "./email";
 export * from "./getFileFromZipBuffer";

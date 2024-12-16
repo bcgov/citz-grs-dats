@@ -24,6 +24,7 @@ module.exports = {
 		"modules/transfer/services/",
 		"modules/transfer/utils/queueConsumer",
 		"modules/transfer/utils/getMetadata",
+		"modules/transfer/utils/addFileToZipBuffer",
 		"modules/transfer/utils/getFilenameByRegex",
 		"modules/transfer/utils/email",
 		"modules/transfer/utils/getFileFromZipBuffer",
