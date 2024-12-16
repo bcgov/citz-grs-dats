@@ -9,3 +9,5 @@ export * from "./isChecksumValid";
 export * from "./createFinalTransfer";
 export * from "./getMetadata";
 export * from "./createPSP";
+export * from "./email";
+export * from "./getFileFromZipBuffer";

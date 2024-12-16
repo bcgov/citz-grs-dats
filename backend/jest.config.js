@@ -24,6 +24,8 @@ module.exports = {
 		"modules/transfer/services/",
 		"modules/transfer/utils/queueConsumer",
 		"modules/transfer/utils/getMetadata",
+		"modules/transfer/utils/email",
+		"modules/transfer/utils/getFileFromZipBuffer",
 		"modules/transfer/utils/createPSP",
 		"modules/transfer/utils/createFinalTransfer",
 		"modules/submission-agreement/assets/",
