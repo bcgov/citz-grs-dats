@@ -1,11 +1,18 @@
-export const filelistEmail = `<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333; margin: 0; padding: 0;">
+export const transferEmail = (
+	accession: string,
+	application: string,
+) => `<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333; margin: 0; padding: 0;">
     <div style="width: 100%; max-width: 700px; margin: 10px auto; padding: 20px; border: 1px solid #dddddd; border-radius: 5px; background-color: #f9f9f9;">
       <div style="font-size: 18px; font-weight: bold; color: #0263cb; margin-bottom: 10px;">
-        Digital File List
+        Records Sent to Digital Archives
       </div>
       <div style="font-size: 16px;">
         <p style="margin: 0 0 10px;">
-          Please find your digital file list (ARS 662) attached to this email.
+          Thank you for sending your records to the Digital Archives for processing.
+        </p>
+        <p style="margin: 0 0 10px;">
+          An archivist will be in touch about your transfer of Accession # ${accession} and Application # ${application}.
+          <br />As per the Submission Agreement, please continue to hold your copies until we confirm they are preserved in the archives.
         </p>
         <p style="margin: 0 0 10px;">
           If you have questions please contact 
