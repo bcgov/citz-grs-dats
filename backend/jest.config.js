@@ -29,6 +29,7 @@ module.exports = {
 		"modules/transfer/utils/email",
 		"modules/transfer/utils/getFileFromZipBuffer",
 		"modules/transfer/utils/createPSP",
+		"modules/transfer/utils/createFinalTransfer",
 		"modules/submission-agreement/assets/",
 	],
 	coverageDirectory: "coverage",
