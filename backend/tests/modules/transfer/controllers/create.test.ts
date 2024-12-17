@@ -129,6 +129,7 @@ describe("Test suite for create function", () => {
 				accession: validatedBody.accession,
 				application: validatedBody.application,
 				fileLocation: "s3://bucket/path/to/file.zip",
+				note: "",
 			},
 			message: "Job added to queue.",
 		});

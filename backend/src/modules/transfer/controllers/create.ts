@@ -27,6 +27,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	const { getStandardResponse, getZodValidatedBody, user, file } = req;
 	const body = getZodValidatedBody(createTransferBodySchema); // Validate request body
 	let buffer = file?.buffer;
+	let usedSubmissionAgreementfromS3 = false;
 
 	if (!buffer) throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Missing buffer.");
 
@@ -54,9 +55,17 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 				HTTP_STATUS_CODES.NOT_FOUND,
 				"Submission Agreement (beginning with 'Submission_Agreement') must be included and have a .pdf extension in the documentation directory.",
 			);
+
+		console.log(
+			`No Submission Agreement was found in the transfer files for TR_${body.accession}_${body.application}.`,
+		);
+		console.log("Using Submission Agreement found in s3.");
+
+		usedSubmissionAgreementfromS3 = true;
+
 		const s3SubAgreementBuffer = await streamToBuffer(subAgreementStream);
 		const newSubAgreementName = `Submission_Agreement_${body.accession}_${body.application}.pdf`;
-		subAgreementPath = `documentation\\${newSubAgreementName}`;
+		subAgreementPath = `documentation/${newSubAgreementName}`;
 
 		// Add agreement to zip buffer
 		buffer = await addFileToZipBuffer({
@@ -130,10 +139,15 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 			accession: body.accession,
 			application: body.application,
 			fileLocation: s3Location,
+			note: "",
 		},
 		message: "Job added to queue.",
 		success: true,
 	});
+
+	if (result.data && usedSubmissionAgreementfromS3)
+		result.data.note =
+			"Used submission agreement from s3 because one was not provided in the transfer input.";
 
 	res.status(HTTP_STATUS_CODES.CREATED).json(result);
 });
