@@ -12,6 +12,7 @@ import {
 	getFilenameByRegex,
 	getMetadata,
 	isChecksumValid,
+	validateContentMatchesMetadata,
 	validateDigitalFileList,
 	validateMetadataFiles,
 	validateStandardTransferStructure,
@@ -108,6 +109,8 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	});
 
 	const metadata = await getMetadata(buffer);
+
+	await validateContentMatchesMetadata({ buffer, metadata });
 
 	// Create new checksum incase changes were made to buffer
 	const newChecksum = generateChecksum(buffer);

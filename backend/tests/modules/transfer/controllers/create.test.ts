@@ -31,6 +31,7 @@ jest.mock("@/modules/transfer/utils", () => ({
 	validateStandardTransferStructure: jest.fn(),
 	validateMetadataFiles: jest.fn(),
 	validateDigitalFileList: jest.fn(),
+	validateContentMatchesMetadata: jest.fn(),
 	validateSubmissionAgreement: jest.fn(),
 	addFileToZipBuffer: jest.fn().mockResolvedValue(Buffer.from("updatedBuffer")),
 	getFileFromZipBuffer: jest.fn().mockResolvedValue(Buffer.from("fileBuffer")),

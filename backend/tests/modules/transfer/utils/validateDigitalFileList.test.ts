@@ -106,7 +106,7 @@ describe("validateDigitalFileList", () => {
 				application: "APPLICATION123",
 			}),
 		).rejects.toThrow(
-			'The Digital File List is missing "admin.accession", "admin.application" numbers, or "admin.lastRevised".',
+			'The Digital File List is missing one or more of "admin.accession", "admin.application", or "admin.lastRevised"',
 		);
 	});
 
