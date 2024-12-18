@@ -14,23 +14,31 @@ import type { AdminMetadataZodType } from "../schemas";
 import { getFilenameByRegex } from "./getFilenameByRegex";
 import { createFinalTransfer } from "./createFinalTransfer";
 import { isChecksumValid } from "./isChecksumValid";
+import { ANSI_CODES } from "@bcgov/citz-imb-express-utilities";
 
 const { S3_BUCKET } = ENV;
+const logPrefix = `${ANSI_CODES.FOREGROUND.LIGHT_BLUE}[Standard Transfer Consumer]${ANSI_CODES.FORMATTING.RESET}`;
 
 export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Channel) => {
 	const jobID = msg.content.toString();
-	console.log(`[${QUEUE_NAME}] Processed job: ${jobID}`);
+	console.log(
+		`${ANSI_CODES.FOREGROUND.AQUA}[${QUEUE_NAME}]${ANSI_CODES.FORMATTING.RESET} Processed job: ${jobID}`,
+	);
 
 	// Get database record
 	const transfer = await TransferService.getTransferWhere({ jobID: jobID });
 	if (!transfer) {
 		channel.ack(msg);
-		return console.error("transfer not found in queueConsumer.");
+		return console.error(
+			`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}transfer not found in queueConsumer.${ANSI_CODES.FORMATTING.RESET}`,
+		);
 	}
 
 	if (!transfer.metadata) {
 		channel.ack(msg);
-		return console.error("transfer metadata not found in queueConsumer.");
+		return console.error(
+			`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}transfer metadata not found in queueConsumer.${ANSI_CODES.FORMATTING.RESET}`,
+		);
 	}
 
 	const metadata = JSON.parse(JSON.stringify(transfer.metadata));
@@ -51,8 +59,12 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 
 	// Check to make sure record was not editted in s3
 	// biome-ignore lint/style/noNonNullAssertion: <explanation>
-	if (!isChecksumValid({ buffer, checksum: transfer.checksum! }))
-		throw new Error("Checksum of buffer and transfer.checksum do not match in queueConsumer.");
+	if (!isChecksumValid({ buffer, checksum: transfer.checksum! })) {
+		channel.ack(msg);
+		return console.error(
+			`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}Checksum of buffer and transfer.checksum do not match in queueConsumer.${ANSI_CODES.FORMATTING.RESET}`,
+		);
+	}
 
 	// Process transfer
 	const pspContent = sortPSPContent(
@@ -115,7 +127,9 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 	const email = metadata.admin?.submittedBy?.email;
 	if (!email) {
 		channel.ack(msg);
-		return console.error("Email not found in transfer.");
+		return console.error(
+			`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}Email not found in transfer.${ANSI_CODES.FORMATTING.RESET}`,
+		);
 	}
 
 	// Send completion email
@@ -140,6 +154,6 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		subject: "DATS - Records Sent to Digital Archives",
 	});
 
-	console.log(`Completed transfer of TR_${accession}_${application}`);
+	console.log(`${logPrefix} Completed transfer of TR_${accession}_${application}`);
 	return channel.ack(msg);
 };

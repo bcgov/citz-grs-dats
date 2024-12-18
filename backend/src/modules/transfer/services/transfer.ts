@@ -1,6 +1,9 @@
 import type { SSOUser } from "@bcgov/citz-imb-sso-js-core";
 import { TransferModel } from "../entities";
 import type { TRANSFER_STATUSES, TransferMongoose } from "../entities";
+import { ANSI_CODES } from "@bcgov/citz-imb-express-utilities";
+
+const logPrefix = `${ANSI_CODES.FOREGROUND.MAGENTA}[Transfer Service]${ANSI_CODES.FORMATTING.RESET}`;
 
 type CreateTransferData = {
 	user?: SSOUser<unknown> | undefined;
@@ -55,7 +58,10 @@ export const TransferService = {
 			const createdDocument = await TransferModel.create(transferDatabaseEntry);
 			return createdDocument;
 		} catch (error) {
-			console.error("Error creating Transfer entry:", error);
+			console.error(
+				`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}Error creating Transfer entry:${ANSI_CODES.FORMATTING.RESET}`,
+				error,
+			);
 			throw new Error(
 				`Failed to create Transfer entry: ${error instanceof Error ? error.message : error}`,
 			);
@@ -113,7 +119,10 @@ export const TransferService = {
 			const createdEntry = await TransferModel.create(transferDatabaseEntry);
 			return createdEntry;
 		} catch (error) {
-			console.error("Error in createOrUpdateTransferEntry:", error);
+			console.error(
+				`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}Error in createOrUpdateTransferEntry:${ANSI_CODES.FORMATTING.RESET}`,
+				error,
+			);
 			throw new Error(
 				`Failed to create or update Transfer entry: ${error instanceof Error ? error.message : error}`,
 			);
@@ -131,7 +140,10 @@ export const TransferService = {
 			const transferDocument = await TransferModel.findOne(where);
 			return transferDocument;
 		} catch (error) {
-			console.error("Error in getTransferWhere:", error);
+			console.error(
+				`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}Error in getTransferWhere:${ANSI_CODES.FORMATTING.RESET}`,
+				error,
+			);
 			throw new Error(
 				`Failed to get Transfer entry: ${error instanceof Error ? error.message : error}`,
 			);
@@ -185,7 +197,10 @@ export const TransferService = {
 			const updatedDocument = await transferDocument.save();
 			return updatedDocument;
 		} catch (error) {
-			console.error("Error updating Transfer entry:", error);
+			console.error(
+				`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}Error updating Transfer entry:${ANSI_CODES.FORMATTING.RESET}`,
+				error,
+			);
 			throw new Error(
 				`Failed to update Transfer entry: ${error instanceof Error ? error.message : error}`,
 			);
