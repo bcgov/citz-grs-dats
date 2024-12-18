@@ -89,10 +89,14 @@ const generateMetadataInBatches = async (
 					metadata[originalSource].push({
 						filepath: filePath,
 						filename: path.relative(originalSource, filePath),
+						owner: fileStat.gid,
+						computer: fileStat.dev,
+						contentType: fileStat.mode,
 						size: formatFileSize(fileStat.size),
 						birthtime: new Date(fileStat.birthtime).toISOString(),
 						lastModified: new Date(fileStat.mtime).toISOString(),
 						lastAccessed: new Date(fileStat.atime).toISOString(),
+						lastSaved: new Date(fileStat.ctime).toISOString(),
 						checksum: fileChecksum,
 					});
 
