@@ -31,7 +31,9 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 
 	if (!buffer) throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Missing buffer.");
 
-	if (!isChecksumValid({ buffer, checksum: body.checksum }))
+	const bufferChecksumValid = await isChecksumValid({ buffer, checksum: body.checksum });
+
+	if (!bufferChecksumValid)
 		throw new HttpError(
 			HTTP_STATUS_CODES.BAD_REQUEST,
 			"Checksum of buffer and body.checksum do not match.",
@@ -76,8 +78,8 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	}
 
 	// Validate transfer buffer
-	validateStandardTransferStructure({ buffer });
-	validateMetadataFiles({
+	await validateStandardTransferStructure({ buffer });
+	await validateMetadataFiles({
 		buffer,
 		accession: body.accession,
 		application: body.application,
@@ -94,12 +96,12 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	// biome-ignore lint/style/noNonNullAssertion: Verified by validateStandardTransferStructure
 	const submissionAgreementBuffer = await getFileFromZipBuffer(buffer, subAgreementPath!);
 
-	validateDigitalFileList({
+	await validateDigitalFileList({
 		buffer: fileListBuffer,
 		accession: body.accession,
 		application: body.application,
 	});
-	validateSubmissionAgreement({
+	await validateSubmissionAgreement({
 		buffer: submissionAgreementBuffer,
 		accession: body.accession,
 		application: body.application,
