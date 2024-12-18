@@ -1,6 +1,9 @@
 import type { SSOUser } from "@bcgov/citz-imb-sso-js-core";
 import { FileListModel } from "../entities";
 import type { FileListMongoose } from "../entities";
+import { ANSI_CODES } from "@bcgov/citz-imb-express-utilities";
+
+const logPrefix = `${ANSI_CODES.FOREGROUND.MAGENTA}[File List Service]${ANSI_CODES.FORMATTING.RESET}`;
 
 type CreateFileListData = {
 	jobID: string;
@@ -50,7 +53,10 @@ export const FileListService = {
 			const createdDocument = await FileListModel.create(fileListDatabaseEntry);
 			return createdDocument;
 		} catch (error) {
-			console.error("Error creating FileList entry:", error);
+			console.error(
+				`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}Error creating FileList entry:${ANSI_CODES.FORMATTING.RESET}`,
+				error,
+			);
 			throw new Error(
 				`Failed to create FileList entry: ${error instanceof Error ? error.message : error}`,
 			);
@@ -68,7 +74,10 @@ export const FileListService = {
 			const document = await FileListModel.findOne({ jobID }).lean().exec();
 			return document;
 		} catch (error) {
-			console.error("Error retrieving FileList entry:", error);
+			console.error(
+				`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}Error retrieving FileList entry:${ANSI_CODES.FORMATTING.RESET}`,
+				error,
+			);
 			throw new Error(
 				`Failed to retrieve FileList entry: ${error instanceof Error ? error.message : error}`,
 			);
@@ -86,7 +95,10 @@ export const FileListService = {
 			const deleteResult = await FileListModel.deleteOne({ jobID }).exec();
 			return deleteResult;
 		} catch (error) {
-			console.error("Error deleting FileList entry:", error);
+			console.error(
+				`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}Error deleting FileList entry:${ANSI_CODES.FORMATTING.RESET}`,
+				error,
+			);
 			throw new Error(
 				`Failed to delete FileList entry: ${error instanceof Error ? error.message : error}`,
 			);

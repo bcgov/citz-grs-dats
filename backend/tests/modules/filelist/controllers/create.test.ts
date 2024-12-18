@@ -56,6 +56,8 @@ describe("Test suite for create function", () => {
 			user: {
 				display_name: "Test User",
 				email: "testuser@example.com",
+				first_name: "Test",
+				last_name: "User",
 			} as SSOUser<unknown>,
 		};
 
@@ -164,7 +166,7 @@ describe("Test suite for create function", () => {
 		expect(mockRes.status).toHaveBeenCalledWith(HTTP_STATUS_CODES.CREATED);
 		expect(mockRes.json).toHaveBeenCalledWith({
 			success: true,
-			data: { jobID },
+			data: { jobID, user: "Test User" },
 			message: "Job added to queue.",
 		});
 	});
