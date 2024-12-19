@@ -16,7 +16,7 @@ export const validateContentMatchesMetadata = async ({
 	const folderPaths = Object.keys(metadata.folders); // Get all folder paths from the metadata
 	const folderNames = folderPaths.map((folderPath) => {
 		const folderParts = folderPath.replaceAll("\\", "/").split("/");
-		return `content/${folderParts[folderParts.length - 1]}`; // Get the folder name from the path
+		return `content/${folderParts[folderParts.length - 1]}/`; // Get the folder name from the path
 	});
 
 	await new Promise<void>((resolve, reject) => {
@@ -47,7 +47,7 @@ export const validateContentMatchesMetadata = async ({
 				// Validate folders in the metadata exist in the zip file's content directory
 				const missingFolders = folderNames.filter((folderName) => {
 					const foundFolders = Array.from(foundContentEntries);
-					return !foundFolders.includes(`content/${folderName}`);
+					return !foundFolders.includes(folderName);
 				});
 
 				if (missingFolders.length > 0) {

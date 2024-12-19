@@ -92,10 +92,14 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 		regex: /^(Digital_File_List|File\sList)/,
 	});
 
-	// biome-ignore lint/style/noNonNullAssertion: Verified by validateStandardTransferStructure
-	const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath!);
-	// biome-ignore lint/style/noNonNullAssertion: Verified by validateStandardTransferStructure
-	const submissionAgreementBuffer = await getFileFromZipBuffer(buffer, subAgreementPath!);
+	if (!fileListPath)
+		throw new HttpError(
+			HTTP_STATUS_CODES.NOT_FOUND,
+			"File List could not be found in the documentation directory.",
+		);
+
+	const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath);
+	const submissionAgreementBuffer = await getFileFromZipBuffer(buffer, subAgreementPath);
 
 	await validateDigitalFileList({
 		buffer: fileListBuffer,

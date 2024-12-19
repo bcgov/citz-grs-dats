@@ -103,10 +103,18 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 		regex: /^Submission_Agreement/,
 	});
 
-	// biome-ignore lint/style/noNonNullAssertion: Verified by validateStandardTransferStructure
-	const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath!);
-	// biome-ignore lint/style/noNonNullAssertion: Verified by validateStandardTransferStructure
-	const submissionAgreementBuffer = await getFileFromZipBuffer(buffer, subAgreementPath!);
+	if (!fileListPath) {
+		channel.ack(msg);
+		return console.error("Couldn't find Digital File List in documentation/.");
+	}
+
+	if (!subAgreementPath) {
+		channel.ack(msg);
+		return console.error("Couldn't find Submission Agreement in documentation/.");
+	}
+
+	const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath);
+	const submissionAgreementBuffer = await getFileFromZipBuffer(buffer, subAgreementPath);
 
 	// Convert the buffer to Base64 for email attachment
 	const fileListBase64Buffer = Buffer.from(fileListBuffer).toString("base64");
