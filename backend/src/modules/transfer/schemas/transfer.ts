@@ -1,10 +1,12 @@
 import { z } from "zod";
 
+// Schema for FormData fields
 export const createTransferBodySchema = z.object({
-	buffer: z.instanceof(Buffer),
-	application: z.string().optional(),
-	accession: z.string().optional(),
+	buffer: z.any(),
+	checksum: z.string(),
+	application: z.string(),
+	accession: z.string(),
 });
 
-// TypeScript Type inferred from Zod Schema
+// TypeScript type inferred from Zod schema
 export type CreateTransferBody = z.infer<typeof createTransferBodySchema>;

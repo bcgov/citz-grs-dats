@@ -6,3 +6,4 @@ package-lock.json
 coverage
 desktop/resources/transfers
 .DS_Store
+Test-Environment

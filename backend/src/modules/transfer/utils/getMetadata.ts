@@ -3,7 +3,7 @@ import type { AdminMetadataZodType } from "../schemas";
 import type { TransferZod } from "../entities";
 import { HttpError, HTTP_STATUS_CODES } from "@bcgov/citz-imb-express-utilities";
 
-type Metadata = {
+export type Metadata = {
 	admin: AdminMetadataZodType | TransferZod["metadata"]["admin"];
 	folders: TransferZod["metadata"]["folders"];
 	files: TransferZod["metadata"]["files"];
