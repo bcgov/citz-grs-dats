@@ -1,9 +1,10 @@
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { HttpError } from "@bcgov/citz-imb-express-utilities";
+import { ANSI_CODES, HttpError } from "@bcgov/citz-imb-express-utilities";
 import { ENV } from "src/config";
 import type { Readable } from "node:stream";
 
 const { S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_ENDPOINT, S3_BUCKET } = ENV;
+const logPrefix = `${ANSI_CODES.FOREGROUND.MAGENTA}[S3]${ANSI_CODES.FORMATTING.RESET}`;
 
 type DownloadProps = {
 	bucketName?: string;
@@ -44,7 +45,9 @@ export const download = async ({
 		if (!response.Body)
 			throw new HttpError(404, `File not found in bucket: ${bucketName}, key: ${key}`);
 
-		console.log(`File downloaded successfully from bucket: ${bucketName}, key: ${key}`);
+		console.log(
+			`${logPrefix} File downloaded successfully from bucket: ${bucketName}, key: ${key}`,
+		);
 		return response.Body as Readable;
 	} catch (error) {
 		throw new HttpError(500, `Failed to download file from S3. ${error}`);
