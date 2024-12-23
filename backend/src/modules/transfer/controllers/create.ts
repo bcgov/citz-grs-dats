@@ -15,6 +15,7 @@ import {
 	validateContentMatchesMetadata,
 	validateDigitalFileList,
 	validateMetadataFiles,
+	validateMetadataFoldersMatchesFiles,
 	validateStandardTransferStructure,
 	validateSubmissionAgreement,
 } from "../utils";
@@ -115,6 +116,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	const metadata = await getMetadata(buffer);
 
 	await validateContentMatchesMetadata({ buffer, metadata });
+	validateMetadataFoldersMatchesFiles({ metadata });
 
 	// Create new checksum incase changes were made to buffer
 	const newChecksum = generateChecksum(buffer);
