@@ -35,8 +35,12 @@ export const validateContentMatchesMetadata = async ({
 				const parentDirectory = parts[0];
 
 				// Check if this entry is in the 'content' directory and matches any folder from metadata
-				if (parentDirectory === "content" && folderNames.includes(entry.fileName)) {
-					foundContentEntries.add(entry.fileName);
+				if (
+					parentDirectory === "content" &&
+					folderNames.some((folder) => entry.fileName.startsWith(folder))
+				) {
+					const folderMatch = folderNames.find((folder) => entry.fileName.startsWith(folder));
+					if (folderMatch) foundContentEntries.add(folderMatch);
 				}
 
 				zipFile.readEntry();
