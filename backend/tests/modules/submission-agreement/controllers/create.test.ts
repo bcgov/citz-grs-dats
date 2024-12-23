@@ -74,11 +74,10 @@ describe("create", () => {
 			application: "456",
 		};
 		const mockPDFBuffer = Buffer.from("mock PDF");
-		const mockS3Location = "s3://bucket/submission-agreements/123-456";
+		const mockS3Location = "s3://bucket/submission-agreements/123_456.pdf";
 		const mockStandardResponse = {
 			data: {
 				signee: "Test User",
-				date: "2024-12-01",
 				accession: "123",
 				application: "456",
 				fileLocation: mockS3Location,
@@ -105,7 +104,7 @@ describe("create", () => {
 		});
 		expect(upload).toHaveBeenCalledWith({
 			bucketName: ENV.S3_BUCKET,
-			key: "submission-agreements/123-456",
+			key: "submission-agreements/123_456.pdf",
 			content: mockPDFBuffer,
 		});
 		expect(mockRes.status).toHaveBeenCalledWith(HTTP_STATUS_CODES.CREATED);
