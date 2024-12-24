@@ -28,7 +28,7 @@ export const FileListPage = ({ authenticated }: Props) => {
 	const apiRef = useGridApiRef();
 
 	useEffect(() => {
-		console.log(metadata); // TEMP
+		console.log("METADATA: ", metadata); // TEMP
 	}, [metadata]);
 
 	useEffect(() => {
