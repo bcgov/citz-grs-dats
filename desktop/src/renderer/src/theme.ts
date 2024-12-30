@@ -28,16 +28,19 @@ export const theme = createTheme({
 			fontSize: "2rem",
 		},
 		h2: {
-			fontWeight: 500,
+			fontWeight: 700,
 			fontSize: "1.6rem",
+			color: "#474543",
 		},
 		h3: {
-			fontWeight: 500,
-			fontSize: "1.3rem",
+			fontWeight: 700,
+			fontSize: "1.2rem",
+			color: "#474543",
 		},
 		h4: {
-			fontWeight: 500,
+			fontWeight: 700,
 			fontSize: "0.9rem",
+			color: "#474543",
 		},
 		h5: {
 			fontWeight: 500,
