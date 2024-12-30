@@ -4,7 +4,7 @@ import { Box, Stack, Typography } from "@mui/material";
 export const LanInstructionsPage = () => {
 	return (
 		<Stack gap={3}>
-			<Typography variant="h2">LAN drive transfer</Typography>
+			<Typography variant="h2">Send records from LAN Drive</Typography>
 			<Stack gap={2}>
 				<Typography variant="h3">Getting started</Typography>
 				<Typography>
@@ -35,12 +35,13 @@ export const LanInstructionsPage = () => {
 						Keep the DATS app open for the duration of the LAN drive transfer process, including
 						during long file uploading times.
 					</li>
-					<li>Do not navigate away from the transfer until it is complete.</li>
+					<li>
+						<Typography variant="h4">
+							Closing the application or navigating elsewhere in DATS during your transfer process
+							will terminate the transfer. Progress will not be saved.
+						</Typography>
+					</li>
 				</ul>
-				<Typography variant="h4">
-					Closing the application or navigating elsewhere in DATS during your transfer process will
-					terminate the transfer. Progress will not be saved.
-				</Typography>
 			</Stack>
 			<Box sx={{ display: "flex", justifyContent: "right" }}>
 				<Button style={{ width: "fit-content" }}>Start</Button>
