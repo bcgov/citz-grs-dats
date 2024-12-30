@@ -22,7 +22,6 @@ type Props = {
 
 export const SideNav = ({ accessToken, idToken }: Props) => {
 	const navigate = useNavigate();
-	const theme = useTheme();
 	const [currentPage, setCurrentPage] = useState("/");
 	const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
 	const [newPagePath, setNewPagePath] = useState("/");
@@ -50,10 +49,11 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 			<ListItem
 				sx={{
 					gap: 1,
-					border: "none",
+					display: "flex",
+					alignItems: "center",
+					border: currentPage === path ? "2px solid #2E5DD7" : "2px solid transparent",
 					borderRadius: "5px",
-					background:
-						currentPage === path ? theme.palette.secondary.light : theme.palette.secondary.main,
+					background: currentPage === path ? theme.palette.secondary.light : "none",
 					"&:hover": {
 						background: theme.palette.secondary.dark,
 					},
@@ -61,15 +61,8 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 				component="button"
 				onClick={() => handleSelection(path)}
 			>
-				<Typography sx={{ color: `${theme.palette.secondary.dark}` }}>{icon}</Typography>
-				<Typography
-					variant="h4"
-					sx={{
-						color: `${theme.palette.secondary}`,
-					}}
-				>
-					{label}
-				</Typography>
+				{icon}
+				<Typography>{label}</Typography>
 			</ListItem>
 		);
 	};
@@ -81,7 +74,6 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 				sx={{
 					height: "100%",
 					maxHeight: "100vh",
-					background: theme.palette.secondary.light,
 					"& .MuiDrawer-paper": {
 						position: "relative",
 						width: "100%",
@@ -96,17 +88,24 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 						flexDirection: "column",
 						justifyContent: "space-between",
 						height: "100%",
-						background: theme.palette.secondary.light,
 					}}
 				>
-					<List>
-						<NavItem path="/" label="Home" icon={<HomeOutlinedIcon />} />
+					<List sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+						<NavItem path="/" label="Home" icon={<HomeOutlinedIcon sx={{ color: "#474543" }} />} />
 						<Divider sx={{ margin: "5px 0" }} />
 						{/* REQUIRE AUTH */}
 						{accessToken && (
 							<>
-								<NavItem path="/file-list" label="Create File List" icon={<FileListIcon />} />
-								<NavItem path="/send-records" label="Send Records" icon={<SendRecordsIcon />} />
+								<NavItem
+									path="/file-list"
+									label="Create File List"
+									icon={<FileListIcon sx={{ color: "#474543" }} />}
+								/>
+								<NavItem
+									path="/send-records"
+									label="Send Records"
+									icon={<SendRecordsIcon sx={{ color: "#474543" }} />}
+								/>
 							</>
 						)}
 					</List>
