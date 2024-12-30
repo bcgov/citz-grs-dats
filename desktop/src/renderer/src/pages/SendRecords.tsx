@@ -1,37 +1,34 @@
 import { Button } from "@bcgov/design-system-react-components";
 import { Stack, Typography } from "@mui/material";
-import { ListAlt as ListIcon } from "@mui/icons-material";
+import { Lan as LanIcon, Computer as ComputerIcon } from "@mui/icons-material";
 
 export const SendRecordsPage = () => {
 	return (
 		<Stack gap={4}>
-			<Typography variant="h2">Send records</Typography>
+			<Typography variant="h2" sx={{ marginBottom: -1 }}>
+				Send records
+			</Typography>
 			<Typography>
-				Use DATS to transfer approved, full-retention (FR) digital records to the Digital Archives
-				from a LAN drive or EDRMS. This process sends copies of your records to GIM specialists for
-				review while keeping your original files intact on your device/drive.
+				Send Full Retention (FR) digital records to the Digital Archives from a LAN drive or EDRMS.
+				This process sends authentic copies of records to the archives for processing. Original
+				records will remain in tact on your device/drive. When the records are preserved in the
+				archives an archivist will contact you so you can destroy the originals as redundant copies.
 			</Typography>
 			<Stack direction="row" gap={3}>
 				{/* LAN TRANSFER */}
-				<Stack gap={2} sx={{ padding: 2, background: "#FAF9F8" }}>
+				<Stack gap={2} sx={{ padding: 2, background: "#FAF9F8", width: "100%" }}>
 					<Stack direction="row" spacing={1}>
-						<ListIcon sx={{ color: "#474543" }} />
+						<LanIcon sx={{ color: "#474543" }} />
 						<Typography variant="h3">Send records from LAN Drive</Typography>
 					</Stack>
-					<Typography>
-						Transfer approved Full Retention (FR) records to the Digital Archives, from a LAN Drive.
-					</Typography>
 					<Button style={{ width: "fit-content" }}>Start</Button>
 				</Stack>
 				{/* EDRMS TRANSFER */}
-				<Stack gap={2} sx={{ padding: 2, background: "#FAF9F8" }}>
+				<Stack gap={2} sx={{ padding: 2, background: "#FAF9F8", width: "100%" }}>
 					<Stack direction="row" spacing={1}>
-						<ListIcon sx={{ color: "#474543" }} />
+						<ComputerIcon sx={{ color: "#474543" }} />
 						<Typography variant="h3">Send records from EDRMS</Typography>
 					</Stack>
-					<Typography>
-						Transfer approved Full Retention (FR) records to the Digital Archives, from EDRMS.
-					</Typography>
 					<Button style={{ width: "fit-content" }}>Start</Button>
 				</Stack>
 			</Stack>
@@ -45,12 +42,11 @@ export const SendRecordsPage = () => {
 					borderRadius: "5px",
 				}}
 			>
-				<Typography variant="h4">Note on processing time</Typography>
+				<Typography variant="h4">Note</Typography>
 				<Typography>
-					Please note that preparing a records transfer can take considerable time. If you wish to
-					include large folders (i.e., &gt;5GB, &gt;5000 files) as part of your submission, schedule
-					your work to let DATS run for a few hours. We are working on making the services faster in
-					future versions of DATS.
+					Please note that this process can take considerable time. If you have a large transfer
+					(i.e., &gt;5GB, &gt;5000 files), schedule your work to let DATS run for a few hours. We
+					are working on making the services faster in future versions of DATS.
 				</Typography>
 			</Stack>
 		</Stack>
