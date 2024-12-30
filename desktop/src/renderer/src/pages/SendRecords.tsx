@@ -1,8 +1,10 @@
 import { Button } from "@bcgov/design-system-react-components";
 import { Stack, Typography } from "@mui/material";
 import { ListAlt as ListIcon } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 export const SendRecordsPage = () => {
+	const navigate = useNavigate();
 	return (
 		<Stack gap={4}>
 			<Typography variant="h2">Send records</Typography>
@@ -21,7 +23,12 @@ export const SendRecordsPage = () => {
 					<Typography>
 						Transfer approved Full Retention (FR) records to the Digital Archives, from a LAN Drive.
 					</Typography>
-					<Button style={{ width: "fit-content" }}>Start</Button>
+					<Button
+						onPress={() => navigate("/send-records/lan/instructions")}
+						style={{ width: "fit-content" }}
+					>
+						Start
+					</Button>
 				</Stack>
 				{/* EDRMS TRANSFER */}
 				<Stack gap={2} sx={{ padding: 2, background: "#FAF9F8" }}>
