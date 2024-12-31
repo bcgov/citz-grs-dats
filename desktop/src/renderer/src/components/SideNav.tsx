@@ -98,12 +98,12 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 							<>
 								<NavItem
 									path="/file-list"
-									label="Create File List"
+									label="Create file list"
 									icon={<FileListIcon sx={{ color: "#474543" }} />}
 								/>
 								<NavItem
 									path="/send-records"
-									label="Send Records"
+									label="Send records"
 									icon={<SendRecordsIcon sx={{ color: "#474543" }} />}
 								/>
 							</>
