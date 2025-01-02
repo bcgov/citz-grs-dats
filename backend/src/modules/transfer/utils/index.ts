@@ -14,3 +14,5 @@ export * from "./getFilenameByRegex";
 export * from "./addFileToZipBuffer";
 export * from "./isChecksumValid";
 export * from "./createFinalTransfer";
+export * from "./validateContentMatchesMetadata";
+export * from "./validateMetadataFoldersMatchesFiles";

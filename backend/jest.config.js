@@ -33,6 +33,8 @@ module.exports = {
 		"modules/transfer/utils/getFilenameByRegex",
 		"modules/transfer/utils/addFileToZipBuffer",
 		"modules/transfer/utils/createFinalTransfer",
+		"modules/transfer/utils/validateContentMatchesMetadata",
+		"modules/transfer/utils/validateMetadataFoldersMatchesFiles",
 		"modules/submission-agreement/assets/",
 	],
 	coverageDirectory: "coverage",

@@ -17,8 +17,10 @@ import {
 	getFilenameByRegex,
 	getMetadata,
 	isChecksumValid,
+	validateContentMatchesMetadata,
 	validateDigitalFileList,
 	validateMetadataFiles,
+	validateMetadataFoldersMatchesFiles,
 	validateStandardTransferStructure,
 	validateSubmissionAgreement,
 } from "../utils";
@@ -37,7 +39,9 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 
 	if (!buffer) throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Missing buffer.");
 
-	if (!isChecksumValid({ buffer, checksum: body.checksum }))
+	const bufferChecksumValid = await isChecksumValid({ buffer, checksum: body.checksum });
+
+	if (!bufferChecksumValid)
 		throw new HttpError(
 			HTTP_STATUS_CODES.BAD_REQUEST,
 			"Checksum of buffer and body.checksum do not match.",
@@ -84,8 +88,8 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 	}
 
 	// Validate transfer buffer
-	validateStandardTransferStructure({ buffer });
-	validateMetadataFiles({
+	await validateStandardTransferStructure({ buffer });
+	await validateMetadataFiles({
 		buffer,
 		accession: body.accession,
 		application: body.application,
@@ -97,23 +101,30 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 		regex: /^(Digital_File_List|File\sList)/,
 	});
 
-	// biome-ignore lint/style/noNonNullAssertion: Verified by validateStandardTransferStructure
-	const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath!);
-	// biome-ignore lint/style/noNonNullAssertion: Verified by validateStandardTransferStructure
-	const submissionAgreementBuffer = await getFileFromZipBuffer(buffer, subAgreementPath!);
+	if (!fileListPath)
+		throw new HttpError(
+			HTTP_STATUS_CODES.NOT_FOUND,
+			"File List could not be found in the documentation directory.",
+		);
 
-	validateDigitalFileList({
+	const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath);
+	const submissionAgreementBuffer = await getFileFromZipBuffer(buffer, subAgreementPath);
+
+	await validateDigitalFileList({
 		buffer: fileListBuffer,
 		accession: body.accession,
 		application: body.application,
 	});
-	validateSubmissionAgreement({
+	await validateSubmissionAgreement({
 		buffer: submissionAgreementBuffer,
 		accession: body.accession,
 		application: body.application,
 	});
 
 	const metadata = await getMetadata(buffer);
+
+	await validateContentMatchesMetadata({ buffer, metadata });
+	validateMetadataFoldersMatchesFiles({ metadata });
 
 	// Create new checksum incase changes were made to buffer
 	const newChecksum = generateChecksum(buffer);

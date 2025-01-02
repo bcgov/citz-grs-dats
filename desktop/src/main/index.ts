@@ -36,7 +36,7 @@ const tokens: Record<string, string | undefined> = {
 
 // API URL constants
 const LOCAL_API_URL = "http://localhost:3200";
-const DEV_API_URL = "https://dev.api.com";
+const DEV_API_URL = "https://citz-grs-dats-api-v2-route-ede50e-dev.apps.silver.devops.gov.bc.ca";
 const TEST_API_URL = "https://test.api.com";
 const PROD_API_URL = "https://prod.api.com";
 

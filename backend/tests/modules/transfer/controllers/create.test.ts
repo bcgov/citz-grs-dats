@@ -31,15 +31,21 @@ jest.mock("@/modules/transfer/utils", () => ({
 	validateStandardTransferStructure: jest.fn(),
 	validateMetadataFiles: jest.fn(),
 	validateDigitalFileList: jest.fn(),
+	validateMetadataFoldersMatchesFiles: jest.fn(),
+	validateContentMatchesMetadata: jest.fn(),
 	validateSubmissionAgreement: jest.fn(),
 	addFileToZipBuffer: jest.fn().mockResolvedValue(Buffer.from("updatedBuffer")),
 	getFileFromZipBuffer: jest.fn().mockResolvedValue(Buffer.from("fileBuffer")),
 	isChecksumValid: jest.fn().mockReturnValue(true),
-	getFilenameByRegex: jest
-		.fn()
-		.mockImplementation(({ regex }: { regex: RegExp }) =>
-			regex.test("Submission_Agreement.pdf") ? "documentation/Submission_Agreement.pdf" : null,
-		),
+	getFilenameByRegex: jest.fn().mockImplementation(({ regex }: { regex: RegExp }) => {
+		if (regex.test("Digital_File_List.json")) {
+			return "documentation/Digital_File_List.json";
+		}
+		if (regex.test("Submission_Agreement.pdf")) {
+			return "documentation/Submission_Agreement.pdf";
+		}
+		return null;
+	}),
 }));
 
 describe("Test suite for create function", () => {
