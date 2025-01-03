@@ -1,9 +1,10 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { HttpError } from "@bcgov/citz-imb-express-utilities";
+import { ANSI_CODES, HttpError } from "@bcgov/citz-imb-express-utilities";
 import { ENV } from "src/config";
 import type { Readable } from "node:stream";
 
 const { S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_ENDPOINT, S3_BUCKET } = ENV;
+const logPrefix = `${ANSI_CODES.FOREGROUND.MAGENTA}[S3]${ANSI_CODES.FORMATTING.RESET}`;
 
 type Props = {
 	bucketName?: string;
@@ -40,7 +41,7 @@ export const upload = async ({ bucketName = S3_BUCKET, key, content }: Props): P
 
 		await s3Client.send(command);
 
-		console.log(`File uploaded successfully to bucket: ${bucketName}, key: ${key}`);
+		console.log(`${logPrefix} File uploaded successfully to bucket: ${bucketName}, key: ${key}`);
 		return `${S3_ENDPOINT}/${bucketName}/${key}`;
 	} catch (error) {
 		throw new HttpError(500, `Failed to upload file to S3. ${error}`);

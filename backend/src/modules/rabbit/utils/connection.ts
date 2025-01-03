@@ -1,3 +1,4 @@
+import { ANSI_CODES } from "@bcgov/citz-imb-express-utilities";
 import amqp from "amqplib";
 import { ENV } from "src/config";
 import { logs } from "src/utils";
@@ -21,7 +22,9 @@ const connectToRabbitMQ = async (queue: string): Promise<void> => {
 		if (!channelPromises.has(queue)) {
 			const channelPromise = connection.createChannel().then(async (chan) => {
 				await chan.assertQueue(queue, { durable: false });
-				console.log(`[${queue}] Channel created and queue asserted.`);
+				console.log(
+					`${ANSI_CODES.FOREGROUND.AQUA}[${queue}]${ANSI_CODES.FORMATTING.RESET} Channel created and queue asserted.`,
+				);
 				return chan;
 			});
 			channelPromises.set(queue, channelPromise);
@@ -48,7 +51,9 @@ export const closeRabbitMQConnection = async (): Promise<void> => {
 			const channel = await channelPromise;
 			if (channel) {
 				await channel.close();
-				console.log(`[${queue}] RabbitMQ channel closed.`);
+				console.log(
+					`${ANSI_CODES.FOREGROUND.AQUA}[${queue}]${ANSI_CODES.FORMATTING.RESET} RabbitMQ channel closed.`,
+				);
 			}
 		}
 		channelPromises.clear();

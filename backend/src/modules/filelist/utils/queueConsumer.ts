@@ -1,6 +1,6 @@
 import type amqp from "amqplib";
 import { FileListService } from "../services";
-import { HTTP_STATUS_CODES, HttpError } from "@bcgov/citz-imb-express-utilities";
+import { ANSI_CODES } from "@bcgov/citz-imb-express-utilities";
 import type { JsonFileList } from "../schemas";
 import { createJsonFileList } from "./createJsonFileList";
 import type { Workbook } from "exceljs";
@@ -10,15 +10,21 @@ import { filelistEmail } from "./email";
 import { formatDate } from "src/utils";
 import { FILELIST_QUEUE_NAME as QUEUE_NAME } from "@/modules/rabbit/utils/queue/filelist";
 
+const logPrefix = `${ANSI_CODES.FOREGROUND.LIGHT_BLUE}[File List Consumer]${ANSI_CODES.FORMATTING.RESET}`;
+
 export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Channel) => {
 	const jobID = msg.content.toString();
-	console.log(`[${QUEUE_NAME}] Processed job: ${jobID}`);
+	console.log(
+		`${ANSI_CODES.FOREGROUND.AQUA}[${QUEUE_NAME}]${ANSI_CODES.FORMATTING.RESET} Processed job: ${jobID}`,
+	);
 
 	// Get database record
 	const filelist = await FileListService.getFileListByJobID(jobID);
 	if (!filelist) {
 		channel.ack(msg);
-		return console.error("filelist not found in queueConsumer.");
+		return console.error(
+			`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}filelist not found in queueConsumer.${ANSI_CODES.FORMATTING.RESET}`,
+		);
 	}
 
 	// Delete database record
@@ -36,7 +42,9 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 	const email = filelist.metadata.admin?.submittedBy?.email;
 	if (!email) {
 		channel.ack(msg);
-		return console.error("Email not found in filelist.");
+		return console.error(
+			`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}Email not found in filelist.${ANSI_CODES.FORMATTING.RESET}`,
+		);
 	}
 
 	const date = formatDate(new Date().toISOString());
@@ -114,7 +122,9 @@ export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Chan
 
 		default: {
 			channel.ack(msg);
-			throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Invalid output file type.");
+			return console.error(
+				`${logPrefix} ${ANSI_CODES.FOREGROUND.RED}Invalid output file type.${ANSI_CODES.FORMATTING.RESET}`,
+			);
 		}
 	}
 };
