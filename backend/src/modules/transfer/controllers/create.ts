@@ -1,5 +1,10 @@
 import type { Request, Response } from "express";
-import { errorWrapper, HTTP_STATUS_CODES, HttpError } from "@bcgov/citz-imb-express-utilities";
+import {
+	ANSI_CODES,
+	errorWrapper,
+	HTTP_STATUS_CODES,
+	HttpError,
+} from "@bcgov/citz-imb-express-utilities";
 import { createTransferBodySchema } from "../schemas";
 import { TransferService } from "src/modules/transfer/services";
 import { download, upload } from "src/modules/s3/utils";
@@ -23,6 +28,7 @@ import type { TransferMongoose } from "../entities";
 import { generateChecksum } from "@/utils/generateChecksum";
 
 const { S3_BUCKET } = ENV;
+const logPrefix = `${ANSI_CODES.FOREGROUND.LIGHT_BLUE}[POST /transfer]${ANSI_CODES.FORMATTING.RESET}`;
 
 // Create standard transfer.
 export const create = errorWrapper(async (req: Request, res: Response) => {
@@ -61,9 +67,11 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 			);
 
 		console.log(
-			`No Submission Agreement was found in the transfer files for TR_${body.accession}_${body.application}.`,
+			`${logPrefix} No Submission Agreement was found in the transfer files for TR_${body.accession}_${body.application}.`,
 		);
-		console.log("Using Submission Agreement found in s3.");
+		console.log(
+			`${logPrefix} Using Submission Agreement found in s3 for TR_${body.accession}_${body.application}.`,
+		);
 
 		usedSubmissionAgreementfromS3 = true;
 
