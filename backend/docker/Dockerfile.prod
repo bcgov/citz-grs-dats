@@ -24,13 +24,13 @@ COPY package.json .
 RUN npm i
 
 # Copy only the necessary files from the previous stage
-COPY --from=build /app/build /app/src
-COPY ./healthcheck.js /app/healthcheck.js
-COPY ./tsconfig.json /app/tsconfig.json
+COPY --from=build /app/build ./src
+COPY ./healthcheck.js ./healthcheck.js
+COPY ./tsconfig.json ./tsconfig.json
 
 RUN mkdir /.npm
 RUN chgrp -R 0 /.npm && chmod -R g=u /.npm
 
 EXPOSE ${BACKEND_PORT}
 
-CMD ["node", "-r", "tsconfig-paths/register", "./src/index.js"]
+CMD ["node", "-r", "tsconfig-paths/register", "src/index.js"]
