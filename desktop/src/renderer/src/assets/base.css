@@ -54,6 +54,10 @@ ul {
 	list-style: none;
 }
 
+ol {
+  list-style: decimal;
+}
+
 b {
 	font-weight: 700;
 }
