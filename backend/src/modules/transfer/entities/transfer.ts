@@ -14,6 +14,7 @@ const transferSchema = new Schema({
 	createdOn: { type: String, required: false, default: () => new Date().toDateString() },
 	status: { type: String, enum: TRANSFER_STATUSES, required: true },
 	jobID: { type: String, required: false },
+	checksum: { type: String, required: false },
 	metadata: {
 		admin: {
 			application: { type: String, required: true },
@@ -36,6 +37,7 @@ export const transferZodSchema = z.object({
 	createdOn: z.string().optional(),
 	status: z.enum(TRANSFER_STATUSES),
 	jobID: z.union([z.string(), z.null()]).optional(),
+	checksum: z.union([z.string(), z.null()]).optional(),
 	metadata: z.object({
 		admin: z.object({
 			application: z.string(),
