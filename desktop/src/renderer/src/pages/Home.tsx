@@ -1,33 +1,11 @@
-import { Button } from "@bcgov/design-system-react-components";
 import { Box, Link, Stack, Typography, useTheme } from "@mui/material";
-import { toast, type ToastContentProps } from "react-toastify";
 
 type Props = {
   authenticated: boolean;
 };
 
-function Custom({
-  data,
-}: ToastContentProps<{ title: string; message: string }>) {
-  return (
-    <Box>
-      <Typography variant="h4">{data.title}</Typography>
-      <Typography>{data.message}</Typography>
-    </Box>
-  );
-}
-
 export const HomePage = ({ authenticated }: Props) => {
   const theme = useTheme();
-
-  const test = () => {
-    toast.error(Custom, {
-      data: {
-        title: "Wrong file type",
-        message: "File type not accepted. Please upload an .xlsx file.",
-      },
-    });
-  };
 
   return (
     <Stack
@@ -42,8 +20,6 @@ export const HomePage = ({ authenticated }: Props) => {
         <Typography variant="h1">Welcome to DATS</Typography>
         <Typography variant="h4">Digital Archives Transfer Service</Typography>
       </Box>
-
-      <Button onPress={test}>Test</Button>
 
       <Box>
         <Typography variant="h3">How It Works</Typography>

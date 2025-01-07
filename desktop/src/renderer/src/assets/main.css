@@ -71,6 +71,7 @@
 
 .Toastify__toast-container--bottom-left {
 	bottom: 0;
+  left: unset !important;
 	margin-left: 15px;
 }
 
