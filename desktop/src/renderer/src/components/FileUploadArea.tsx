@@ -38,6 +38,19 @@ const formatFileSize = (size: number) => {
   return `${(size / 1024 ** i).toFixed(2)} ${sizes[i]}`;
 };
 
+const fileTypeExtensionMap = {
+  "application/pdf": ".pdf",
+  "application/json": ".json",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    ".docx",
+  "text/plain": ".txt",
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/gif": ".gif",
+  "image/webp": ".webp",
+};
+
 export const FileUploadArea = ({
   file,
   accept,
@@ -95,6 +108,12 @@ export const FileUploadArea = ({
       }
     }
   };
+
+  const fileExtensions = accept
+    .split(",") // Split the input into an array of file types
+    .map((type) => fileTypeExtensionMap[type.trim()]) // Map each file type to its corresponding extension
+    .filter((ext) => !!ext) // Remove undefined values for unrecognized file types
+    .join(","); // Join the extensions back into a comma-separated string
 
   return (
     <Box
@@ -186,7 +205,7 @@ export const FileUploadArea = ({
                 },
               }}
             >
-              Browse file ({accept})
+              Browse file ({fileExtensions})
             </Typography>
           </Stack>
         )}
