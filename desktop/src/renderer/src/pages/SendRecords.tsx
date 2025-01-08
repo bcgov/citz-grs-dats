@@ -4,6 +4,7 @@ import { Stack, Typography, useTheme } from "@mui/material";
 import { Lan as LanIcon, Computer as ComputerIcon } from "@mui/icons-material";
 
 export const SendRecordsPage = () => {
+	const navigate = useNavigate();
 	const theme = useTheme();
 	return (
 		<Stack gap={4}>
@@ -23,12 +24,12 @@ export const SendRecordsPage = () => {
 						<LanIcon sx={{ color: theme.palette.info.contrastText }} />
 						<Typography variant="h3">Send records from LAN Drive</Typography>
 					</Stack>
-					<Button 
-            onPress={() => navigate("/send-records/lan/instructions")}
-            style={{ width: "fit-content" }}
-          >
-            Start
-          </Button>
+					<Button
+						onPress={() => navigate("/send-records/lan/instructions")}
+						style={{ width: "fit-content" }}
+					>
+						Start
+					</Button>
 				</Stack>
 				{/* EDRMS TRANSFER */}
 				<Stack gap={2} sx={{ padding: 2, background: theme.palette.info.light, width: "100%" }}>
