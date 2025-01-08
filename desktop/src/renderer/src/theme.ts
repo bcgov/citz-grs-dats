@@ -20,6 +20,13 @@ export const theme = createTheme({
 			light: "#fffff",
 			dark: "#c9c9c9",
 		},
+		info: {
+			// color palette for information boxes on pages
+			main: "#F7F9FC",
+			light: "#FAF9F8",
+			dark: "#053662",
+			contrastText: "#474543",
+		},
 	},
 	typography: {
 		fontFamily: "BC Sans, Calibri, Arial, sans-serif",
