@@ -1,120 +1,132 @@
 import type amqp from "amqplib";
 import { FileListService } from "../services";
-import { HTTP_STATUS_CODES, HttpError } from "@bcgov/citz-imb-express-utilities";
 import type { JsonFileList } from "../schemas";
 import { createJsonFileList } from "./createJsonFileList";
 import type { Workbook } from "exceljs";
 import { createExcelWorkbook } from "./excel";
 import { sendEmail } from "src/modules/ches/utils";
 import { filelistEmail } from "./email";
-import { formatDate } from "src/utils";
+import { formatDate, logs } from "src/utils";
 import { FILELIST_QUEUE_NAME as QUEUE_NAME } from "@/modules/rabbit/utils/queue/filelist";
 
-export const queueConsumer = async (msg: amqp.ConsumeMessage, channel: amqp.Channel) => {
-	const jobID = msg.content.toString();
-	console.log(`[${QUEUE_NAME}] Processed job: ${jobID}`);
+const {
+  RABBITMQ: { JOB_PROCESSED },
+  FILELIST: {
+    CONSUMER: { FILELIST_NOT_FOUND, EMAIL_NOT_FOUND, INVALID_OUTPUT_FILETYPE },
+  },
+} = logs;
 
-	// Get database record
-	const filelist = await FileListService.getFileListByJobID(jobID);
-	if (!filelist) {
-		channel.ack(msg);
-		return console.error("filelist not found in queueConsumer.");
-	}
+export const queueConsumer = async (
+  msg: amqp.ConsumeMessage,
+  channel: amqp.Channel
+) => {
+  const jobID = msg.content.toString();
+  console.log(JOB_PROCESSED(QUEUE_NAME, jobID));
 
-	// Delete database record
-	await FileListService.deleteFileListByJobID(jobID);
+  // Get database record
+  const filelist = await FileListService.getFileListByJobID(jobID);
+  if (!filelist) {
+    channel.ack(msg);
+    return console.error(FILELIST_NOT_FOUND);
+  }
 
-	// Format folder rows
-	const folderRows = Object.entries(filelist.metadata.folders).map(([folder, metadata]) => ({
-		folder, // Add the key as the "folder" property
-		...metadata, // Spread the properties of the metadata
-	}));
+  // Delete database record
+  await FileListService.deleteFileListByJobID(jobID);
 
-	// Format file rows
-	const fileRows = Object.values(filelist.metadata.files).flat();
+  // Format folder rows
+  const folderRows = Object.entries(filelist.metadata.folders).map(
+    ([folder, metadata]) => ({
+      folder, // Add the key as the "folder" property
+      ...metadata, // Spread the properties of the metadata
+    })
+  );
 
-	const email = filelist.metadata.admin?.submittedBy?.email;
-	if (!email) {
-		channel.ack(msg);
-		return console.error("Email not found in filelist.");
-	}
+  // Format file rows
+  const fileRows = Object.values(filelist.metadata.files).flat();
 
-	const date = formatDate(new Date().toISOString());
+  const email = filelist.metadata.admin?.submittedBy?.email;
+  if (!email) {
+    channel.ack(msg);
+    return console.error(EMAIL_NOT_FOUND);
+  }
 
-	// Handle output file type
-	switch (filelist.outputFileType) {
-		case "excel": {
-			const filename = `Digital_File_List_${date}.xlsx`;
+  const date = formatDate(new Date().toISOString());
 
-			// Create Excel workbook
-			const workbook: Workbook = createExcelWorkbook({
-				folderRows,
-				fileRows,
-				accession: filelist.metadata?.admin?.accession,
-				application: filelist.metadata?.admin?.application,
-			});
+  // Handle output file type
+  switch (filelist.outputFileType) {
+    case "excel": {
+      const filename = `Digital_File_List_${date}.xlsx`;
 
-			// Generate the Excel file as a buffer
-			const buffer = await workbook.xlsx.writeBuffer();
+      // Create Excel workbook
+      const workbook: Workbook = createExcelWorkbook({
+        folderRows,
+        fileRows,
+        accession: filelist.metadata?.admin?.accession,
+        application: filelist.metadata?.admin?.application,
+      });
 
-			// Convert the buffer to Base64 for email attachment
-			const base64Buffer = Buffer.from(buffer).toString("base64");
+      // Generate the Excel file as a buffer
+      const buffer = await workbook.xlsx.writeBuffer();
 
-			// Send filelist via email
-			sendEmail({
-				attachments: [
-					{
-						filename,
-						content: base64Buffer,
-						contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-						encoding: "base64",
-					},
-				],
-				bodyType: "html",
-				body: filelistEmail,
-				to: [email],
-				subject: "DATS - Digital File List Created",
-			});
+      // Convert the buffer to Base64 for email attachment
+      const base64Buffer = Buffer.from(buffer).toString("base64");
 
-			return channel.ack(msg);
-		}
+      // Send filelist via email
+      sendEmail({
+        attachments: [
+          {
+            filename,
+            content: base64Buffer,
+            contentType:
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            encoding: "base64",
+          },
+        ],
+        bodyType: "html",
+        body: filelistEmail,
+        to: [email],
+        subject: "DATS - Digital File List Created",
+      });
 
-		case "json": {
-			const filename = `Digital_File_List_${date}.json`;
+      return channel.ack(msg);
+    }
 
-			// Create JSON file list
-			const jsonFile: JsonFileList = createJsonFileList({
-				accession: filelist.metadata?.admin?.accession,
-				application: filelist.metadata?.admin?.application,
-				folders: filelist.metadata.folders,
-				files: filelist.metadata.files,
-			});
+    case "json": {
+      const filename = `Digital_File_List_${date}.json`;
 
-			// Generate JSON string and buffer
-			const jsonBuffer = Buffer.from(JSON.stringify(jsonFile, null, 2));
+      // Create JSON file list
+      const jsonFile: JsonFileList = createJsonFileList({
+        accession: filelist.metadata?.admin?.accession,
+        application: filelist.metadata?.admin?.application,
+        folders: filelist.metadata.folders,
+        files: filelist.metadata.files,
+      });
 
-			// Send filelist via email
-			sendEmail({
-				attachments: [
-					{
-						filename,
-						content: jsonBuffer.toString("base64"),
-						contentType: "application/json",
-						encoding: "base64",
-					},
-				],
-				bodyType: "html",
-				body: filelistEmail,
-				to: [email],
-				subject: "DATS - File List",
-			});
+      // Generate JSON string and buffer
+      const jsonBuffer = Buffer.from(JSON.stringify(jsonFile, null, 2));
 
-			return channel.ack(msg);
-		}
+      // Send filelist via email
+      sendEmail({
+        attachments: [
+          {
+            filename,
+            content: jsonBuffer.toString("base64"),
+            contentType: "application/json",
+            encoding: "base64",
+          },
+        ],
+        bodyType: "html",
+        body: filelistEmail,
+        to: [email],
+        subject: "DATS - File List",
+      });
 
-		default: {
-			channel.ack(msg);
-			throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Invalid output file type.");
-		}
-	}
+      return channel.ack(msg);
+    }
+
+    default: {
+      channel.ack(msg);
+      return console.error(INVALID_OUTPUT_FILETYPE);
+    }
+  }
 };
