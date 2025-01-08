@@ -80,7 +80,6 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 				variant="permanent"
 				sx={{
 					height: "100%",
-					flexShrink: 0,
 					background: theme.palette.secondary.light,
 					"& .MuiDrawer-paper": {
 						position: "relative",
