@@ -8,6 +8,7 @@
 		"outDir": "build",
 		"baseUrl": ".",
 		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
 		"forceConsistentCasingInFileNames": true,
 		"exactOptionalPropertyTypes": true,
 		"removeComments": true,

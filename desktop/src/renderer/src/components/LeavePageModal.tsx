@@ -20,9 +20,17 @@ const modalStyle = {
 	transform: "translate(-50%, -50%)",
 	width: 600,
 	bgcolor: "background.paper",
-	border: "2px solid #000",
+	border: "2px solid black",
 	borderRadius: "5px",
 	padding: 4,
+};
+
+const buttonBoxStyle = {
+	display: "flex",
+	justifyContent: "right",
+	gap: 1,
+	padding: 0,
+	flexShrink: 0,
 };
 
 export const LeavePageModal = ({ open, onClose, onConfirm }: Props) => {
@@ -33,15 +41,7 @@ export const LeavePageModal = ({ open, onClose, onConfirm }: Props) => {
 					Are you sure you want to leave this page? All progress will be lost.
 				</Typography>
 
-				<Box
-					sx={{
-						display: "flex",
-						justifyContent: "right",
-						gap: 1,
-						padding: 0,
-						flexShrink: 0,
-					}}
-				>
+				<Box sx={buttonBoxStyle}>
 					<Button variant="secondary" style={innerButtonStyle} onPress={onClose}>
 						Cancel
 					</Button>

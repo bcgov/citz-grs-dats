@@ -1,12 +1,17 @@
 import yauzl from "yauzl";
 import yazl from "yazl";
 
-// Function to add a file to an existing zip buffer
-export const addFileToZipBuffer = async (
-	zipBuffer: Buffer,
-	fileBuffer: Buffer,
-	filePath: string,
-): Promise<Buffer> => {
+type Props = {
+	zipBuffer: Buffer;
+	fileBuffer: Buffer;
+	filePath: string;
+};
+
+export const addFileToZipBuffer = async ({
+	zipBuffer,
+	fileBuffer,
+	filePath,
+}: Props): Promise<Buffer> => {
 	const tempFiles: { [key: string]: Buffer } = {};
 
 	// Extract files from the existing zip buffer, including subdirectories

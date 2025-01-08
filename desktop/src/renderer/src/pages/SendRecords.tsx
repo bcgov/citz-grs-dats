@@ -1,10 +1,12 @@
 import { Button } from "@bcgov/design-system-react-components";
-import { Stack, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Lan as LanIcon, Computer as ComputerIcon } from "@mui/icons-material";
+import { Stack, Typography, useTheme } from "@mui/material";
 
 export const SendRecordsPage = () => {
-	const navigate = useNavigate();
+  const navigate = useNavigate();
+	const theme = useTheme();
+
 	return (
 		<Stack gap={4}>
 			<Typography variant="h2" sx={{ marginBottom: -1 }}>
@@ -18,9 +20,9 @@ export const SendRecordsPage = () => {
 			</Typography>
 			<Stack direction="row" gap={3}>
 				{/* LAN TRANSFER */}
-				<Stack gap={2} sx={{ padding: 2, background: "#FAF9F8", width: "100%" }}>
+				<Stack gap={2} sx={{ padding: 2, background: theme.palette.info.light, width: "100%" }}>
 					<Stack direction="row" spacing={1}>
-						<LanIcon sx={{ color: "#474543" }} />
+						<LanIcon sx={{ color: theme.palette.info.contrastText }} />
 						<Typography variant="h3">Send records from LAN Drive</Typography>
 					</Stack>
 					<Button
@@ -31,9 +33,9 @@ export const SendRecordsPage = () => {
 					</Button>
 				</Stack>
 				{/* EDRMS TRANSFER */}
-				<Stack gap={2} sx={{ padding: 2, background: "#FAF9F8", width: "100%" }}>
+				<Stack gap={2} sx={{ padding: 2, background: theme.palette.info.light, width: "100%" }}>
 					<Stack direction="row" spacing={1}>
-						<ComputerIcon sx={{ color: "#474543" }} />
+						<ComputerIcon sx={{ color: theme.palette.info.contrastText }} />
 						<Typography variant="h3">Send records from EDRMS</Typography>
 					</Stack>
 					<Button style={{ width: "fit-content" }}>Start</Button>
@@ -44,8 +46,9 @@ export const SendRecordsPage = () => {
 				gap={2}
 				sx={{
 					padding: 2,
-					background: "#F7F9FC",
-					border: "1px solid #053662",
+					background: theme.palette.info.main,
+					border: "1px solid",
+					borderColor: theme.palette.info.dark,
 					borderRadius: "5px",
 				}}
 			>
