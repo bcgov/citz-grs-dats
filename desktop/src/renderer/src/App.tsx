@@ -2,14 +2,23 @@ import { useEffect, useState } from "react";
 import { SideNav, VPNPopup } from "./components";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { FileListPage, HomePage, SendRecordsPage } from "./pages";
+import { Button, Grid2 as Grid } from "@mui/material";
+import { Header } from "@bcgov/design-system-react-components";
+import { LeavePageModal } from "./components/LeavePageModal";
 
 function App(): JSX.Element {
 	const [api] = useState(window.api); // Preload scripts
 	const [showVPNPopup, setShowVPNPopup] = useState<boolean | null>(null);
+	const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
 
 	// Authentication state
 	const [accessToken, setAccessToken] = useState<string | undefined>(undefined);
 	const [idToken, setIdToken] = useState<string | undefined>(undefined);
+
+	const onConfirmLeavePage = () => {
+		setLeavePageModalOpen(false);
+		window.location.href = "/";
+	};
 
 	useEffect(() => {
 		// Handle "auth-success" message from main process
@@ -59,17 +68,34 @@ function App(): JSX.Element {
 
 	return (
 		<BrowserRouter>
-			<div>
-				<SideNav accessToken={accessToken} idToken={idToken} />
-				<main style={{ width: "85%", marginLeft: "15%" }}>
-					<Routes>
-            <Route path="/" element={<HomePage authenticated={!!accessToken} />} />
-						<Route path="/file-list" element={<FileListPage authenticated={!!accessToken} />} />
-						<Route path="/send-records" element={<SendRecordsPage />} />
-					</Routes>
-				</main>
+			<Grid container sx={{ height: "100vh" }}>
 				{showVPNPopup && <VPNPopup />}
-			</div>
+				<Grid size={2}>
+					<SideNav accessToken={accessToken} idToken={idToken} />
+				</Grid>
+				<Grid size={10}>
+					<Header
+						title="Digital Archives Transfer Service"
+						logoLinkElement={<Button onClick={() => setLeavePageModalOpen(true)} />}
+					/>
+					<Grid container>
+						<Grid size={2} />
+						<Grid size={8} sx={{ paddingTop: 3 }}>
+							<Routes>
+								<Route path="/" element={<HomePage authenticated={!!accessToken} />} />
+								<Route path="/file-list" element={<FileListPage authenticated={!!accessToken} />} />
+								<Route path="/send-records" element={<SendRecordsPage />} />
+							</Routes>
+						</Grid>
+						<Grid size={2} />
+					</Grid>
+				</Grid>
+				<LeavePageModal
+					open={leavePageModalOpen}
+					onClose={() => setLeavePageModalOpen(false)}
+					onConfirm={onConfirmLeavePage}
+				/>
+			</Grid>
 		</BrowserRouter>
 	);
 }
