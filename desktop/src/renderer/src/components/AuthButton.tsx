@@ -16,11 +16,13 @@ export const AuthButton = ({ accessToken, idToken }: Props): JSX.Element => {
 	const user = sso.getUser(accessToken);
 
 	return (
-		<Box>
-			{user && <Typography sx={{ marginBottom: 1 }}>{user.display_name}</Typography>}
+		<Box sx={{ marginBottom: 2 }}>
+			{user && (
+				<Typography sx={{ paddingLeft: 2, paddingBottom: 1 }}>{user.display_name}</Typography>
+			)}
 			<Button
-				variant="primary"
-				style={{ justifyContent: "center", width: "100%" }}
+				variant="link"
+				style={{ width: "100%" }}
 				onPress={accessToken ? handleLogout : handleLogin}
 			>
 				{accessToken ? "Logout" : "Login"}
