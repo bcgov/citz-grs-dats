@@ -31,14 +31,17 @@
 	--bcgov-dark-blue: #036;
 	--bcgov-yellow: #fcba19;
 
-  --file_upload_area-bg-invalid: #F4E1E2;
-  --file_upload_area-bg-valid: #F1F8FE;
-  --file_upload_area-bg-default: #FFFFFF;
-  --file_upload_area-border-invalid: #CE3E39;
-  --file_upload_area-border-valid: #1E5189;
-  --file_upload_area-border-default: #898785;
-  --file_upload_area-bg-uploaded-file: #F3F2F1;
-  --file_upload_area-border-browse-button: #353433;
+	--file_upload_area-bg-invalid: #f4e1e2;
+	--file_upload_area-bg-valid: #f1f8fe;
+	--file_upload_area-bg-default: #ffffff;
+	--file_upload_area-border-invalid: #ce3e39;
+	--file_upload_area-border-valid: #1e5189;
+	--file_upload_area-border-default: #898785;
+	--file_upload_area-bg-uploaded-file: #f3f2f1;
+	--file_upload_area-border-browse-button: #353433;
+
+	--sidenav-icon: #474543;
+	--sidenav-item-border-current-page: #2e5dd7;
 
 	--tip: #878787;
 	--color-background: var(--ev-c-black);
@@ -64,6 +67,14 @@
 
 b {
 	font-weight: 700;
+}
+
+#root {
+	display: flex;
+	width: 100%;
+	height: 99.9vh;
+	overflow: hidden;
+	flex-direction: column;
 }
 
 body {
