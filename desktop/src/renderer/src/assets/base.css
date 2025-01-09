@@ -31,6 +31,9 @@
 	--bcgov-dark-blue: #036;
 	--bcgov-yellow: #fcba19;
 
+	--sidenav-icon: #474543;
+	--sidenav-item-border-current-page: #2e5dd7;
+
 	--tip: #878787;
 	--color-background: var(--ev-c-black);
 	--color-background-soft: var(--ev-c-black-soft);
@@ -55,6 +58,14 @@
 
 b {
 	font-weight: 700;
+}
+
+#root {
+	display: flex;
+	width: 100%;
+	height: 99.9vh;
+	overflow: hidden;
+	flex-direction: column;
 }
 
 body {
