@@ -7,20 +7,19 @@ type Props = {
 export const HomePage = ({ authenticated }: Props) => {
   const theme = useTheme();
 
-  return (
-    <Stack
-      sx={{
-        height: "100%",
-        padding: 4,
-        flexShrink: 0,
-        background: `${theme.palette.primary}`,
-      }}
-      gap={3}
-    >
-      <Box>
-        <Typography variant="h1">Welcome to DATS</Typography>
-        <Typography variant="h4">Digital Archives Transfer Service</Typography>
-      </Box>
+	return (
+		<Stack
+			sx={{
+				padding: 4,
+				flexShrink: 0,
+				background: `${theme.palette.primary}`,
+			}}
+			gap={3}
+		>
+			<Box>
+				<Typography variant="h1">Welcome to DATS</Typography>
+				<Typography variant="h4">Digital Archives Transfer Service</Typography>
+			</Box>
 
       <Box>
         <Typography variant="h3">How It Works</Typography>

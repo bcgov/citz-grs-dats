@@ -78,14 +78,12 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
 		<>
 			<Drawer
 				variant="permanent"
-				anchor="left"
 				sx={{
-					flexShrink: 0,
-					width: "15%",
+					height: "100%",
 					background: theme.palette.secondary.light,
 					"& .MuiDrawer-paper": {
-						width: "15%",
-						flexShrink: 0,
+						position: "relative",
+						width: "100%",
 						boxSizing: "border-box",
 						padding: 1,
 					},
