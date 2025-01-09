@@ -16,8 +16,8 @@ export const SubAgreementScrollBox = ({
       gap={2}
       sx={{
         padding: "16px",
-        border: "1px solid #898785",
-        maxHeight,
+        border: "1px solid var(--sub-agreement-border)",
+        maxHeight: `min(${maxHeight}, 100vh)`,
         overflowY: "scroll",
         "&::-webkit-scrollbar": {
           width: "20px", // Width of the scrollbar + offset for margin right
@@ -27,7 +27,7 @@ export const SubAgreementScrollBox = ({
           borderRadius: "10px",
         },
         "&::-webkit-scrollbar-thumb": {
-          backgroundColor: "#D9D9D9", // Thumb color
+          backgroundColor: "var(--scroll-bar)", // Thumb color
           borderRadius: "10px",
           backgroundClip: "content-box", // Helps make margin right
           border: "5px solid transparent", // Helps make margin right
