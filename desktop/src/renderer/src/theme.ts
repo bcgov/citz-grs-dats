@@ -4,21 +4,21 @@ import "@bcgov/bc-sans/css/BC_Sans.css";
 export const theme = createTheme({
 	palette: {
 		warning: {
-			main: "#f7d219",
-			light: "#f9dc4a",
-			dark: "#d6b307",
+			main: "#F7D219",
+			light: "#F9DC4A",
+			dark: "#D6B307",
 		},
 		primary: {
 			// colour palette for main view area of app
-			main: "#ececec",
-			light: "#f9f9f9",
-			dark: "#d3d3d3",
+			main: "#ECECEC",
+			light: "#F9F9F9",
+			dark: "#D3D3D3",
 		},
 		secondary: {
 			// colour palette for side nav
-			main: "#fcfcfc",
-			light: "#fffff",
-			dark: "#c9c9c9",
+			main: "#FCFCFC",
+			light: "#FFFFF",
+			dark: "#C9C9C9",
 		},
 		info: {
 			// color palette for information boxes on pages
