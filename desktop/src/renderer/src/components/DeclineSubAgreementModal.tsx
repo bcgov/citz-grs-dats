@@ -20,7 +20,7 @@ const modalStyle = {
   transform: "translate(-50%, -50%)",
   width: 600,
   bgcolor: "background.paper",
-  border: "1px solid #D8D8D8",
+  border: "1px solid var(--modal-border)",
 };
 
 const buttonBoxStyle = {
@@ -28,14 +28,14 @@ const buttonBoxStyle = {
   justifyContent: "right",
   gap: 1,
   padding: "16px 24px",
-  borderTop: "1px solid #D8D8D8",
+  borderTop: "1px solid var(--modal-border)",
 };
 
 const headerStyle = {
   display: "flex",
   justifyContent: "space-between",
   padding: "16px 24px",
-  borderBottom: "1px solid #D8D8D8",
+  borderBottom: "1px solid var(--modal-border)",
 };
 
 const contentStyle = {
