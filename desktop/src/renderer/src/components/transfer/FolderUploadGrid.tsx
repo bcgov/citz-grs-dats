@@ -74,7 +74,7 @@ export const FolderUploadGrid = ({
       field: "folder",
       headerName: "Folder path",
       flex: 1,
-      description: "Automatically populated from your file list.",
+      description: "Network path to the folder.",
     },
     {
       field: "edit",
