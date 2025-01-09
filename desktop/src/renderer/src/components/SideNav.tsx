@@ -86,59 +86,49 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
     );
   };
 
-  return (
-    <>
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{
-          flexShrink: 0,
-          height: "100%",
-          background: theme.palette.secondary.light,
-          "& .MuiDrawer-paper": {
-            position: "relative",
-            width: "100%",
-            boxSizing: "border-box",
-            padding: 1,
-          },
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            height: "100%",
-            background: theme.palette.secondary.light,
-          }}
-        >
-          <List>
-            <NavItem path="/" label="Home" icon={<HomeOutlinedIcon />} />
-            <Divider sx={{ margin: "5px 0" }} />
-            {/* REQUIRE AUTH */}
-            {accessToken && (
-              <>
-                <NavItem
-                  path="/file-list"
-                  label="Create File List"
-                  icon={<FileListIcon />}
-                />
-                <NavItem
-                  path="/send-records"
-                  label="Send Records"
-                  icon={<SendRecordsIcon />}
-                />
-              </>
-            )}
-          </List>
-          <AuthButton accessToken={accessToken} idToken={idToken} />
-        </Box>
-      </Drawer>
-      <LeavePageModal
-        open={leavePageModalOpen}
-        onClose={() => setLeavePageModalOpen(false)}
-        onConfirm={onConfirmLeavePage}
-      />
-    </>
-  );
+	return (
+		<>
+			<Drawer
+				variant="permanent"
+				sx={{
+					height: "100%",
+					background: theme.palette.secondary.light,
+					"& .MuiDrawer-paper": {
+						position: "relative",
+						width: "100%",
+						boxSizing: "border-box",
+						padding: 1,
+					},
+				}}
+			>
+				<Box
+					sx={{
+						display: "flex",
+						flexDirection: "column",
+						justifyContent: "space-between",
+						height: "100%",
+						background: theme.palette.secondary.light,
+					}}
+				>
+					<List>
+						<NavItem path="/" label="Home" icon={<HomeOutlinedIcon />} />
+						<Divider sx={{ margin: "5px 0" }} />
+						{/* REQUIRE AUTH */}
+						{accessToken && (
+							<>
+								<NavItem path="/file-list" label="Create File List" icon={<FileListIcon />} />
+								<NavItem path="/send-records" label="Send Records" icon={<SendRecordsIcon />} />
+							</>
+						)}
+					</List>
+					<AuthButton accessToken={accessToken} idToken={idToken} />
+				</Box>
+			</Drawer>
+			<LeavePageModal
+				open={leavePageModalOpen}
+				onClose={() => setLeavePageModalOpen(false)}
+				onConfirm={onConfirmLeavePage}
+			/>
+		</>
+	);
 };

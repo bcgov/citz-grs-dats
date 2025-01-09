@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { SideNav, VPNPopup } from "./components";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { FileListPage, HomePage, SendRecordsPage } from "./pages";
+import { FileListPage, HomePage, SendRecordsPage, LanInstructionsPage } from "./pages";
 import { Button, Grid2 as Grid } from "@mui/material";
 import { Header } from "@bcgov/design-system-react-components";
 import { LeavePageModal } from "./components/LeavePageModal";
@@ -85,6 +85,7 @@ function App(): JSX.Element {
 								<Route path="/" element={<HomePage authenticated={!!accessToken} />} />
 								<Route path="/file-list" element={<FileListPage authenticated={!!accessToken} />} />
 								<Route path="/send-records" element={<SendRecordsPage />} />
+								<Route path="/send-records/lan/instructions" element={<LanInstructionsPage />} />
 							</Routes>
 						</Grid>
 						<Grid size={2} />

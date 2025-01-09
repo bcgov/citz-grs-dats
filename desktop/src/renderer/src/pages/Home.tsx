@@ -10,7 +10,6 @@ export const HomePage = ({ authenticated }: Props) => {
 	return (
 		<Stack
 			sx={{
-				height: "100%",
 				padding: 4,
 				flexShrink: 0,
 				background: `${theme.palette.primary}`,
