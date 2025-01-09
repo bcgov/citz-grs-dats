@@ -34,8 +34,10 @@ module.exports = {
 		"modules/transfer/utils/addFileToZipBuffer",
 		"modules/transfer/utils/createFinalTransfer",
 		"modules/transfer/utils/validateContentMatchesMetadata",
+		"modules/transfer/utils/validateSubmissionAgreement",
 		"modules/transfer/utils/validateMetadataFoldersMatchesFiles",
 		"modules/submission-agreement/assets/",
+		"utils/logs",
 	],
 	coverageDirectory: "coverage",
 	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths || {}, {

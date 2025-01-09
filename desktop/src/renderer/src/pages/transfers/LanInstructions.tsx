@@ -1,7 +1,38 @@
 import { Button } from "@bcgov/design-system-react-components";
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography, useTheme } from "@mui/material";
 
 export const LanInstructionsPage = () => {
+	const theme = useTheme();
+
+	const NoteBlock = () => {
+		return (
+			<Stack
+				gap={2}
+				sx={{
+					padding: 2,
+					background: theme.palette.info.main,
+					border: "1px solid",
+					borderColor: theme.palette.info.dark,
+					borderRadius: "5px",
+				}}
+			>
+				<Typography variant="h4">For an optimal experience...</Typography>
+				<ul>
+					<li>
+						Keep the DATS app open for the duration of the LAN drive transfer process, including
+						during long file uploading times.
+					</li>
+					<li>
+						<Typography variant="h4">
+							Closing the application or navigating elsewhere in DATS during your transfer process
+							will terminate the transfer. Progress will not be saved.
+						</Typography>
+					</li>
+				</ul>
+			</Stack>
+		);
+	};
+
 	return (
 		<Stack gap={3}>
 			<Typography variant="h2">Send records from LAN Drive</Typography>
@@ -20,29 +51,7 @@ export const LanInstructionsPage = () => {
 				</Typography>
 			</Stack>
 			{/* Note */}
-			<Stack
-				gap={2}
-				sx={{
-					padding: 2,
-					background: "#F7F9FC",
-					border: "1px solid #053662",
-					borderRadius: "5px",
-				}}
-			>
-				<Typography variant="h4">For an optimal experience...</Typography>
-				<ul>
-					<li>
-						Keep the DATS app open for the duration of the LAN drive transfer process, including
-						during long file uploading times.
-					</li>
-					<li>
-						<Typography variant="h4">
-							Closing the application or navigating elsewhere in DATS during your transfer process
-							will terminate the transfer. Progress will not be saved.
-						</Typography>
-					</li>
-				</ul>
-			</Stack>
+			<NoteBlock />
 			<Box sx={{ display: "flex", justifyContent: "right" }}>
 				<Button style={{ width: "fit-content" }}>Start</Button>
 			</Box>
