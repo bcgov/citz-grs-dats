@@ -20,6 +20,13 @@ export const theme = createTheme({
 			light: "#fffff",
 			dark: "#c9c9c9",
 		},
+		info: {
+			// color palette for information boxes on pages
+			main: "#F7F9FC",
+			light: "#FAF9F8",
+			dark: "#053662",
+			contrastText: "#474543",
+		},
 	},
 	typography: {
 		fontFamily: "BC Sans, Calibri, Arial, sans-serif",
@@ -28,16 +35,19 @@ export const theme = createTheme({
 			fontSize: "2rem",
 		},
 		h2: {
-			fontWeight: 500,
+			fontWeight: 700,
 			fontSize: "1.6rem",
+			color: "#474543",
 		},
 		h3: {
-			fontWeight: 500,
-			fontSize: "1.3rem",
+			fontWeight: 700,
+			fontSize: "1.2rem",
+			color: "#474543",
 		},
 		h4: {
-			fontWeight: 500,
+			fontWeight: 700,
 			fontSize: "0.9rem",
+			color: "#474543",
 		},
 		h5: {
 			fontWeight: 500,
