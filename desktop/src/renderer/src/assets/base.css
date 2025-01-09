@@ -12,6 +12,9 @@
 	--sub-agreement-border: #898785;
 	--scroll-bar: #d9d9d9;
 
+	--sidenav-icon: #474543;
+	--sidenav-item-border-current-page: #2e5dd7;
+
 	--tip: #878787;
 
 	display: flex;
@@ -35,6 +38,14 @@ ol {
 
 b {
 	font-weight: 700;
+}
+
+#root {
+	display: flex;
+	width: 100%;
+	height: 99.9vh;
+	overflow: hidden;
+	flex-direction: column;
 }
 
 body {
