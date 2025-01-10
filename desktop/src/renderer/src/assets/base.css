@@ -43,6 +43,10 @@
 	--sidenav-icon: #474543;
 	--sidenav-item-border-current-page: #2e5dd7;
 
+	--text-disabled: #9f9d9c;
+	--text: #2d2d2d;
+	--acc-app-confirmation-bg: #faf9f8;
+
 	--tip: #878787;
 	--color-background: var(--ev-c-black);
 	--color-background-soft: var(--ev-c-black-soft);
