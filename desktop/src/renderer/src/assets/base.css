@@ -53,12 +53,6 @@
 	--color-background-mute: var(--ev-c-black-mute);
 
 	--color-text: var(--ev-c-text-1);
-
-	display: flex;
-	width: 100%;
-	height: 99.9vh;
-	overflow: hidden;
-	flex-direction: column;
 }
 
 *,
@@ -73,17 +67,7 @@ b {
 	font-weight: 700;
 }
 
-#root {
-	display: flex;
-	width: 100%;
-	height: 99.9vh;
-	overflow: hidden;
-	flex-direction: column;
-}
-
 body {
-	width: 100%;
-	height: 100%;
 	user-select: none;
 	overflow: "hidden";
 	border-top: 1px solid #e3e3e3;

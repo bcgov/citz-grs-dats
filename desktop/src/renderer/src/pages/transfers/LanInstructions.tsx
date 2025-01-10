@@ -1,5 +1,5 @@
 import { Button } from "@bcgov/design-system-react-components";
-import { Box, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Grid2 as Grid, Stack, Typography, useTheme } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 export const LanInstructionsPage = () => {
@@ -39,30 +39,36 @@ export const LanInstructionsPage = () => {
   };
 
   return (
-    <Stack gap={3}>
-      <Typography variant="h2">Send records from LAN Drive</Typography>
-      <Stack gap={2}>
-        <Typography variant="h3">Getting started</Typography>
-        <Typography>
-          Before you start your LAN drive transfer process, ensure you have the
-          following documents:
-        </Typography>
-        <ul>
-          <li>Transfer form (ARS 617)</li>
-          <li>Digital file list (ARS 622)</li>
-        </ul>
-        <Typography>
-          You should also be ready to relink any folders whose names have
-          changed since your file list was created.
-        </Typography>
-      </Stack>
-      {/* Note */}
-      <NoteBlock />
-      <Box sx={{ display: "flex", justifyContent: "right" }}>
-        <Button onPress={goToTransferPage} style={{ width: "fit-content" }}>
-          Start
-        </Button>
-      </Box>
-    </Stack>
+    <Grid container>
+      <Grid size={2} />
+      <Grid size={8} sx={{ paddingTop: 3 }}>
+        <Stack gap={3}>
+          <Typography variant="h2">Send records from LAN Drive</Typography>
+          <Stack gap={2}>
+            <Typography variant="h3">Getting started</Typography>
+            <Typography>
+              Before you start your LAN drive transfer process, ensure you have
+              the following documents:
+            </Typography>
+            <ul>
+              <li>Transfer form (ARS 617)</li>
+              <li>Digital file list (ARS 622)</li>
+            </ul>
+            <Typography>
+              You should also be ready to relink any folders whose names have
+              changed since your file list was created.
+            </Typography>
+          </Stack>
+          {/* Note */}
+          <NoteBlock />
+          <Box sx={{ display: "flex", justifyContent: "right" }}>
+            <Button onPress={goToTransferPage} style={{ width: "fit-content" }}>
+              Start
+            </Button>
+          </Box>
+        </Stack>
+      </Grid>
+      <Grid size={2} />
+    </Grid>
   );
 };

@@ -1,4 +1,4 @@
-import { Stack, Typography } from "@mui/material";
+import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { Stepper, Toast } from "@renderer/components";
 import { LanUploadFileListView } from "@renderer/components/transfer/lan-views";
 import { useEffect, useState } from "react";
@@ -114,29 +114,35 @@ export const LanTransferPage = ({ authenticated }: Props) => {
     parseFileList();
   }, [fileList]);
   return (
-    <Stack gap={2}>
-      <Typography variant="h2">Send records from LAN Drive</Typography>
-      <Stepper
-        items={[
-          "Upload digital file list (ARS 662)",
-          "Upload transfer form (ARS 617)",
-          "Submission agreement",
-          "Folder upload",
-          "Confirmation",
-        ]}
-        currentIndex={currentViewIndex}
-      />
-      {currentViewIndex === 0 && (
-        <LanUploadFileListView
-          file={fileList}
-          setFile={setFileList}
-          accession={accession}
-          application={application}
-          confirmChecked={confirmAccAppChecked}
-          setConfirmChecked={setConfirmAccAppChecked}
-          onNextPress={onNextPress}
-        />
-      )}
-    </Stack>
+    <Grid container>
+      <Grid size={2} />
+      <Grid size={8} sx={{ paddingTop: 3 }}>
+        <Stack gap={2}>
+          <Typography variant="h2">Send records from LAN Drive</Typography>
+          <Stepper
+            items={[
+              "Upload digital file list (ARS 662)",
+              "Upload transfer form (ARS 617)",
+              "Submission agreement",
+              "Folder upload",
+              "Confirmation",
+            ]}
+            currentIndex={currentViewIndex}
+          />
+          {currentViewIndex === 0 && (
+            <LanUploadFileListView
+              file={fileList}
+              setFile={setFileList}
+              accession={accession}
+              application={application}
+              confirmChecked={confirmAccAppChecked}
+              setConfirmChecked={setConfirmAccAppChecked}
+              onNextPress={onNextPress}
+            />
+          )}
+        </Stack>
+      </Grid>
+      <Grid size={2} />
+    </Grid>
   );
 };
