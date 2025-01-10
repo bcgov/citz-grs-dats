@@ -5,3 +5,4 @@ export * from "./Stepper";
 export * from "./Toast";
 export * from "./FileUploadArea";
 export * from "./LeavePageModal";
+export * from "./SubAgreementScrollBox";

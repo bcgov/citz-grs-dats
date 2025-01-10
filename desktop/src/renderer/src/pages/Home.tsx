@@ -58,26 +58,6 @@ export const HomePage = ({ authenticated }: Props) => {
 
               <Stack gap={1}>
                 <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  2. Create File List
-                </Typography>
-                <Typography variant="h4" sx={{ marginLeft: 2 }}>
-                  For LAN Transfers, use DATS to generate a Digital File List
-                  (ARS 662), a detailed inventory of your records.
-                </Typography>
-              </Stack>
-
-              <Stack gap={1}>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  2. Create File List
-                </Typography>
-                <Typography variant="h4" sx={{ marginLeft: 2 }}>
-                  For LAN Transfers, use DATS to generate a Digital File List
-                  (ARS 662), a detailed inventory of your records.
-                </Typography>
-              </Stack>
-
-              <Stack gap={1}>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
                   3. Submit for Review
                 </Typography>
                 <Typography variant="h4" sx={{ marginLeft: 2 }}>
