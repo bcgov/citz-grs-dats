@@ -4,3 +4,4 @@ export * from "./SideNav";
 export * from "./Stepper";
 export * from "./Toast";
 export * from "./FileUploadArea";
+export * from "./LeavePageModal";
