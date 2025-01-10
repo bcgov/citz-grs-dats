@@ -133,6 +133,7 @@ export const FileUploadArea = ({
       height={"15rem"}
       border={"solid 1px"}
       onClick={() =>
+        // biome-ignore lint/style/noNonNullAssertion: <explanation>
         !isInvalidFile && document.getElementById("file-input")!.click()
       }
       onDrop={handleDrop}

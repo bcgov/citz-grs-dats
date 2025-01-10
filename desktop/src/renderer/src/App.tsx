@@ -6,6 +6,7 @@ import {
   HomePage,
   SendRecordsPage,
   LanInstructionsPage,
+  LanTransferPage,
 } from "./pages";
 import { Button, Grid2 as Grid } from "@mui/material";
 import { Header } from "@bcgov/design-system-react-components";
@@ -106,6 +107,10 @@ function App(): JSX.Element {
                 <Route
                   path="/send-records/lan/instructions"
                   element={<LanInstructionsPage />}
+                />
+                <Route
+                  path="/send-records/lan"
+                  element={<LanTransferPage authenticated={!!accessToken} />}
                 />
               </Routes>
             </Grid>
