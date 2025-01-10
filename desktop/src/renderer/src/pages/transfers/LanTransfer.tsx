@@ -1,6 +1,9 @@
 import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { Stepper, Toast } from "@renderer/components";
-import { LanUploadFileListView } from "@renderer/components/transfer/lan-views";
+import {
+  LanUploadFileListView,
+  LanUploadTransferFormView,
+} from "@renderer/components/transfer/lan-views";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -12,6 +15,9 @@ export const LanTransferPage = ({ authenticated }: Props) => {
   const [api] = useState(window.api); // Preload scripts
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [fileList, setFileList] = useState<File | null | undefined>(undefined);
+  const [transferForm, setTransferForm] = useState<File | null | undefined>(
+    undefined
+  );
 
   // Accession & application pulled from fileList
   const [accession, setAccession] = useState<string | undefined | null>(null);
@@ -24,6 +30,10 @@ export const LanTransferPage = ({ authenticated }: Props) => {
 
   const onNextPress = () => {
     setCurrentViewIndex((prev) => prev + 1);
+  };
+
+  const onBackPress = () => {
+    setCurrentViewIndex((prev) => prev - 1);
   };
 
   // Parse JSON file list
@@ -138,6 +148,14 @@ export const LanTransferPage = ({ authenticated }: Props) => {
               confirmChecked={confirmAccAppChecked}
               setConfirmChecked={setConfirmAccAppChecked}
               onNextPress={onNextPress}
+            />
+          )}
+          {currentViewIndex === 1 && (
+            <LanUploadTransferFormView
+              file={transferForm}
+              setFile={setTransferForm}
+              onNextPress={onNextPress}
+              onBackPress={onBackPress}
             />
           )}
         </Stack>
