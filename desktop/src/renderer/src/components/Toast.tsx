@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { ToastContentProps } from "react-toastify";
+import type { ToastContentProps } from "react-toastify";
 
 /**
  * Example usage (Calling test will make the toast appear):

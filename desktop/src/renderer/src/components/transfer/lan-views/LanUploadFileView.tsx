@@ -4,8 +4,8 @@ import { FileUploadArea, Stepper } from "@renderer/components";
 import { AccAppConfirmation } from "../AccAppConfirmation";
 
 type Props = {
-  file?: File;
-  setFile: React.Dispatch<React.SetStateAction<File | undefined>>;
+  file?: File | null;
+  setFile: React.Dispatch<React.SetStateAction<File | null | undefined>>;
   accession?: string | null;
   application?: string | null;
   confirmChecked: boolean;
@@ -26,7 +26,7 @@ export const LanUploadFileListView = ({
     if (e.target.files?.[0]) setFile(e.target.files[0]);
   };
 
-  const onDrop = (file: File | null) => {
+  const onDrop = (file: File | null | undefined) => {
     if (file) setFile(file);
   };
 
