@@ -1,6 +1,6 @@
 import { Button } from "@bcgov/design-system-react-components";
 import { Box, Stack, Typography } from "@mui/material";
-import { FileUploadArea, Stepper } from "@renderer/components";
+import { FileUploadArea } from "@renderer/components";
 import { AccAppConfirmation } from "../AccAppConfirmation";
 
 type Props = {
@@ -34,18 +34,7 @@ export const LanUploadFileListView = ({
 
   return (
     <Stack gap={3}>
-      <Typography variant="h2">Send records from LAN Drive</Typography>
       <Stack gap={2}>
-        <Stepper
-          items={[
-            "Upload digital file list (ARS 662)",
-            "Upload transfer form (ARS 617)",
-            "Submission agreement",
-            "Folder upload",
-            "Confirmation",
-          ]}
-          currentIndex={0}
-        />
         <Typography variant="h3">
           Upload your digital file list (ARS 662) here:
         </Typography>
