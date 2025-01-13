@@ -48,6 +48,17 @@ const api = {
       );
 
       ipcRenderer.on(
+        "folder-metadata-missing-path",
+        (_, data: { path: string }) => {
+          window.dispatchEvent(
+            new CustomEvent("folder-metadata-missing-path", {
+              detail: data,
+            })
+          );
+        }
+      );
+
+      ipcRenderer.on(
         "folder-metadata-completion",
         (
           _,

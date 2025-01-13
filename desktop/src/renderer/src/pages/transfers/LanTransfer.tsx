@@ -30,14 +30,8 @@ export const LanTransferPage = ({ authenticated }: Props) => {
 
   // File list
   const [metadata, setMetadata] = useState<Record<string, unknown>>({});
-  const [folders, setFolders] = useState<Folder[]>([
-    {
-      id: 1,
-      folder: "C:/Test",
-      invalidPath: false,
-      progress: 0,
-    },
-  ]);
+  const [foldersToProcess, setFoldersToProcess] = useState<string[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
   const [deletedFolders, setDeletedFolders] = useState<string[]>([]);
   const [doneProcessingMetadata, setDoneProcessingMetadata] = useState(false);
 
@@ -58,15 +52,31 @@ export const LanTransferPage = ({ authenticated }: Props) => {
     setCurrentViewIndex((prev) => prev - 1);
   };
 
+  useEffect(() => {
+    console.log(metadata); // TEMP
+  }, [metadata]);
+
   // Handle metadata progress and completion events
   useEffect(() => {
     const handleProgress = (
       event: CustomEvent<{ source: string; progressPercentage: number }>
     ) => {
       const { source, progressPercentage } = event.detail;
+      // Update folder progress
       setFolders((prevRows) =>
         prevRows.map((row) =>
           row.folder === source ? { ...row, progress: progressPercentage } : row
+        )
+      );
+    };
+
+    const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
+      const { path } = event.detail;
+      console.log("Missing", path);
+      // Update folder progress
+      setFolders((prevRows) =>
+        prevRows.map((row) =>
+          row.folder === path ? { ...row, invalidPath: true } : row
         )
       );
     };
@@ -98,6 +108,10 @@ export const LanTransferPage = ({ authenticated }: Props) => {
       handleProgress as EventListener
     );
     window.addEventListener(
+      "folder-metadata-missing-path",
+      handleMissingPath as EventListener
+    );
+    window.addEventListener(
       "folder-metadata-completion",
       handleCompletion as EventListener
     );
@@ -108,27 +122,59 @@ export const LanTransferPage = ({ authenticated }: Props) => {
         handleProgress as EventListener
       );
       window.removeEventListener(
+        "folder-metadata-missing-path",
+        handleMissingPath as EventListener
+      );
+      window.removeEventListener(
         "folder-metadata-completion",
         handleCompletion as EventListener
       );
     };
   }, []);
 
-  // Get folder metadata after file list updated
+  // Get folder metadata after file list uploaded
   useEffect(() => {
-    if (fileList && currentViewIndex === 1) {
-      setMetadata({}); // Reset
-      // TODO: Parse folder list from file list
-      // pathsToProcess.forEach((filePath) => {
-      //   getFolderMetadata(filePath).catch((error) =>
-      //     console.error(
-      //       `Failed to fetch metadata for folder ${filePath}:`,
-      //       error
-      //     )
-      //   );
-      // });
+    if (foldersToProcess.length > 0) {
+      const pathsToProcess = [...foldersToProcess];
+      setFoldersToProcess([]); // Clear pending paths to avoid duplicates
+
+      // Add to folders array
+      const folders = pathsToProcess.map((path, index) => {
+        return {
+          id: index,
+          folder: path,
+          invalidPath: false,
+          progress: 0,
+        };
+      });
+      setFolders(folders);
+
+      pathsToProcess.forEach((filePath) => {
+        getFolderMetadata(filePath).catch((error) =>
+          console.error(
+            `Failed to fetch metadata for folder ${filePath}:`,
+            error
+          )
+        );
+      });
     }
-  }, [currentViewIndex, fileList]);
+  }, [foldersToProcess]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    if (currentViewIndex === 3) {
+      // Open of upload view
+      if (folders.some((folder) => folder.invalidPath)) {
+        toast.error(Toast, {
+          data: {
+            title: "Folder upload unsuccessful",
+            message:
+              "One or more of your folders was not successfully uploaded. Update the folder path(s) by clicking the corresponding Edit icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
+          },
+        });
+      }
+    }
+  }, [currentViewIndex]);
 
   const getFolderMetadata = async (filePath: string) => {
     try {
@@ -138,6 +184,14 @@ export const LanTransferPage = ({ authenticated }: Props) => {
     } catch (error) {
       console.error(`Failed to fetch metadata for folder ${filePath}:`, error);
     }
+  };
+
+  const processRowUpdate = (newFolder: Folder) => {
+    // Update the row in the state
+    setFolders((prevRows) =>
+      prevRows.map((row) => (row.id === newFolder.id ? newFolder : row))
+    );
+    return newFolder;
   };
 
   // Parse JSON file list
@@ -177,9 +231,10 @@ export const LanTransferPage = ({ authenticated }: Props) => {
         // Xlsx file
         const result = await api.transfer.parseXlsxFileList(fileList);
         if (result) {
-          const { accession, application } = result;
+          const { accession, application, folders } = result;
           setAccession(accession);
           setApplication(application);
+          setFoldersToProcess(folders);
         } else {
           toast.error(Toast, {
             data: {
@@ -193,11 +248,13 @@ export const LanTransferPage = ({ authenticated }: Props) => {
         // Json file
         type JsonFileList = {
           admin: { accession: string; application: string };
+          folders: Record<string, unknown>;
         };
         const json = (await parseJsonFile()) as JsonFileList | null;
         if (json) {
           const accession = json.admin.accession;
           const application = json.admin.application;
+          const folders = json.folders;
           if (
             !accession ||
             !application ||
@@ -213,12 +270,14 @@ export const LanTransferPage = ({ authenticated }: Props) => {
             });
           setAccession(accession);
           setApplication(application);
+          setFoldersToProcess(Object.keys(folders));
         }
       }
     } else {
       // Reset when file removed
       setAccession(null);
       setApplication(null);
+      setFoldersToProcess([]);
       setConfirmAccAppChecked(false);
     }
   };
@@ -227,6 +286,7 @@ export const LanTransferPage = ({ authenticated }: Props) => {
   useEffect(() => {
     parseFileList();
   }, [fileList]);
+
   return (
     <Grid container>
       <Grid size={2} />
@@ -280,6 +340,7 @@ export const LanTransferPage = ({ authenticated }: Props) => {
               application={application!}
               folders={folders}
               setFolders={setFolders}
+              processRowUpdate={processRowUpdate}
               setMetadata={setMetadata}
               setDeletedFolders={setDeletedFolders}
               onNextPress={onNextPress}
