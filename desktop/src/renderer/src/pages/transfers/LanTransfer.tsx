@@ -4,12 +4,20 @@ import {
   LanSubmissionAgreementView,
   LanUploadFileListView,
   LanUploadTransferFormView,
+  LanUploadView,
 } from "@renderer/components/transfer/lan-views";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 type Props = {
   authenticated: boolean;
+};
+
+type Folder = {
+  id: number;
+  folder: string;
+  invalidPath: boolean;
+  progress: number;
 };
 
 export const LanTransferPage = ({ authenticated }: Props) => {
@@ -19,6 +27,18 @@ export const LanTransferPage = ({ authenticated }: Props) => {
   const [transferForm, setTransferForm] = useState<File | null | undefined>(
     undefined
   );
+
+  // File list
+  const [metadata, setMetadata] = useState<Record<string, unknown>>({});
+  const [folders, setFolders] = useState<Folder[]>([
+    {
+      id: 1,
+      folder: "C:/Test",
+      invalidPath: false,
+      progress: 0,
+    },
+  ]);
+  const [deletedFolders, setDeletedFolders] = useState<string[]>([]);
 
   // Accession & application pulled from fileList
   const [accession, setAccession] = useState<string | undefined | null>(null);
@@ -165,6 +185,20 @@ export const LanTransferPage = ({ authenticated }: Props) => {
               accession={accession!}
               // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
+              onNextPress={onNextPress}
+              onBackPress={onBackPress}
+            />
+          )}
+          {currentViewIndex === 3 && (
+            <LanUploadView
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              accession={accession!}
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              application={application!}
+              folders={folders}
+              setFolders={setFolders}
+              setMetadata={setMetadata}
+              setDeletedFolders={setDeletedFolders}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
             />
