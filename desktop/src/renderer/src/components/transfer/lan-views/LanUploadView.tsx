@@ -18,6 +18,7 @@ type Props = {
   setMetadata: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
   setDeletedFolders: React.Dispatch<React.SetStateAction<string[]>>;
   processRowUpdate: (newFolder: Folder) => Folder;
+  onFolderEdit: (folder: string) => void;
   onNextPress: () => void;
   onBackPress: () => void;
 };
@@ -32,6 +33,7 @@ export const LanUploadView = ({
   onNextPress,
   processRowUpdate,
   onBackPress,
+  onFolderEdit,
 }: Props) => {
   const apiRef = useGridApiRef();
 
@@ -43,10 +45,6 @@ export const LanUploadView = ({
     });
     setDeletedFolders((prev) => [...prev, folder]);
     console.log(`Deleted folder: ${folder}`);
-  };
-
-  const onFolderEdit = () => {
-    // TBD
   };
 
   const disableNext = folders.some((folder) => folder.invalidPath);

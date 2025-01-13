@@ -20,6 +20,8 @@ type Folder = {
   progress: number;
 };
 
+type FolderPathChanges = { original: string; new: string };
+
 export const LanTransferPage = ({ authenticated }: Props) => {
   const [api] = useState(window.api); // Preload scripts
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
@@ -33,6 +35,9 @@ export const LanTransferPage = ({ authenticated }: Props) => {
   const [foldersToProcess, setFoldersToProcess] = useState<string[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [deletedFolders, setDeletedFolders] = useState<string[]>([]);
+  const [changedFolderPaths, setChangedFolderPaths] = useState<
+    FolderPathChanges[]
+  >([]);
   const [doneProcessingMetadata, setDoneProcessingMetadata] = useState(false);
 
   // Accession & application pulled from fileList
@@ -52,9 +57,13 @@ export const LanTransferPage = ({ authenticated }: Props) => {
     setCurrentViewIndex((prev) => prev - 1);
   };
 
+  // When fileList removed
   useEffect(() => {
-    console.log(metadata); // TEMP
-  }, [metadata]);
+    if (!fileList) {
+      setFolders([]);
+      setMetadata({});
+    }
+  }, [fileList]);
 
   // Handle metadata progress and completion events
   useEffect(() => {
@@ -133,21 +142,27 @@ export const LanTransferPage = ({ authenticated }: Props) => {
   }, []);
 
   // Get folder metadata after file list uploaded
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (foldersToProcess.length > 0) {
       const pathsToProcess = [...foldersToProcess];
       setFoldersToProcess([]); // Clear pending paths to avoid duplicates
 
       // Add to folders array
-      const folders = pathsToProcess.map((path, index) => {
+      const foldersToAdd = pathsToProcess.map((path, index) => {
+        let uniqueID = folders.length + index;
+        const existingIDs = new Set(folders.map((row) => row.id));
+
+        while (existingIDs.has(uniqueID)) uniqueID++;
+
         return {
-          id: index,
+          id: uniqueID,
           folder: path,
           invalidPath: false,
           progress: 0,
         };
       });
-      setFolders(folders);
+      setFolders((prev) => [...prev, ...foldersToAdd]);
 
       pathsToProcess.forEach((filePath) => {
         getFolderMetadata(filePath).catch((error) =>
@@ -192,6 +207,17 @@ export const LanTransferPage = ({ authenticated }: Props) => {
       prevRows.map((row) => (row.id === newFolder.id ? newFolder : row))
     );
     return newFolder;
+  };
+
+  const handleEditClick = async (folderPath: string) => {
+    const result = await api.selectDirectory({ singleSelection: true });
+
+    setFolders((prev) => prev.filter((row) => row.folder !== folderPath));
+    setChangedFolderPaths((prev) => [
+      ...prev,
+      { original: folderPath, new: result[0] },
+    ]);
+    setFoldersToProcess((prev) => [...prev, result[0]]);
   };
 
   // Parse JSON file list
@@ -288,7 +314,7 @@ export const LanTransferPage = ({ authenticated }: Props) => {
   }, [fileList]);
 
   return (
-    <Grid container>
+    <Grid container sx={{ paddingBottom: "20px" }}>
       <Grid size={2} />
       <Grid size={8} sx={{ paddingTop: 3 }}>
         <Stack gap={2}>
@@ -343,6 +369,7 @@ export const LanTransferPage = ({ authenticated }: Props) => {
               processRowUpdate={processRowUpdate}
               setMetadata={setMetadata}
               setDeletedFolders={setDeletedFolders}
+              onFolderEdit={handleEditClick}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
             />

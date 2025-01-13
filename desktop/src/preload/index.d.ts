@@ -12,7 +12,11 @@ declare global {
       checkApiStatus: (url: string) => Promise<boolean>;
       checkIpRange: () => Promise<boolean>;
       getCurrentApiUrl: () => Promise<string>;
-      selectDirectory: () => Promise<string[]>;
+      selectDirectory: ({
+        singleSelection,
+      }?: {
+        singleSelection?: boolean;
+      }) => Promise<string[]>;
 
       sso: {
         startLoginProcess: () => Promise<void>;

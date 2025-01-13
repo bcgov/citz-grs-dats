@@ -97,7 +97,7 @@ export const FolderUploadGrid = ({
               <IconButton
                 color="error"
                 onClick={() => onFolderEdit(params.row.folder)}
-                aria-label="delete"
+                aria-label="edit"
               >
                 <EditIcon
                   sx={{
@@ -119,7 +119,7 @@ export const FolderUploadGrid = ({
               <IconButton
                 color="error"
                 disabled={true}
-                onClick={() => onFolderEdit(params.row.folder)}
+                onClick={() => onFolderDelete(params.row.folder)}
                 aria-label="delete"
               >
                 <EditIcon
