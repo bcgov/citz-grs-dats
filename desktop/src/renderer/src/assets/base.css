@@ -1,29 +1,7 @@
 @import "@bcgov/bc-sans/css/BC_Sans.css";
 
 :root {
-	--ev-c-white: #ffffff;
-	--ev-c-white-soft: #f8f8f8;
-	--ev-c-white-mute: #f2f2f2;
-
-	--ev-c-black: #1b1b1f;
-	--ev-c-black-soft: #222222;
-	--ev-c-black-mute: #282828;
-
-	--ev-c-gray-1: #515c67;
-	--ev-c-gray-2: #414853;
-	--ev-c-gray-3: #32363f;
 	--button-disabled: #c9c9c9;
-
-	--ev-c-text-1: #2c2d30;
-	--ev-c-text-2: rgba(235, 235, 245, 0.6);
-	--ev-c-text-3: rgba(235, 235, 245, 0.38);
-
-	--ev-button-alt-border: transparent;
-	--ev-button-alt-text: var(--ev-c-text-1);
-	--ev-button-alt-bg: var(--ev-c-gray-3);
-	--ev-button-alt-hover-border: transparent;
-	--ev-button-alt-hover-text: var(--ev-c-text-1);
-	--ev-button-alt-hover-bg: var(--ev-c-gray-2);
 
 	--bcgov-blue: #234075;
 	--bcgov-blue-navy: #38598a;
@@ -33,12 +11,13 @@
 
 	--modal-border: #d8d8d8;
 
-	--tip: #878787;
-	--color-background: var(--ev-c-black);
-	--color-background-soft: var(--ev-c-black-soft);
-	--color-background-mute: var(--ev-c-black-mute);
+	--sub-agreement-border: #898785;
+	--scroll-bar: #d9d9d9;
 
-	--color-text: var(--ev-c-text-1);
+	--sidenav-icon: #474543;
+	--sidenav-item-border-current-page: #2e5dd7;
+
+	--tip: #878787;
 
 	display: flex;
 	width: 100%;
@@ -55,8 +34,20 @@
 	font-weight: normal;
 }
 
+ol {
+	list-style: decimal;
+}
+
 b {
 	font-weight: 700;
+}
+
+#root {
+	display: flex;
+	width: 100%;
+	height: 99.9vh;
+	overflow: hidden;
+	flex-direction: column;
 }
 
 body {

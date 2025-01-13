@@ -58,12 +58,13 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
       <ListItem
         sx={{
           gap: 1,
-          border: "none",
+          border:
+            currentPage === path
+              ? "2px solid var(--sidenav-item-border-current-page)"
+              : "2px solid transparent",
           borderRadius: "5px",
           background:
-            currentPage === path
-              ? theme.palette.secondary.light
-              : theme.palette.secondary.main,
+            currentPage === path ? theme.palette.secondary.light : "none",
           "&:hover": {
             background: theme.palette.secondary.dark,
           },
@@ -71,17 +72,8 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
         component="button"
         onClick={() => handleSelection(path)}
       >
-        <Typography sx={{ color: `${theme.palette.secondary.dark}` }}>
-          {icon}
-        </Typography>
-        <Typography
-          variant="h4"
-          sx={{
-            color: `${theme.palette.secondary}`,
-          }}
-        >
-          {label}
-        </Typography>
+        {icon}
+        <Typography>{label}</Typography>
       </ListItem>
     );
   };
@@ -90,11 +82,9 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
     <>
       <Drawer
         variant="permanent"
-        anchor="left"
         sx={{
-          flexShrink: 0,
           height: "100%",
-          background: theme.palette.secondary.light,
+          maxHeight: "100vh",
           "& .MuiDrawer-paper": {
             position: "relative",
             width: "100%",
@@ -109,24 +99,29 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
             flexDirection: "column",
             justifyContent: "space-between",
             height: "100%",
-            background: theme.palette.secondary.light,
           }}
         >
-          <List>
-            <NavItem path="/" label="Home" icon={<HomeOutlinedIcon />} />
+          <List sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <NavItem
+              path="/"
+              label="Home"
+              icon={<HomeOutlinedIcon sx={{ color: "var(--sidenav-icon)" }} />}
+            />
             <Divider sx={{ margin: "5px 0" }} />
             {/* REQUIRE AUTH */}
             {accessToken && (
               <>
                 <NavItem
                   path="/file-list"
-                  label="Create File List"
-                  icon={<FileListIcon />}
+                  label="Create file list"
+                  icon={<FileListIcon sx={{ color: "var(--sidenav-icon)" }} />}
                 />
                 <NavItem
                   path="/send-records"
-                  label="Send Records"
-                  icon={<SendRecordsIcon />}
+                  label="Send records"
+                  icon={
+                    <SendRecordsIcon sx={{ color: "var(--sidenav-icon)" }} />
+                  }
                 />
               </>
             )}
