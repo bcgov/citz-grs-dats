@@ -57,11 +57,9 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
       <ListItem
         sx={{
           gap: 1,
-          display: "flex",
-          alignItems: "center",
           border:
             currentPage === path
-              ? "2px solid #2E5DD7"
+              ? "2px solid var(--sidenav-item-border-current-page)"
               : "2px solid transparent",
           borderRadius: "5px",
           background:
@@ -106,7 +104,7 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
             <NavItem
               path="/"
               label="Home"
-              icon={<HomeOutlinedIcon sx={{ color: "#474543" }} />}
+              icon={<HomeOutlinedIcon sx={{ color: "var(--sidenav-icon)" }} />}
             />
             <Divider sx={{ margin: "5px 0" }} />
             {/* REQUIRE AUTH */}
@@ -115,12 +113,14 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
                 <NavItem
                   path="/file-list"
                   label="Create file list"
-                  icon={<FileListIcon sx={{ color: "#474543" }} />}
+                  icon={<FileListIcon sx={{ color: "var(--sidenav-icon)" }} />}
                 />
                 <NavItem
                   path="/send-records"
                   label="Send records"
-                  icon={<SendRecordsIcon sx={{ color: "#474543" }} />}
+                  icon={
+                    <SendRecordsIcon sx={{ color: "var(--sidenav-icon)" }} />
+                  }
                 />
               </>
             )}

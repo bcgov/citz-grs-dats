@@ -24,7 +24,10 @@ export const AuthButton = ({ accessToken, idToken }: Props): JSX.Element => {
       )}
       <Button
         variant={accessToken ? "link" : "primary"}
-        style={{ width: "100%" }}
+        style={{
+          width: "100%",
+          justifyContent: accessToken ? "left" : "center",
+        }}
         onPress={accessToken ? handleLogout : handleLogin}
       >
         {accessToken ? "Logout" : "Login"}
