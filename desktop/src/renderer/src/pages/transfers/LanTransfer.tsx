@@ -39,6 +39,7 @@ export const LanTransferPage = ({ authenticated }: Props) => {
     },
   ]);
   const [deletedFolders, setDeletedFolders] = useState<string[]>([]);
+  const [doneProcessingMetadata, setDoneProcessingMetadata] = useState(false);
 
   // Accession & application pulled from fileList
   const [accession, setAccession] = useState<string | undefined | null>(null);
@@ -55,6 +56,88 @@ export const LanTransferPage = ({ authenticated }: Props) => {
 
   const onBackPress = () => {
     setCurrentViewIndex((prev) => prev - 1);
+  };
+
+  // Handle metadata progress and completion events
+  useEffect(() => {
+    const handleProgress = (
+      event: CustomEvent<{ source: string; progressPercentage: number }>
+    ) => {
+      const { source, progressPercentage } = event.detail;
+      setFolders((prevRows) =>
+        prevRows.map((row) =>
+          row.folder === source ? { ...row, progress: progressPercentage } : row
+        )
+      );
+    };
+
+    const handleCompletion = (
+      event: CustomEvent<{
+        source: string;
+        success: boolean;
+        metadata?: Record<string, unknown>;
+        error?: unknown;
+      }>
+    ) => {
+      const { source, success, metadata: newMetadata } = event.detail;
+
+      if (success && newMetadata) {
+        setMetadata((prev) => ({
+          ...prev,
+          [source]: newMetadata[source],
+        }));
+        console.log(`Successfully processed folder: ${source}`);
+        setDoneProcessingMetadata(true);
+      } else {
+        console.error(`Failed to process folder: ${source}`);
+      }
+    };
+
+    window.addEventListener(
+      "folder-metadata-progress",
+      handleProgress as EventListener
+    );
+    window.addEventListener(
+      "folder-metadata-completion",
+      handleCompletion as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "folder-metadata-progress",
+        handleProgress as EventListener
+      );
+      window.removeEventListener(
+        "folder-metadata-completion",
+        handleCompletion as EventListener
+      );
+    };
+  }, []);
+
+  // Get folder metadata after file list updated
+  useEffect(() => {
+    if (fileList && currentViewIndex === 1) {
+      setMetadata({}); // Reset
+      // TODO: Parse folder list from file list
+      // pathsToProcess.forEach((filePath) => {
+      //   getFolderMetadata(filePath).catch((error) =>
+      //     console.error(
+      //       `Failed to fetch metadata for folder ${filePath}:`,
+      //       error
+      //     )
+      //   );
+      // });
+    }
+  }, [currentViewIndex, fileList]);
+
+  const getFolderMetadata = async (filePath: string) => {
+    try {
+      await api.workers.getFolderMetadata({
+        filePath,
+      });
+    } catch (error) {
+      console.error(`Failed to fetch metadata for folder ${filePath}:`, error);
+    }
   };
 
   // Parse JSON file list
