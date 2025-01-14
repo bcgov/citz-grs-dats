@@ -38,7 +38,6 @@ export const LanTransferPage = ({ authenticated }: Props) => {
   const [changedFolderPaths, setChangedFolderPaths] = useState<
     FolderPathChanges[]
   >([]);
-  const [doneProcessingMetadata, setDoneProcessingMetadata] = useState(false);
 
   // Accession & application pulled from fileList
   const [accession, setAccession] = useState<string | undefined | null>(null);
@@ -106,7 +105,6 @@ export const LanTransferPage = ({ authenticated }: Props) => {
           [source]: newMetadata[source],
         }));
         console.log(`Successfully processed folder: ${source}`);
-        setDoneProcessingMetadata(true);
       } else {
         console.error(`Failed to process folder: ${source}`);
       }
@@ -149,19 +147,22 @@ export const LanTransferPage = ({ authenticated }: Props) => {
       setFoldersToProcess([]); // Clear pending paths to avoid duplicates
 
       // Add to folders array
-      const foldersToAdd = pathsToProcess.map((path, index) => {
-        let uniqueID = folders.length + index;
-        const existingIDs = new Set(folders.map((row) => row.id));
+      const foldersToAdd = pathsToProcess
+        .map((path, index) => {
+          if (folders.some((row) => row.folder === path)) return;
+          let uniqueID = folders.length + index;
+          const existingIDs = new Set(folders.map((row) => row.id));
 
-        while (existingIDs.has(uniqueID)) uniqueID++;
+          while (existingIDs.has(uniqueID)) uniqueID++;
 
-        return {
-          id: uniqueID,
-          folder: path,
-          invalidPath: false,
-          progress: 0,
-        };
-      });
+          return {
+            id: uniqueID,
+            folder: path,
+            invalidPath: false,
+            progress: 0,
+          };
+        })
+        .filter((row) => row !== undefined);
       setFolders((prev) => [...prev, ...foldersToAdd]);
 
       pathsToProcess.forEach((filePath) => {
@@ -212,7 +213,13 @@ export const LanTransferPage = ({ authenticated }: Props) => {
   const handleEditClick = async (folderPath: string) => {
     const result = await api.selectDirectory({ singleSelection: true });
 
-    setFolders((prev) => prev.filter((row) => row.folder !== folderPath));
+    setFolders((prev) =>
+      prev.map((row) => {
+        if (row.folder === folderPath)
+          return { ...row, folder: result[0], invalidPath: false };
+        return row;
+      })
+    );
     setChangedFolderPaths((prev) => [
       ...prev,
       { original: folderPath, new: result[0] },

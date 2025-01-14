@@ -47,7 +47,7 @@ export const LanUploadView = ({
     console.log(`Deleted folder: ${folder}`);
   };
 
-  const disableNext = folders.some((folder) => folder.invalidPath);
+  const disableNext = !folders.every((folder) => folder.progress === 100);
 
   return (
     <Stack gap={3}>
