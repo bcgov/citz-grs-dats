@@ -1,35 +1,22 @@
 @import "@bcgov/bc-sans/css/BC_Sans.css";
 
 :root {
-	--ev-c-white: #ffffff;
-	--ev-c-white-soft: #f8f8f8;
-	--ev-c-white-mute: #f2f2f2;
-
-	--ev-c-black: #1b1b1f;
-	--ev-c-black-soft: #222222;
-	--ev-c-black-mute: #282828;
-
-	--ev-c-gray-1: #515c67;
-	--ev-c-gray-2: #414853;
-	--ev-c-gray-3: #32363f;
 	--button-disabled: #c9c9c9;
-
-	--ev-c-text-1: #2c2d30;
-	--ev-c-text-2: rgba(235, 235, 245, 0.6);
-	--ev-c-text-3: rgba(235, 235, 245, 0.38);
-
-	--ev-button-alt-border: transparent;
-	--ev-button-alt-text: var(--ev-c-text-1);
-	--ev-button-alt-bg: var(--ev-c-gray-3);
-	--ev-button-alt-hover-border: transparent;
-	--ev-button-alt-hover-text: var(--ev-c-text-1);
-	--ev-button-alt-hover-bg: var(--ev-c-gray-2);
 
 	--bcgov-blue: #234075;
 	--bcgov-blue-navy: #38598a;
 	--bcgov-light-blue: #1a5a96;
 	--bcgov-dark-blue: #036;
 	--bcgov-yellow: #fcba19;
+
+	--progress-complete: #42814a;
+	--progress-incomplete: #f8bb47;
+	--progress-cancelled: #fe3f35;
+
+	--icon: #2d2d2d;
+	--icon-disabled: #d8d8d8;
+
+	--data-grid-border: #d8d8d8;
 
 	--file_upload_area-bg-invalid: #f4e1e2;
 	--file_upload_area-bg-valid: #f1f8fe;
@@ -40,6 +27,11 @@
 	--file_upload_area-bg-uploaded-file: #f3f2f1;
 	--file_upload_area-border-browse-button: #353433;
 
+	--modal-border: #d8d8d8;
+
+	--sub-agreement-border: #898785;
+	--scroll-bar: #d9d9d9;
+
 	--sidenav-icon: #474543;
 	--sidenav-item-border-current-page: #2e5dd7;
 
@@ -48,11 +40,6 @@
 	--acc-app-confirmation-bg: #faf9f8;
 
 	--tip: #878787;
-	--color-background: var(--ev-c-black);
-	--color-background-soft: var(--ev-c-black-soft);
-	--color-background-mute: var(--ev-c-black-mute);
-
-	--color-text: var(--ev-c-text-1);
 }
 
 *,
@@ -61,6 +48,10 @@
 	box-sizing: border-box;
 	margin: 0;
 	font-weight: normal;
+}
+
+ol {
+	list-style: decimal;
 }
 
 b {
