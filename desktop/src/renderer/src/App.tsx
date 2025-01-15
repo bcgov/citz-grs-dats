@@ -91,7 +91,10 @@ function App(): JSX.Element {
               <Button onClick={() => setLeavePageModalOpen(true)} />
             }
           />
-          <Routes>
+          <Grid container>
+            <Grid size={2} />
+            <Grid size={8} sx={{ paddingTop: 3 }}>
+              <Routes>
             <Route
               path="/"
               element={<HomePage authenticated={!!accessToken} />}
@@ -110,6 +113,9 @@ function App(): JSX.Element {
               element={<LanTransferPage authenticated={!!accessToken} />}
             />
           </Routes>
+            </Grid>
+            <Grid size={2} />
+          </Grid>
           <ToastContainer
             position="bottom-left"
             autoClose={5000}
