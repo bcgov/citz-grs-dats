@@ -30,7 +30,6 @@ type Props = {
 
 export const SideNav = ({ accessToken, idToken }: Props) => {
   const navigate = useNavigate();
-  const theme = useTheme();
   const [currentPage, setCurrentPage] = useState("/");
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
   const [newPagePath, setNewPagePath] = useState("/");
@@ -83,8 +82,8 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
       <Drawer
         variant="permanent"
         sx={{
-          height: "100vh",
-          background: theme.palette.secondary.light,
+          height: "100%",
+          maxHeight: "100vh",
           "& .MuiDrawer-paper": {
             position: "fixed",
             width: "17%",
