@@ -2,12 +2,14 @@ import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { Stepper, Toast } from "@renderer/components";
 import { JustifyChangesModal } from "@renderer/components/transfer";
 import {
+  LanCompletionView,
   LanSubmissionAgreementView,
   LanUploadFileListView,
   LanUploadTransferFormView,
   LanUploadView,
 } from "@renderer/components/transfer/lan-views";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 type Props = {
@@ -31,6 +33,7 @@ type FileBufferObj = {
 };
 
 export const LanTransferPage = ({ authenticated }: Props) => {
+  const navigate = useNavigate();
   const [api] = useState(window.api); // Preload scripts
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [fileList, setFileList] = useState<File | null | undefined>(undefined);
@@ -277,22 +280,6 @@ export const LanTransferPage = ({ authenticated }: Props) => {
     }
   }, [foldersToProcess]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    if (currentViewIndex === 3) {
-      // Open of upload view
-      if (folders.some((folder) => folder.invalidPath)) {
-        toast.error(Toast, {
-          data: {
-            title: "Folder upload unsuccessful",
-            message:
-              "One or more of your folders was not successfully uploaded. Update the folder path(s) by clicking the corresponding Edit icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
-          },
-        });
-      }
-    }
-  }, [currentViewIndex]);
-
   const getFolderMetadata = async (filePath: string) => {
     try {
       await api.workers.getFolderMetadata({
@@ -438,6 +425,28 @@ export const LanTransferPage = ({ authenticated }: Props) => {
     else onNextPress();
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    if (currentViewIndex === 3) {
+      // Open of upload view
+      if (folders.some((folder) => folder.invalidPath)) {
+        toast.error(Toast, {
+          data: {
+            title: "Folder upload unsuccessful",
+            message:
+              "One or more of your folders was not successfully uploaded. Update the folder path(s) by clicking the corresponding Edit icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
+          },
+        });
+      }
+    } else if (currentViewIndex === 4) {
+      // Send transfer to API
+      // TODO
+    }
+  }, [currentViewIndex]);
+
+  // Send to home on completion
+  const handleCompletion = () => navigate("/");
+
   return (
     <Grid container sx={{ paddingBottom: "20px" }}>
       <Grid size={2} />
@@ -450,7 +459,7 @@ export const LanTransferPage = ({ authenticated }: Props) => {
               "Upload transfer form (ARS 617)",
               "Submission agreement",
               "Folder upload",
-              "Confirmation",
+              "Completion",
             ]}
             currentIndex={currentViewIndex}
           />
@@ -497,6 +506,15 @@ export const LanTransferPage = ({ authenticated }: Props) => {
               onFolderEdit={handleEditClick}
               onNextPress={handleLanUploadNextPress}
               onBackPress={onBackPress}
+            />
+          )}
+          {currentViewIndex === 4 && (
+            <LanCompletionView
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              accession={accession!}
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              application={application!}
+              onNextPress={handleCompletion}
             />
           )}
           <JustifyChangesModal
