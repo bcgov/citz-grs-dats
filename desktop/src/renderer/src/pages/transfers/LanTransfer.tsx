@@ -1,5 +1,6 @@
 import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { Stepper, Toast } from "@renderer/components";
+import { JustifyChangesModal } from "@renderer/components/transfer";
 import {
   LanSubmissionAgreementView,
   LanUploadFileListView,
@@ -48,6 +49,10 @@ export const LanTransferPage = ({ authenticated }: Props) => {
   const [changedFolderPaths, setChangedFolderPaths] = useState<
     FolderPathChanges[]
   >([]);
+
+  // Justify changes
+  const [showJustifyChangesModal, setShowJustifyChangesModal] = useState(false);
+  const [changesJustification, setChangesJustification] = useState("");
 
   // Accession & application pulled from fileList
   const [accession, setAccession] = useState<string | undefined | null>(null);
@@ -426,6 +431,13 @@ export const LanTransferPage = ({ authenticated }: Props) => {
     parseFileList();
   }, [fileList]);
 
+  // Ask for justification of changes if any folder paths changed or deleted
+  const handleLanUploadNextPress = () => {
+    if (deletedFolders.length > 0 || changedFolderPaths.length > 0)
+      setShowJustifyChangesModal(true);
+    else onNextPress();
+  };
+
   return (
     <Grid container sx={{ paddingBottom: "20px" }}>
       <Grid size={2} />
@@ -483,10 +495,20 @@ export const LanTransferPage = ({ authenticated }: Props) => {
               setMetadata={setMetadata}
               setDeletedFolders={setDeletedFolders}
               onFolderEdit={handleEditClick}
-              onNextPress={onNextPress}
+              onNextPress={handleLanUploadNextPress}
               onBackPress={onBackPress}
             />
           )}
+          <JustifyChangesModal
+            open={showJustifyChangesModal}
+            onClose={() => setShowJustifyChangesModal(false)}
+            explanation={changesJustification}
+            setExplanation={setChangesJustification}
+            onConfirm={() => {
+              setShowJustifyChangesModal(false);
+              onNextPress();
+            }}
+          />
         </Stack>
       </Grid>
       <Grid size={2} />
