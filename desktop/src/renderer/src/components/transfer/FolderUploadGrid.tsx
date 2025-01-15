@@ -14,7 +14,8 @@ type Row = {
   id: number;
   folder: string;
   invalidPath: boolean;
-  progress: number;
+  bufferProgress: number;
+  metadataProgress: number;
 };
 
 type Props = {
@@ -43,7 +44,7 @@ export const FolderUploadGrid = ({
           <Stack direction="row" gap={1}>
             <Tooltip
               title={
-                params.row.progress === 100
+                params.row.metadataProgress + params.row.bufferProgress === 200
                   ? "Upload complete."
                   : params.row.invalidPath
                   ? "Folder path could not be found. Use the edit button to change folder path."
@@ -53,7 +54,8 @@ export const FolderUploadGrid = ({
               <ProgressIcon
                 sx={{
                   color:
-                    params.row.progress === 100
+                    params.row.metadataProgress + params.row.bufferProgress ===
+                    200
                       ? "var(--progress-complete)"
                       : params.row.invalidPath
                       ? "var(--progress-cancelled)"
@@ -62,9 +64,13 @@ export const FolderUploadGrid = ({
               />
             </Tooltip>
             <Typography>
-              {params.row.invalidPath || params.row.progress === 0
+              {params.row.invalidPath ||
+              params.row.metadataProgress + params.row.bufferProgress <= 1
                 ? ""
-                : `${params.row.progress}%`}
+                : `${Math.floor(
+                    (params.row.metadataProgress + params.row.bufferProgress) /
+                      2
+                  )}%`}
             </Typography>
           </Stack>
         </Box>

@@ -7,7 +7,8 @@ type Folder = {
   id: number;
   folder: string;
   invalidPath: boolean;
-  progress: number;
+  bufferProgress: number;
+  metadataProgress: number;
 };
 
 type Props = {
@@ -47,7 +48,9 @@ export const LanUploadView = ({
     console.log(`Deleted folder: ${folder}`);
   };
 
-  const disableNext = !folders.every((folder) => folder.progress === 100);
+  const disableNext = !folders.every(
+    (folder) => folder.metadataProgress + folder.bufferProgress === 200
+  );
 
   return (
     <Stack gap={3}>

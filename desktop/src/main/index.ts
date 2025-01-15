@@ -13,10 +13,16 @@ import icon from "../../resources/icon.png?asset";
 import electronUpdater, { type AppUpdater } from "electron-updater";
 import { createWorkerPool } from "./fileProcessing";
 import {
-  copyFolderAndMetadata,
+  getFolderBuffer,
   getFolderMetadata,
   selectDirectory,
 } from "./fileProcessing/actions";
+
+type FileBufferObj = {
+  filename: string;
+  path: string;
+  buffer: Buffer;
+};
 
 app.setName("Digital Archives Transfer Service");
 
@@ -189,15 +195,6 @@ ipcMain.handle("start-logout-process", async (_, idToken: string) => {
   });
 });
 
-ipcMain.handle(
-  "copy-folder-and-metadata",
-  async (_, { filePath, transfer }: { filePath: string; transfer: string }) => {
-    debug('Beginning "copy-folder-and-metadata" of main process.');
-
-    await copyFolderAndMetadata(pool, filePath, transfer, is.dev);
-  }
-);
-
 ipcMain.on(
   "get-folder-metadata",
   async (event, { filePath }: { filePath: string }) => {
@@ -234,6 +231,47 @@ ipcMain.on(
       );
     } catch (error) {
       console.error(`Error in get-folder-metadata: ${error}`);
+      onCompletion({ success: false, error });
+    }
+  }
+);
+
+ipcMain.on(
+  "get-folder-buffer",
+  async (event, { filePath }: { filePath: string }) => {
+    debug('Beginning "get-folder-buffer" of main process.');
+
+    const onProgress = (data: {
+      progressPercentage: number;
+      source: string;
+    }) => {
+      event.sender.send("folder-buffer-progress", data);
+    };
+
+    const onMissingPath = (data: { path: string }) => {
+      event.sender.send("folder-buffer-missing-path", data);
+    };
+
+    const onCompletion = (data: {
+      success: boolean;
+      buffers?: FileBufferObj[];
+      error?: unknown;
+    }) => {
+      event.sender.send("folder-buffer-completion", data);
+    };
+
+    try {
+      await getFolderBuffer(
+        pool,
+        filePath,
+        is.dev,
+        false,
+        onProgress,
+        onMissingPath,
+        onCompletion
+      );
+    } catch (error) {
+      console.error(`Error in get-folder-buffer: ${error}`);
       onCompletion({ success: false, error });
     }
   }

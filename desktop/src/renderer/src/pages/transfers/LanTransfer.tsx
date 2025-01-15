@@ -17,10 +17,17 @@ type Folder = {
   id: number;
   folder: string;
   invalidPath: boolean;
-  progress: number;
+  bufferProgress: number;
+  metadataProgress: number;
 };
 
 type FolderPathChanges = { original: string; new: string };
+
+type FileBufferObj = {
+  filename: string;
+  path: string;
+  buffer: Buffer;
+};
 
 export const LanTransferPage = ({ authenticated }: Props) => {
   const [api] = useState(window.api); // Preload scripts
@@ -32,6 +39,9 @@ export const LanTransferPage = ({ authenticated }: Props) => {
 
   // File list
   const [metadata, setMetadata] = useState<Record<string, unknown>>({});
+  const [folderBuffers, setFolderBuffers] = useState<
+    Record<string, FileBufferObj[]>
+  >({});
   const [foldersToProcess, setFoldersToProcess] = useState<string[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [deletedFolders, setDeletedFolders] = useState<string[]>([]);
@@ -73,7 +83,9 @@ export const LanTransferPage = ({ authenticated }: Props) => {
       // Update folder progress
       setFolders((prevRows) =>
         prevRows.map((row) =>
-          row.folder === source ? { ...row, progress: progressPercentage } : row
+          row.folder === source
+            ? { ...row, metadataProgress: progressPercentage }
+            : row
         )
       );
     };
@@ -81,7 +93,7 @@ export const LanTransferPage = ({ authenticated }: Props) => {
     const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
       const { path } = event.detail;
       console.log("Missing", path);
-      // Update folder progress
+      // Update folder invalidPath
       setFolders((prevRows) =>
         prevRows.map((row) =>
           row.folder === path ? { ...row, invalidPath: true } : row
@@ -139,7 +151,84 @@ export const LanTransferPage = ({ authenticated }: Props) => {
     };
   }, []);
 
-  // Get folder metadata after file list uploaded
+  // Handle buffer progress and completion events
+  useEffect(() => {
+    const handleProgress = (
+      event: CustomEvent<{ source: string; progressPercentage: number }>
+    ) => {
+      const { source, progressPercentage } = event.detail;
+      // Update folder progress
+      setFolders((prevRows) =>
+        prevRows.map((row) =>
+          row.folder === source
+            ? { ...row, bufferProgress: progressPercentage }
+            : row
+        )
+      );
+    };
+
+    const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
+      const { path } = event.detail;
+      console.log("Missing", path);
+      // Update folder invalidPath
+      setFolders((prevRows) =>
+        prevRows.map((row) =>
+          row.folder === path ? { ...row, invalidPath: true } : row
+        )
+      );
+    };
+
+    const handleCompletion = (
+      event: CustomEvent<{
+        source: string;
+        success: boolean;
+        buffers?: FileBufferObj[];
+        error?: unknown;
+      }>
+    ) => {
+      const { source, success, buffers } = event.detail;
+
+      if (success && buffers && buffers.length > 0) {
+        setFolderBuffers((prev) => ({
+          ...prev,
+          [source]: buffers,
+        }));
+        console.log(`Successfully processed folder: ${source}`);
+      } else {
+        console.error(`Failed to process folder: ${source}`);
+      }
+    };
+
+    window.addEventListener(
+      "folder-buffer-progress",
+      handleProgress as EventListener
+    );
+    window.addEventListener(
+      "folder-buffer-missing-path",
+      handleMissingPath as EventListener
+    );
+    window.addEventListener(
+      "folder-buffer-completion",
+      handleCompletion as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "folder-buffer-progress",
+        handleProgress as EventListener
+      );
+      window.removeEventListener(
+        "folder-buffer-missing-path",
+        handleMissingPath as EventListener
+      );
+      window.removeEventListener(
+        "folder-buffer-completion",
+        handleCompletion as EventListener
+      );
+    };
+  }, []);
+
+  // Get folder metadata and buffers after file list uploaded
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (foldersToProcess.length > 0) {
@@ -159,7 +248,8 @@ export const LanTransferPage = ({ authenticated }: Props) => {
             id: uniqueID,
             folder: path,
             invalidPath: false,
-            progress: 0,
+            metadataProgress: 0,
+            bufferProgress: 0,
           };
         })
         .filter((row) => row !== undefined);
@@ -169,6 +259,12 @@ export const LanTransferPage = ({ authenticated }: Props) => {
         getFolderMetadata(filePath).catch((error) =>
           console.error(
             `Failed to fetch metadata for folder ${filePath}:`,
+            error
+          )
+        );
+        getFolderBuffer(filePath).catch((error) =>
+          console.error(
+            `Failed to fetch buffers for folder ${filePath}:`,
             error
           )
         );
@@ -199,6 +295,16 @@ export const LanTransferPage = ({ authenticated }: Props) => {
       });
     } catch (error) {
       console.error(`Failed to fetch metadata for folder ${filePath}:`, error);
+    }
+  };
+
+  const getFolderBuffer = async (filePath: string) => {
+    try {
+      await api.workers.getFolderBuffer({
+        filePath,
+      });
+    } catch (error) {
+      console.error(`Failed to fetch buffers for folder ${filePath}:`, error);
     }
   };
 

@@ -46,18 +46,12 @@ declare global {
       };
 
       workers: {
-        copyFolderAndMetadata: ({
-          filePath,
-          transfer,
-        }: {
-          filePath: string;
-          transfer: string;
-        }) => Promise<void>;
         getFolderMetadata: ({
           filePath,
         }: {
           filePath: string;
         }) => Promise<void>;
+        getFolderBuffer: ({ filePath }: { filePath: string }) => Promise<void>;
       };
     };
   }

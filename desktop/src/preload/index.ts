@@ -5,6 +5,12 @@ import { safePromise } from "./api/utils";
 import { fetchProtectedRoute, getUser } from "./api/sso";
 import { parseXlsxFileList } from "./api/transfer";
 
+type FileBufferObj = {
+  filename: string;
+  path: string;
+  buffer: Buffer;
+};
+
 const api = {
   versions: process.versions,
   checkApiStatus,
@@ -26,14 +32,6 @@ const api = {
     parseXlsxFileList,
   },
   workers: {
-    copyFolderAndMetadata: ({
-      filePath,
-      transfer,
-    }: {
-      filePath: string;
-      transfer: string;
-    }) =>
-      ipcRenderer.invoke("copy-folder-and-metadata", { filePath, transfer }),
     getFolderMetadata: ({ filePath }: { filePath: string }) => {
       ipcRenderer.send("get-folder-metadata", { filePath });
 
@@ -72,6 +70,50 @@ const api = {
         ) => {
           window.dispatchEvent(
             new CustomEvent("folder-metadata-completion", {
+              detail: data,
+            })
+          );
+        }
+      );
+    },
+    getFolderBuffer: ({ filePath }: { filePath: string }) => {
+      ipcRenderer.send("get-folder-buffer", { filePath });
+
+      ipcRenderer.on(
+        "folder-buffer-progress",
+        (_, data: { progressPercentage: number; source: string }) => {
+          window.dispatchEvent(
+            new CustomEvent("folder-buffer-progress", {
+              detail: data,
+            })
+          );
+        }
+      );
+
+      ipcRenderer.on(
+        "folder-buffer-missing-path",
+        (_, data: { path: string }) => {
+          window.dispatchEvent(
+            new CustomEvent("folder-buffer-missing-path", {
+              detail: data,
+            })
+          );
+        }
+      );
+
+      ipcRenderer.on(
+        "folder-buffer-completion",
+        (
+          _,
+          data: {
+            success: boolean;
+            buffers?: FileBufferObj[];
+            source: string;
+            error?: unknown;
+          }
+        ) => {
+          window.dispatchEvent(
+            new CustomEvent("folder-buffer-completion", {
               detail: data,
             })
           );
