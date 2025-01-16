@@ -4,6 +4,8 @@ import {
 } from "@mui/icons-material";
 import { Box, IconButton, Stack, Typography } from "@mui/material";
 import { useRef, useState } from "react";
+import { toast } from "react-toastify";
+import { Toast } from "./Toast";
 
 type Props = {
   file?: File | null;
@@ -104,6 +106,12 @@ export const FileUploadArea = ({
       if (isAccepted) {
         onDrop(droppedFile);
       } else {
+        toast.error(Toast, {
+          data: {
+            title: "Wrong file type",
+            message: `File type not accepted. Please upload an ${fileExtensions} file.`,
+          },
+        });
         onDrop(null); // Notify parent that an invalid file was dropped
       }
     }
