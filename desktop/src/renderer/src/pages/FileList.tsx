@@ -148,8 +148,10 @@ export const FileListPage = ({ authenticated }: Props) => {
 
 	const handleFormSubmit = (formData) => {
 		// on form submit print the data we currently have and reset rows to empty list
-		console.log("form submitted");
-		console.log(formData);
+		console.log("form submitted", formData);
+		console.log("rows", rows);
+		console.log("metadata", metadata);
+		console.log("pendingPaths", pendingPaths);
 		// TODO: process submitted form data
 	};
 
