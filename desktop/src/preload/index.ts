@@ -10,7 +10,8 @@ const api = {
   checkApiStatus,
   checkIpRange,
   getCurrentApiUrl: () => ipcRenderer.invoke("get-current-api-url"),
-  selectDirectory: () => ipcRenderer.invoke("select-directory"),
+  selectDirectory: ({ singleSelection }: { singleSelection?: boolean } = {}) =>
+    ipcRenderer.invoke("select-directory", { singleSelection }),
   sso: {
     getUser,
     fetchProtectedRoute,
@@ -41,6 +42,17 @@ const api = {
         (_, data: { progressPercentage: number; source: string }) => {
           window.dispatchEvent(
             new CustomEvent("folder-metadata-progress", {
+              detail: data,
+            })
+          );
+        }
+      );
+
+      ipcRenderer.on(
+        "folder-metadata-missing-path",
+        (_, data: { path: string }) => {
+          window.dispatchEvent(
+            new CustomEvent("folder-metadata-missing-path", {
               detail: data,
             })
           );
