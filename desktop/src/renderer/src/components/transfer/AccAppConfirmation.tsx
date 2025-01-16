@@ -57,7 +57,7 @@ export const AccAppConfirmation = ({
             isDisabled={disabled}
           />
         }
-        label="I confirm the accession and application numbers shown above"
+        label="I confirm the accession and application numbers shown above (required)"
       />
     </Stack>
   );

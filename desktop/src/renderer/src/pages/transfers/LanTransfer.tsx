@@ -7,11 +7,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-type Props = {
-  authenticated: boolean;
-};
-
-export const LanTransferPage = ({ authenticated }: Props) => {
+export const LanTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [fileList, setFileList] = useState<File | null | undefined>(undefined);
