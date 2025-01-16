@@ -78,7 +78,7 @@ export const JustifyChangesModal = ({
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
             minRows={7}
-            placeholder={`• The folder name slightly during a LAN drive clean-up
+            placeholder={`• The folder name changed slightly during a LAN drive clean-up
 • The folder location changed during a LAN drive clean-up
 • The folder is active again due to an audit, FOI request, legal case, etc.`}
           />
