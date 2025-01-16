@@ -10,8 +10,8 @@ router.post("/", upload.single("file"), create);
 router.post(
   "/lan",
   upload.fields([
-    { name: "fileListBuffer", maxCount: 1 },
-    { name: "transferFormBuffer", maxCount: 1 },
+    { name: "fileList", maxCount: 1 },
+    { name: "transferForm", maxCount: 1 },
     { name: "folderBuffers" },
   ]),
   lan

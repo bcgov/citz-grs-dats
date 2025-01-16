@@ -8,7 +8,7 @@ type Change = {
   deleted: boolean;
 };
 
-type FolderRow = FolderMetadataZodType & { folder: string };
+export type FolderRow = FolderMetadataZodType & { folder: string };
 
 type Data = {
   worksheet: Worksheet;

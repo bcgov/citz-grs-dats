@@ -17,9 +17,15 @@ export type CreateTransferBody = z.infer<typeof createTransferBodySchema>;
 
 // Schema for FormData fields
 export const lanTransferBodySchema = z.object({
-  fileListBuffer: z.any(),
-  transferFormBuffer: z.any(),
-  foldersMetadataOriginal: z.record(folderMetadataZodSchema),
+  fileList: z.object({
+    filename: z.string(),
+    buffer: z.any(),
+  }),
+  transferForm: z.object({
+    filename: z.string(),
+    buffer: z.any(),
+  }),
+  originalFoldersMetadata: z.record(folderMetadataZodSchema),
   metadataV2: z.object({
     admin: z
       .object({
@@ -38,11 +44,10 @@ export const lanTransferBodySchema = z.object({
     })
   ),
   changesJustification: z.string(),
-  folderBuffers: z.record(
+  folderBuffers: z.array(
     z.array(
       z.object({
-        filename: z.string(),
-        path: z.string(),
+        folder: z.string(),
         buffer: z.any(),
       })
     )

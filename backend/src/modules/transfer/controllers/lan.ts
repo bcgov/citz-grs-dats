@@ -1,4 +1,4 @@
-import { application, type Request, type Response } from "express";
+import type { Request, Response } from "express";
 import {
   errorWrapper,
   HTTP_STATUS_CODES,
@@ -9,28 +9,26 @@ import { upload } from "src/modules/s3/utils";
 import { ENV } from "src/config";
 import { formatDate } from "src/utils";
 import { createAgreementPDF } from "@/modules/submission-agreement/utils";
-import ExcelJS from "exceljs";
-import { addWorksheetToExistingWorkbookBuffer } from "@/modules/filelist/utils/excel";
-import {
-  setupFolderListV2,
-  setupMetadata,
-} from "@/modules/filelist/utils/excel/worksheets";
+import type { FolderRow } from "@/modules/filelist/utils/excel/worksheets";
+import { updateFileListV2 } from "@/modules/filelist/utils/excel";
+import type { FileMetadataZodType } from "@/modules/filelist/schemas";
 
 const { S3_BUCKET } = ENV;
 
 type Files = {
-  fileListBuffer?: Express.Multer.File[];
-  transferFormBuffer?: Express.Multer.File[];
-  folderBuffers?: Express.Multer.File[];
+  fileList?: { buffer: Express.Multer.File[] };
+  transferForm?: { buffer: Express.Multer.File[] };
+  folderBuffers?: { buffer: Express.Multer.File[] }[];
 };
 
 // Create lan transfer.
 export const lan = errorWrapper(async (req: Request, res: Response) => {
   const { getStandardResponse, getZodValidatedBody, user, files } = req;
   const body = getZodValidatedBody(lanTransferBodySchema); // Validate request body
-  let fileListBuffer = (files as Files)?.fileListBuffer?.[0]?.buffer;
-  const transferFormBuffer = (files as Files)?.transferFormBuffer?.[0]?.buffer;
 
+  let fileListBuffer = (files as Files)?.fileList?.buffer?.[0]?.buffer;
+  const transferFormBuffer = (files as Files)?.transferForm?.buffer?.[0]
+    ?.buffer;
   const accession = body.metadataV2.admin.accession;
   const application = body.metadataV2.admin.application;
 
@@ -55,22 +53,53 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     content: subAgreementBuffer,
   });
 
+  // Format folder rows
+  const folderRows = Object.entries(body.metadataV2.folders).map(
+    ([folder, metadata]) => ({
+      folder, // Add the key as the "folder" property
+      ...(metadata as unknown[]), // Spread the properties of the metadata
+    })
+  ) as FolderRow[];
+
+  // Format file rows
+  const fileRows = Object.values(
+    body.metadata.files
+  ).flat() as FileMetadataZodType[];
+
   // Update File List
-  const workbook = new ExcelJS.Workbook();
-  const folderListV2Worksheet = workbook.addWorksheet("FILE LIST V2");
-  const metadataV2Worksheet = workbook.addWorksheet("METADATA V2");
-
-  setupFolderListV2({
-    worksheet: folderListV2Worksheet,
-    folders: body.foldersMetadataOriginal,
+  fileListBuffer = await updateFileListV2({
+    folders: folderRows,
+    files: fileRows,
     changes: body.changes,
+    fileListBuffer,
   });
-  setupMetadata({ worksheet: folderListV2Worksheet, files: body.filesV2 });
 
-  fileListBuffer = (await addWorksheetToExistingWorkbookBuffer({
-    buffer: fileListBuffer,
-    worksheet: metadataV2Worksheet,
-  })) as Buffer;
+  // Notes text
+  const notesBuffer =
+    body.changesJustification !== ""
+      ? Buffer.from(
+          `Justification for changes to the file list: ${body.changesJustification}`,
+          "utf-8"
+        )
+      : null;
+
+  // Metadata files
+  const adminJsonBuffer = Buffer.from(
+    JSON.stringify(body.metadataV2.admin),
+    "utf-8"
+  );
+  const foldersJsonBuffer = Buffer.from(
+    JSON.stringify(body.metadataV2.folders),
+    "utf-8"
+  );
+  const filesJsonBuffer = Buffer.from(
+    JSON.stringify(body.metadataV2.files),
+    "utf-8"
+  );
+
+  // Put together zip buffer
+
+  // Make request to standard transfer
 
   const result = getStandardResponse({
     data: {
