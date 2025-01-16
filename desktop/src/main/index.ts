@@ -210,6 +210,10 @@ ipcMain.on(
       event.sender.send("folder-metadata-progress", data);
     };
 
+    const onMissingPath = (data: { path: string }) => {
+      event.sender.send("folder-metadata-missing-path", data);
+    };
+
     const onCompletion = (data: {
       success: boolean;
       metadata?: Record<string, unknown>;
@@ -225,6 +229,7 @@ ipcMain.on(
         is.dev,
         false,
         onProgress,
+        onMissingPath,
         onCompletion
       );
     } catch (error) {
