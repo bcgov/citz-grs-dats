@@ -277,11 +277,14 @@ ipcMain.on(
   }
 );
 
-ipcMain.handle("select-directory", () => {
-  debug('Beginning "select-directory" of main process.');
-  // returns selected folder or undefined if no folder was selected
-  return selectDirectory(mainWindow);
-});
+ipcMain.handle(
+  "select-directory",
+  (_, { singleSelection }: { singleSelection?: boolean } = {}) => {
+    debug('Beginning "select-directory" of main process.');
+    // returns selected folder or undefined if no folder was selected
+    return selectDirectory(mainWindow, singleSelection);
+  }
+);
 
 const clearAuthState = () => {
   debug("Beginning clearAuthState function of main process.");
