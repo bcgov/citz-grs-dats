@@ -293,6 +293,26 @@ export const LanTransferPage = ({ authenticated }: Props) => {
     }
   }, [currentViewIndex]);
 
+  // Toast message once folders have been successfully uploaded
+  useEffect(() => {
+    if (
+      currentViewIndex === 3 &&
+      folders.length > 0 &&
+      folders.every(
+        (folder) =>
+          folder.bufferProgress === 100 && folder.metadataProgress === 100
+      )
+    ) {
+      toast.success(Toast, {
+        data: {
+          title: "Folder upload successful",
+          message:
+            "Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
+        },
+      });
+    }
+  }, [folders, currentViewIndex]);
+
   const getFolderMetadata = async (filePath: string) => {
     try {
       await api.workers.getFolderMetadata({

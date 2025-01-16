@@ -17,6 +17,10 @@ import {
   getFolderMetadata,
   selectDirectory,
 } from "./fileProcessing/actions";
+import EventEmitter from "node:events";
+
+EventEmitter.defaultMaxListeners = 1000; // Set globally for all EventEmitters
+ipcMain.setMaxListeners(1000); // Explicitly set for ipcMain
 
 type FileBufferObj = {
   filename: string;

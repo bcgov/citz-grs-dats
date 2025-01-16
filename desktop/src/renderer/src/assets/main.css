@@ -88,6 +88,7 @@
 
 :root {
 	--toastify-icon-color-error: #ce3e39 !important;
+	--toastify-icon-color-success: #42814a !important;
 }
 
 .Toastify__close-button {
@@ -97,7 +98,7 @@
 
 .Toastify__toast-container--bottom-left {
 	bottom: 0;
-  left: unset !important;
+	left: unset !important;
 	margin-left: 15px;
 }
 
@@ -116,11 +117,19 @@
 }
 
 .Toastify__toast {
-	background: #f4e1e2;
 	width: 640px;
 	min-height: 86px;
 	height: fit-content;
 	padding: 16px 24px;
 	color: #474543;
+}
+
+.Toastify__toast--error {
+	background: #f4e1e2;
 	border: 1px solid #ce3e39;
+}
+
+.Toastify__toast--success {
+	background: #f6fff8;
+	border: 1px solid #42814a;
 }
