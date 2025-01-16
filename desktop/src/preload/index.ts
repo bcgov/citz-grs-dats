@@ -3,6 +3,7 @@ import { electronAPI } from "@electron-toolkit/preload";
 import { checkApiStatus, checkIpRange } from "./api";
 import { safePromise } from "./api/utils";
 import { fetchProtectedRoute, getUser } from "./api/sso";
+import { parseXlsxFileList } from "./api/transfer";
 
 const api = {
   versions: process.versions,
@@ -20,6 +21,9 @@ const api = {
   },
   utils: {
     safePromise,
+  },
+  transfer: {
+    parseXlsxFileList,
   },
   workers: {
     copyFolderAndMetadata: ({

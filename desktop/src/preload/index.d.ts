@@ -37,6 +37,13 @@ declare global {
         ) => Promise<[Error, null] | [null, ExtendedResponse]>;
       };
 
+      transfer: {
+        parseXlsxFileList: (fileList: File | null | undefined) => Promise<{
+          accession: string;
+          application: string;
+        } | null>;
+      };
+
       workers: {
         copyFolderAndMetadata: ({
           filePath,

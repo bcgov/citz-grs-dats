@@ -86,8 +86,8 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
           height: "100%",
           maxHeight: "100vh",
           "& .MuiDrawer-paper": {
-            position: "relative",
-            width: "100%",
+            position: "fixed",
+            width: "17%",
             boxSizing: "border-box",
             padding: 1,
           },
