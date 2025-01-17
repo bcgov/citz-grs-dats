@@ -17,14 +17,10 @@ export type CreateTransferBody = z.infer<typeof createTransferBodySchema>;
 
 // Schema for FormData fields
 export const lanTransferBodySchema = z.object({
-  fileList: z.object({
-    filename: z.string(),
-    buffer: z.any(),
-  }),
-  transferForm: z.object({
-    filename: z.string(),
-    buffer: z.any(),
-  }),
+  fileListBuffer: z.any(),
+  fileListFilename: z.string(),
+  transferFormBuffer: z.any(),
+  transferFormFilename: z.string(),
   originalFoldersMetadata: z.record(folderMetadataZodSchema),
   metadataV2: z.object({
     admin: z
@@ -44,14 +40,7 @@ export const lanTransferBodySchema = z.object({
     })
   ),
   changesJustification: z.string(),
-  folderBuffers: z.array(
-    z.array(
-      z.object({
-        folder: z.string(),
-        buffer: z.any(),
-      })
-    )
-  ),
+  contentBuffer: z.any(),
 });
 
 // TypeScript type inferred from Zod schema

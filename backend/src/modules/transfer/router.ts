@@ -12,7 +12,7 @@ router.post(
   upload.fields([
     { name: "fileList", maxCount: 1 },
     { name: "transferForm", maxCount: 1 },
-    { name: "folderBuffers" },
+    { name: "contentZipBuffer", maxCount: 1 },
   ]),
   lan
 );

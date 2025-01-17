@@ -3,6 +3,7 @@ import {
   errorWrapper,
   HTTP_STATUS_CODES,
   HttpError,
+  safePromise,
 } from "@bcgov/citz-imb-express-utilities";
 import { lanTransferBodySchema } from "../schemas";
 import { upload } from "src/modules/s3/utils";
@@ -12,30 +13,33 @@ import { createAgreementPDF } from "@/modules/submission-agreement/utils";
 import type { FolderRow } from "@/modules/filelist/utils/excel/worksheets";
 import { updateFileListV2 } from "@/modules/filelist/utils/excel";
 import type { FileMetadataZodType } from "@/modules/filelist/schemas";
+import { createStandardTransferZip } from "../utils";
+import crypto from "node:crypto";
 
-const { S3_BUCKET } = ENV;
+const { S3_BUCKET, BACKEND_SERVICE_NAME, NODE_ENV } = ENV;
 
 type Files = {
-  fileList?: { buffer: Express.Multer.File[] };
-  transferForm?: { buffer: Express.Multer.File[] };
-  folderBuffers?: { buffer: Express.Multer.File[] }[];
+  fileListBuffer?: Express.Multer.File[];
+  transferFormBuffer?: Express.Multer.File[];
+  contentZipBuffer?: Express.Multer.File[];
 };
 
 // Create lan transfer.
 export const lan = errorWrapper(async (req: Request, res: Response) => {
-  const { getStandardResponse, getZodValidatedBody, user, files } = req;
+  const { getStandardResponse, getZodValidatedBody, user, token, files } = req;
   const body = getZodValidatedBody(lanTransferBodySchema); // Validate request body
 
-  let fileListBuffer = (files as Files)?.fileList?.buffer?.[0]?.buffer;
-  const transferFormBuffer = (files as Files)?.transferForm?.buffer?.[0]
-    ?.buffer;
+  let fileListBuffer = (files as Files)?.fileListBuffer?.[0]?.buffer;
+  const transferFormBuffer = (files as Files)?.transferFormBuffer?.[0]?.buffer;
+  const contentZipBuffer = (files as Files)?.contentZipBuffer?.[0]?.buffer;
+
   const accession = body.metadataV2.admin.accession;
   const application = body.metadataV2.admin.application;
 
-  if (!fileListBuffer || !transferFormBuffer)
+  if (!fileListBuffer || !transferFormBuffer || !contentZipBuffer)
     throw new HttpError(
       HTTP_STATUS_CODES.BAD_REQUEST,
-      "Missing fileListBuffer and/or transferFormBuffer."
+      "Missing one or many of fileListBuffer, transferFormBuffer, contentZipBuffer."
     );
 
   // Create submission agreement file
@@ -98,18 +102,93 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   );
 
   // Put together zip buffer
-
-  // Make request to standard transfer
-
-  const result = getStandardResponse({
-    data: {
-      user: `${user?.first_name} ${user?.last_name}`,
-      accession,
-      application,
+  const standardTransferZipBuffer = await createStandardTransferZip({
+    contentZipBuffer,
+    documentation: {
+      fileList: {
+        filename: body.fileListFilename,
+        buffer: fileListBuffer,
+      },
+      transferForm: {
+        filename: body.transferFormFilename,
+        buffer: transferFormBuffer,
+      },
+      subAgreement: {
+        filename: `${accession}_${application}.pdf`,
+        buffer: subAgreementBuffer,
+      },
     },
-    message: "Transfer process started.",
-    success: true,
+    metadata: {
+      adminBuffer: adminJsonBuffer,
+      foldersBuffer: foldersJsonBuffer,
+      filesBuffer: filesJsonBuffer,
+      notesBuffer,
+    },
   });
 
-  res.status(HTTP_STATUS_CODES.CREATED).json(result);
+  // Make checksum of zip buffer
+  const hash = crypto.createHash("sha256");
+  hash.update(standardTransferZipBuffer);
+  const standardTransferZipChecksum = hash.digest("hex");
+
+  // Make request to standard transfer
+  const standardTransferEndpoint =
+    NODE_ENV === "production"
+      ? `https://${BACKEND_SERVICE_NAME}/transfer`
+      : `http://${BACKEND_SERVICE_NAME}/transfer`;
+
+  const authHeaderValue = `Bearer ${token}`;
+  const headers = {
+    "Content-Type": "application/json",
+    authorization: authHeaderValue,
+  };
+
+  // Create form body
+  const formData = new FormData();
+  formData.append("file", new Blob([standardTransferZipBuffer]), "file.bin");
+  formData.append("accession", accession);
+  formData.append("application", application);
+  formData.append("checksum", standardTransferZipChecksum);
+
+  // Make request to /transfer
+  const [err, response] = await safePromise(
+    fetch(standardTransferEndpoint, {
+      method: "POST",
+      headers,
+      body: formData,
+    })
+  );
+
+  // Craft response for this request
+  let success = true;
+  let responseMessage = "";
+  let data = {
+    user: `${user?.first_name} ${user?.last_name}`,
+    accession,
+    application,
+  };
+  if (err) success = false;
+
+  if (response) {
+    // A Json response was received from transfer endpoint
+    const {
+      message,
+      data: responseData,
+      success: responseSuccess,
+    } = await response.json();
+    responseMessage = message;
+    success = responseSuccess;
+    data = responseData;
+  }
+
+  // Standardizes the response format
+  const result = getStandardResponse({
+    data,
+    message: responseMessage,
+    success,
+  });
+
+  res
+    .status(success ? HTTP_STATUS_CODES.CREATED : HTTP_STATUS_CODES.BAD_REQUEST)
+    .json(result);
 });
