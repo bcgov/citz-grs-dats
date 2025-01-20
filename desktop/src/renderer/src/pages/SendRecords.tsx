@@ -6,6 +6,7 @@ import { Lan as LanIcon, Computer as ComputerIcon } from "@mui/icons-material";
 export const SendRecordsPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+
   return (
     <Grid container>
       <Grid size={2} />

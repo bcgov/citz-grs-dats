@@ -83,8 +83,8 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
       <Drawer
         variant="permanent"
         sx={{
-          height: "100vh",
-          background: theme.palette.secondary.light,
+          height: "100%",
+          maxHeight: "100vh",
           "& .MuiDrawer-paper": {
             position: "fixed",
             width: "17%",
