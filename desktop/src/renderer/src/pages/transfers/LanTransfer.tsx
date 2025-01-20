@@ -12,10 +12,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-type Props = {
-  authenticated: boolean;
-};
-
 type Folder = {
   id: number;
   folder: string;
@@ -32,7 +28,7 @@ type FileBufferObj = {
   buffer: Buffer;
 };
 
-export const LanTransferPage = ({ authenticated }: Props) => {
+export const LanTransferPage = () => {
   const navigate = useNavigate();
   const [api] = useState(window.api); // Preload scripts
   const [currentViewIndex, setCurrentViewIndex] = useState(0);

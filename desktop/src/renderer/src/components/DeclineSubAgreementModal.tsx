@@ -1,10 +1,8 @@
 import { Button } from "@bcgov/design-system-react-components";
-import { Box, Modal, Stack, TextareaAutosize, Typography } from "@mui/material";
+import { Box, Modal, Stack, Typography } from "@mui/material";
 
 type Props = {
   open: boolean;
-  explanation: string;
-  setExplanation: React.Dispatch<React.SetStateAction<string>>;
   onClose: () => void;
   onConfirm: () => void;
 };
@@ -20,7 +18,7 @@ const modalStyle = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 500,
+  width: 600,
   bgcolor: "background.paper",
   border: "1px solid var(--modal-border)",
 };
@@ -45,56 +43,44 @@ const contentStyle = {
   flexDirection: "column",
   gap: 2,
   height: "fit-content",
-  padding: "0 24px",
+  padding: "8px 24px",
 };
 
-export const JustifyChangesModal = ({
+export const DeclineSubAgreementModal = ({
   open,
   onClose,
   onConfirm,
-  explanation,
-  setExplanation,
 }: Props) => {
   return (
     <Modal open={open} onClose={onClose}>
       <Stack gap={3} sx={modalStyle}>
         <Box sx={headerStyle}>
-          <Typography variant="h3">Explanation of changes</Typography>
+          <Typography variant="h3">Decline Submission Agreement?</Typography>
         </Box>
 
         <Box sx={contentStyle}>
           <Typography>
-            <b>
-              Please explain why you updated and/or deleted one or more folder
-              paths
-            </b>{" "}
-            (required)
+            You must agree to the Submission Agreement in order to send records
+            to the Digital Archives.
           </Typography>
-          <TextareaAutosize
-            style={{
-              padding: "8px 12px",
-              border: "1px solid var(--modal-border)",
-            }}
-            value={explanation}
-            onChange={(e) => setExplanation(e.target.value)}
-            minRows={7}
-            placeholder={`• The folder name changed slightly during a LAN drive clean-up
-• The folder location changed during a LAN drive clean-up
-• The folder is active again due to an audit, FOI request, legal case, etc.`}
-          />
+          <Typography>
+            If you decline the Submission Agreement, the current process will be
+            cancelled, and you will be returned to the DATS homepage. An
+            archivist will follow up with you to discuss your concerns. You can
+            come back and start the process again when you are ready.
+          </Typography>
         </Box>
 
         <Box sx={buttonBoxStyle}>
-          <Button variant="tertiary" style={innerButtonStyle} onPress={onClose}>
-            Cancel
+          <Button variant="primary" style={innerButtonStyle} onPress={onClose}>
+            Back
           </Button>
           <Button
-            variant="primary"
+            variant="tertiary"
             style={innerButtonStyle}
             onPress={onConfirm}
-            isDisabled={explanation === ""}
           >
-            Next
+            Decline
           </Button>
         </Box>
       </Stack>
