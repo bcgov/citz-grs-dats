@@ -16,9 +16,9 @@ type Props = {
 };
 
 export const FolderListPage = ({ authenticated }: Props) => {
-	const [continueModalIsOpen, setContinueModalIsOpen] =
-		useState<boolean>(false);
 	const [continueButtonIsEnabled, setContinueButtonIsEnabled] =
+		useState<boolean>(false);
+	const [continueModalIsOpen, setContinueModalIsOpen] =
 		useState<boolean>(false);
 
 	const theme = useTheme();
@@ -56,7 +56,6 @@ export const FolderListPage = ({ authenticated }: Props) => {
 					[source]: newMetadata[source],
 				}));
 				console.log(`Successfully processed folder: ${source}`);
-				handleShowContinue();
 			} else {
 				console.error(`Failed to process folder: ${source}`);
 			}
@@ -86,22 +85,19 @@ export const FolderListPage = ({ authenticated }: Props) => {
 	}, [continueButtonIsEnabled]);
 
 	const handleClose = useCallback(() => {
-		handleShowContinue();
 		setContinueModalIsOpen(false);
 	}, []);
 
-	const handleShowContinue = useCallback(() => {
-		let isEnabled = true;
+	const handleFormSubmit = useCallback(
+		(formData) => {
+			folderList.submit(formData);
+		},
+		[folderList.submit],
+	);
 
-		if (folderList.folders.length <= 0) isEnabled = false;
-
-		if (!authenticated) isEnabled = false;
-
-		if (!folderList.folders.every((folder) => folder.progress === 100))
-			isEnabled = false;
-
-		setContinueButtonIsEnabled(isEnabled);
-	}, [folderList.folders, authenticated]);
+	useEffect(() => {
+		console.log('continueButtonIsEnabled', continueButtonIsEnabled);
+	}, [continueButtonIsEnabled]);
 
 	useEffect(() => {
 		window.addEventListener(
@@ -126,12 +122,21 @@ export const FolderListPage = ({ authenticated }: Props) => {
 		};
 	}, [handleCompletion, handleProgress]);
 
-	const handleFormSubmit = useCallback(
-		(formData) => {
-			folderList.submit(formData);
-		},
-		[folderList.submit],
-	);
+	useEffect(() => {
+		console.log('folderList.folders', folderList.folders);
+		let isEnabled = true;
+
+		if (folderList.folders.length <= 0) isEnabled = false;
+
+		if (!authenticated) isEnabled = false;
+
+		if (!folderList.folders.every((folder) => folder.progress === 100))
+			isEnabled = false;
+
+		console.log('handleShowContinue', isEnabled);
+
+		setContinueButtonIsEnabled(isEnabled);
+	}, [folderList.folders, authenticated]);
 
 	return (
 		<>
