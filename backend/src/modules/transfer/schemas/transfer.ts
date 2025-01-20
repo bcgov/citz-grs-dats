@@ -6,7 +6,7 @@ import { z } from "zod";
 
 // Schema for FormData fields
 export const createTransferBodySchema = z.object({
-  buffer: z.any(),
+  file: z.any(),
   checksum: z.string(),
   application: z.string(),
   accession: z.string(),
