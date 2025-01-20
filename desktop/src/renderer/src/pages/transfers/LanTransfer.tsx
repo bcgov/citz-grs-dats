@@ -49,6 +49,10 @@ export const LanTransferPage = () => {
     FolderPathChanges[]
   >([]);
 
+  if (folderBuffers) {
+    // TEMP
+  }
+
   // Justify changes
   const [showJustifyChangesModal, setShowJustifyChangesModal] = useState(false);
   const [changesJustification, setChangesJustification] = useState("");
@@ -70,20 +74,13 @@ export const LanTransferPage = () => {
     setCurrentViewIndex((prev) => prev - 1);
   };
 
-  // When fileList removed
-  useEffect(() => {
-    if (!fileList) {
-      setFolders([]);
-      setMetadata({});
-    }
-  }, [fileList]);
-
   // Handle metadata progress and completion events
   useEffect(() => {
     const handleProgress = (
       event: CustomEvent<{ source: string; progressPercentage: number }>
     ) => {
       const { source, progressPercentage } = event.detail;
+      console.log(`${source} metadata progress ${progressPercentage}`);
       // Update folder progress
       setFolders((prevRows) =>
         prevRows.map((row) =>
@@ -113,16 +110,20 @@ export const LanTransferPage = () => {
         error?: unknown;
       }>
     ) => {
-      const { source, success, metadata: newMetadata } = event.detail;
+      const { source, success, metadata: newMetadata, error } = event.detail;
 
       if (success && newMetadata) {
         setMetadata((prev) => ({
           ...prev,
           [source]: newMetadata[source],
         }));
-        console.log(`Successfully processed folder: ${source}`);
+        console.log(`Successfully processed folder metadata: ${source}`);
       } else {
-        console.error(`Failed to process folder: ${source}`);
+        console.error(`Failed to process folder metadata: ${source}`, {
+          success,
+          metadata: newMetadata,
+          error,
+        });
       }
     };
 
@@ -161,6 +162,7 @@ export const LanTransferPage = () => {
       event: CustomEvent<{ source: string; progressPercentage: number }>
     ) => {
       const { source, progressPercentage } = event.detail;
+      console.log(`${source} buffer progress ${progressPercentage}`);
       // Update folder progress
       setFolders((prevRows) =>
         prevRows.map((row) =>
@@ -190,16 +192,19 @@ export const LanTransferPage = () => {
         error?: unknown;
       }>
     ) => {
-      const { source, success, buffers } = event.detail;
+      const { source, success, buffers, error } = event.detail;
 
       if (success && buffers && buffers.length > 0) {
         setFolderBuffers((prev) => ({
           ...prev,
           [source]: buffers,
         }));
-        console.log(`Successfully processed folder: ${source}`);
+        console.log(`Successfully processed folder buffer: ${source}`);
       } else {
-        console.error(`Failed to process folder: ${source}`);
+        console.error(`Failed to process folder buffer: ${source}`, {
+          success,
+          error,
+        });
       }
     };
 
@@ -409,8 +414,16 @@ export const LanTransferPage = () => {
     }
   };
 
+  useEffect(() => {
+    console.log(metadata);
+  }, [metadata]);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
+    if (!fileList) {
+      setFolders([]);
+      setMetadata({});
+    }
     parseFileList();
   }, [fileList]);
 

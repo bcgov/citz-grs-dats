@@ -104,13 +104,9 @@ const createFolderBuffer = async (dir: string): Promise<FileBuffer[]> => {
 // Copy a directory in batches
 const copyDirectoryInBatches = async (
   source: string,
-  destination?: string,
+  originalSource: string,
   batchSize = 10
 ): Promise<FileBuffer[]> => {
-  if (destination) {
-    await ensureDirectoryExists(destination);
-  }
-
   const files = await readdir(source);
   const folderBuffers: FileBuffer[] = [];
 
@@ -119,23 +115,20 @@ const copyDirectoryInBatches = async (
 
     await Promise.all(
       batch.map(async (file) => {
+        console.log(
+          `Processing file ${file} from ${originalSource} in copyWorker.`
+        );
         const sourcePath = path.join(source, file);
-        const destinationPath = destination
-          ? path.join(destination, file)
-          : undefined;
         const fileStat: Stats = await stat(sourcePath);
 
         if (fileStat.isDirectory()) {
           const subBuffers = await copyDirectoryInBatches(
             sourcePath,
-            destinationPath,
+            originalSource,
             batchSize
           );
           folderBuffers.push(...subBuffers);
         } else {
-          if (destinationPath) {
-            await copyFileStream(sourcePath, destinationPath);
-          }
           const fileBuffer = await fsPromises.readFile(sourcePath);
           folderBuffers.push({
             filename: file,
@@ -149,9 +142,14 @@ const copyDirectoryInBatches = async (
           const progressPercentage = Math.round(
             (processedFileCount / totalFileCount) * 100
           );
+
+          console.log(
+            `Copy progress of ${originalSource}: ${progressPercentage}`
+          );
+
           parentPort?.postMessage({
             type: "progress",
-            source,
+            source: originalSource,
             fileProcessed: sourcePath,
             progressPercentage,
           });
@@ -168,6 +166,7 @@ const copyDirectoryInBatches = async (
   const { source, destination, batchSize } = workerData as WorkerData;
 
   try {
+    console.log("Starting copy worker.");
     const exists = await stat(source)
       .then((stats) => stats.isDirectory())
       .catch(() => false);
@@ -180,18 +179,23 @@ const copyDirectoryInBatches = async (
     totalFileCount = await countFiles(source);
 
     console.log(`Processing files from ${source}`);
-    const buffers = await copyDirectoryInBatches(
-      source,
-      destination,
-      batchSize
-    );
+    const buffers = await copyDirectoryInBatches(source, source, batchSize);
 
-    parentPort?.postMessage({
-      type: "completion",
-      source,
-      success: true,
-      buffers,
-    });
+    // Once all files are processed, save to destination
+    if (destination) {
+      await ensureDirectoryExists(destination);
+      await copyFileStream(source, destination);
+    }
+
+    if (buffers) {
+      console.log(`Completed copy worker for ${source}`);
+      parentPort?.postMessage({
+        type: "completion",
+        source,
+        success: true,
+        buffers,
+      });
+    }
   } catch (error) {
     parentPort?.postMessage({
       type: "completion",

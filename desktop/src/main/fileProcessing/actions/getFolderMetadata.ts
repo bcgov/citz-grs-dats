@@ -52,15 +52,15 @@ export const getFolderMetadata = async (
 
   try {
     pool.on("progress", (data) => {
-      if (onProgress) onProgress(data);
+      if (onProgress && data.task === "metadata") onProgress(data);
     });
 
     pool.on("missingPath", (data) => {
-      if (onMissingPath) onMissingPath(data);
+      if (onMissingPath && data.task === "metadata") onMissingPath(data);
     });
 
     pool.on("completion", (data) => {
-      if (onCompletion) onCompletion(data);
+      if (onCompletion && data.task === "metadata") onCompletion(data);
     });
 
     await pool.runTask(metadataWorkerScript, metadataWorkerData);

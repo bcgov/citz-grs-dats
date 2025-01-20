@@ -54,15 +54,15 @@ export const getFolderBuffer = async (
 
   try {
     pool.on("progress", (data) => {
-      if (onProgress) onProgress(data);
+      if (onProgress && data.task === "copy") onProgress(data);
     });
 
     pool.on("missingPath", (data) => {
-      if (onMissingPath) onMissingPath(data);
+      if (onMissingPath && data.task === "copy") onMissingPath(data);
     });
 
     pool.on("completion", (data) => {
-      if (onCompletion) onCompletion(data);
+      if (onCompletion && data.task === "copy") onCompletion(data);
     });
 
     await pool.runTask(workerScript, workerData);

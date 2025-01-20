@@ -92,6 +92,9 @@ const generateMetadataInBatches = async (
 
     await Promise.all(
       batch.map(async (file) => {
+        console.log(
+          `Processing file ${file} from ${originalSource} in metadataWorker.`
+        );
         const filePath = path.join(rootDir, file);
         const fileStat: Stats = await stat(filePath);
 
@@ -126,6 +129,10 @@ const generateMetadataInBatches = async (
 
           const progressPercentage = Math.round(
             (processedFileCount / totalFileCount) * 100
+          );
+
+          console.log(
+            `Metadata progress of ${originalSource}: ${progressPercentage}`
           );
 
           parentPort?.postMessage({
@@ -167,6 +174,7 @@ const writeOrAppendMetadata = async (
 };
 
 (async () => {
+  console.log("Starting metadata worker.");
   if (!workerData) return;
   const { source, batchSize, destination } = workerData as WorkerData;
 
@@ -191,15 +199,17 @@ const writeOrAppendMetadata = async (
     if (destination) {
       await ensureDirectoryExists(path.dirname(destination));
       await writeOrAppendMetadata(destination, { ...metadata, totalSize });
-      parentPort?.postMessage({
-        type: "completion",
-        success: true,
-        source,
-        metadata,
-        fileCount,
-        totalSize,
-      });
     }
+
+    if (metadata) console.log(`Completed metadata worker for ${source}`);
+    parentPort?.postMessage({
+      type: "completion",
+      success: true,
+      source,
+      metadata,
+      fileCount,
+      totalSize,
+    });
   } catch (error) {
     parentPort?.postMessage({
       type: "completion",
