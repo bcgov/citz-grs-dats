@@ -14,6 +14,7 @@ export default defineConfig({
 			alias: {
 				"@renderer": resolve("src/renderer/src"),
 				"@hooks": resolve("src/hooks"),
+				"@preload": resolve("src/preload"),
 			},
 		},
 		plugins: [react()],
