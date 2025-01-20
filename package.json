@@ -9,6 +9,7 @@
 		"rebuild": "npm run prune && npm run up -- --force-recreate",
 		"rebuild:api": "npm run prune:api && npm run up -- express-api",
 		"clear-docker-cache": "docker builder prune -f",
-		"shell:mongo": "docker exec -it mongo bash"
+		"shell:mongo": "docker exec -it mongo bash",
+		"desktop:dev": "cd desktop && npm run dev"
 	}
 }
