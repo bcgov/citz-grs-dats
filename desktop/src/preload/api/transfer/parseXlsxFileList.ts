@@ -1,4 +1,6 @@
 import * as XLSX from "xlsx";
+import { isAccessionValid } from "./isAccessionValid";
+import { isApplicationValid } from "./isApplicationValid";
 
 export const parseXlsxFileList = (
   fileList: File | null | undefined
@@ -23,17 +25,8 @@ export const parseXlsxFileList = (
               if (
                 accessionCell &&
                 applicationCell &&
-                accessionCell.toString() !== "" &&
-                applicationCell.toString() !== "" &&
-                !Number.isNaN(
-                  Number(
-                    accessionCell
-                      .toString()
-                      .replace("-", "")
-                      .replaceAll(" ", "a")
-                  )
-                ) &&
-                !Number.isNaN(Number(applicationCell.toString()))
+                isAccessionValid(accessionCell.toString()) &&
+                isApplicationValid(applicationCell.toString())
               ) {
                 resolve({
                   accession: accessionCell.toString(),
