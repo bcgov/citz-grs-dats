@@ -30,6 +30,7 @@ type Props = {
 
 export const SideNav = ({ accessToken, idToken }: Props) => {
   const navigate = useNavigate();
+  const theme = useTheme();
   const [currentPage, setCurrentPage] = useState("/");
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
   const [newPagePath, setNewPagePath] = useState("/");
@@ -85,8 +86,8 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
           height: "100%",
           maxHeight: "100vh",
           "& .MuiDrawer-paper": {
-            position: "relative",
-            width: "100%",
+            position: "fixed",
+            width: "17%",
             boxSizing: "border-box",
             padding: 1,
           },

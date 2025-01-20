@@ -3,9 +3,9 @@ import type { WorkerPool } from "../WorkerPool";
 import { app } from "electron";
 
 type WorkerData = {
-	source: string;
-	destination?: string;
-	batchSize?: number;
+  source: string;
+  destination?: string;
+  batchSize?: number;
 };
 
 /**
@@ -20,46 +20,52 @@ type WorkerData = {
  * @returns A Promise that resolves when the worker processes complete.
  */
 export const getFolderMetadata = async (
-	pool: WorkerPool,
-	filePath: string,
-	isDev: boolean,
-	storeFile: boolean,
-	onProgress?: (data: {
-		progressPercentage: number;
-		source: string;
-	}) => void,
-	onCompletion?: (data: {
-		success: boolean;
-		metadata?: Record<string, unknown>;
-		error?: unknown;
-	}) => void,
+  pool: WorkerPool,
+  filePath: string,
+  isDev: boolean,
+  storeFile: boolean,
+  onProgress?: (data: { progressPercentage: number; source: string }) => void,
+  onMissingPath?: (data: { path: string }) => void,
+  onCompletion?: (data: {
+    success: boolean;
+    metadata?: Record<string, unknown>;
+    error?: unknown;
+  }) => void
 ): Promise<void> => {
-	const metadataWorkerScript = isDev
-		? path.resolve(__dirname, "../es-workers/metadataWorker.js")
-		: path.join(app.getAppPath(), "../../resources/metadataWorker.cjs");
+  const metadataWorkerScript = isDev
+    ? path.resolve(__dirname, "../es-workers/metadataWorker.js")
+    : path.join(app.getAppPath(), "../../resources/metadataWorker.cjs");
 
-	const destinationPath = isDev
-		? path.resolve(__dirname, "../../resources/file-list")
-		: path.join(app.getAppPath(), "../../resources/file-list");
+  const destinationPath = isDev
+    ? path.resolve(__dirname, "../../resources/file-list")
+    : path.join(app.getAppPath(), "../../resources/file-list");
 
-	const metadataWorkerData: WorkerData = {
-		source: filePath,
-	};
+  const metadataWorkerData: WorkerData = {
+    source: filePath,
+  };
 
-	if (storeFile) metadataWorkerData.destination = path.join(destinationPath, "/metadata.json");
+  if (storeFile)
+    metadataWorkerData.destination = path.join(
+      destinationPath,
+      "/metadata.json"
+    );
 
-	try {
-		pool.on("progress", (data) => {
-			if (onProgress) onProgress(data);
-		});
+  try {
+    pool.on("progress", (data) => {
+      if (onProgress) onProgress(data);
+    });
 
-		pool.on("completion", (data) => {
-			if (onCompletion) onCompletion(data);
-		});
+    pool.on("missingPath", (data) => {
+      if (onMissingPath) onMissingPath(data);
+    });
 
-		await pool.runTask(metadataWorkerScript, metadataWorkerData);
-	} catch (error) {
-		console.error(`Failed to process folder ${filePath}:`, error);
-		if (onCompletion) onCompletion({ success: false, error });
-	}
+    pool.on("completion", (data) => {
+      if (onCompletion) onCompletion(data);
+    });
+
+    await pool.runTask(metadataWorkerScript, metadataWorkerData);
+  } catch (error) {
+    console.error(`Failed to process folder ${filePath}:`, error);
+    if (onCompletion) onCompletion({ success: false, error });
+  }
 };
