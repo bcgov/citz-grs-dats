@@ -10,7 +10,8 @@ import {
 	HomePage,
 	LanInstructionsPage,
 	SendRecordsPage,
-} from './pages';
+  LanTransferPage,
+} from "./pages";
 
 export const TokenContext = createContext<string | undefined>(undefined);
 
@@ -78,7 +79,7 @@ function App(): JSX.Element {
 		};
 	}, []);
 
-	return (
+  return (
 		<BrowserRouter>
 			<Grid
 				container
@@ -98,37 +99,32 @@ function App(): JSX.Element {
 							<Button onClick={() => setLeavePageModalOpen(true)} />
 						}
 					/>
-					<Grid container>
-						<Grid size={2} />
-						<Grid
-							size={8}
-							sx={{ paddingTop: 3 }}
-						>
-							<Routes>
-								<Route
-									path='/'
-									element={<HomePage authenticated={!!accessToken} />}
-								/>
-								<Route
-									path='/file-list'
-									element={
-										<TokenContext.Provider value={accessToken}>
-											<FolderListPage authenticated={!!accessToken} />
-										</TokenContext.Provider>
-									}
-								/>
-								<Route
-									path='/send-records'
-									element={<SendRecordsPage />}
-								/>
-								<Route
-									path='/send-records/lan/instructions'
-									element={<LanInstructionsPage />}
-								/>
-							</Routes>
-						</Grid>
-						<Grid size={2} />
-					</Grid>
+					<Routes>
+						<Route
+							path='/'
+							element={<HomePage authenticated={!!accessToken} />}
+						/>
+						<Route
+							path='/file-list'
+							element={
+								<TokenContext.Provider value={accessToken}>
+									<FolderListPage authenticated={!!accessToken} />
+								</TokenContext.Provider>
+							}
+						/>
+						<Route
+							path='/send-records'
+							element={<SendRecordsPage />}
+						/>
+						<Route
+							path='/send-records/lan/instructions'
+							element={<LanInstructionsPage />}
+						/>
+						<Route
+							path='/send-records/lan'
+							element={<LanTransferPage />}
+						/>
+					</Routes>
 					<ToastContainer
 						position='bottom-left'
 						autoClose={5000}
