@@ -1,6 +1,7 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useContext } from 'react';
 import type { FolderRow } from '../../renderer/src/components/file-list';
 import { fetchProtectedRoute } from '@preload/api/sso/fetchProtectedRoute';
+import { convertArrayToObject } from './convertArrayToObect';
 
 const testData = {
   "outputFileType": "excel",
@@ -68,13 +69,14 @@ const testData = {
 
 }
 
-const testToken = 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJxUWlFWDB2T2Z1SlBuWUw4MWo0Q2tDOHVPdEJ1aFZvM0xBd2ppczZWbHRzIn0.eyJleHAiOjE3Mzc0MDc0MzEsImlhdCI6MTczNzQwNzEzMSwiYXV0aF90aW1lIjoxNzM3NDA2ODMwLCJqdGkiOiJjYjkzNzE3NS1hY2E0LTRlOWMtYTA0NC0wYjI3ZTQ4NjhhMzQiLCJpc3MiOiJodHRwczovL2Rldi5sb2dpbnByb3h5Lmdvdi5iYy5jYS9hdXRoL3JlYWxtcy9zdGFuZGFyZCIsImF1ZCI6ImNpdHotZ3JzLWRhdHMtY2lybW8taW1iLTU2MjMiLCJzdWIiOiJhMzJkNmY4NTljNjY0NTBjYTQ5OTViMGIyYmYwYTg0NEBpZGlyIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiY2l0ei1ncnMtZGF0cy1jaXJtby1pbWItNTYyMyIsInNlc3Npb25fc3RhdGUiOiIwMTQ1MGMzMS0wZTQ3LTQzM2YtYTBlYi04MmM1MjE3Mzc2NWUiLCJzY29wZSI6Im9wZW5pZCBpZGlyIGVtYWlsIHByb2ZpbGUgYXp1cmVpZGlyIiwic2lkIjoiMDE0NTBjMzEtMGU0Ny00MzNmLWEwZWItODJjNTIxNzM3NjVlIiwiaWRpcl91c2VyX2d1aWQiOiJBMzJENkY4NTlDNjY0NTBDQTQ5OTVCMEIyQkYwQTg0NCIsImlkZW50aXR5X3Byb3ZpZGVyIjoiaWRpciIsImlkaXJfdXNlcm5hbWUiOiJTVE9FV1MiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJUb2V3cywgU2NvdHQgRCBDSVRaOkVYIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiYTMyZDZmODU5YzY2NDUwY2E0OTk1YjBiMmJmMGE4NDRAaWRpciIsImRpc3BsYXlfbmFtZSI6IlRvZXdzLCBTY290dCBEIENJVFo6RVgiLCJnaXZlbl9uYW1lIjoiU2NvdHQiLCJmYW1pbHlfbmFtZSI6IlRvZXdzIiwiZW1haWwiOiJzY290dC50b2V3c0Bnb3YuYmMuY2EifQ.qnHdbmxEx4hRh5UTRLEyTG5E69lUNZ_6c3f9X6SKCtjQgTovD_8b76jqs5c0pNMrJJuhcODfDItu0_U4aKGeH3pdP5HKRGLUEofpomFECyb4qaDsaVOm_5acJDHC5RA2agWXNMDv3t6BMUDdzGkK5g0MPTc_JHmu_yzhqw_1q_798WOMM0REmTyWJ4V46NoRiFHaUoxbGtcSdX9wrwdDHpyctoOwRKVO0VFoAOIdyDjoc8cZDT-kVMQkwTeu9kr6K1PHSRWnk9tR3j8If4vIovxWavmsnc_T5_fuLvHm8N4ZEePg16o31fuU4ee4Go9gwQIU7bxsGn3B4gcMX88Fug'
+const testToken = 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJxUWlFWDB2T2Z1SlBuWUw4MWo0Q2tDOHVPdEJ1aFZvM0xBd2ppczZWbHRzIn0.eyJleHAiOjE3Mzc0MTA3ODMsImlhdCI6MTczNzQxMDQ4MywiYXV0aF90aW1lIjoxNzM3NDEwNDgzLCJqdGkiOiIzZGYxNzg4Yi05MzE2LTQzZmUtYmI1ZC02ZTlmNmYxN2JkMTMiLCJpc3MiOiJodHRwczovL2Rldi5sb2dpbnByb3h5Lmdvdi5iYy5jYS9hdXRoL3JlYWxtcy9zdGFuZGFyZCIsImF1ZCI6ImNpdHotZ3JzLWRhdHMtY2lybW8taW1iLTU2MjMiLCJzdWIiOiJhMzJkNmY4NTljNjY0NTBjYTQ5OTViMGIyYmYwYTg0NEBpZGlyIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiY2l0ei1ncnMtZGF0cy1jaXJtby1pbWItNTYyMyIsInNlc3Npb25fc3RhdGUiOiI4ZTRhMzVlMC01ODFhLTRkNTktYjE2OC03ZDhjNDlkODA4ZGEiLCJzY29wZSI6Im9wZW5pZCBpZGlyIGVtYWlsIHByb2ZpbGUgYXp1cmVpZGlyIiwic2lkIjoiOGU0YTM1ZTAtNTgxYS00ZDU5LWIxNjgtN2Q4YzQ5ZDgwOGRhIiwiaWRpcl91c2VyX2d1aWQiOiJBMzJENkY4NTlDNjY0NTBDQTQ5OTVCMEIyQkYwQTg0NCIsImlkZW50aXR5X3Byb3ZpZGVyIjoiaWRpciIsImlkaXJfdXNlcm5hbWUiOiJTVE9FV1MiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJUb2V3cywgU2NvdHQgRCBDSVRaOkVYIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiYTMyZDZmODU5YzY2NDUwY2E0OTk1YjBiMmJmMGE4NDRAaWRpciIsImRpc3BsYXlfbmFtZSI6IlRvZXdzLCBTY290dCBEIENJVFo6RVgiLCJnaXZlbl9uYW1lIjoiU2NvdHQiLCJmYW1pbHlfbmFtZSI6IlRvZXdzIiwiZW1haWwiOiJzY290dC50b2V3c0Bnb3YuYmMuY2EifQ.BHKiTmqpWHSU8BUZMzo5EIkyqKFbQFxFaZc-trD6iVG7IWnxZFDTqVPPMvNXiCqQrx7prSDTXAZrAxZqA_UwAsYCsf2lL7kE82QOXGiECVuRFtAF-yn0iTmNEFR61dgyJDnrOy5fMZllLum0hiuxydi_OpSGflQgNgtm0PFwQ2zlyY2OWm6XptIMSauSGo-mIsgav4cRpA8atWiDsVf_lrHK6xBSYv1qTQajsjmDcsUNGq83F3QGaZ8aSxxfOBj8uZNgfSquLx6HxX3-F-RbT6-bRZ9op4Y422RjXxFNW6TEOmB6dPXiEwtOjR4MfIntcv-JMeBNQmXjvOujv7iNHg'
 
-export const useFolderList = () => {
+export const useFolderList = ({ accessToken }) => {
   const [folders, setFolders] = useState<FolderRow[]>([])
   const [metaData, setMetaData] = useState<Record<string, unknown>>({})
   const [workers] = useState(window.api.workers);
   const [pendingPaths, setPendingPaths] = useState<string[]>([]);
+
 
   const getFolderMetadata = useCallback(
     async (filePath: string) => {
@@ -160,26 +162,36 @@ export const useFolderList = () => {
     }, [],
   )
 
-  console.log('process.env',process.env);
-
   const submit = useCallback(
     async (formData) => {
       // on form submit print the data we currently have and reset rows to empty list
       // /filelist
-      console.log("formData", formData);
-      console.log('folders', folders);
-      console.log('metadata', metaData);
-      console.log('pendingPaths', pendingPaths);
-      const response = await fetchProtectedRoute('http://localhost:3200/filelist', testToken, {
+      const payload = {
+        metadata: {
+          admin: {
+            application: formData.application,
+            accession: formData.accession,
+          },
+          folders: convertArrayToObject(folders),
+          files: metaData,
+        },
+        outputFileType: formData.outputFormat,
+
+      };
+
+      const response = await fetchProtectedRoute('http://localhost:3200/filelist', accessToken, {
         headers: {
           'Content-Type': 'application/json'
         },
         method: 'POST',
-        body: JSON.stringify(testData),
+        body: JSON.stringify(payload),
       });
-      console.log('response', response);
+      setFolders([]);
+      setMetaData({});
+
+      console.log('finish submit', { response, folders, metaData });
     },
-    [fetchProtectedRoute, metaData, folders, pendingPaths],
+    [accessToken, metaData, folders],
   )
 
 

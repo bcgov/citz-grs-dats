@@ -9,7 +9,8 @@ import {
 	type FolderRow,
 	SelectFolderButton,
 } from '@renderer/components/file-list';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { TokenContext } from '../App';
 
 type Props = {
 	authenticated: boolean;
@@ -21,9 +22,11 @@ export const FolderListPage = ({ authenticated }: Props) => {
 	const [continueModalIsOpen, setContinueModalIsOpen] =
 		useState<boolean>(false);
 
+	const accessToken = useContext(TokenContext);
+
 	const theme = useTheme();
 	const apiRef = useGridApiRef();
-	const folderList = useFolderList();
+	const folderList = useFolderList({ accessToken });
 
 	const handleProgress = useCallback(
 		(event: CustomEvent<{ source: string; progressPercentage: number }>) => {
@@ -55,7 +58,7 @@ export const FolderListPage = ({ authenticated }: Props) => {
 					...prev,
 					[source]: newMetadata[source],
 				}));
-				console.log(`Successfully processed folder: ${source}`);
+				console.info(`Successfully processed folder: ${source}`);
 			} else {
 				console.error(`Failed to process folder: ${source}`);
 			}
@@ -76,12 +79,11 @@ export const FolderListPage = ({ authenticated }: Props) => {
 	);
 
 	const handleOpenContinueModel = useCallback(() => {
-		let isOpen: boolean;
-		// check if all requirements are met to continue
+		let isOpen = true;
+
 		if (!continueButtonIsEnabled) isOpen = false;
-		else isOpen = true;
+
 		setContinueModalIsOpen(isOpen);
-		return isOpen;
 	}, [continueButtonIsEnabled]);
 
 	const handleClose = useCallback(() => {
@@ -94,10 +96,6 @@ export const FolderListPage = ({ authenticated }: Props) => {
 		},
 		[folderList.submit],
 	);
-
-	useEffect(() => {
-		console.log('continueButtonIsEnabled', continueButtonIsEnabled);
-	}, [continueButtonIsEnabled]);
 
 	useEffect(() => {
 		window.addEventListener(
@@ -123,7 +121,6 @@ export const FolderListPage = ({ authenticated }: Props) => {
 	}, [handleCompletion, handleProgress]);
 
 	useEffect(() => {
-		console.log('folderList.folders', folderList.folders);
 		let isEnabled = true;
 
 		if (folderList.folders.length <= 0) isEnabled = false;
@@ -132,8 +129,6 @@ export const FolderListPage = ({ authenticated }: Props) => {
 
 		if (!folderList.folders.every((folder) => folder.progress === 100))
 			isEnabled = false;
-
-		console.log('handleShowContinue', isEnabled);
 
 		setContinueButtonIsEnabled(isEnabled);
 	}, [folderList.folders, authenticated]);
