@@ -20,7 +20,21 @@ export const parseXlsxFileList = (
               const accessionCell = sheet.B3?.v; // B3 cell value
               const applicationCell = sheet.B4?.v; // B4 cell value
 
-              if (accessionCell && applicationCell) {
+              if (
+                accessionCell &&
+                applicationCell &&
+                accessionCell.toString() !== "" &&
+                applicationCell.toString() !== "" &&
+                !Number.isNaN(
+                  Number(
+                    accessionCell
+                      .toString()
+                      .replace("-", "")
+                      .replaceAll(" ", "a")
+                  )
+                ) &&
+                !Number.isNaN(Number(applicationCell.toString()))
+              ) {
                 resolve({
                   accession: accessionCell.toString(),
                   application: applicationCell.toString(),

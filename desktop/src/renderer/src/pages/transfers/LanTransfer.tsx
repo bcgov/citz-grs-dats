@@ -84,7 +84,11 @@ export const LanTransferPage = () => {
             !accession ||
             !application ||
             accession === "" ||
-            application === ""
+            application === "" ||
+            Number.isNaN(
+              Number(accession.replace("-", "").replaceAll(" ", "a"))
+            ) ||
+            Number.isNaN(Number(application))
           )
             toast.error(Toast, {
               data: {
