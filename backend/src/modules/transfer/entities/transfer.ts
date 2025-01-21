@@ -43,10 +43,12 @@ export const TransferModel = model("Transfer", transferSchema);
 export const adminMetadataZodSchema = z.object({
   application: z.string(),
   accession: z.string(),
-  submittedBy: z.object({
-    name: z.string(),
-    email: z.string(),
-  }),
+  submittedBy: z
+    .object({
+      name: z.string(),
+      email: z.string(),
+    })
+    .optional(),
 });
 
 // Zod Schema
