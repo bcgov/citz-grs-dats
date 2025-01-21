@@ -42,6 +42,8 @@ declare global {
           accession: string;
           application: string;
         } | null>;
+        isAccessionValid: (accession: string) => boolean;
+        isApplicationValid: (application: string) => boolean;
       };
 
       workers: {
