@@ -59,7 +59,6 @@ b {
 }
 
 body {
-	user-select: none;
 	overflow: "hidden";
 	border-top: 1px solid #e3e3e3;
 	color: var(--color-text);

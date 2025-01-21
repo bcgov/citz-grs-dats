@@ -464,11 +464,11 @@ export const LanTransferPage = () => {
           <Typography variant="h2">Send records from LAN Drive</Typography>
           <Stepper
             items={[
-              "Upload digital file list (ARS 662)",
-              "Upload transfer form (ARS 617)",
+              "File list",
+              "Transfer form",
               "Submission agreement",
-              "Folder upload",
-              "Completion",
+              "Confirmation",
+              "Done",
             ]}
             currentIndex={currentViewIndex}
           />
