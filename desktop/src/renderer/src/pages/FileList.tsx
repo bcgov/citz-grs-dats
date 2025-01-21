@@ -1,4 +1,4 @@
-import { useFolderList } from '@hooks/useFolderList';
+import { useFolderList } from '@hooks/index';
 import { Lightbulb as TipIcon } from '@mui/icons-material';
 import { Box, Stack, Typography, useTheme } from '@mui/material';
 import { useGridApiRef } from '@mui/x-data-grid';
@@ -16,7 +16,7 @@ type Props = {
 	authenticated: boolean;
 };
 
-export const FolderListPage = ({ authenticated }: Props) => {
+export const FileListPage = ({ authenticated }: Props) => {
 	const [continueButtonIsEnabled, setContinueButtonIsEnabled] =
 		useState<boolean>(false);
 	const [continueModalIsOpen, setContinueModalIsOpen] =
