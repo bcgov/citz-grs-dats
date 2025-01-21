@@ -1,3 +1,4 @@
+import type { Request, Response, NextFunction, RequestHandler } from "express";
 import { Router } from "express";
 import { create, lan } from "./controllers";
 import multer from "multer";
@@ -7,13 +8,26 @@ const upload = multer({ storage: multer.memoryStorage() });
 const router = Router();
 
 router.post("/", upload.single("file"), create);
+
+// The second middleware is used to convert the stringified objects in the request body
+// into JSON objects.
 router.post(
   "/lan",
-  upload.fields([
-    { name: "fileList", maxCount: 1 },
-    { name: "transferForm", maxCount: 1 },
-    { name: "contentZipBuffer", maxCount: 1 },
-  ]),
+  upload.any(),
+  ((req: Request, res: Response, next: NextFunction) => {
+    try {
+      req.body.originalFoldersMetadata = JSON.parse(
+        req.body.originalFoldersMetadata || "{}"
+      );
+      req.body.metadataV2 = JSON.parse(req.body.metadataV2 || "{}");
+      req.body.changes = JSON.parse(req.body.changes || "[]");
+      next();
+    } catch (error) {
+      return res
+        .status(400)
+        .json({ message: "Invalid JSON format in request body" });
+    }
+  }) as RequestHandler,
   lan
 );
 

@@ -3,7 +3,6 @@ import {
   errorWrapper,
   HTTP_STATUS_CODES,
   HttpError,
-  safePromise,
 } from "@bcgov/citz-imb-express-utilities";
 import { lanTransferBodySchema } from "../schemas";
 import { upload } from "src/modules/s3/utils";
@@ -16,22 +15,22 @@ import type { FileMetadataZodType } from "@/modules/filelist/schemas";
 import { createStandardTransferZip } from "../utils";
 import crypto from "node:crypto";
 
-const { S3_BUCKET, BACKEND_SERVICE_NAME, NODE_ENV } = ENV;
-
-type Files = {
-  fileListBuffer?: Express.Multer.File[];
-  transferFormBuffer?: Express.Multer.File[];
-  contentZipBuffer?: Express.Multer.File[];
-};
+const { S3_BUCKET, INTERNAL_BACKEND_URL } = ENV;
 
 // Create lan transfer.
 export const lan = errorWrapper(async (req: Request, res: Response) => {
   const { getStandardResponse, getZodValidatedBody, user, token, files } = req;
   const body = getZodValidatedBody(lanTransferBodySchema); // Validate request body
 
-  let fileListBuffer = (files as Files)?.fileListBuffer?.[0]?.buffer;
-  const transferFormBuffer = (files as Files)?.transferFormBuffer?.[0]?.buffer;
-  const contentZipBuffer = (files as Files)?.contentZipBuffer?.[0]?.buffer;
+  let fileListBuffer = (files as Express.Multer.File[])?.find(
+    (file) => file.fieldname === "fileListBuffer"
+  )?.buffer;
+  const transferFormBuffer = (files as Express.Multer.File[])?.find(
+    (file) => file.fieldname === "transferFormBuffer"
+  )?.buffer;
+  const contentZipBuffer = (files as Express.Multer.File[])?.find(
+    (file) => file.fieldname === "contentZipBuffer"
+  )?.buffer;
 
   const accession = body.metadataV2.admin.accession;
   const application = body.metadataV2.admin.application;
@@ -67,7 +66,7 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
 
   // Format file rows
   const fileRows = Object.values(
-    body.metadata.files
+    body.metadataV2.files
   ).flat() as FileMetadataZodType[];
 
   // Update File List
@@ -87,9 +86,18 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
         )
       : null;
 
+  // Add submitted by info to admin metadata
+  const updatedAdminMetadata = {
+    ...body.metadataV2.admin,
+    submittedBy: {
+      name: user?.display_name ?? "",
+      email: user?.email ?? "",
+    },
+  };
+
   // Metadata files
   const adminJsonBuffer = Buffer.from(
-    JSON.stringify(body.metadataV2.admin),
+    JSON.stringify(updatedAdminMetadata),
     "utf-8"
   );
   const foldersJsonBuffer = Buffer.from(
@@ -114,7 +122,7 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
         buffer: transferFormBuffer,
       },
       subAgreement: {
-        filename: `${accession}_${application}.pdf`,
+        filename: "Submission_Agreement.pdf",
         buffer: subAgreementBuffer,
       },
     },
@@ -132,15 +140,10 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   const standardTransferZipChecksum = hash.digest("hex");
 
   // Make request to standard transfer
-  const standardTransferEndpoint =
-    NODE_ENV === "production"
-      ? `https://${BACKEND_SERVICE_NAME}/transfer`
-      : `http://${BACKEND_SERVICE_NAME}/transfer`;
+  const standardTransferEndpoint = `${INTERNAL_BACKEND_URL}/transfer`;
 
-  const authHeaderValue = `Bearer ${token}`;
   const headers = {
-    "Content-Type": "application/json",
-    authorization: authHeaderValue,
+    Authorization: `Bearer ${token}`,
   };
 
   // Create form body
@@ -151,23 +154,20 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   formData.append("checksum", standardTransferZipChecksum);
 
   // Make request to /transfer
-  const [err, response] = await safePromise(
-    fetch(standardTransferEndpoint, {
-      method: "POST",
-      headers,
-      body: formData,
-    })
-  );
+  const response = await fetch(standardTransferEndpoint, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
 
   // Craft response for this request
   let success = true;
-  let responseMessage = "";
+  let responseMessage = "Unexpected error.";
   let data = {
     user: `${user?.first_name} ${user?.last_name}`,
     accession,
     application,
   };
-  if (err) success = false;
 
   if (response) {
     // A Json response was received from transfer endpoint

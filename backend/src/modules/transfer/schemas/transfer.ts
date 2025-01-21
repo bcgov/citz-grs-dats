@@ -6,7 +6,6 @@ import { z } from "zod";
 
 // Schema for FormData fields
 export const createTransferBodySchema = z.object({
-  file: z.any(),
   checksum: z.string(),
   application: z.string(),
   accession: z.string(),
@@ -17,9 +16,7 @@ export type CreateTransferBody = z.infer<typeof createTransferBodySchema>;
 
 // Schema for FormData fields
 export const lanTransferBodySchema = z.object({
-  fileListBuffer: z.any(),
   fileListFilename: z.string(),
-  transferFormBuffer: z.any(),
   transferFormFilename: z.string(),
   originalFoldersMetadata: z.record(folderMetadataZodSchema),
   metadataV2: z.object({
@@ -40,7 +37,6 @@ export const lanTransferBodySchema = z.object({
     })
   ),
   changesJustification: z.string(),
-  contentBuffer: z.any(),
 });
 
 // TypeScript type inferred from Zod schema

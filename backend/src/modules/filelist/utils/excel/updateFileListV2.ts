@@ -1,14 +1,13 @@
 import type { LanTransferBody } from "@/modules/transfer/schemas";
 import ExcelJS from "exceljs";
 import { type FolderRow, setupFolderListV2, setupMetadata } from "./worksheets";
-import { addWorksheetToExistingWorkbookBuffer } from "./addWorksheetToExistingWorkbookBuffer";
 import type { FileMetadataZodType } from "../../schemas";
 
 type Props = {
   folders: FolderRow[];
   changes: LanTransferBody["changes"];
   files: FileMetadataZodType[];
-  fileListBuffer: LanTransferBody["fileListBuffer"];
+  fileListBuffer: Buffer;
 };
 
 export const updateFileListV2 = async ({
@@ -18,6 +17,8 @@ export const updateFileListV2 = async ({
   fileListBuffer,
 }: Props): Promise<Buffer> => {
   const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(fileListBuffer);
+
   const folderListV2Worksheet = workbook.addWorksheet("FILE LIST V2");
   const metadataV2Worksheet = workbook.addWorksheet("METADATA V2");
 
@@ -26,10 +27,8 @@ export const updateFileListV2 = async ({
     folders,
     changes,
   });
-  setupMetadata({ worksheet: folderListV2Worksheet, files });
+  setupMetadata({ worksheet: metadataV2Worksheet, files });
 
-  return (await addWorksheetToExistingWorkbookBuffer({
-    buffer: fileListBuffer,
-    worksheet: metadataV2Worksheet,
-  })) as Buffer;
+  const buffer = await workbook.xlsx.writeBuffer();
+  return buffer as Buffer;
 };

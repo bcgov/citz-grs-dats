@@ -85,12 +85,16 @@ export const setupFolderListV2 = ({ worksheet, folders, changes }: Data) => {
   };
 
   const getChanges = (folder: string) =>
-    changes.find((c) => c.originalFolderPath === folder);
+    changes.find(
+      (c) =>
+        c.newFolderPath?.replaceAll("/", "\\").replaceAll("\\\\", "\\") ===
+        folder
+    );
 
   // Populate rows with data
   folders.forEach((row) => {
     const newRow = worksheet.addRow([
-      row.folder,
+      getChanges(row.folder)?.originalFolderPath ?? row.folder,
       getChanges(row.folder)?.newFolderPath ?? "",
       getChanges(row.folder)?.newFolderPath &&
       getChanges(row.folder)?.newFolderPath !== ""
