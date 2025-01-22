@@ -17,7 +17,7 @@ export const updateFileListV2 = async ({
   fileListBuffer,
 }: Props): Promise<Buffer> => {
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(fileListBuffer);
+  await workbook.xlsx.load(fileListBuffer as unknown as ExcelJS.Buffer);
 
   const folderListV2Worksheet = workbook.addWorksheet("FILE LIST V2");
   const metadataV2Worksheet = workbook.addWorksheet("METADATA V2");
@@ -30,5 +30,5 @@ export const updateFileListV2 = async ({
   setupMetadata({ worksheet: metadataV2Worksheet, files });
 
   const buffer = await workbook.xlsx.writeBuffer();
-  return buffer as Buffer;
+  return buffer as unknown as Buffer;
 };
