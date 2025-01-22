@@ -4,6 +4,5 @@ export * from "./SideNav";
 export * from "./FileUploadArea";
 export * from "./Stepper";
 export * from "./LeavePageModal";
-export * from "./DeclineSubAgreementModal";
 export * from "./Toast";
 export * from "./SubAgreementScrollBox";

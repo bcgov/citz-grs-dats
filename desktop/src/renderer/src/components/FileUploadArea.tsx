@@ -3,13 +3,13 @@ import {
   Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { Box, IconButton, Stack, Typography } from "@mui/material";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 type Props = {
-  file?: File | null;
+  file?: File;
   accept: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onDrop: (file: File | null | undefined) => void;
+  onDrop: (file: File | null) => void;
   onDelete: () => void;
 };
 
@@ -115,15 +115,6 @@ export const FileUploadArea = ({
     .filter((ext) => !!ext) // Remove undefined values for unrecognized file types
     .join(","); // Join the extensions back into a comma-separated string
 
-  const fileInputRef = useRef<HTMLInputElement>(null); // Ref for the input element
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // Reset the input value to allow re-uploading the same file
-    }
-  };
-
   return (
     <Box
       sx={{
@@ -223,10 +214,11 @@ export const FileUploadArea = ({
       <input
         id="file-input"
         type="file"
-        ref={fileInputRef}
         accept={accept}
         style={{ width: 0 }}
-        onChange={handleFileChange}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          onChange(e);
+        }}
       />
     </Box>
   );
