@@ -57,7 +57,8 @@
     "electron-cookies": "1.1.0",
     "electron-updater": "6.3.9",
     "react-router-dom": "6.27.0",
-    "react-toastify": "11.0.2"
+    "react-toastify": "11.0.2",
+    "xlsx": "0.18.5"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.3",
