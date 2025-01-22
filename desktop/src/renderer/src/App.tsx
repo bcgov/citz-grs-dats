@@ -10,7 +10,8 @@ import {
 	HomePage,
 	LanInstructionsPage,
 	LanTransferPage,
-	SendRecordsPage
+	SendRecordsPage,
+  LanTransferPage,
 } from "./pages";
 
 export const TokenContext = createContext<string | undefined>(undefined);
