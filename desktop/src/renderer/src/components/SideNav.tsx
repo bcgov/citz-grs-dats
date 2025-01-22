@@ -30,21 +30,21 @@ type Props = {
 
 export const SideNav = ({ accessToken, idToken }: Props) => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const [currentPage, setCurrentPage] = useState("/");
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
   const [newPagePath, setNewPagePath] = useState("/");
 
   const onConfirmLeavePage = () => {
     setLeavePageModalOpen(false);
-    setCurrentPage(newPagePath);
     navigate(newPagePath);
   };
 
   const handleSelection = (path: string) => {
-    if (currentPage === path) return;
-    if (currentPage === "/") {
-      setCurrentPage(path);
+    if (
+      window.location.pathname === path ||
+      (window.location.pathname.startsWith(path) && path !== "/")
+    )
+      return;
+    if (window.location.pathname === "/") {
       navigate(path);
     } else {
       setNewPagePath(path);
@@ -59,12 +59,16 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
         sx={{
           gap: 1,
           border:
-            currentPage === path
+            window.location.pathname === path ||
+            (window.location.pathname.startsWith(path) && path !== "/")
               ? "2px solid var(--sidenav-item-border-current-page)"
               : "2px solid transparent",
           borderRadius: "5px",
           background:
-            currentPage === path ? theme.palette.secondary.light : "none",
+            window.location.pathname === path ||
+            (window.location.pathname.startsWith(path) && path !== "/")
+              ? theme.palette.secondary.light
+              : "none",
           "&:hover": {
             background: theme.palette.secondary.dark,
           },
@@ -86,8 +90,8 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
           height: "100%",
           maxHeight: "100vh",
           "& .MuiDrawer-paper": {
-            position: "relative",
-            width: "100%",
+            position: "fixed",
+            width: "17%",
             boxSizing: "border-box",
             padding: 1,
           },

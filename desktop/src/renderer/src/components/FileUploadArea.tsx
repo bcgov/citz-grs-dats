@@ -3,13 +3,15 @@ import {
   Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { Box, IconButton, Stack, Typography } from "@mui/material";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { toast } from "react-toastify";
+import { Toast } from "./Toast";
 
 type Props = {
-  file?: File;
+  file?: File | null;
   accept: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onDrop: (file: File | null) => void;
+  onDrop: (file: File | null | undefined) => void;
   onDelete: () => void;
 };
 
@@ -104,6 +106,16 @@ export const FileUploadArea = ({
       if (isAccepted) {
         onDrop(droppedFile);
       } else {
+        const fileTypes =
+          accept.length > 1
+            ? fileExtensions.replace(/, (?=[^,]*$)/, ", or ")
+            : fileExtensions;
+        toast.error(Toast, {
+          data: {
+            title: "Wrong file type",
+            message: `File type not accepted. Please upload an ${fileTypes} file.`,
+          },
+        });
         onDrop(null); // Notify parent that an invalid file was dropped
       }
     }
@@ -113,7 +125,53 @@ export const FileUploadArea = ({
     .split(",") // Split the input into an array of file types
     .map((type) => fileTypeExtensionMap[type.trim()]) // Map each file type to its corresponding extension
     .filter((ext) => !!ext) // Remove undefined values for unrecognized file types
-    .join(","); // Join the extensions back into a comma-separated string
+    .join(", "); // Join the extensions back into a comma-separated string
+
+  const fileInputRef = useRef<HTMLInputElement>(null); // Ref for the input element
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Get the selected file from the input
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    // Convert the accept string into an array of trimmed file types
+    const acceptedTypes = accept.split(",").map((type) => type.trim());
+
+    // Check if the file's MIME type or extension matches the accepted types
+    const isAccepted = acceptedTypes.some((type) => {
+      return (
+        selectedFile.type === type || // Check MIME type
+        (type.startsWith(".") && selectedFile.name.endsWith(type)) // Check file extension
+      );
+    });
+
+    if (isAccepted) {
+      // If the file is valid, pass it to the parent component
+      onChange(e);
+    } else {
+      // Generate a user-friendly list of accepted file types
+      const fileTypes =
+        accept.length > 1
+          ? fileExtensions.replace(/, (?=[^,]*$)/, ", or ") // Replace last comma with ", or "
+          : fileExtensions;
+
+      // Show an error message if the file type is not accepted
+      toast.error(Toast, {
+        data: {
+          title: "Wrong file type",
+          message: `File type not accepted. Please upload an ${fileTypes} file.`,
+        },
+      });
+
+      // Clear the input field to prevent an invalid file from being uploaded
+      e.target.value = "";
+    }
+
+    // Reset the input field to allow re-uploading the same file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   return (
     <Box
@@ -214,11 +272,10 @@ export const FileUploadArea = ({
       <input
         id="file-input"
         type="file"
+        ref={fileInputRef}
         accept={accept}
         style={{ width: 0 }}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-          onChange(e);
-        }}
+        onChange={handleFileChange}
       />
     </Box>
   );
