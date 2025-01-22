@@ -3,27 +3,45 @@ import { electronAPI } from "@electron-toolkit/preload";
 import { checkApiStatus, checkIpRange } from "./api";
 import { safePromise } from "./api/utils";
 import { fetchProtectedRoute, getUser } from "./api/sso";
+import {
+  isAccessionValid,
+  isApplicationValid,
+  parseXlsxFileList,
+} from "./api/transfer";
 
 const api = {
-	versions: process.versions,
-	checkApiStatus,
-	checkIpRange,
-	getCurrentApiUrl: () => ipcRenderer.invoke("get-current-api-url"),
-	selectDirectory: () => ipcRenderer.invoke("select-directory"),
-	sso: {
-		getUser,
-		fetchProtectedRoute,
-		startLoginProcess: () => ipcRenderer.invoke("start-login-process"),
-		logout: (idToken: string | undefined) => ipcRenderer.invoke("start-logout-process", idToken),
-	},
-	utils: {
-		safePromise,
-	},
-	workers: {
-		copyFolderAndMetadata: ({ filePath, transfer }: { filePath: string; transfer: string }) =>
-			ipcRenderer.invoke("copy-folder-and-metadata", { filePath, transfer }),
-		getFolderMetadata: ({ filePath }: { filePath: string }) => {
-			ipcRenderer.send("get-folder-metadata", { filePath });
+  versions: process.versions,
+  checkApiStatus,
+  checkIpRange,
+  getCurrentApiUrl: () => ipcRenderer.invoke("get-current-api-url"),
+  selectDirectory: ({ singleSelection }: { singleSelection?: boolean } = {}) =>
+    ipcRenderer.invoke("select-directory", { singleSelection }),
+  sso: {
+    getUser,
+    fetchProtectedRoute,
+    startLoginProcess: () => ipcRenderer.invoke("start-login-process"),
+    logout: (idToken: string | undefined) =>
+      ipcRenderer.invoke("start-logout-process", idToken),
+  },
+  utils: {
+    safePromise,
+  },
+  transfer: {
+    parseXlsxFileList,
+    isAccessionValid,
+    isApplicationValid,
+  },
+  workers: {
+    copyFolderAndMetadata: ({
+      filePath,
+      transfer,
+    }: {
+      filePath: string;
+      transfer: string;
+    }) =>
+      ipcRenderer.invoke("copy-folder-and-metadata", { filePath, transfer }),
+    getFolderMetadata: ({ filePath }: { filePath: string }) => {
+      ipcRenderer.send("get-folder-metadata", { filePath });
 
 			ipcRenderer.on(
 				"folder-metadata-progress",
