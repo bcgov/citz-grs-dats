@@ -1,4 +1,6 @@
 import * as XLSX from "xlsx";
+import { isAccessionValid } from "./isAccessionValid";
+import { isApplicationValid } from "./isApplicationValid";
 
 export const parseXlsxFileList = (
   fileList: File | null | undefined
@@ -20,7 +22,12 @@ export const parseXlsxFileList = (
               const accessionCell = sheet.B3?.v; // B3 cell value
               const applicationCell = sheet.B4?.v; // B4 cell value
 
-              if (accessionCell && applicationCell) {
+              if (
+                accessionCell &&
+                applicationCell &&
+                isAccessionValid(accessionCell.toString()) &&
+                isApplicationValid(applicationCell.toString())
+              ) {
                 resolve({
                   accession: accessionCell.toString(),
                   application: applicationCell.toString(),
