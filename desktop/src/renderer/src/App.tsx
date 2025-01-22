@@ -11,8 +11,7 @@ import {
 	LanInstructionsPage,
 	LanTransferPage,
 	SendRecordsPage,
-  LanTransferPage,
-} from "./pages";
+} from './pages';
 
 export const TokenContext = createContext<string | undefined>(undefined);
 
