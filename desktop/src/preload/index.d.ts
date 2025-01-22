@@ -4,6 +4,12 @@ import type {
 } from "@bcgov/citz-imb-sso-js-core";
 import type { ElectronAPI } from "@electron-toolkit/preload";
 
+type FileBufferObj = {
+  filename: string;
+  path: string;
+  buffer: Buffer;
+};
+
 declare global {
   interface Window {
     electron: ElectronAPI;
@@ -43,6 +49,9 @@ declare global {
           application: string;
           folders: string[];
         } | null>;
+        createZipBuffer: (
+          folders: Record<string, FileBufferObj[]>
+        ) => Promise<Buffer>;
       };
 
       workers: {

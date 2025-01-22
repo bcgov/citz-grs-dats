@@ -20,7 +20,11 @@ type Folder = {
   metadataProgress: number;
 };
 
-type FolderPathChanges = { original: string; new: string };
+type Change = {
+  originalFolderPath: string;
+  newFolderPath?: string;
+  deleted: boolean;
+};
 
 type FileBufferObj = {
   filename: string;
@@ -28,7 +32,7 @@ type FileBufferObj = {
   buffer: Buffer;
 };
 
-export const LanTransferPage = () => {
+export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
   const navigate = useNavigate();
   const [api] = useState(window.api); // Preload scripts
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
@@ -44,10 +48,7 @@ export const LanTransferPage = () => {
   >({});
   const [foldersToProcess, setFoldersToProcess] = useState<string[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [deletedFolders, setDeletedFolders] = useState<string[]>([]);
-  const [changedFolderPaths, setChangedFolderPaths] = useState<
-    FolderPathChanges[]
-  >([]);
+  const [changes, setChanges] = useState<Change[]>([]);
 
   if (folderBuffers) {
     // TEMP
@@ -319,9 +320,13 @@ export const LanTransferPage = () => {
         return row;
       })
     );
-    setChangedFolderPaths((prev) => [
+    setChanges((prev) => [
       ...prev,
-      { original: folderPath, new: result[0] },
+      {
+        originalFolderPath: folderPath,
+        newFolderPath: result[0],
+        deleted: false,
+      },
     ]);
     setFoldersToProcess((prev) => [...prev, result[0]]);
   };
@@ -427,13 +432,6 @@ export const LanTransferPage = () => {
     parseFileList();
   }, [fileList]);
 
-  // Ask for justification of changes if any folder paths changed or deleted
-  const handleLanUploadNextPress = () => {
-    if (deletedFolders.length > 0 || changedFolderPaths.length > 0)
-      setShowJustifyChangesModal(true);
-    else onNextPress();
-  };
-
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (currentViewIndex === 3) {
@@ -447,11 +445,80 @@ export const LanTransferPage = () => {
           },
         });
       }
-    } else if (currentViewIndex === 4) {
-      // Send transfer to API
-      // TODO
     }
   }, [currentViewIndex]);
+
+  // Ask for justification of changes if any folder paths changed or deleted
+  const handleLanUploadNextPress = () => {
+    if (changes.length > 0) {
+      // Folder paths changed or deleted
+      setShowJustifyChangesModal(true);
+    } else handleSendRequest();
+  };
+
+  const handleSendRequest = async () => {
+    if (!fileList || !transferForm || !accessToken) return;
+    // TODO: Show wait modal
+    // TODO: Show need to login modal if no accesstoken
+
+    // Prepare variables for request data
+    const apiUrl = await api.getCurrentApiUrl();
+    const requestUrl = `${apiUrl}/transfer/lan`;
+
+    const originalFoldersMetadata = {}; // TODO
+    const metadataV2 = {
+      admin: {
+        accession,
+        application,
+      },
+      folders: {}, // TODO
+      files: metadata,
+    };
+
+    const filelistArrayBuffer = await fileList.arrayBuffer();
+    const fileListBuffer = Buffer.from(filelistArrayBuffer);
+
+    const transferFormArrayBuffer = await fileList.arrayBuffer();
+    const transferFormBuffer = Buffer.from(transferFormArrayBuffer);
+
+    const contentBuffer = await api.transfer.createZipBuffer(folderBuffers);
+
+    // Formdata for request
+    const formData = new FormData();
+    formData.append("fileListBuffer", new Blob([fileListBuffer]), "file.bin");
+    formData.append("fileListFilename", fileList.name);
+    formData.append(
+      "transferFormBuffer",
+      new Blob([transferFormBuffer]),
+      "file.bin"
+    );
+    formData.append("transferFormFilename", transferForm.name);
+    formData.append("contentZipBuffer", new Blob([contentBuffer]), "file.bin");
+    formData.append(
+      "originalFoldersMetadata",
+      JSON.stringify(originalFoldersMetadata)
+    );
+    formData.append("metadataV2", JSON.stringify(metadataV2));
+    formData.append("changes", JSON.stringify(changes));
+    formData.append("changesJustification", changesJustification);
+
+    // Make request
+    const [error, result] = await api.sso.fetchProtectedRoute(
+      requestUrl,
+      accessToken,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (error) alert("An unexpected error occurred.");
+
+    const jsonResponse = await result.json();
+
+    if (jsonResponse.success) onNextPress(); // Proceed to the 'Done' view.
+    else alert("An unexpected error occurred.");
+  };
 
   // Send to home on completion
   const handleCompletion = () => navigate("/");
@@ -511,7 +578,7 @@ export const LanTransferPage = () => {
               setFolders={setFolders}
               processRowUpdate={processRowUpdate}
               setMetadata={setMetadata}
-              setDeletedFolders={setDeletedFolders}
+              setChanges={setChanges}
               onFolderEdit={handleEditClick}
               onNextPress={handleLanUploadNextPress}
               onBackPress={onBackPress}
@@ -533,7 +600,7 @@ export const LanTransferPage = () => {
             setExplanation={setChangesJustification}
             onConfirm={() => {
               setShowJustifyChangesModal(false);
-              onNextPress();
+              handleSendRequest();
             }}
           />
         </Stack>
