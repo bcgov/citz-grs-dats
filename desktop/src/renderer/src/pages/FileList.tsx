@@ -16,7 +16,7 @@ type Props = {
 	authenticated: boolean;
 };
 
-export const FolderListPage = ({ authenticated }: Props) => {
+export const FileListPage = ({ authenticated }: Props) => {
 	const [continueButtonIsEnabled, setContinueButtonIsEnabled] =
 		useState<boolean>(false);
 	const [continueModalIsOpen, setContinueModalIsOpen] =
@@ -26,12 +26,19 @@ export const FolderListPage = ({ authenticated }: Props) => {
 
 	const theme = useTheme();
 	const apiRef = useGridApiRef();
-	const folderList = useFolderList({ accessToken });
+	const {
+		folders,
+		setFolders,
+		setMetaData,
+		addPathArrayToFolders,
+		removeFolder,
+		submit,
+	} = useFolderList({ accessToken });
 
 	const handleProgress = useCallback(
 		(event: CustomEvent<{ source: string; progressPercentage: number }>) => {
 			const { source, progressPercentage } = event.detail;
-			folderList.setFolders((prevFolderList) =>
+			setFolders((prevFolderList) =>
 				prevFolderList.map((folder) =>
 					folder.folder === source
 						? { ...folder, progress: progressPercentage }
@@ -39,7 +46,7 @@ export const FolderListPage = ({ authenticated }: Props) => {
 				),
 			);
 		},
-		[folderList.setFolders],
+		[setFolders],
 	);
 
 	const handleCompletion = useCallback(
@@ -54,7 +61,7 @@ export const FolderListPage = ({ authenticated }: Props) => {
 			const { source, success, metadata: newMetadata } = event.detail;
 
 			if (success && newMetadata) {
-				folderList.setMetaData((prev) => ({
+				setMetaData((prev) => ({
 					...prev,
 					[source]: newMetadata[source],
 				}));
@@ -63,19 +70,19 @@ export const FolderListPage = ({ authenticated }: Props) => {
 				console.error(`Failed to process folder: ${source}`);
 			}
 		},
-		[folderList.setMetaData],
+		[setMetaData],
 	);
 
 	const handleRowUpdate = useCallback(
 		(newFolder: FolderRow) => {
-			folderList.setFolders((prevFolderList) =>
+			setFolders((prevFolderList) =>
 				prevFolderList.map((folder) =>
 					folder.id === newFolder.id ? newFolder : folder,
 				),
 			);
 			return newFolder;
 		},
-		[folderList.setFolders],
+		[setFolders],
 	);
 
 	const handleOpenContinueModel = useCallback(() => {
@@ -92,9 +99,9 @@ export const FolderListPage = ({ authenticated }: Props) => {
 
 	const handleFormSubmit = useCallback(
 		(formData) => {
-			folderList.submit(formData);
+			submit(formData);
 		},
-		[folderList.submit],
+		[submit],
 	);
 
 	useEffect(() => {
@@ -121,17 +128,11 @@ export const FolderListPage = ({ authenticated }: Props) => {
 	}, [handleCompletion, handleProgress]);
 
 	useEffect(() => {
-		let isEnabled = true;
+		const allFoldersProcessed = folders.every((folder) => folder.progress === 100);
+		const hasFolders = folders.length > 0;
 
-		if (folderList.folders.length <= 0) isEnabled = false;
-
-		if (!authenticated) isEnabled = false;
-
-		if (!folderList.folders.every((folder) => folder.progress === 100))
-			isEnabled = false;
-
-		setContinueButtonIsEnabled(isEnabled);
-	}, [folderList.folders, authenticated]);
+		setContinueButtonIsEnabled(allFoldersProcessed && hasFolders && authenticated);
+	}, [folders, authenticated]);
 
 	return (
 		<>
@@ -149,7 +150,7 @@ export const FolderListPage = ({ authenticated }: Props) => {
 				<Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
 					<SelectFolderButton
 						onRowChange={(inputPaths) =>
-							folderList.addPathArrayToFolders(inputPaths, apiRef)
+							addPathArrayToFolders(inputPaths, apiRef)
 						}
 					/>
 					<ContinueButton
@@ -178,8 +179,8 @@ export const FolderListPage = ({ authenticated }: Props) => {
 				}}
 			>
 				<FolderDisplayGrid
-					rows={folderList.folders}
-					onFolderDelete={folderList.removeFolder}
+					rows={folders}
+					onFolderDelete={removeFolder}
 					processRowUpdate={handleRowUpdate}
 					apiRef={apiRef}
 				/>

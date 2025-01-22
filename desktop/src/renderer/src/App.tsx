@@ -6,7 +6,7 @@ import { ToastContainer } from 'react-toastify';
 import { SideNav, VPNPopup } from './components';
 import { LeavePageModal } from './components/LeavePageModal';
 import {
-	FolderListPage,
+	FileListPage,
 	HomePage,
 	LanInstructionsPage,
 	SendRecordsPage,
@@ -113,7 +113,7 @@ function App(): JSX.Element {
 									path='/file-list'
 									element={
 										<TokenContext.Provider value={accessToken}>
-											<FolderListPage authenticated={!!accessToken} />
+											<FileListPage authenticated={!!accessToken} />
 										</TokenContext.Provider>
 									}
 								/>
