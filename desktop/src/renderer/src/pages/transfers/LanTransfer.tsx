@@ -1,6 +1,7 @@
 import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { Stepper, Toast } from "@renderer/components";
 import {
+  LanSubmissionAgreementView,
   LanUploadFileListView,
   LanUploadTransferFormView,
 } from "@renderer/components/transfer/lan-views";
@@ -152,6 +153,16 @@ export const LanTransferPage = () => {
             <LanUploadTransferFormView
               file={transferForm}
               setFile={setTransferForm}
+              onNextPress={onNextPress}
+              onBackPress={onBackPress}
+            />
+          )}
+          {currentViewIndex === 2 && (
+            <LanSubmissionAgreementView
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              accession={accession!}
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              application={application!}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
             />
