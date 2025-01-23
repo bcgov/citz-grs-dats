@@ -2,7 +2,7 @@ import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { Stepper, Toast } from "@renderer/components";
 import { JustifyChangesModal } from "@renderer/components/transfer";
 import {
-  LanCompletionView,
+  LanFinishView,
   LanSubmissionAgreementView,
   LanUploadFileListView,
   LanUploadTransferFormView,
@@ -40,13 +40,10 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   const [transferForm, setTransferForm] = useState<File | null | undefined>(
     undefined
   );
+  // Request to send transfer
   const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(
     null
   );
-
-  if (requestSuccessful) {
-    //
-  }
 
   // File list
   const [metadata, setMetadata] = useState<Record<string, unknown>>({});
@@ -465,6 +462,8 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
     if (changes.length > 0) {
       // Folder paths changed or deleted
       setShowJustifyChangesModal(true);
+    } else if (!accessToken) {
+      // TODO: Prompt use to login
     } else onNextPress();
   };
 
@@ -558,7 +557,7 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
               "Transfer form",
               "Submission agreement",
               "Confirmation",
-              "Done",
+              "Finish",
             ]}
             currentIndex={currentViewIndex}
           />
@@ -608,11 +607,12 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
             />
           )}
           {currentViewIndex === 4 && (
-            <LanCompletionView
+            <LanFinishView
               // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
               // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
+              wasRequestSuccessful={requestSuccessful}
               onNextPress={handleCompletion}
             />
           )}
@@ -623,7 +623,9 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
             setExplanation={setChangesJustification}
             onConfirm={() => {
               setShowJustifyChangesModal(false);
-              onNextPress();
+              if (!accessToken) {
+                // TODO: Prompt user to login
+              } else onNextPress();
             }}
           />
         </Stack>
