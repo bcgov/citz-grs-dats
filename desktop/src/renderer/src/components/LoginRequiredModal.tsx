@@ -42,7 +42,7 @@ const headerStyle = {
 const contentStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 2,
+  gap: 3,
   height: "fit-content",
   padding: "8px 24px",
 };
@@ -52,7 +52,7 @@ export const LoginRequiredModal = ({ open, onClose, onConfirm }: Props) => {
     <Modal open={open} onClose={onClose}>
       <Stack gap={3} sx={modalStyle}>
         <Box sx={headerStyle}>
-          <Stack direction="row" spacing={2}>
+          <Stack direction="row" spacing={1}>
             <WarningIcon sx={{ color: "var(--warning)", width: "20px" }} />
             <Typography variant="h3">You're logged out</Typography>
           </Stack>

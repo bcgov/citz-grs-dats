@@ -1,5 +1,5 @@
 import { Grid2 as Grid, Stack, Typography } from "@mui/material";
-import { Stepper, Toast } from "@renderer/components";
+import { LoginRequiredModal, Stepper, Toast } from "@renderer/components";
 import { JustifyChangesModal } from "@renderer/components/transfer";
 import {
   LanFinishView,
@@ -40,6 +40,7 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   const [transferForm, setTransferForm] = useState<File | null | undefined>(
     undefined
   );
+  const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
   // Request to send transfer
   const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(
     null
@@ -463,7 +464,8 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
       // Folder paths changed or deleted
       setShowJustifyChangesModal(true);
     } else if (!accessToken) {
-      // TODO: Prompt use to login
+      // Prompt use to login
+      setShowLoginRequiredModal(true);
     } else onNextPress();
   };
 
@@ -624,8 +626,17 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
             onConfirm={() => {
               setShowJustifyChangesModal(false);
               if (!accessToken) {
-                // TODO: Prompt user to login
+                // Prompt user to login
+                setShowLoginRequiredModal(true);
               } else onNextPress();
+            }}
+          />
+          <LoginRequiredModal
+            open={showLoginRequiredModal}
+            onClose={() => setShowLoginRequiredModal(false)}
+            onConfirm={() => {
+              setShowLoginRequiredModal(false);
+              api.sso.startLoginProcess();
             }}
           />
         </Stack>
