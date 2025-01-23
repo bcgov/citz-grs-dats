@@ -3,7 +3,11 @@ import { electronAPI } from "@electron-toolkit/preload";
 import { checkApiStatus, checkIpRange } from "./api";
 import { safePromise } from "./api/utils";
 import { fetchProtectedRoute, getUser } from "./api/sso";
-import { parseXlsxFileList } from "./api/transfer";
+import {
+  isAccessionValid,
+  isApplicationValid,
+  parseXlsxFileList,
+} from "./api/transfer";
 
 type FileBufferObj = {
   filename: string;
@@ -30,6 +34,8 @@ const api = {
   },
   transfer: {
     parseXlsxFileList,
+    isAccessionValid,
+    isApplicationValid,
   },
   workers: {
     getFolderMetadata: ({ filePath }: { filePath: string }) => {

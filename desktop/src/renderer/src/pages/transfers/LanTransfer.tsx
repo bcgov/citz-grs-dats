@@ -10,10 +10,6 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-type Props = {
-  authenticated: boolean;
-};
-
 type Folder = {
   id: number;
   folder: string;
@@ -30,7 +26,7 @@ type FileBufferObj = {
   buffer: Buffer;
 };
 
-export const LanTransferPage = ({ authenticated }: Props) => {
+export const LanTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [fileList, setFileList] = useState<File | null | undefined>(undefined);
@@ -422,9 +418,9 @@ export const LanTransferPage = ({ authenticated }: Props) => {
           if (
             !accession ||
             !application ||
-            accession === "" ||
-            application === ""
-          )
+            !api.transfer.isAccessionValid(accession) ||
+            !api.transfer.isApplicationValid(application)
+          ) {
             toast.error(Toast, {
               data: {
                 title: "Missing accession and/or application number",
@@ -432,9 +428,11 @@ export const LanTransferPage = ({ authenticated }: Props) => {
                   "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘admin’ property in the file list and save it, then try uploading the file again.",
               },
             });
-          setAccession(accession);
-          setApplication(application);
-          setFoldersToProcess(Object.keys(folders));
+          } else {
+            setAccession(accession);
+            setApplication(application);
+            setFoldersToProcess(Object.keys(folders));
+          }
         }
       }
     } else {
