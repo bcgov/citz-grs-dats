@@ -6,6 +6,7 @@ export const parseXlsxFileList = (
   accession: string;
   application: string;
   folders: string[];
+  foldersMetadata: Record<string, unknown>;
 } | null> => {
   return new Promise((resolve, reject) => {
     if (fileList) {
@@ -26,16 +27,27 @@ export const parseXlsxFileList = (
 
               // Extract folder names from column A starting at A2
               const folders: string[] = [];
+              const foldersMetadata: Record<string, unknown> = {};
+
               let rowIndex = 2; // Start at row 2 (A2)
               while (true) {
-                const cellAddress = `A${rowIndex}`;
-                const cell = fileList[cellAddress];
-                if (cell?.v) {
-                  folders.push(cell.v.toString());
-                  rowIndex++;
-                } else {
-                  break; // Stop when an empty cell is encountered
-                }
+                const folderName = fileList[`A${rowIndex}`]?.v?.toString();
+                if (!folderName) break;
+
+                folders.push(folderName);
+
+                foldersMetadata[folderName] = {
+                  schedule: fileList[`B${rowIndex}`]?.v ?? null,
+                  classification: fileList[`C${rowIndex}`]?.v ?? null,
+                  file: fileList[`D${rowIndex}`]?.v ?? null,
+                  opr: fileList[`E${rowIndex}`]?.v === "Y",
+                  startDate: fileList[`F${rowIndex}`]?.v ?? null,
+                  endDate: fileList[`G${rowIndex}`]?.v ?? null,
+                  soDate: fileList[`H${rowIndex}`]?.v ?? null,
+                  fdDate: fileList[`I${rowIndex}`]?.v ?? null,
+                };
+
+                rowIndex++;
               }
 
               if (accessionCell && applicationCell) {
@@ -43,6 +55,7 @@ export const parseXlsxFileList = (
                   accession: accessionCell.toString(),
                   application: applicationCell.toString(),
                   folders,
+                  foldersMetadata,
                 });
               } else {
                 resolve(null); // One or both cells are empty

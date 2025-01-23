@@ -105,7 +105,10 @@ function App(): JSX.Element {
               path="/send-records/lan/instructions"
               element={<LanInstructionsPage />}
             />
-            <Route path="/send-records/lan" element={<LanTransferPage />} />
+            <Route
+              path="/send-records/lan"
+              element={<LanTransferPage accessToken={accessToken} />}
+            />
           </Routes>
           <ToastContainer
             position="bottom-left"

@@ -1,8 +1,10 @@
 import yazl from "yazl";
+import path from "node:path";
+import { Buffer } from "node:buffer";
 
 type FileBufferObj = {
   filename: string;
-  path: string;
+  path: string; // Already includes the folder and filename
   buffer: Buffer;
 };
 
@@ -13,14 +15,13 @@ export const createZipBuffer = async (
     const zipfile = new yazl.ZipFile();
     const chunks: Buffer[] = [];
 
-    // Iterate over folders (keys)
-    Object.entries(folders).forEach(([folderName, files]) => {
-      files.forEach(({ filename, path, buffer }) => {
-        // Construct the full file path inside the zip
-        const filePath = path
-          ? `${folderName}/${path}/${filename}`
-          : `${folderName}/${filename}`;
-        zipfile.addBuffer(buffer, filePath);
+    // Iterate over folders
+    Object.entries(folders).forEach(([folder, bufferObjs]) => {
+      bufferObjs.forEach(({ path: filePath, buffer }) => {
+        zipfile.addBuffer(
+          Buffer.from(buffer),
+          `${folder}/${path.posix.normalize(filePath)}`
+        );
       });
     });
 

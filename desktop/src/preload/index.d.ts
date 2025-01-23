@@ -41,6 +41,7 @@ declare global {
         safePromise: (
           promise: Promise
         ) => Promise<[Error, null] | [null, ExtendedResponse]>;
+        fileToBuffer: (file: File) => Promise<Buffer>;
       };
 
       transfer: {
@@ -48,6 +49,7 @@ declare global {
           accession: string;
           application: string;
           folders: string[];
+          foldersMetadata: Record<string, unknown>;
         } | null>;
         createZipBuffer: (
           folders: Record<string, FileBufferObj[]>

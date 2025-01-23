@@ -32,7 +32,7 @@ type FileBufferObj = {
   buffer: Buffer;
 };
 
-export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
+export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   const navigate = useNavigate();
   const [api] = useState(window.api); // Preload scripts
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
@@ -40,19 +40,25 @@ export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
   const [transferForm, setTransferForm] = useState<File | null | undefined>(
     undefined
   );
+  const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(
+    null
+  );
+
+  if (requestSuccessful) {
+    //
+  }
 
   // File list
   const [metadata, setMetadata] = useState<Record<string, unknown>>({});
+  const [originalFolderList, setOriginalFolderList] = useState<
+    Record<string, unknown>
+  >({});
   const [folderBuffers, setFolderBuffers] = useState<
     Record<string, FileBufferObj[]>
   >({});
   const [foldersToProcess, setFoldersToProcess] = useState<string[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [changes, setChanges] = useState<Change[]>([]);
-
-  if (folderBuffers) {
-    // TEMP
-  }
 
   // Justify changes
   const [showJustifyChangesModal, setShowJustifyChangesModal] = useState(false);
@@ -195,10 +201,13 @@ export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
     ) => {
       const { source, success, buffers, error } = event.detail;
 
+      const sourceParts = source.split("\\");
+      const parentFolder = sourceParts[sourceParts.length - 1];
+
       if (success && buffers && buffers.length > 0) {
         setFolderBuffers((prev) => ({
           ...prev,
-          [source]: buffers,
+          [parentFolder ?? source]: buffers,
         }));
         console.log(`Successfully processed folder buffer: ${source}`);
       } else {
@@ -368,10 +377,11 @@ export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
         // Xlsx file
         const result = await api.transfer.parseXlsxFileList(fileList);
         if (result) {
-          const { accession, application, folders } = result;
+          const { accession, application, folders, foldersMetadata } = result;
           setAccession(accession);
           setApplication(application);
           setFoldersToProcess(folders);
+          setOriginalFolderList(foldersMetadata);
         } else {
           toast.error(Toast, {
             data: {
@@ -408,6 +418,7 @@ export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
           setAccession(accession);
           setApplication(application);
           setFoldersToProcess(Object.keys(folders));
+          setOriginalFolderList(folders);
         }
       }
     } else {
@@ -418,10 +429,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
       setConfirmAccAppChecked(false);
     }
   };
-
-  useEffect(() => {
-    console.log(metadata);
-  }, [metadata]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
@@ -445,6 +452,9 @@ export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
           },
         });
       }
+    } else if (currentViewIndex === 4) {
+      // Open of finish view
+      handleSendRequest();
     }
   }, [currentViewIndex]);
 
@@ -453,7 +463,7 @@ export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
     if (changes.length > 0) {
       // Folder paths changed or deleted
       setShowJustifyChangesModal(true);
-    } else handleSendRequest();
+    } else onNextPress();
   };
 
   const handleSendRequest = async () => {
@@ -461,26 +471,38 @@ export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
     // TODO: Show wait modal
     // TODO: Show need to login modal if no accesstoken
 
-    // Prepare variables for request data
+    // Request url
     const apiUrl = await api.getCurrentApiUrl();
     const requestUrl = `${apiUrl}/transfer/lan`;
 
-    const originalFoldersMetadata = {}; // TODO
+    // Get updated folder metadata
+    const updatedFolderList: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(originalFolderList)) {
+      const change = changes.find((c) => c.originalFolderPath === key);
+
+      if (change) {
+        if (!change.deleted) {
+          const newKey = change.newFolderPath ?? key; // Use new path if provided, otherwise keep the old key
+          updatedFolderList[newKey] = value;
+        }
+      } else {
+        updatedFolderList[key] = value; // Keep unchanged keys
+      }
+    }
+
+    // Prepare metadata V2 for request body
     const metadataV2 = {
       admin: {
         accession,
         application,
       },
-      folders: {}, // TODO
+      folders: updatedFolderList,
       files: metadata,
     };
 
-    const filelistArrayBuffer = await fileList.arrayBuffer();
-    const fileListBuffer = Buffer.from(filelistArrayBuffer);
-
-    const transferFormArrayBuffer = await fileList.arrayBuffer();
-    const transferFormBuffer = Buffer.from(transferFormArrayBuffer);
-
+    // Prepare file buffers for request body
+    const fileListBuffer = await api.utils.fileToBuffer(fileList);
+    const transferFormBuffer = await api.utils.fileToBuffer(transferForm);
     const contentBuffer = await api.transfer.createZipBuffer(folderBuffers);
 
     // Formdata for request
@@ -496,13 +518,14 @@ export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
     formData.append("contentZipBuffer", new Blob([contentBuffer]), "file.bin");
     formData.append(
       "originalFoldersMetadata",
-      JSON.stringify(originalFoldersMetadata)
+      JSON.stringify(originalFolderList)
     );
     formData.append("metadataV2", JSON.stringify(metadataV2));
     formData.append("changes", JSON.stringify(changes));
     formData.append("changesJustification", changesJustification);
 
     // Make request
+    console.log("Making lan transfer request.");
     const [error, result] = await api.sso.fetchProtectedRoute(
       requestUrl,
       accessToken,
@@ -512,12 +535,13 @@ export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
       }
     );
 
-    if (error) alert("An unexpected error occurred.");
+    if (error) setRequestSuccessful(false);
 
     const jsonResponse = await result.json();
+    console.log("Lan transfer response:", jsonResponse);
 
-    if (jsonResponse.success) onNextPress(); // Proceed to the 'Done' view.
-    else alert("An unexpected error occurred.");
+    if (jsonResponse.success) setRequestSuccessful(true);
+    else setRequestSuccessful(false);
   };
 
   // Send to home on completion
@@ -600,7 +624,7 @@ export const LanTransferPage = ({ accessToken }: { accessToken: string }) => {
             setExplanation={setChangesJustification}
             onConfirm={() => {
               setShowJustifyChangesModal(false);
-              handleSendRequest();
+              onNextPress();
             }}
           />
         </Stack>
