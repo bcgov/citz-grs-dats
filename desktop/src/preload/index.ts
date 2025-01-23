@@ -3,7 +3,12 @@ import { electronAPI } from "@electron-toolkit/preload";
 import { checkApiStatus, checkIpRange } from "./api";
 import { fileToBuffer, safePromise } from "./api/utils";
 import { fetchProtectedRoute, getUser } from "./api/sso";
-import { createZipBuffer, parseXlsxFileList } from "./api/transfer";
+import {
+  isAccessionValid,
+  isApplicationValid,
+  createZipBuffer,
+  parseXlsxFileList,
+} from "./api/transfer";
 
 type FileBufferObj = {
   filename: string;
@@ -32,6 +37,8 @@ const api = {
   transfer: {
     parseXlsxFileList,
     createZipBuffer,
+    isAccessionValid,
+    isApplicationValid,
   },
   workers: {
     getFolderMetadata: ({ filePath }: { filePath: string }) => {

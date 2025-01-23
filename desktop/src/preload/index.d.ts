@@ -54,6 +54,8 @@ declare global {
         createZipBuffer: (
           folders: Record<string, FileBufferObj[]>
         ) => Promise<Buffer>;
+        isAccessionValid: (accession: string) => boolean;
+        isApplicationValid: (application: string) => boolean;
       };
 
       workers: {
