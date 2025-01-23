@@ -16,3 +16,4 @@ export * from "./isChecksumValid";
 export * from "./createFinalTransfer";
 export * from "./validateContentMatchesMetadata";
 export * from "./validateMetadataFoldersMatchesFiles";
+export * from "./createStandardTransferZip";

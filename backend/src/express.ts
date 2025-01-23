@@ -1,7 +1,7 @@
 import {
-	expressUtilitiesMiddleware,
-	healthModule,
-	configModule,
+  expressUtilitiesMiddleware,
+  healthModule,
+  configModule,
 } from "@bcgov/citz-imb-express-utilities";
 import cors from "cors";
 import express from "express";
@@ -10,18 +10,17 @@ import cookieParser from "cookie-parser";
 import { CORS_OPTIONS, RATE_LIMIT_OPTIONS } from "./config";
 import { ENV } from "./config";
 import {
-	authRouter,
-	chesRouter,
-	healthRouter,
-	rabbitRouter,
-	s3Router,
-	filelistRouter,
-	submissionAgreementRouter,
-	transferRouter,
+  authRouter,
+  chesRouter,
+  healthRouter,
+  rabbitRouter,
+  s3Router,
+  filelistRouter,
+  submissionAgreementRouter,
+  transferRouter,
 } from "./modules";
 import { protectedRoute } from "./modules/auth/middleware";
 import type { Request, Response } from "express";
-import multer from "multer";
 
 const { ENVIRONMENT } = ENV;
 
@@ -35,7 +34,6 @@ app.use(cors(CORS_OPTIONS));
 app.use(rateLimit(RATE_LIMIT_OPTIONS));
 app.use(cookieParser());
 app.set("view engine", "ejs");
-const upload = multer({ storage: multer.memoryStorage() });
 
 // Add express utils middleware.
 app.use(expressUtilitiesMiddleware);
@@ -48,7 +46,7 @@ healthModule(app); // Route (/health)
 configModule(app, { ENVIRONMENT }); // Route (/config)
 
 app.use("/filelist", protectedRoute(), filelistRouter);
-app.use("/transfer", protectedRoute(), upload.single("file"), transferRouter);
+app.use("/transfer", protectedRoute(), transferRouter);
 app.use("/submission-agreement", protectedRoute(), submissionAgreementRouter);
 app.use("/auth", authRouter);
 app.use("/rabbit", rabbitRouter);
@@ -57,7 +55,7 @@ app.use("/ches", chesRouter);
 app.use("/health", healthRouter); // Includes (/health/services)
 
 app.use("/test", protectedRoute(["Admin"]), (req: Request, res: Response) => {
-	res.json({ message: "YES" });
+  res.json({ message: "YES" });
 });
 
 export default app;
