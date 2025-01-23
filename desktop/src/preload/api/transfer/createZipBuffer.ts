@@ -20,7 +20,7 @@ export const createZipBuffer = async (
       bufferObjs.forEach(({ path: filePath, buffer }) => {
         zipfile.addBuffer(
           Buffer.from(buffer),
-          `${folder}/${path.posix.normalize(filePath)}`
+          `${folder}${path.posix.normalize(filePath)}`
         );
       });
     });

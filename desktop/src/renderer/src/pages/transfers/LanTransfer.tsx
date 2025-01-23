@@ -470,8 +470,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
 
   const handleSendRequest = async () => {
     if (!fileList || !transferForm || !accessToken) return;
-    // TODO: Show wait modal
-    // TODO: Show need to login modal if no accesstoken
 
     // Request url
     const apiUrl = await api.getCurrentApiUrl();
@@ -528,18 +526,17 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
 
     // Make request
     console.log("Making lan transfer request.");
-    const [error, result] = await api.sso.fetchProtectedRoute(
-      requestUrl,
-      accessToken,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
+    const response = await fetch(requestUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
+    });
 
-    if (error) setRequestSuccessful(false);
+    if (!response.ok) setRequestSuccessful(false);
 
-    const jsonResponse = await result.json();
+    const jsonResponse = await response.json();
     console.log("Lan transfer response:", jsonResponse);
 
     if (jsonResponse.success) setRequestSuccessful(true);
