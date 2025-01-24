@@ -19,8 +19,11 @@ const { S3_BUCKET, INTERNAL_BACKEND_URL } = ENV;
 
 // Create lan transfer.
 export const lan = errorWrapper(async (req: Request, res: Response) => {
+  console.log("Debug 2");
   const { getStandardResponse, getZodValidatedBody, user, token, files } = req;
   const body = getZodValidatedBody(lanTransferBodySchema); // Validate request body
+
+  console.log("Debug 3");
 
   let fileListBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "fileListBuffer"
