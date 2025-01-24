@@ -41,7 +41,7 @@ export const LanSubmissionAgreementView = ({
             fontSize: "0.8em",
           }}
         >
-          <b>Do you accept the Submission Agreement?</b> *
+          <b>Do you accept the Submission Agreement? (required)</b> *
         </Typography>
         <RadioGroup
           value={accept === null ? null : accept ? "Yes" : "No"}
