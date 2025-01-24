@@ -20,7 +20,7 @@ export const StatusCell = ({ params }: Props) => {
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-      {complete && !invalidPath ? (
+      {complete && !invalidPath && (
         <Stack direction="row" gap={1}>
           <Tooltip title="Upload complete.">
             <ProgressIcon
@@ -31,7 +31,8 @@ export const StatusCell = ({ params }: Props) => {
           </Tooltip>
           <Typography>{`${progress}%`}</Typography>
         </Stack>
-      ) : (
+      )}
+      {!complete && !invalidPath && (
         <Stack direction="row" gap={1}>
           <Tooltip title="Upload in progress.">
             <ProgressIcon

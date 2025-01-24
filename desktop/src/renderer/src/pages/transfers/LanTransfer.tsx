@@ -461,7 +461,7 @@ export const LanTransferPage = () => {
             setAccession(accession);
             setApplication(application);
             setFoldersToProcess(
-              Object.keys(folders).filter((folder) => folder !== "")
+              Object.keys(folders).filter((folder) => folder.trim() !== "")
             );
           }
         }

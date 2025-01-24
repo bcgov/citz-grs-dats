@@ -38,7 +38,7 @@ export const parseXlsxFileList = (
           while (true) {
             const cellAddress = `A${rowIndex}`;
             const cell = fileList[cellAddress];
-            if (cell?.v && cell?.v?.toString() !== "") {
+            if (cell?.v && cell?.v?.toString().trim() !== "") {
               folders.push(cell.v.toString());
               rowIndex++;
             } else {
