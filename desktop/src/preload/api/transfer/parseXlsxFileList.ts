@@ -25,9 +25,12 @@ export const parseXlsxFileList = (
           if (!coverPage || !fileList)
             reject('Missing on or more of ["COVER PAGE", "FILE LIST"].');
 
+          if (!(coverPage.B3?.v && coverPage.B4?.v))
+            return reject("Invalid accession and/or application.");
+
           // Access cells
-          const accession = coverPage.B3?.v.toString();
-          const application = coverPage.B4?.v.toString();
+          const accession = coverPage.B3.v.toString();
+          const application = coverPage.B4.v.toString();
 
           // Extract folder names from column A starting at A2
           const folders: string[] = [];
@@ -35,7 +38,7 @@ export const parseXlsxFileList = (
           while (true) {
             const cellAddress = `A${rowIndex}`;
             const cell = fileList[cellAddress];
-            if (cell?.v) {
+            if (cell?.v && cell?.v?.toString() !== "") {
               folders.push(cell.v.toString());
               rowIndex++;
             } else {
@@ -44,7 +47,7 @@ export const parseXlsxFileList = (
           }
 
           if (!(isAccessionValid(accession) && isApplicationValid(application)))
-            reject("Invalid accession and/or application.");
+            return reject("Invalid accession and/or application.");
 
           resolve({
             accession,
