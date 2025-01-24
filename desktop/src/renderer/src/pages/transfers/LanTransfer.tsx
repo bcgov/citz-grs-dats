@@ -390,19 +390,36 @@ export const LanTransferPage = () => {
       if (fileName.endsWith(".xlsx")) {
         // Xlsx file
         const result = await api.transfer.parseXlsxFileList(fileList);
-        if (result) {
+
+        // Promise rejected
+        if (typeof result === "string") {
+          let toastData = {
+            title: "An unexpected error occurred",
+            message: result,
+          };
+
+          if (result === "Invalid accession and/or application.")
+            toastData = {
+              title: "Missing accession and/or application number",
+              message:
+                "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘Cover Page’ tab in the file list and save it, then try uploading the file again.",
+            };
+
+          if (result === 'Missing on or more of ["COVER PAGE", "FILE LIST"].')
+            toastData = {
+              title: "File List is malformed",
+              message:
+                "Your file list (ARS 662) is missing a ‘Cover Page’ and/or ‘File List’ sheet. Please only use Digital File List's created in DATS.",
+            };
+
+          // Create a toast message
+          toast.error(Toast, { data: toastData });
+        } else {
+          // Save results
           const { accession, application, folders } = result;
           setAccession(accession);
           setApplication(application);
           setFoldersToProcess(folders);
-        } else {
-          toast.error(Toast, {
-            data: {
-              title: "Missing accession and/or application number",
-              message:
-                "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘Cover Page’ tab in the file list and save it, then try uploading the file again.",
-            },
-          });
         }
       } else if (fileName.endsWith(".json")) {
         // Json file

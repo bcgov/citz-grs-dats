@@ -1,4 +1,4 @@
 export * from "./AccAppConfirmation";
 export * from "./JustifyChangesModal";
-export * from "./FolderUploadGrid";
+export * from "./UploadGrid";
 export * from "./DeclineSubAgreementModal";
