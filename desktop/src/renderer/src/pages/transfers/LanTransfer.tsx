@@ -304,22 +304,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
     }
   }, [foldersToProcess]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    if (currentViewIndex === 3) {
-      // Open of upload view
-      if (folders.some((folder) => folder.invalidPath)) {
-        toast.error(Toast, {
-          data: {
-            title: "Folder upload unsuccessful",
-            message:
-              "One or more of your folders was not successfully uploaded. Update the folder path(s) by clicking the corresponding Edit icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
-          },
-        });
-      }
-    }
-  }, [currentViewIndex]);
-
   // Toast message once folders have been successfully uploaded
   useEffect(() => {
     if (
