@@ -1,6 +1,6 @@
 import { useFolderList } from '@/hooks';
 import { Lightbulb as TipIcon } from '@mui/icons-material';
-import { Box, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Stack, Typography, useTheme, Grid2 as Grid } from '@mui/material';
 import { useGridApiRef } from '@mui/x-data-grid';
 import {
 	ContinueButton,
@@ -139,63 +139,70 @@ export const FileListPage = ({ authenticated }: Props) => {
 	}, [folders, authenticated]);
 
 	return (
-		<>
-			<Stack
-				direction='column'
-				spacing={1}
-				sx={{
-					width: '100%',
-					minHeight: '7vh',
-					padding: 2,
-					flexShrink: 0,
-					background: `${theme.palette.primary}`,
-				}}
+		<Grid container>
+			<Grid size={0.5} />
+			<Grid
+				size={11}
+				sx={{ paddingTop: 3 }}
 			>
-				<Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-					<SelectFolderButton
-						onRowChange={(inputPaths) =>
-							addPathArrayToFolders(inputPaths, apiRef)
-						}
-					/>
-					<ContinueButton
-						onContinue={handleOpenContinueModel}
-						isEnabled={continueButtonIsEnabled}
+				<Stack
+					direction='column'
+					spacing={1}
+					sx={{
+						width: '100%',
+						minHeight: '7vh',
+						padding: 2,
+						flexShrink: 0,
+						background: `${theme.palette.primary}`,
+					}}
+				>
+					<Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+						<SelectFolderButton
+							onRowChange={(inputPaths) =>
+								addPathArrayToFolders(inputPaths, apiRef)
+							}
+						/>
+						<ContinueButton
+							onContinue={handleOpenContinueModel}
+							isEnabled={continueButtonIsEnabled}
+						/>
+					</Box>
+					<Stack
+						direction='row'
+						spacing={1}
+					>
+						<TipIcon sx={{ fontSize: '0.9em', color: 'var(--bcgov-yellow)' }} />
+						<Typography sx={{ fontSize: '0.75em', color: 'var(--tip)' }}>
+							<b>View/Edit Mode:</b> If a row is in 'View Mode' you can double
+							click on any cell to put it in 'Edit Mode'.
+						</Typography>
+					</Stack>
+				</Stack>
+				<Box
+					sx={{
+						height: '90vh',
+						paddingLeft: 2,
+						paddingRight: 2,
+						flexShrink: 0,
+						background: `${theme.palette.primary}`,
+					}}
+				>
+					<FolderDisplayGrid
+						rows={folders}
+						onFolderDelete={removeFolder}
+						processRowUpdate={handleRowUpdate}
+						apiRef={apiRef}
 					/>
 				</Box>
-				<Stack
-					direction='row'
-					spacing={1}
-				>
-					<TipIcon sx={{ fontSize: '0.9em', color: 'var(--bcgov-yellow)' }} />
-					<Typography sx={{ fontSize: '0.75em', color: 'var(--tip)' }}>
-						<b>View/Edit Mode:</b> If a row is in 'View Mode' you can double
-						click on any cell to put it in 'Edit Mode'.
-					</Typography>
-				</Stack>
-			</Stack>
-			<Box
-				sx={{
-					height: '90vh',
-					paddingLeft: 2,
-					paddingRight: 2,
-					flexShrink: 0,
-					background: `${theme.palette.primary}`,
-				}}
-			>
-				<FolderDisplayGrid
-					rows={folders}
-					onFolderDelete={removeFolder}
-					processRowUpdate={handleRowUpdate}
-					apiRef={apiRef}
-				/>
-			</Box>
-			{continueModalIsOpen && (
-				<ContinueModal
-					modalOpen={continueModalIsOpen}
-					modalClose={handleClose}
-					modalSubmit={handleFormSubmit}
-				/>
-			)}
-		</>
+				{continueModalIsOpen && (
+					<ContinueModal
+						modalOpen={continueModalIsOpen}
+						modalClose={handleClose}
+						modalSubmit={handleFormSubmit}
+					/>
+				)}
+			</Grid>
+			<Grid size={0.5} />
+		</Grid>
 	);
 };

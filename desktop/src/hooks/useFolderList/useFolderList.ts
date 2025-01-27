@@ -1,4 +1,3 @@
-import { fetchProtectedRoute } from '@/preload/api/sso';
 import { useCallback, useEffect, useState } from 'react';
 import type { FolderRow } from '../../renderer/src/components/file-list';
 import { convertArrayToObject } from './convertArrayToObject';
@@ -8,6 +7,7 @@ export const useFolderList = ({ accessToken }) => {
   const [metaData, setMetaData] = useState<Record<string, unknown>>({})
   const [pendingPaths, setPendingPaths] = useState<string[]>([]);
   const [workers] = useState(window.api.workers);
+  const { fetchProtectedRoute } = window.api.sso;
 
   const getFolderMetadata = useCallback(
     async (filePath: string) => {
@@ -123,7 +123,7 @@ export const useFolderList = ({ accessToken }) => {
 
       console.log('finish submit', { response, folders, metaData });
     },
-    [accessToken, metaData, folders],
+    [accessToken, fetchProtectedRoute, folders, metaData],
   )
 
 
