@@ -24,7 +24,7 @@ type Props = {
   onBackPress: () => void;
 };
 
-export const LanUploadView = ({
+export const LanConfirmationView = ({
   accession,
   application,
   folders,

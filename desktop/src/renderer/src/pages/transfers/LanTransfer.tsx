@@ -5,7 +5,7 @@ import {
   LanSubmissionAgreementView,
   LanUploadFileListView,
   LanUploadTransferFormView,
-  LanUploadView,
+  LanConfirmationView,
 } from "@renderer/components/transfer/lan-views";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -540,7 +540,7 @@ export const LanTransferPage = () => {
             />
           )}
           {currentViewIndex === 3 && (
-            <LanUploadView
+            <LanConfirmationView
               // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
               // biome-ignore lint/style/noNonNullAssertion: <explanation>

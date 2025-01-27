@@ -30,5 +30,12 @@ export const getXlsxFileListToastData = (msg: string): ToastData => {
         "Your file list (ARS 662) is missing a ‘Cover Page’ and/or ‘File List’ sheet. Please only use Digital File List's created in DATS.",
     };
 
+  if (msg === "Folders is empty.")
+    toastData = {
+      title: "Missing File List data",
+      message:
+        "Your file list (ARS 662) is missing folder data. Please add this information to the ‘File List’ tab in the file list and save it, then try uploading the file again.",
+    };
+
   return toastData;
 };
