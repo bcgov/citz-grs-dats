@@ -1,6 +1,6 @@
 import { Button } from "@bcgov/design-system-react-components";
 import { Box, Stack, Typography } from "@mui/material";
-import { FolderUploadGrid } from "../FolderUploadGrid";
+import { FolderUploadGrid } from "../UploadGrid";
 import { useGridApiRef } from "@mui/x-data-grid";
 
 type Folder = {
@@ -30,7 +30,7 @@ type Props = {
   onBackPress: () => void;
 };
 
-export const LanUploadView = ({
+export const LanConfirmationView = ({
   accession,
   application,
   folders,

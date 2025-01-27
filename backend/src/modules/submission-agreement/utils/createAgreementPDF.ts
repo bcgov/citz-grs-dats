@@ -53,7 +53,6 @@ export const createAgreementPDF = async ({
 
       // Header
       doc
-        .font(fontBold)
         .fontSize(12)
         .text("BC GOVERNMENT DIGITAL ARCHIVES\nSUBMISSION AGREEMENT", {
           align: "center",
@@ -69,7 +68,7 @@ The purpose of this agreement is to transfer Full Retention (FR) government reco
 The Ministry and Digital Archives agree that:
 `;
 
-      doc.font(fontRegular).fontSize(11).text(agreementIntro, {
+      doc.fontSize(11).text(agreementIntro, {
         align: "left",
       });
 
@@ -186,25 +185,20 @@ The Ministry and Digital Archives agree that:
 
       // Add signature and date text above the lines
       doc
-        .font(fontAutography) // Signature-like font
         .fontSize(18)
         .text(ministrySignature, ministryRepX, doc.y + signatureYOffset, {
           width: signatureWidth,
           align: "center",
         });
 
-      doc
-        .font(fontRegular) // Date in regular font
-        .fontSize(12)
-        .text(ministryDate, dateX, doc.y + dateYOffset, {
-          width: signatureWidth,
-          align: "center",
-        });
+      doc.fontSize(12).text(ministryDate, dateX, doc.y + dateYOffset, {
+        width: signatureWidth,
+        align: "center",
+      });
 
       // Add labels directly under the lines
       const lineBottomY = doc.y + labelYOffset;
       doc
-        .font(fontRegular)
         .fontSize(12)
         .text("Ministry Representative", ministryRepX, lineBottomY)
         .text("Date", dateX, lineBottomY);

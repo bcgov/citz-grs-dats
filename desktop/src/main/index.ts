@@ -17,6 +17,11 @@ import {
   getFolderMetadata,
   selectDirectory,
 } from "./fileProcessing/actions";
+import EventEmitter from "node:events";
+
+// Set because we have many listeners when the worker scripts are running for every folder uploaded.
+EventEmitter.defaultMaxListeners = 1000; // Set globally for all EventEmitters
+ipcMain.setMaxListeners(1000); // Explicitly set for ipcMain
 
 type FileBufferObj = {
   filename: string;
