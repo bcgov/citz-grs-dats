@@ -390,9 +390,9 @@ export const LanTransferPage = () => {
           if (
             !accession ||
             !application ||
-            accession === "" ||
-            application === ""
-          )
+            !api.transfer.isAccessionValid(accession) ||
+            !api.transfer.isApplicationValid(application)
+          ) {
             toast.error(Toast, {
               data: {
                 title: "Missing accession and/or application number",
@@ -400,6 +400,7 @@ export const LanTransferPage = () => {
                   "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘admin’ property in the file list and save it, then try uploading the file again.",
               },
             });
+          }
           setAccession(accession);
           setApplication(application);
           setFoldersToProcess(Object.keys(folders));
@@ -413,10 +414,6 @@ export const LanTransferPage = () => {
       setConfirmAccAppChecked(false);
     }
   };
-
-  useEffect(() => {
-    console.log(metadata);
-  }, [metadata]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {

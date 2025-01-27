@@ -43,6 +43,8 @@ declare global {
           application: string;
           folders: string[];
         } | null>;
+        isAccessionValid: (accession: string) => boolean;
+        isApplicationValid: (application: string) => boolean;
       };
 
       workers: {
