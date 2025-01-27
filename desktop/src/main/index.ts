@@ -29,12 +29,6 @@ type FileBufferObj = {
   buffer: Buffer;
 };
 
-type FileBufferObj = {
-  filename: string;
-  path: string;
-  buffer: Buffer;
-};
-
 app.setName("Digital Archives Transfer Service");
 
 const DEBUG = is.dev;
