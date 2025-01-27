@@ -50,12 +50,14 @@ declare global {
           application: string;
           folders: string[];
           foldersMetadata: Record<string, unknown>;
-        } | null>;
+        }>;
         createZipBuffer: (
           folders: Record<string, FileBufferObj[]>
         ) => Promise<Buffer>;
-        isAccessionValid: (accession: string) => boolean;
-        isApplicationValid: (application: string) => boolean;
+        accessionExists: (accession?: string) => boolean;
+        isAccessionValid: (accession?: string) => boolean;
+        applicationExists: (application?: string) => boolean;
+        isApplicationValid: (application?: string) => boolean;
       };
 
       workers: {

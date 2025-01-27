@@ -201,7 +201,8 @@ const writeOrAppendMetadata = async (
       await writeOrAppendMetadata(destination, { ...metadata, totalSize });
     }
 
-    if (metadata) console.log(`Completed metadata worker for ${source}`);
+    if (!metadata) throw Error("Generated without metadata.");
+
     parentPort?.postMessage({
       type: "completion",
       success: true,
