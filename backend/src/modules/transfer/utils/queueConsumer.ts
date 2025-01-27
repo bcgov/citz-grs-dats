@@ -10,7 +10,6 @@ import { transferEmail } from "./email";
 import { sortPSPContent } from "./sortPSPContent";
 import type { TransferZod } from "../entities";
 import { createPSP } from "./createPSP";
-import type { AdminMetadataZodType } from "../schemas";
 import { getFilenameByRegex } from "./getFilenameByRegex";
 import { createFinalTransfer } from "./createFinalTransfer";
 import { isChecksumValid } from "./isChecksumValid";
@@ -89,7 +88,7 @@ export const queueConsumer = async (
       folderContent: psp.content,
       buffer,
       metadata: metadata as unknown as {
-        admin: AdminMetadataZodType | TransferZod["metadata"]["admin"];
+        admin: TransferZod["metadata"]["admin"];
         folders: TransferZod["metadata"]["folders"];
         files: TransferZod["metadata"]["files"];
       },
