@@ -38,16 +38,15 @@ declare global {
       };
 
       transfer: {
-        parseXlsxFileList: (fileList: File | null | undefined) => Promise<
-          | {
-              accession: string;
-              application: string;
-              folders: string[];
-            }
-          | string
-        >;
-        isAccessionValid: (accession: string) => boolean;
-        isApplicationValid: (application: string) => boolean;
+        parseXlsxFileList: (fileList: File | null | undefined) => Promise<{
+          accession: string;
+          application: string;
+          folders: string[];
+        }>;
+        accessionExists: (accession?: string) => boolean;
+        isAccessionValid: (accession?: string) => boolean;
+        applicationExists: (application?: string) => boolean;
+        isApplicationValid: (application?: string) => boolean;
       };
 
       workers: {

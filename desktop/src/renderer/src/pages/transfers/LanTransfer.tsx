@@ -9,6 +9,11 @@ import {
 } from "@renderer/components/transfer/lan-views";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import {
+  getXlsxFileListToastData,
+  parseJsonFile,
+  type ToastData,
+} from "./utils";
 
 type Folder = {
   id: number;
@@ -46,6 +51,10 @@ export const LanTransferPage = () => {
     FolderPathChanges[]
   >([]);
 
+  if (metadata && folderBuffers) {
+    // TODO: TEMP so we can build
+  }
+
   // Justify changes
   const [showJustifyChangesModal, setShowJustifyChangesModal] = useState(false);
   const [changesJustification, setChangesJustification] = useState("");
@@ -76,19 +85,24 @@ export const LanTransferPage = () => {
   }, [fileList]);
 
   // Handle metadata progress and completion events
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const handleProgress = (
       event: CustomEvent<{ source: string; progressPercentage: number }>
     ) => {
       const { source, progressPercentage } = event.detail;
       // Update folder progress
-      setFolders((prevRows) =>
-        prevRows.map((row) =>
-          row.folder === source
-            ? { ...row, metadataProgress: progressPercentage }
-            : row
-        )
-      );
+      const currentProgress =
+        folders.find((row) => row.folder === source)?.metadataProgress ?? 0;
+
+      if (currentProgress !== 100)
+        setFolders((prevRows) =>
+          prevRows.map((row) =>
+            row.folder === source
+              ? { ...row, metadataProgress: progressPercentage }
+              : row
+          )
+        );
     };
 
     const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
@@ -117,9 +131,9 @@ export const LanTransferPage = () => {
           ...prev,
           [source]: newMetadata[source],
         }));
-        console.log(`Successfully processed folder: ${source}`);
+        console.log(`Successfully processed folder metadata: ${source}`);
       } else {
-        console.error(`Failed to process folder: ${source}`);
+        console.error(`Failed to process folder metadata: ${source}`);
       }
     };
 
@@ -153,19 +167,24 @@ export const LanTransferPage = () => {
   }, []);
 
   // Handle buffer progress and completion events
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const handleProgress = (
       event: CustomEvent<{ source: string; progressPercentage: number }>
     ) => {
       const { source, progressPercentage } = event.detail;
       // Update folder progress
-      setFolders((prevRows) =>
-        prevRows.map((row) =>
-          row.folder === source
-            ? { ...row, bufferProgress: progressPercentage }
-            : row
-        )
-      );
+      const currentProgress =
+        folders.find((row) => row.folder === source)?.bufferProgress ?? 0;
+
+      if (currentProgress !== 100)
+        setFolders((prevRows) =>
+          prevRows.map((row) =>
+            row.folder === source
+              ? { ...row, bufferProgress: progressPercentage }
+              : row
+          )
+        );
     };
 
     const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
@@ -194,9 +213,9 @@ export const LanTransferPage = () => {
           ...prev,
           [source]: buffers,
         }));
-        console.log(`Successfully processed folder: ${source}`);
+        console.log(`Successfully processed folder buffers: ${source}`);
       } else {
-        console.error(`Failed to process folder: ${source}`);
+        console.error(`Failed to process folder buffers: ${source}`);
       }
     };
 
@@ -354,125 +373,113 @@ export const LanTransferPage = () => {
     setFoldersToProcess((prev) => [...prev, result[0]]);
   };
 
-  // Parse JSON file list
-  const parseJsonFile = (): Promise<object> => {
-    return new Promise((resolve, reject) => {
-      if (fileList) {
-        const reader = new FileReader();
-
-        reader.onload = (event) => {
-          try {
-            if (event.target?.result) {
-              const jsonObject = JSON.parse(event.target.result as string);
-              resolve(jsonObject);
-            } else {
-              reject(new Error("File content is empty."));
-            }
-          } catch (error) {
-            reject(new Error("Invalid JSON file."));
-          }
-        };
-
-        reader.onerror = () => {
-          reject(new Error("Failed to read the file."));
-        };
-
-        reader.readAsText(fileList);
-      }
-    });
-  };
-
   const parseFileList = async () => {
-    if (fileList) {
-      // Pull accession nad application numbers from xlsx or json file.
-      const fileName = fileList.name.toLowerCase();
-
-      if (fileName.endsWith(".xlsx")) {
-        // Xlsx file
-        const result = await api.transfer.parseXlsxFileList(fileList);
-
-        // Promise rejected
-        if (typeof result === "string") {
-          let toastData = {
-            title: "An unexpected error occurred",
-            message: result,
-          };
-
-          if (result === "Invalid accession and/or application.")
-            toastData = {
-              title: "Missing accession and/or application number",
-              message:
-                "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘Cover Page’ tab in the file list and save it, then try uploading the file again.",
-            };
-
-          if (result === 'Missing on or more of ["COVER PAGE", "FILE LIST"].')
-            toastData = {
-              title: "File List is malformed",
-              message:
-                "Your file list (ARS 662) is missing a ‘Cover Page’ and/or ‘File List’ sheet. Please only use Digital File List's created in DATS.",
-            };
-
-          // Create a toast message
-          toast.error(Toast, { data: toastData });
-        } else {
-          // Save results
-          const { accession, application, folders } = result;
-          setAccession(accession);
-          setApplication(application);
-          setFoldersToProcess(folders);
-        }
-      } else if (fileName.endsWith(".json")) {
-        // Json file
-        type JsonFileList = {
-          admin: { accession: string; application: string };
-          folders: Record<string, unknown>;
-        };
-        const json = (await parseJsonFile()) as JsonFileList | null;
-        if (json) {
-          const accession = json.admin.accession;
-          const application = json.admin.application;
-          const folders = json.folders;
-
-          if (
-            !accession ||
-            !application ||
-            !api.transfer.isAccessionValid(accession) ||
-            !api.transfer.isApplicationValid(application)
-          ) {
-            // Invalid accession and/or application number
-            toast.error(Toast, {
-              data: {
-                title: "Missing accession and/or application number",
-                message:
-                  "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘admin’ property in the file list and save it, then try uploading the file again.",
-              },
-            });
-          } else if (!folders || Object.keys(folders).length === 0) {
-            // Missing folders property
-            toast.error(Toast, {
-              data: {
-                title: "Missing folders",
-                message:
-                  "Your file list (ARS 662) is missing the folders property. Please add this information to the file list and save it, then try uploading the file again.",
-              },
-            });
-          } else {
-            // Save results
-            setAccession(accession);
-            setApplication(application);
-            setFoldersToProcess(
-              Object.keys(folders).filter((folder) => folder.trim() !== "")
-            );
-          }
-        }
-      }
-    } else {
+    if (!fileList) {
       // Reset when file removed
       setAccession(null);
       setApplication(null);
       setFoldersToProcess([]);
       setConfirmAccAppChecked(false);
+      return;
     }
+
+    // Pull accession nad application numbers from xlsx or json file.
+    const fileName = fileList.name.toLowerCase();
+
+    if (fileName.endsWith(".xlsx")) {
+      // Xlsx file
+      try {
+        const result = await api.transfer.parseXlsxFileList(fileList);
+
+        // Save results
+        const { accession, application, folders } = result;
+        setAccession(accession);
+        setApplication(application);
+        setFoldersToProcess(folders);
+      } catch (error) {
+        if (error instanceof Error) {
+          const toastData = getXlsxFileListToastData(error.message);
+
+          // Create a toast message
+          return toast.error(Toast, { data: toastData });
+        }
+        // Unexpected error
+        return toast.error(Toast, {
+          data: {
+            title: "Unexpected error",
+            message: `Encountered an unexpected error while parsing your file list (ARS 662). Please contact someone from the DATS team for assistance. Error: ${error}`,
+          },
+        });
+      }
+    } else if (fileName.endsWith(".json")) {
+      // Json file
+      type JsonFileList = {
+        admin: { accession: string; application: string };
+        folders: Record<string, unknown>;
+      };
+      const json = (await parseJsonFile(fileList)) as JsonFileList | null;
+
+      let toastData: ToastData | undefined = undefined;
+
+      if (!json) {
+        // Invalid JSON
+        return toast.error(Toast, {
+          data: {
+            title: "Invalid json",
+            message:
+              "Your file list (ARS 662) could not be parsed. Please make sure it is formatted correctly and save it, then try uploading the file again.",
+          },
+        });
+      }
+
+      const accession = json.admin.accession;
+      const application = json.admin.application;
+      const folders = json.folders;
+
+      const accAndAppExist =
+        api.transfer.accessionExists(accession) &&
+        api.transfer.applicationExists(application);
+      const accAndAppAreValid =
+        api.transfer.isAccessionValid(accession) &&
+        api.transfer.isApplicationValid(application);
+
+      if (!accAndAppExist)
+        // Missing accession and/or application numbers.
+        toastData = {
+          title: "Missing accession and/or application number",
+          message:
+            "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘admin’ property in the file list and save it, then try uploading the file again.",
+        };
+
+      if (accAndAppExist && !accAndAppAreValid)
+        // Invalid accession and/or application numbers.
+        toastData = {
+          title: "Invalid accession and/or application number",
+          message:
+            "Your file list (ARS 662) has an invalid accession and/or application number. Please make sure to only use numbers (with the exception of a dash in the accession number). Please update this information and save it, then try uploading the file again.",
+        };
+
+      if (!folders || Object.keys(folders).length === 0)
+        // Missing folders property.
+        toastData = {
+          title: "Missing folders",
+          message:
+            "Your file list (ARS 662) is missing the ‘folders’ property. Please add this information to the file list and save it, then try uploading the file again.",
+        };
+
+      if (toastData) {
+        // Create a toast message
+        return toast.error(Toast, { data: toastData });
+      }
+
+      // Save results
+      setAccession(accession);
+      setApplication(application);
+      setFoldersToProcess(
+        Object.keys(folders).filter((folder) => folder.trim() !== "")
+      );
+    }
+    return; // Return so linting doesnt complain about some paths not returning.
   };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>

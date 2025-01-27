@@ -10,7 +10,7 @@ type Props = {
   params: GridRenderCellParams<Row, unknown, unknown, GridTreeNodeWithRender>;
 };
 
-export const StatusCell = ({ params }: Props) => {
+const getStatusDetails = ({ params }: Props) => {
   const complete =
     params.row.metadataProgress + params.row.bufferProgress === 200;
   const invalidPath = params.row.invalidPath;
@@ -18,43 +18,46 @@ export const StatusCell = ({ params }: Props) => {
     (params.row.metadataProgress + params.row.bufferProgress) / 2
   );
 
+  // Upload complete
+  if (complete && !invalidPath)
+    return {
+      tooltip: "Upload complete",
+      iconColor: "var(--progress-complete)",
+      progressMsg: `${progress}%`,
+    };
+
+  // Upload in progress
+  if (!complete && !invalidPath)
+    return {
+      tooltip: "Upload in progress.",
+      iconColor: "var(--progress-incomplete)",
+      progressMsg: progress > 0 ? `${progress}%` : "",
+    };
+
+  // Invalid path
+  return {
+    tooltip:
+      "Folder path could not be found. Use the edit button to change folder path.",
+    iconColor: "var(--progress-cancelled)",
+    progressMsg: "",
+  };
+};
+
+export const StatusCell = ({ params }: Props) => {
+  const { tooltip, iconColor, progressMsg } = getStatusDetails({ params });
+
   return (
     <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-      {complete && !invalidPath && (
-        <Stack direction="row" gap={1}>
-          <Tooltip title="Upload complete.">
-            <ProgressIcon
-              sx={{
-                color: "var(--progress-complete)",
-              }}
-            />
-          </Tooltip>
-          <Typography>{`${progress}%`}</Typography>
-        </Stack>
-      )}
-      {!complete && !invalidPath && (
-        <Stack direction="row" gap={1}>
-          <Tooltip title="Upload in progress.">
-            <ProgressIcon
-              sx={{
-                color: "var(--progress-incomplete)",
-              }}
-            />
-          </Tooltip>
-          <Typography>{progress > 0 ? `${progress}%` : ""}</Typography>
-        </Stack>
-      )}
-      {invalidPath && (
-        <Stack direction="row" gap={1}>
-          <Tooltip title="Folder path could not be found. Use the edit button to change folder path.">
-            <ProgressIcon
-              sx={{
-                color: "var(--progress-cancelled)",
-              }}
-            />
-          </Tooltip>
-        </Stack>
-      )}
+      <Stack direction="row" gap={1}>
+        <Tooltip title={tooltip}>
+          <ProgressIcon
+            sx={{
+              color: iconColor,
+            }}
+          />
+        </Tooltip>
+        <Typography>{progressMsg}</Typography>
+      </Stack>
     </Box>
   );
 };

@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
-import { isAccessionValid } from "./isAccessionValid";
-import { isApplicationValid } from "./isApplicationValid";
+import { accessionExists, isAccessionValid } from "./accessionUtils";
+import { applicationExists, isApplicationValid } from "./applicationUtils";
 
 export const parseXlsxFileList = (
   file: File | null | undefined
@@ -8,9 +8,9 @@ export const parseXlsxFileList = (
   accession: string;
   application: string;
   folders: string[];
-} | null> => {
+}> => {
   return new Promise((resolve, reject) => {
-    if (!file) return reject("Missing filelist.");
+    if (!file) return reject(new Error("Missing filelist."));
 
     const reader = new FileReader();
 
@@ -23,14 +23,19 @@ export const parseXlsxFileList = (
           const fileList = workbook.Sheets["FILE LIST"];
 
           if (!coverPage || !fileList)
-            reject('Missing on or more of ["COVER PAGE", "FILE LIST"].');
-
-          if (!(coverPage.B3?.v && coverPage.B4?.v))
-            return reject("Invalid accession and/or application.");
+            return reject(
+              new Error('Missing on or more of ["COVER PAGE", "FILE LIST"].')
+            );
 
           // Access cells
-          const accession = coverPage.B3.v.toString();
-          const application = coverPage.B4.v.toString();
+          const accession = coverPage?.B3?.v?.toString();
+          const application = coverPage?.B4?.v?.toString();
+
+          if (!(accessionExists(accession) && applicationExists(application)))
+            return reject(new Error("Missing accession and/or application."));
+
+          if (!(isAccessionValid(accession) && isApplicationValid(application)))
+            return reject(new Error("Invalid accession and/or application."));
 
           // Extract folder names from column A starting at A2
           const folders: string[] = [];
@@ -46,9 +51,6 @@ export const parseXlsxFileList = (
             }
           }
 
-          if (!(isAccessionValid(accession) && isApplicationValid(application)))
-            return reject("Invalid accession and/or application.");
-
           resolve({
             accession,
             application,
@@ -60,7 +62,7 @@ export const parseXlsxFileList = (
       }
     };
 
-    reader.onerror = () => reject("Failed to read the file.");
+    reader.onerror = () => reject(new Error("Failed to read the file."));
     reader.readAsArrayBuffer(file);
   });
 };

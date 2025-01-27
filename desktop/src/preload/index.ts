@@ -4,6 +4,8 @@ import { checkApiStatus, checkIpRange } from "./api";
 import { safePromise } from "./api/utils";
 import { fetchProtectedRoute, getUser } from "./api/sso";
 import {
+  accessionExists,
+  applicationExists,
   isAccessionValid,
   isApplicationValid,
   parseXlsxFileList,
@@ -34,7 +36,9 @@ const api = {
   },
   transfer: {
     parseXlsxFileList,
+    accessionExists,
     isAccessionValid,
+    applicationExists,
     isApplicationValid,
   },
   workers: {

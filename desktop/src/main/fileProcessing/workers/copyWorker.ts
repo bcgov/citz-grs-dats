@@ -186,6 +186,9 @@ const copyDirectoryInBatches = async (
       batchSize
     );
 
+    if (!buffers || buffers.length === 0)
+      throw new Error("Generated without buffers.");
+
     parentPort?.postMessage({
       type: "completion",
       source,

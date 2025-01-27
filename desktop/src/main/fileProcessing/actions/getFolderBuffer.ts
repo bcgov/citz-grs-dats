@@ -54,20 +54,20 @@ export const getFolderBuffer = async (
 
   try {
     pool.on("progress", (data) => {
-      if (onProgress) onProgress(data);
+      if (data.task === "copy" && onProgress) onProgress(data);
     });
 
     pool.on("missingPath", (data) => {
-      if (onMissingPath) onMissingPath(data);
+      if (data.task === "copy" && onMissingPath) onMissingPath(data);
     });
 
     pool.on("completion", (data) => {
-      if (onCompletion) onCompletion(data);
+      if (data.task === "copy" && onCompletion) onCompletion(data);
     });
 
     await pool.runTask(workerScript, workerData);
   } catch (error) {
-    console.error(`Failed to process folder ${filePath}:`, error);
+    console.error(`[Action] Failed to process folder ${filePath}:`, error);
     if (onCompletion) onCompletion({ success: false, error });
   }
 };
