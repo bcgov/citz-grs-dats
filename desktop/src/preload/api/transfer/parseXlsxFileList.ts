@@ -51,6 +51,9 @@ export const parseXlsxFileList = (
             }
           }
 
+          if (folders.length === 0)
+            return reject(new Error("Folders is empty."));
+
           resolve({
             accession,
             application,
