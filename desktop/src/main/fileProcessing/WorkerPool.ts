@@ -75,6 +75,14 @@ export class WorkerPool extends EventEmitter {
             ...message,
           });
         }
+        // Handle empty folder
+        else if (message.type === "emptyFolder") {
+          console.log(`Empty folder ${message.path} message emitted.`);
+          this.emit("missingPath", {
+            task,
+            ...message,
+          });
+        }
         // Handle completion messages
         else if (message.type === "completion") {
           if (timer) clearTimeout(timer);

@@ -32,6 +32,7 @@ export const getFolderBuffer = async (
   storeFile: boolean,
   onProgress?: (data: { progressPercentage: number; source: string }) => void,
   onMissingPath?: (data: { path: string }) => void,
+  onEmptyFolder?: (data: { path: string }) => void,
   onCompletion?: (data: {
     success: boolean;
     buffers?: FileBufferObj[];
@@ -59,6 +60,10 @@ export const getFolderBuffer = async (
 
     pool.on("missingPath", (data) => {
       if (data.task === "copy" && onMissingPath) onMissingPath(data);
+    });
+
+    pool.on("emptyFolder", (data) => {
+      if (data.task === "copy" && onEmptyFolder) onEmptyFolder(data);
     });
 
     pool.on("completion", (data) => {

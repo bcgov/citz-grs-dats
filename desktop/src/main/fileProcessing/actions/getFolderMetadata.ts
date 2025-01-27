@@ -26,6 +26,7 @@ export const getFolderMetadata = async (
   storeFile: boolean,
   onProgress?: (data: { progressPercentage: number; source: string }) => void,
   onMissingPath?: (data: { path: string }) => void,
+  onEmptyFolder?: (data: { path: string }) => void,
   onCompletion?: (data: {
     success: boolean;
     metadata?: Record<string, unknown>;
@@ -57,6 +58,10 @@ export const getFolderMetadata = async (
 
     pool.on("missingPath", (data) => {
       if (data.task === "metadata" && onMissingPath) onMissingPath(data);
+    });
+
+    pool.on("emptyFolder", (data) => {
+      if (data.task === "metadata" && onEmptyFolder) onEmptyFolder(data);
     });
 
     pool.on("completion", (data) => {

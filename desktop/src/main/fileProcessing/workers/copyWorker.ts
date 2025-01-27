@@ -182,6 +182,14 @@ const copyDirectoryInBatches = async (
 
     totalFileCount = await countFiles(source);
 
+    if (totalFileCount === 0) {
+      // Folder is empty
+      parentPort?.postMessage({
+        type: "emptyFolder",
+        path: source,
+      });
+    }
+
     console.log(`Processing files from ${source}`);
     const buffers = await copyDirectoryInBatches(source, source, batchSize);
 

@@ -190,6 +190,14 @@ const writeOrAppendMetadata = async (
 
     totalFileCount = await countFiles(source);
 
+    if (totalFileCount === 0) {
+      // Folder is empty
+      parentPort?.postMessage({
+        type: "emptyFolder",
+        path: source,
+      });
+    }
+
     const { metadata, fileCount, totalSize } = await generateMetadataInBatches(
       source,
       source,

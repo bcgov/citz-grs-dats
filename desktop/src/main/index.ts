@@ -216,6 +216,10 @@ ipcMain.on(
       event.sender.send("folder-metadata-missing-path", data);
     };
 
+    const onEmptyFolder = (data: { path: string }) => {
+      event.sender.send("folder-metadata-empty-folder", data);
+    };
+
     const onCompletion = (data: {
       success: boolean;
       metadata?: Record<string, unknown>;
@@ -232,6 +236,7 @@ ipcMain.on(
         false,
         onProgress,
         onMissingPath,
+        onEmptyFolder,
         onCompletion
       );
     } catch (error) {
@@ -257,6 +262,10 @@ ipcMain.on(
       event.sender.send("folder-buffer-missing-path", data);
     };
 
+    const onEmptyFolder = (data: { path: string }) => {
+      event.sender.send("folder-buffer-empty-folder", data);
+    };
+
     const onCompletion = (data: {
       success: boolean;
       buffers?: FileBufferObj[];
@@ -273,6 +282,7 @@ ipcMain.on(
         false,
         onProgress,
         onMissingPath,
+        onEmptyFolder,
         onCompletion
       );
     } catch (error) {
