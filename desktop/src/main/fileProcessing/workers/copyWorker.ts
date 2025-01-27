@@ -107,6 +107,10 @@ const copyDirectoryInBatches = async (
   originalSource: string,
   batchSize = 10
 ): Promise<FileBuffer[]> => {
+  if (originalSource) {
+    await ensureDirectoryExists(originalSource);
+  }
+
   const files = await readdir(source);
   const folderBuffers: FileBuffer[] = [];
 
