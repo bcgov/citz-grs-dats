@@ -9,15 +9,6 @@
 	--bcgov-dark-blue: #036;
 	--bcgov-yellow: #fcba19;
 
-	--progress-complete: #42814a;
-	--progress-incomplete: #f8bb47;
-	--progress-cancelled: #fe3f35;
-
-	--icon: #2d2d2d;
-	--icon-disabled: #d8d8d8;
-
-	--data-grid-border: #d8d8d8;
-
 	--file_upload_area-bg-invalid: #f4e1e2;
 	--file_upload_area-bg-valid: #f1f8fe;
 	--file_upload_area-bg-default: #ffffff;
@@ -26,8 +17,6 @@
 	--file_upload_area-border-default: #898785;
 	--file_upload_area-bg-uploaded-file: #f3f2f1;
 	--file_upload_area-border-browse-button: #353433;
-
-	--modal-border: #d8d8d8;
 
 	--sub-agreement-border: #898785;
 	--scroll-bar: #d9d9d9;
@@ -40,6 +29,15 @@
 	--acc-app-confirmation-bg: #faf9f8;
 
 	--modal-border: #d8d8d8;
+
+	--progress-complete: #42814a;
+	--progress-incomplete: #f8bb47;
+	--progress-cancelled: #ce3e39;
+
+	--icon: #2d2d2d;
+	--icon-disabled: #d8d8d8;
+
+	--data-grid-border: #d8d8d8;
 
 	--tip: #878787;
 }
