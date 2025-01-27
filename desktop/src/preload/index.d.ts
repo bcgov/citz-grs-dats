@@ -42,9 +42,11 @@ declare global {
           accession: string;
           application: string;
           folders: string[];
-        } | null>;
-        isAccessionValid: (accession: string) => boolean;
-        isApplicationValid: (application: string) => boolean;
+        }>;
+        accessionExists: (accession?: string) => boolean;
+        isAccessionValid: (accession?: string) => boolean;
+        applicationExists: (application?: string) => boolean;
+        isApplicationValid: (application?: string) => boolean;
       };
 
       workers: {

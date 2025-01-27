@@ -13,20 +13,9 @@ router.post("/", upload.single("file"), create);
 // into JSON objects.
 router.post(
   "/lan",
+  upload.any(),
   ((req: Request, res: Response, next: NextFunction) => {
     try {
-      upload.any();
-      next();
-    } catch (error) {
-      console.error(error);
-      return res
-        .status(400)
-        .json({ message: "Invalid JSON format in request body" });
-    }
-  }) as RequestHandler,
-  ((req: Request, res: Response, next: NextFunction) => {
-    try {
-      upload.any();
       req.body.originalFoldersMetadata = JSON.parse(
         req.body.originalFoldersMetadata || "{}"
       );
@@ -34,7 +23,6 @@ router.post(
       req.body.changes = JSON.parse(req.body.changes || "[]");
       next();
     } catch (error) {
-      console.error(error);
       return res
         .status(400)
         .json({ message: "Invalid JSON format in request body" });

@@ -1,3 +1,3 @@
 export * from "./parseXlsxFileList";
-export * from "./isAccessionValid";
-export * from "./isApplicationValid";
+export * from "./accessionUtils";
+export * from "./applicationUtils";
