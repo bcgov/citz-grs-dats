@@ -9,7 +9,6 @@ import {
 } from "electron";
 import { join } from "node:path";
 import { is } from "@electron-toolkit/utils";
-import icon from "../../resources/icon.png?asset";
 import electronUpdater, { type AppUpdater } from "electron-updater";
 import { createWorkerPool } from "./fileProcessing";
 import {
@@ -73,7 +72,6 @@ function createWindow(): void {
     minHeight: 750,
     show: false,
     autoHideMenuBar: false,
-    ...(process.platform === "linux" ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, "../preload/index.mjs"),
       sandbox: false,
