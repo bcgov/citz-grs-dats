@@ -41,24 +41,21 @@ declare global {
         parseXlsxFileList: (fileList: File | null | undefined) => Promise<{
           accession: string;
           application: string;
-        } | null>;
-        isAccessionValid: (accession: string) => boolean;
-        isApplicationValid: (application: string) => boolean;
+          folders: string[];
+        }>;
+        accessionExists: (accession?: string) => boolean;
+        isAccessionValid: (accession?: string) => boolean;
+        applicationExists: (application?: string) => boolean;
+        isApplicationValid: (application?: string) => boolean;
       };
 
       workers: {
-        copyFolderAndMetadata: ({
-          filePath,
-          transfer,
-        }: {
-          filePath: string;
-          transfer: string;
-        }) => Promise<void>;
         getFolderMetadata: ({
           filePath,
         }: {
           filePath: string;
         }) => Promise<void>;
+        getFolderBuffer: ({ filePath }: { filePath: string }) => Promise<void>;
       };
     };
   }

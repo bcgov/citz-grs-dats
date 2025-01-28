@@ -1,3 +1,3 @@
-export * from "./copyFolderAndMetadata";
+export * from "./getFolderBuffer";
 export * from "./getFolderMetadata";
 export * from "./selectDirectory";
