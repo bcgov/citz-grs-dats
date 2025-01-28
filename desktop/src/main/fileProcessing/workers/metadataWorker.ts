@@ -191,15 +191,18 @@ const writeOrAppendMetadata = async (
     if (destination) {
       await ensureDirectoryExists(path.dirname(destination));
       await writeOrAppendMetadata(destination, { ...metadata, totalSize });
-      parentPort?.postMessage({
-        type: "completion",
-        success: true,
-        source,
-        metadata,
-        fileCount,
-        totalSize,
-      });
     }
+
+    if (!metadata) throw Error("Generated without metadata.");
+
+    parentPort?.postMessage({
+      type: "completion",
+      success: true,
+      source,
+      metadata,
+      fileCount,
+      totalSize,
+    });
   } catch (error) {
     parentPort?.postMessage({
       type: "completion",

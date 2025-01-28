@@ -52,20 +52,20 @@ export const getFolderMetadata = async (
 
   try {
     pool.on("progress", (data) => {
-      if (onProgress) onProgress(data);
+      if (data.task === "metadata" && onProgress) onProgress(data);
     });
 
     pool.on("missingPath", (data) => {
-      if (onMissingPath) onMissingPath(data);
+      if (data.task === "metadata" && onMissingPath) onMissingPath(data);
     });
 
     pool.on("completion", (data) => {
-      if (onCompletion) onCompletion(data);
+      if (data.task === "metadata" && onCompletion) onCompletion(data);
     });
 
     await pool.runTask(metadataWorkerScript, metadataWorkerData);
   } catch (error) {
-    console.error(`Failed to process folder ${filePath}:`, error);
+    console.error(`[Action] Failed to process folder ${filePath}:`, error);
     if (onCompletion) onCompletion({ success: false, error });
   }
 };
