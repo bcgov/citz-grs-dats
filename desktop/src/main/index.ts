@@ -9,7 +9,6 @@ import {
 } from "electron";
 import { join } from "node:path";
 import { is } from "@electron-toolkit/utils";
-import icon from "../../resources/icon.png?asset";
 import electronUpdater, { type AppUpdater } from "electron-updater";
 import { createWorkerPool } from "./fileProcessing";
 import {
@@ -22,12 +21,6 @@ import EventEmitter from "node:events";
 // Set because we have many listeners when the worker scripts are running for every folder uploaded.
 EventEmitter.defaultMaxListeners = 1000; // Set globally for all EventEmitters
 ipcMain.setMaxListeners(1000); // Explicitly set for ipcMain
-
-type FileBufferObj = {
-  filename: string;
-  path: string;
-  buffer: Buffer;
-};
 
 type FileBufferObj = {
   filename: string;
@@ -79,7 +72,6 @@ function createWindow(): void {
     minHeight: 750,
     show: false,
     autoHideMenuBar: false,
-    ...(process.platform === "linux" ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, "../preload/index.mjs"),
       sandbox: false,
