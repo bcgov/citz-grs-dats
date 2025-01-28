@@ -36,6 +36,7 @@ interface Window {
         accession: string;
         application: string;
         folders: string[];
+        foldersMetadata: Record<string, unknown>;
       }>;
       createZipBuffer: (
         folders: Record<string, FileBufferObj[]>
