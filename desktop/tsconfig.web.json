@@ -4,7 +4,11 @@
 		"src/renderer/src/env.d.ts",
 		"src/renderer/src/**/*",
 		"src/renderer/src/**/*.tsx",
-		"src/preload/*.d.ts"
+		"src/preload/**/*",
+		"src/api/**/*",
+		"src/hooks/**/*",
+		"src/global.d.ts",
+		"src/**/*"
 	],
 	"compilerOptions": {
 		"composite": true,
@@ -13,7 +17,9 @@
 		"paths": {
 			"@renderer/*": ["src/renderer/src/*"],
 			"src/*": ["src/*"],
-			"@/*": ["src/*"]
+			"@/*": ["src/*"],
+			"@hooks/*": ["src/hooks/*"],
+			"@preload/*": ["src/preload/*"],
 		}
 	}
 }
