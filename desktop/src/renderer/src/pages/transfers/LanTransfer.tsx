@@ -2,12 +2,14 @@ import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { Stepper, Toast } from "@renderer/components";
 import { JustifyChangesModal } from "@renderer/components/transfer";
 import {
+  LanCompletionView,
   LanSubmissionAgreementView,
   LanUploadFileListView,
   LanUploadTransferFormView,
   LanConfirmationView,
 } from "@renderer/components/transfer/lan-views";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   getXlsxFileListToastData,
@@ -32,6 +34,7 @@ type FileBufferObj = {
 };
 
 export const LanTransferPage = () => {
+  const navigate = useNavigate();
   const [api] = useState(window.api); // Preload scripts
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [fileList, setFileList] = useState<File | null | undefined>(undefined);
@@ -52,7 +55,7 @@ export const LanTransferPage = () => {
   >([]);
 
   if (metadata && folderBuffers) {
-    // TODO: TEMP so we can build
+    // TODO: TEMP to allow build
   }
 
   // Justify changes
@@ -76,14 +79,6 @@ export const LanTransferPage = () => {
     setCurrentViewIndex((prev) => prev - 1);
   };
 
-  // When fileList removed
-  useEffect(() => {
-    if (!fileList) {
-      setFolders([]);
-      setMetadata({});
-    }
-  }, [fileList]);
-
   // Handle metadata progress and completion events
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
@@ -91,6 +86,7 @@ export const LanTransferPage = () => {
       event: CustomEvent<{ source: string; progressPercentage: number }>
     ) => {
       const { source, progressPercentage } = event.detail;
+      console.log(`${source} metadata progress ${progressPercentage}`);
       // Update folder progress
       const currentProgress =
         folders.find((row) => row.folder === source)?.metadataProgress ?? 0;
@@ -124,7 +120,7 @@ export const LanTransferPage = () => {
         error?: unknown;
       }>
     ) => {
-      const { source, success, metadata: newMetadata } = event.detail;
+      const { source, success, metadata: newMetadata, error } = event.detail;
 
       if (success && newMetadata) {
         setMetadata((prev) => ({
@@ -133,7 +129,11 @@ export const LanTransferPage = () => {
         }));
         console.log(`Successfully processed folder metadata: ${source}`);
       } else {
-        console.error(`Failed to process folder metadata: ${source}`);
+        console.error(`Failed to process folder metadata: ${source}`, {
+          success,
+          metadata: newMetadata,
+          error,
+        });
       }
     };
 
@@ -173,6 +173,7 @@ export const LanTransferPage = () => {
       event: CustomEvent<{ source: string; progressPercentage: number }>
     ) => {
       const { source, progressPercentage } = event.detail;
+      console.log(`${source} buffer progress ${progressPercentage}`);
       // Update folder progress
       const currentProgress =
         folders.find((row) => row.folder === source)?.bufferProgress ?? 0;
@@ -206,16 +207,19 @@ export const LanTransferPage = () => {
         error?: unknown;
       }>
     ) => {
-      const { source, success, buffers } = event.detail;
+      const { source, success, buffers, error } = event.detail;
 
       if (success && buffers && buffers.length > 0) {
         setFolderBuffers((prev) => ({
           ...prev,
           [source]: buffers,
         }));
-        console.log(`Successfully processed folder buffers: ${source}`);
+        console.log(`Successfully processed folder buffer: ${source}`);
       } else {
-        console.error(`Failed to process folder buffers: ${source}`);
+        console.error(`Failed to process folder buffer: ${source}`, {
+          success,
+          error,
+        });
       }
     };
 
@@ -484,6 +488,10 @@ export const LanTransferPage = () => {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
+    if (!fileList) {
+      setFolders([]);
+      setMetadata({});
+    }
     parseFileList();
   }, [fileList]);
 
@@ -494,6 +502,9 @@ export const LanTransferPage = () => {
     else onNextPress();
   };
 
+  // Send to home on completion
+  const handleCompletion = () => navigate("/");
+
   return (
     <Grid container sx={{ paddingBottom: "20px" }}>
       <Grid size={2} />
@@ -502,11 +513,11 @@ export const LanTransferPage = () => {
           <Typography variant="h2">Send records from LAN Drive</Typography>
           <Stepper
             items={[
-              "Upload digital file list (ARS 662)",
-              "Upload transfer form (ARS 617)",
+              "File list",
+              "Transfer form",
               "Submission agreement",
-              "Folder upload",
               "Confirmation",
+              "Done",
             ]}
             currentIndex={currentViewIndex}
           />
@@ -553,6 +564,15 @@ export const LanTransferPage = () => {
               onFolderEdit={handleEditClick}
               onNextPress={handleLanUploadNextPress}
               onBackPress={onBackPress}
+            />
+          )}
+          {currentViewIndex === 4 && (
+            <LanCompletionView
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              accession={accession!}
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              application={application!}
+              onNextPress={handleCompletion}
             />
           )}
           <JustifyChangesModal
