@@ -78,12 +78,12 @@ export const ContinueModal = ({ modalOpen, modalClose, modalSubmit }) => {
 					<Select
 						isRequired
 						items={[
-							{ id: "1", label: "Excel (.xlsx)" },
-							{ id: "2", label: "JSON (.json)" },
+							{ id: "excel", label: "Excel (.xlsx)" },
+							{ id: "json", label: "JSON (.json)" },
 						]}
 						name="outputFormat"
 						label="Output format"
-						defaultSelectedKey={"1"}
+						defaultSelectedKey={"excel"}
 					/>
 				</Box>
 
