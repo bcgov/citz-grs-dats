@@ -11,7 +11,7 @@ type WorkerData = {
 };
 
 (async () => {
-  console.log("[worker] Starting metadata worker.", workerData);
+  console.log("[Metadata worker] Starting with data:", workerData);
   if (!workerData) return;
   const { source, batchSize } = workerData as WorkerData;
 
