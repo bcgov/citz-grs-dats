@@ -28,8 +28,8 @@ const { ENVIRONMENT } = ENV;
 const app = express();
 
 // Middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: false, limit: "10gb" }));
+app.use(express.json({ limit: "10gb" }));
 app.use(cors(CORS_OPTIONS));
 app.use(rateLimit(RATE_LIMIT_OPTIONS));
 app.use(cookieParser());
