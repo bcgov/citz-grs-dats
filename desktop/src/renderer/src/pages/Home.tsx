@@ -7,12 +7,14 @@ import {
   Grid2 as Grid,
 } from "@mui/material";
 
-type Props = {
-  authenticated: boolean;
-};
+import { Context } from "../App";
+import { useContext } from "react";
 
-export const HomePage = ({ authenticated }: Props) => {
+export const HomePage = () => {
   const theme = useTheme();
+
+  const { accessToken } = useContext(Context) ?? {};
+  const authenticated = !!accessToken;
 
   return (
     <Grid container>

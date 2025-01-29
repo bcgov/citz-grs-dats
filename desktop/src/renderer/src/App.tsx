@@ -1,7 +1,6 @@
 import { Header } from "@bcgov/design-system-react-components";
-import { Button, Grid2 as Grid } from "@mui/material";
+import { Box, Button, Grid2 as Grid } from "@mui/material";
 import { createContext, useEffect, useState } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { SideNav, VPNPopup } from "./components";
 import { LeavePageModal } from "./components/LeavePageModal";
@@ -13,12 +12,19 @@ import {
   SendRecordsPage,
 } from "./pages";
 
-export const TokenContext = createContext<string | undefined>(undefined);
+type AppContext = {
+  accessToken?: string;
+  currentPath: string;
+  setCurrentPath: React.Dispatch<React.SetStateAction<string>>;
+};
+
+export const Context = createContext<AppContext | undefined>(undefined);
 
 function App(): JSX.Element {
   const [api] = useState(window.api); // Preload scripts
   const [showVPNPopup, setShowVPNPopup] = useState<boolean | null>(null);
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
+  const [currentPath, setCurrentPath] = useState("/");
 
   // Authentication state
   const [accessToken, setAccessToken] = useState<string | undefined>(undefined);
@@ -80,53 +86,47 @@ function App(): JSX.Element {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Grid container sx={{ height: "100vh" }}>
-        {showVPNPopup && <VPNPopup />}
-        <Grid size={2}>
-          <SideNav accessToken={accessToken} idToken={idToken} />
-        </Grid>
-        <Grid size={10}>
-          <Header
-            title="Digital Archives Transfer Service"
-            logoLinkElement={
-              <Button onClick={() => setLeavePageModalOpen(true)} />
-            }
-          />
-          <Routes>
-            <Route
-              path="/"
-              element={<HomePage authenticated={!!accessToken} />}
-            />
-            <Route
-              path="/file-list"
-              element={
-                <TokenContext.Provider value={accessToken}>
-                  <FileListPage authenticated={!!accessToken} />
-                </TokenContext.Provider>
-              }
-            />
-            <Route path="/send-records" element={<SendRecordsPage />} />
-            <Route
-              path="/send-records/lan/instructions"
-              element={<LanInstructionsPage />}
-            />
-            <Route path="/send-records/lan" element={<LanTransferPage />} />
-          </Routes>
-          <ToastContainer
-            position="bottom-left"
-            autoClose={5000}
-            hideProgressBar
-            pauseOnHover
-          />
-        </Grid>
-        <LeavePageModal
-          open={leavePageModalOpen}
-          onClose={() => setLeavePageModalOpen(false)}
-          onConfirm={onConfirmLeavePage}
+    <Grid container sx={{ height: "100vh" }}>
+      {showVPNPopup && <VPNPopup />}
+      <Grid size={2}>
+        <SideNav
+          accessToken={accessToken}
+          idToken={idToken}
+          currentPath={currentPath}
+          setCurrentPath={setCurrentPath}
         />
       </Grid>
-    </BrowserRouter>
+      <Grid size={10}>
+        <Header
+          title="Digital Archives Transfer Service"
+          logoLinkElement={
+            <Button onClick={() => setLeavePageModalOpen(true)} />
+          }
+        />
+        <Context.Provider value={{ accessToken, currentPath, setCurrentPath }}>
+          <Box>
+            {currentPath === "/" && <HomePage />}
+            {currentPath === "/file-list" && <FileListPage />}
+            {currentPath === "/send-records" && <SendRecordsPage />}
+            {currentPath === "/send-records/lan" && <LanTransferPage />}
+            {currentPath === "/send-records/lan/instructions" && (
+              <LanInstructionsPage />
+            )}
+          </Box>
+        </Context.Provider>
+        <ToastContainer
+          position="bottom-left"
+          autoClose={5000}
+          hideProgressBar
+          pauseOnHover
+        />
+      </Grid>
+      <LeavePageModal
+        open={leavePageModalOpen}
+        onClose={() => setLeavePageModalOpen(false)}
+        onConfirm={onConfirmLeavePage}
+      />
+    </Grid>
   );
 }
 
