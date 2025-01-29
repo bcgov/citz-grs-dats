@@ -1,3 +1,9 @@
+type FileBufferObj = {
+  filename: string;
+  path: string;
+  buffer: Buffer;
+};
+
 interface Window {
   electron: ElectronAPI;
   api: {
