@@ -33,13 +33,14 @@ type WorkerData = {
 
     if (!metadata) throw Error("Generated without metadata.");
 
-    const metadataWithExtended = await generateExtendedMetadata(metadata);
+    const extendedMetadata = await generateExtendedMetadata(source);
 
     parentPort?.postMessage({
       type: "completion",
       success: true,
       source,
-      metadata: metadataWithExtended,
+      metadata,
+      extendedMetadata,
       fileCount,
       totalSize,
     });

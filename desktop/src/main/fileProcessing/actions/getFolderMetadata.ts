@@ -29,6 +29,7 @@ export const getFolderMetadata = async (
   onCompletion?: (data: {
     success: boolean;
     metadata?: Record<string, unknown>;
+    extendedMetadata?: Record<string, unknown>;
     error?: unknown;
   }) => void
 ): Promise<void> => {
