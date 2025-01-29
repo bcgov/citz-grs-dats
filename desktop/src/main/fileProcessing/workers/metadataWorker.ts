@@ -35,8 +35,6 @@ type WorkerData = {
 
     const metadataWithExtended = await generateExtendedMetadata(metadata);
 
-    if (!metadataWithExtended.extended) throw Error("Generated without extended metadata.");
-
     parentPort?.postMessage({
       type: "completion",
       success: true,
