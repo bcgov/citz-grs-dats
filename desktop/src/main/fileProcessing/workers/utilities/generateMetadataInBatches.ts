@@ -12,6 +12,10 @@ const { stat, readdir } = fsPromises;
 
 let processedFileCount = 0;
 
+const { stat, readdir } = fsPromises;
+
+let processedFileCount = 0;
+
 export const generateMetadataInBatches = async (
   rootDir: string,
   originalSource: string,
