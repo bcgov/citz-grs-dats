@@ -29,9 +29,11 @@ export const getFolderMetadata = async (
   onCompletion?: (data: {
     success: boolean;
     metadata?: Record<string, unknown>;
+    extendedMetadata?: Record<string, unknown>;
     error?: unknown;
   }) => void
 ): Promise<void> => {
+  console.log(`[Metadata Action] Processing folder ${filePath}`);
   const metadataWorkerScript = isDev
     ? path.resolve(__dirname, "../es-workers/metadataWorker.js")
     : path.join(app.getAppPath(), "../../resources/metadataWorker.cjs");

@@ -74,7 +74,6 @@ function App(): JSX.Element {
     setShowVPNPopup(!ipStatusOK);
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     // Check for VPN or gov Network use on load, and every 5 seconds
     handleIPStatusUpdate();

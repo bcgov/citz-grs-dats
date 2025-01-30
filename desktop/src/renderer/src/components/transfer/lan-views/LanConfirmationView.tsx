@@ -11,13 +11,19 @@ type Folder = {
   metadataProgress: number;
 };
 
+type Change = {
+  originalFolderPath: string;
+  newFolderPath?: string;
+  deleted: boolean;
+};
+
 type Props = {
   accession: string;
   application: string;
   folders: Folder[];
   setFolders: React.Dispatch<React.SetStateAction<Folder[]>>;
   setMetadata: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
-  setDeletedFolders: React.Dispatch<React.SetStateAction<string[]>>;
+  setChanges: React.Dispatch<React.SetStateAction<Change[]>>;
   processRowUpdate: (newFolder: Folder) => Folder;
   onFolderEdit: (folder: string) => void;
   onNextPress: () => void;
@@ -30,7 +36,7 @@ export const LanConfirmationView = ({
   folders,
   setFolders,
   setMetadata,
-  setDeletedFolders,
+  setChanges,
   onNextPress,
   processRowUpdate,
   onBackPress,
@@ -44,7 +50,25 @@ export const LanConfirmationView = ({
       const { [folder]: _, ...remainingMetadata } = prevMetadata; // Remove the deleted folder
       return remainingMetadata;
     });
-    setDeletedFolders((prev) => [...prev, folder]);
+    setChanges((prev) => {
+      const existingItemWithNewPath = prev.find(
+        (c) => c.newFolderPath === folder
+      );
+      const existingItemWithOriginalPath = prev.find(
+        (c) => c.originalFolderPath === folder
+      );
+
+      if (existingItemWithNewPath) {
+        // Folder exists in changes already, path was previously changed
+        return [...prev, { ...existingItemWithNewPath, deleted: true }];
+      }
+      if (existingItemWithOriginalPath) {
+        // Folder exists in changes already
+        return [...prev, { ...existingItemWithOriginalPath, deleted: true }];
+      }
+      // Add new item
+      return [...prev, { originalFolderPath: folder, deleted: true }];
+    });
     console.log(`Deleted folder: ${folder}`);
   };
 

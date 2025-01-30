@@ -23,24 +23,24 @@ export const createAgreementPDF = async ({
       });
 
       // Load BC Sans font files
-      // const bcSansRegular = path.resolve(
-      //   __dirname,
-      //   "../assets/BCSans-Regular.ttf"
-      // );
-      // const bcSansBold = path.resolve(__dirname, "../assets/BCSans-Bold.ttf");
-      // const autographyFontPath = path.resolve(
-      //   __dirname,
-      //   "../assets/Autography.otf"
-      // );
+      const bcSansRegular = path.resolve(
+        __dirname,
+        "../assets/BCSans-Regular.ttf"
+      );
+      const bcSansBold = path.resolve(__dirname, "../assets/BCSans-Bold.ttf");
+      const autographyFontPath = path.resolve(
+        __dirname,
+        "../assets/Autography.otf"
+      );
 
-      // // Register fonts
-      // doc.registerFont("BCSans-Regular", bcSansRegular);
-      // doc.registerFont("BCSans-Bold", bcSansBold);
-      // doc.registerFont("Autography", autographyFontPath);
+      // Register fonts
+      doc.registerFont("BCSans-Regular", bcSansRegular);
+      doc.registerFont("BCSans-Bold", bcSansBold);
+      doc.registerFont("Autography", autographyFontPath);
 
-      const fontRegular = "serif";
-      const fontBold = "serif";
-      const fontAutography = "serif";
+      const fontRegular = "BCSans-Regular";
+      const fontBold = "BCSans-Bold";
+      const fontAutography = "Autography";
 
       // Collect PDF data into a buffer
       const bufferChunks: Buffer[] = [];
@@ -53,6 +53,7 @@ export const createAgreementPDF = async ({
 
       // Header
       doc
+        .font(fontBold)
         .fontSize(12)
         .text("BC GOVERNMENT DIGITAL ARCHIVES\nSUBMISSION AGREEMENT", {
           align: "center",
@@ -68,7 +69,7 @@ The purpose of this agreement is to transfer Full Retention (FR) government reco
 The Ministry and Digital Archives agree that:
 `;
 
-      doc.fontSize(11).text(agreementIntro, {
+      doc.font(fontRegular).fontSize(11).text(agreementIntro, {
         align: "left",
       });
 
@@ -185,20 +186,25 @@ The Ministry and Digital Archives agree that:
 
       // Add signature and date text above the lines
       doc
+        .font(fontAutography)
         .fontSize(18)
         .text(ministrySignature, ministryRepX, doc.y + signatureYOffset, {
           width: signatureWidth,
           align: "center",
         });
 
-      doc.fontSize(12).text(ministryDate, dateX, doc.y + dateYOffset, {
-        width: signatureWidth,
-        align: "center",
-      });
+      doc
+        .font(fontRegular)
+        .fontSize(12)
+        .text(ministryDate, dateX, doc.y + dateYOffset, {
+          width: signatureWidth,
+          align: "center",
+        });
 
       // Add labels directly under the lines
       const lineBottomY = doc.y + labelYOffset;
       doc
+        .font(fontRegular)
         .fontSize(12)
         .text("Ministry Representative", ministryRepX, lineBottomY)
         .text("Date", dateX, lineBottomY);
