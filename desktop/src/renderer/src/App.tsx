@@ -16,6 +16,7 @@ type AppContext = {
   accessToken?: string;
   currentPath: string;
   setCurrentPath: React.Dispatch<React.SetStateAction<string>>;
+  setProgressMade: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const Context = createContext<AppContext | undefined>(undefined);
@@ -25,6 +26,10 @@ function App(): JSX.Element {
   const [showVPNPopup, setShowVPNPopup] = useState<boolean | null>(null);
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState("/");
+
+  // Track when progress has been made in the app so we can warn the
+  // user about navigating away and losing progress.
+  const [progressMade, setProgressMade] = useState(false);
 
   // Authentication state
   const [accessToken, setAccessToken] = useState<string | undefined>(undefined);
@@ -93,6 +98,7 @@ function App(): JSX.Element {
           idToken={idToken}
           currentPath={currentPath}
           setCurrentPath={setCurrentPath}
+          progressMade={progressMade}
         />
       </Grid>
       <Grid size={10}>
@@ -102,7 +108,9 @@ function App(): JSX.Element {
             <Button onClick={() => setLeavePageModalOpen(true)} />
           }
         />
-        <Context.Provider value={{ accessToken, currentPath, setCurrentPath }}>
+        <Context.Provider
+          value={{ accessToken, currentPath, setCurrentPath, setProgressMade }}
+        >
           <Box>
             {currentPath === "/" && <HomePage />}
             {currentPath === "/file-list" && <FileListPage />}
