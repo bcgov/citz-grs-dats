@@ -68,7 +68,6 @@ function App(): JSX.Element {
     setShowVPNPopup(!ipStatusOK);
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     // Check for VPN or gov Network use on load, and every 5 seconds
     handleIPStatusUpdate();
@@ -111,7 +110,10 @@ function App(): JSX.Element {
               path="/send-records/lan/instructions"
               element={<LanInstructionsPage />}
             />
-            <Route path="/send-records/lan" element={<LanTransferPage />} />
+            <Route
+              path="/send-records/lan"
+              element={<LanTransferPage accessToken={accessToken} />}
+            />
           </Routes>
           <ToastContainer
             position="bottom-left"

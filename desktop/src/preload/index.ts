@@ -1,13 +1,14 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
 import { checkApiStatus, checkIpRange } from "./api";
-import { safePromise } from "./api/utils";
+import { fileToBuffer, safePromise } from "./api/utils";
 import { fetchProtectedRoute, getUser } from "./api/sso";
 import {
   accessionExists,
   applicationExists,
   isAccessionValid,
   isApplicationValid,
+  createZipBuffer,
   parseXlsxFileList,
 } from "./api/transfer";
 
@@ -33,9 +34,11 @@ const api = {
   },
   utils: {
     safePromise,
+    fileToBuffer,
   },
   transfer: {
     parseXlsxFileList,
+    createZipBuffer,
     accessionExists,
     isAccessionValid,
     applicationExists,

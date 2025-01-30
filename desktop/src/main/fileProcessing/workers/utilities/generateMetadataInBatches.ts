@@ -5,6 +5,10 @@ import { calculateChecksum } from "./calculateChecksum";
 import { countFiles } from "./countFiles";
 import { formatFileSize } from "./formatFileSize";
 
+const { stat, readdir } = fsPromises;
+
+let processedFileCount = 0;
+
 export const generateMetadataInBatches = async (
   rootDir: string,
   originalSource: string,
@@ -15,10 +19,8 @@ export const generateMetadataInBatches = async (
   totalSize: number;
 }> => {
   console.log("Generating metadata in batches for", rootDir);
-  const { stat, readdir } = fsPromises;
   const metadata: Record<string, unknown[]> = { [originalSource]: [] }; // Ensure all metadata is stored under the original source
   const totalFileCount = await countFiles(originalSource);
-  let processedFileCount = 0;
   let fileCount = 0;
   let totalSize = 0;
 
