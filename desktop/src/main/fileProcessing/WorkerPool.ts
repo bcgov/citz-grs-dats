@@ -62,6 +62,9 @@ export class WorkerPool extends EventEmitter {
         const task = workerScript.includes("metadata") ? "metadata" : "copy";
         // Handle progress updates
         if (message.type === "progress") {
+          console.log(
+            `Progress ${message.progressPercentage} from ${message.source} message emitted.`
+          );
           this.emit("progress", {
             task,
             ...message,
