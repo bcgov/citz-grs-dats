@@ -40,7 +40,7 @@ type FileBufferObj = {
 export const LanTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
-  const { setCurrentPath } = useContext(Context) ?? {};
+  const { accessToken, setCurrentPath } = useContext(Context) ?? {};
 
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [fileList, setFileList] = useState<File | null | undefined>(undefined);
