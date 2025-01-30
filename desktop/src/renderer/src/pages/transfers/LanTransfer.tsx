@@ -360,8 +360,23 @@ export const LanTransferPage = () => {
     return newFolder;
   };
 
-  const handleEditClick = async (folderPath: string) => {
+  const handleEditClick = async (folderPath: string): Promise<void> => {
     const result = await api.selectDirectory({ singleSelection: true });
+
+    // Cancel if no folder path is selected.
+    if (!result[0]) return;
+
+    // Folder already exists in file list.
+    if (folders.some((row) => row.folder === result[0])) {
+      toast.error(Toast, {
+        data: {
+          title: "Folder edit unsuccessful",
+          message:
+            "The folder path you selected is already used in the file list. Please select a different folder path.",
+        },
+      });
+      return;
+    }
 
     setFolders((prev) =>
       prev.map((row) => {
