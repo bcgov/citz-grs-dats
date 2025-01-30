@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
-import { SideNav, VPNPopup } from "./components";
+import { Header } from "@bcgov/design-system-react-components";
+import { Button, Grid2 as Grid } from "@mui/material";
+import { createContext, useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import { SideNav, VPNPopup } from "./components";
+import { LeavePageModal } from "./components/LeavePageModal";
 import {
   FileListPage,
   HomePage,
-  SendRecordsPage,
   LanInstructionsPage,
   LanTransferPage,
+  SendRecordsPage,
 } from "./pages";
-import { Button, Grid2 as Grid } from "@mui/material";
-import { Header } from "@bcgov/design-system-react-components";
-import { LeavePageModal } from "./components/LeavePageModal";
-import { ToastContainer } from "react-toastify";
+
+export const TokenContext = createContext<string | undefined>(undefined);
 
 function App(): JSX.Element {
   const [api] = useState(window.api); // Preload scripts
@@ -66,7 +68,6 @@ function App(): JSX.Element {
     setShowVPNPopup(!ipStatusOK);
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     // Check for VPN or gov Network use on load, and every 5 seconds
     handleIPStatusUpdate();
@@ -98,7 +99,11 @@ function App(): JSX.Element {
             />
             <Route
               path="/file-list"
-              element={<FileListPage authenticated={!!accessToken} />}
+              element={
+                <TokenContext.Provider value={accessToken}>
+                  <FileListPage authenticated={!!accessToken} />
+                </TokenContext.Provider>
+              }
             />
             <Route path="/send-records" element={<SendRecordsPage />} />
             <Route

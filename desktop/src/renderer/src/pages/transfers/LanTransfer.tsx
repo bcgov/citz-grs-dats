@@ -25,7 +25,7 @@ type Folder = {
   metadataProgress: number;
 };
 
-type Change = {
+type FolderUploadChange = {
   originalFolderPath: string;
   newFolderPath?: string;
   deleted: boolean;
@@ -61,7 +61,7 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   >({});
   const [foldersToProcess, setFoldersToProcess] = useState<string[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [changes, setChanges] = useState<Change[]>([]);
+  const [changes, setChanges] = useState<FolderUploadChange[]>([]);
 
   // Justify changes
   const [showJustifyChangesModal, setShowJustifyChangesModal] = useState(false);
@@ -85,7 +85,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   };
 
   // Handle metadata progress and completion events
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const handleProgress = (
       event: CustomEvent<{ source: string; progressPercentage: number }>
@@ -191,7 +190,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   }, []);
 
   // Handle buffer progress and completion events
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const handleProgress = (
       event: CustomEvent<{ source: string; progressPercentage: number }>
@@ -298,7 +296,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   }, []);
 
   // Get folder metadata and buffers after file list uploaded
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (foldersToProcess.length > 0) {
       const pathsToProcess = [...foldersToProcess];
@@ -520,7 +517,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
     return; // Return so linting doesnt complain about some paths not returning.
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (!fileList) {
       setFolders([]);
@@ -529,7 +525,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
     parseFileList();
   }, [fileList]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (currentViewIndex === 3) {
       // Open of upload view
