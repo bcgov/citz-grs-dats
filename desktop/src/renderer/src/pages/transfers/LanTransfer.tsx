@@ -25,7 +25,7 @@ type Folder = {
   metadataProgress: number;
 };
 
-type Change = {
+type FolderUploadChange = {
   originalFolderPath: string;
   newFolderPath?: string;
   deleted: boolean;
@@ -46,6 +46,7 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
     undefined
   );
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
+
   // Request to send transfer
   const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(
     null
@@ -61,7 +62,7 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   >({});
   const [foldersToProcess, setFoldersToProcess] = useState<string[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [changes, setChanges] = useState<Change[]>([]);
+  const [changes, setChanges] = useState<FolderUploadChange[]>([]);
 
   // Justify changes
   const [showJustifyChangesModal, setShowJustifyChangesModal] = useState(false);
