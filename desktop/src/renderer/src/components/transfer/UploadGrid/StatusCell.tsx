@@ -37,7 +37,7 @@ const getStatusDetails = ({ params }: Props) => {
   // Invalid path
   return {
     tooltip:
-      "Folder path could not be found. Use the edit button to change folder path.",
+      "Folder path not found or folder is empty. Use the edit button to update or the delete button to remove.",
     iconColor: "var(--progress-cancelled)",
     progressMsg: "",
   };
