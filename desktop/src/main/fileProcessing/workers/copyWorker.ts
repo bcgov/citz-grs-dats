@@ -136,7 +136,7 @@ const copyDirectoryInBatches = async (
           const fileBuffer = await fsPromises.readFile(sourcePath);
           folderBuffers.push({
             filename: file,
-            path: sourcePath,
+            path: sourcePath.replace(originalSource, ""),
             buffer: fileBuffer,
           });
 

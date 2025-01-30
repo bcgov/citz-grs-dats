@@ -2,7 +2,7 @@ import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { Stepper, Toast } from "@renderer/components";
 import { JustifyChangesModal } from "@renderer/components/transfer";
 import {
-  LanCompletionView,
+  LanFinishView,
   LanSubmissionAgreementView,
   LanUploadFileListView,
   LanUploadTransferFormView,
@@ -25,7 +25,11 @@ type Folder = {
   metadataProgress: number;
 };
 
-type FolderPathChanges = { original: string; new: string };
+type FolderUploadChange = {
+  originalFolderPath: string;
+  newFolderPath?: string;
+  deleted: boolean;
+};
 
 type FileBufferObj = {
   filename: string;
@@ -33,7 +37,7 @@ type FileBufferObj = {
   buffer: Buffer;
 };
 
-export const LanTransferPage = () => {
+export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   const navigate = useNavigate();
   const [api] = useState(window.api); // Preload scripts
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
@@ -41,22 +45,22 @@ export const LanTransferPage = () => {
   const [transferForm, setTransferForm] = useState<File | null | undefined>(
     undefined
   );
+  // Request to send transfer
+  const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(
+    null
+  );
 
   // File list
   const [metadata, setMetadata] = useState<Record<string, unknown>>({});
+  const [originalFolderList, setOriginalFolderList] = useState<
+    Record<string, unknown>
+  >({});
   const [folderBuffers, setFolderBuffers] = useState<
     Record<string, FileBufferObj[]>
   >({});
   const [foldersToProcess, setFoldersToProcess] = useState<string[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [deletedFolders, setDeletedFolders] = useState<string[]>([]);
-  const [changedFolderPaths, setChangedFolderPaths] = useState<
-    FolderPathChanges[]
-  >([]);
-
-  if (metadata && folderBuffers) {
-    // TODO: TEMP to allow build
-  }
+  const [changes, setChanges] = useState<FolderUploadChange[]>([]);
 
   // Justify changes
   const [showJustifyChangesModal, setShowJustifyChangesModal] = useState(false);
@@ -80,7 +84,6 @@ export const LanTransferPage = () => {
   };
 
   // Handle metadata progress and completion events
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const handleProgress = (
       event: CustomEvent<{ source: string; progressPercentage: number }>
@@ -167,7 +170,6 @@ export const LanTransferPage = () => {
   }, []);
 
   // Handle buffer progress and completion events
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const handleProgress = (
       event: CustomEvent<{ source: string; progressPercentage: number }>
@@ -209,10 +211,13 @@ export const LanTransferPage = () => {
     ) => {
       const { source, success, buffers, error } = event.detail;
 
+      const sourceParts = source.split("\\");
+      const parentFolder = sourceParts[sourceParts.length - 1];
+
       if (success && buffers && buffers.length > 0) {
         setFolderBuffers((prev) => ({
           ...prev,
-          [source]: buffers,
+          [parentFolder ?? source]: buffers,
         }));
         console.log(`Successfully processed folder buffer: ${source}`);
       } else {
@@ -253,7 +258,6 @@ export const LanTransferPage = () => {
   }, []);
 
   // Get folder metadata and buffers after file list uploaded
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (foldersToProcess.length > 0) {
       const pathsToProcess = [...foldersToProcess];
@@ -296,7 +300,6 @@ export const LanTransferPage = () => {
     }
   }, [foldersToProcess]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (currentViewIndex === 3) {
       // Open of upload view
@@ -370,9 +373,13 @@ export const LanTransferPage = () => {
         return row;
       })
     );
-    setChangedFolderPaths((prev) => [
+    setChanges((prev) => [
       ...prev,
-      { original: folderPath, new: result[0] },
+      {
+        originalFolderPath: folderPath,
+        newFolderPath: result[0],
+        deleted: false,
+      },
     ]);
     setFoldersToProcess((prev) => [...prev, result[0]]);
   };
@@ -396,10 +403,11 @@ export const LanTransferPage = () => {
         const result = await api.transfer.parseXlsxFileList(fileList);
 
         // Save results
-        const { accession, application, folders } = result;
+        const { accession, application, folders, foldersMetadata } = result;
         setAccession(accession);
         setApplication(application);
         setFoldersToProcess(folders);
+        setOriginalFolderList(foldersMetadata);
       } catch (error) {
         if (error instanceof Error) {
           const toastData = getXlsxFileListToastData(error.message);
@@ -486,7 +494,6 @@ export const LanTransferPage = () => {
     return; // Return so linting doesnt complain about some paths not returning.
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (!fileList) {
       setFolders([]);
@@ -495,11 +502,107 @@ export const LanTransferPage = () => {
     parseFileList();
   }, [fileList]);
 
+  useEffect(() => {
+    if (currentViewIndex === 3) {
+      // Open of upload view
+      if (folders.some((folder) => folder.invalidPath)) {
+        toast.error(Toast, {
+          data: {
+            title: "Folder upload unsuccessful",
+            message:
+              "One or more of your folders was not successfully uploaded. Update the folder path(s) by clicking the corresponding Edit icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
+          },
+        });
+      }
+    } else if (currentViewIndex === 4) {
+      // Open of finish view
+      handleSendRequest();
+    }
+  }, [currentViewIndex]);
+
   // Ask for justification of changes if any folder paths changed or deleted
   const handleLanUploadNextPress = () => {
-    if (deletedFolders.length > 0 || changedFolderPaths.length > 0)
+    if (changes.length > 0) {
+      // Folder paths changed or deleted
       setShowJustifyChangesModal(true);
-    else onNextPress();
+    } else if (!accessToken) {
+      // TODO: Prompt use to login
+    } else onNextPress();
+  };
+
+  const handleSendRequest = async () => {
+    if (!fileList || !transferForm || !accessToken) return;
+
+    // Request url
+    const apiUrl = await api.getCurrentApiUrl();
+    const requestUrl = `${apiUrl}/transfer/lan`;
+
+    // Get updated folder metadata
+    const updatedFolderList: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(originalFolderList)) {
+      const change = changes.find((c) => c.originalFolderPath === key);
+
+      if (change) {
+        if (!change.deleted) {
+          const newKey = change.newFolderPath ?? key; // Use new path if provided, otherwise keep the old key
+          updatedFolderList[newKey] = value;
+        }
+      } else {
+        updatedFolderList[key] = value; // Keep unchanged keys
+      }
+    }
+
+    // Prepare metadata V2 for request body
+    const metadataV2 = {
+      admin: {
+        accession,
+        application,
+      },
+      folders: updatedFolderList,
+      files: metadata,
+    };
+
+    // Prepare file buffers for request body
+    const fileListBuffer = await api.utils.fileToBuffer(fileList);
+    const transferFormBuffer = await api.utils.fileToBuffer(transferForm);
+    const contentBuffer = await api.transfer.createZipBuffer(folderBuffers);
+
+    // Formdata for request
+    const formData = new FormData();
+    formData.append("fileListBuffer", new Blob([fileListBuffer]), "file.bin");
+    formData.append("fileListFilename", fileList.name);
+    formData.append(
+      "transferFormBuffer",
+      new Blob([transferFormBuffer]),
+      "file.bin"
+    );
+    formData.append("transferFormFilename", transferForm.name);
+    formData.append("contentZipBuffer", new Blob([contentBuffer]), "file.bin");
+    formData.append(
+      "originalFoldersMetadata",
+      JSON.stringify(originalFolderList)
+    );
+    formData.append("metadataV2", JSON.stringify(metadataV2));
+    formData.append("changes", JSON.stringify(changes));
+    formData.append("changesJustification", changesJustification);
+
+    // Make request
+    console.log("Making lan transfer request.");
+    const response = await fetch(requestUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) setRequestSuccessful(false);
+
+    const jsonResponse = await response.json();
+    console.log("Lan transfer response:", jsonResponse);
+
+    if (jsonResponse.success) setRequestSuccessful(true);
+    else setRequestSuccessful(false);
   };
 
   // Send to home on completion
@@ -517,7 +620,7 @@ export const LanTransferPage = () => {
               "Transfer form",
               "Submission agreement",
               "Confirmation",
-              "Done",
+              "Finish",
             ]}
             currentIndex={currentViewIndex}
           />
@@ -560,18 +663,19 @@ export const LanTransferPage = () => {
               setFolders={setFolders}
               processRowUpdate={processRowUpdate}
               setMetadata={setMetadata}
-              setDeletedFolders={setDeletedFolders}
+              setChanges={setChanges}
               onFolderEdit={handleEditClick}
               onNextPress={handleLanUploadNextPress}
               onBackPress={onBackPress}
             />
           )}
           {currentViewIndex === 4 && (
-            <LanCompletionView
+            <LanFinishView
               // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
               // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
+              wasRequestSuccessful={requestSuccessful}
               onNextPress={handleCompletion}
             />
           )}
@@ -582,7 +686,9 @@ export const LanTransferPage = () => {
             setExplanation={setChangesJustification}
             onConfirm={() => {
               setShowJustifyChangesModal(false);
-              onNextPress();
+              if (!accessToken) {
+                // TODO: Prompt user to login
+              } else onNextPress();
             }}
           />
         </Stack>
