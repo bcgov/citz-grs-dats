@@ -56,8 +56,8 @@ let currentApiUrl = is.dev ? LOCAL_API_URL : PROD_API_URL;
 
 const pool = createWorkerPool();
 
-const debug = (log: string) => {
-  if (DEBUG) console.info(log);
+const debug = (log: string, data: unknown = '') => {
+  if (DEBUG) console.info(log, data);
 };
 
 // Update API URL
@@ -219,6 +219,7 @@ ipcMain.on(
       metadata?: Record<string, unknown>;
       error?: unknown;
     }) => {
+      debug("[main] get-folder-metadata completion", data);
       event.sender.send("folder-metadata-completion", data);
     };
 
@@ -399,27 +400,27 @@ const menuTemplate = [
   },
   ...(is.dev
     ? [
-        {
-          label: "Developer",
-          submenu: [
-            {
-              label: "Copy Auth Token",
-              click: () => {
-                if (tokens.accessToken) {
-                  clipboard.writeText(tokens.accessToken);
-                  mainWindow.webContents.send("auth-token-copied", {
-                    message: "Access token copied to clipboard!",
-                  });
-                } else {
-                  mainWindow.webContents.send("auth-token-copied", {
-                    message: "No access token available to copy.",
-                  });
-                }
-              },
+      {
+        label: "Developer",
+        submenu: [
+          {
+            label: "Copy Auth Token",
+            click: () => {
+              if (tokens.accessToken) {
+                clipboard.writeText(tokens.accessToken);
+                mainWindow.webContents.send("auth-token-copied", {
+                  message: "Access token copied to clipboard!",
+                });
+              } else {
+                mainWindow.webContents.send("auth-token-copied", {
+                  message: "No access token available to copy.",
+                });
+              }
             },
-          ],
-        },
-      ]
+          },
+        ],
+      },
+    ]
     : []),
 ];
 

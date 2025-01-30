@@ -3,10 +3,13 @@ name: GRS DATS API - Image Build, Tag and Push
 
 on:
   pull_request:
-    types: [opened, synchronize, ready_for_review] # Triggered by opened or changed pull requests.
-    branches: [main]
+    types: # Triggered by changed or ready for review pull requests.
+      - synchronize
+      - ready_for_review
+    branches:
+      - main
     paths:
-      - 'backend/**' # Triggers on changes to files in the express-api/ directory.
+      - 'backend/**' # Triggers on changes to files in the backend/ directory.
   workflow_dispatch:
 
 jobs:
