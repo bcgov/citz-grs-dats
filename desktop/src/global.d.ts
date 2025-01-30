@@ -28,6 +28,7 @@ interface Window {
       safePromise: (
         promise: Promise
       ) => Promise<[Error, null] | [null, ExtendedResponse]>;
+      fileToBuffer: (file: File) => Promise<Buffer>;
     };
 
     transfer: {
@@ -35,7 +36,11 @@ interface Window {
         accession: string;
         application: string;
         folders: string[];
+        foldersMetadata: Record<string, unknown>;
       }>;
+      createZipBuffer: (
+        folders: Record<string, FileBufferObj[]>
+      ) => Promise<Buffer>;
       accessionExists: (accession?: string) => boolean;
       isAccessionValid: (accession?: string) => boolean;
       applicationExists: (application?: string) => boolean;

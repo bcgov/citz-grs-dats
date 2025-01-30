@@ -85,7 +85,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   };
 
   // Handle metadata progress and completion events
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const handleProgress = (
       event: CustomEvent<{ source: string; progressPercentage: number }>
@@ -172,7 +171,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   }, []);
 
   // Handle buffer progress and completion events
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const handleProgress = (
       event: CustomEvent<{ source: string; progressPercentage: number }>
@@ -261,7 +259,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   }, []);
 
   // Get folder metadata and buffers after file list uploaded
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (foldersToProcess.length > 0) {
       const pathsToProcess = [...foldersToProcess];
@@ -303,26 +300,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
       });
     }
   }, [foldersToProcess]);
-
-  // Toast message once folders have been successfully uploaded
-  useEffect(() => {
-    if (
-      currentViewIndex === 3 &&
-      folders.length > 0 &&
-      folders.every(
-        (folder) =>
-          folder.bufferProgress === 100 && folder.metadataProgress === 100
-      )
-    ) {
-      toast.success(Toast, {
-        data: {
-          title: "Folder upload successful",
-          message:
-            "Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
-        },
-      });
-    }
-  }, [folders, currentViewIndex]);
 
   const getFolderMetadata = async (filePath: string) => {
     try {
@@ -483,7 +460,6 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
     return; // Return so linting doesnt complain about some paths not returning.
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (!fileList) {
       setFolders([]);
@@ -492,7 +468,26 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
     parseFileList();
   }, [fileList]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // Toast message once folders have been successfully uploaded
+  useEffect(() => {
+    if (
+      currentViewIndex === 3 &&
+      folders.length > 0 &&
+      folders.every(
+        (folder) =>
+          folder.bufferProgress === 100 && folder.metadataProgress === 100
+      )
+    ) {
+      toast.success(Toast, {
+        data: {
+          title: "Folder upload successful",
+          message:
+            "Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
+        },
+      });
+    }
+  }, [folders, currentViewIndex]);
+
   useEffect(() => {
     if (currentViewIndex === 3) {
       // Open of upload view
