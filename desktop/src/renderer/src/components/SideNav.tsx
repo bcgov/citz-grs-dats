@@ -7,7 +7,6 @@ import {
   useTheme,
   Box,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import {
   HomeOutlined as HomeOutlinedIcon,
   DescriptionOutlined as FileListIcon,
@@ -26,26 +25,29 @@ type NavItemProps = {
 type Props = {
   accessToken: string | undefined;
   idToken: string | undefined;
+  currentPath: string;
+  setCurrentPath: React.Dispatch<React.SetStateAction<string>>;
 };
 
-export const SideNav = ({ accessToken, idToken }: Props) => {
-  const navigate = useNavigate();
+export const SideNav = ({
+  accessToken,
+  idToken,
+  currentPath,
+  setCurrentPath,
+}: Props) => {
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
   const [newPagePath, setNewPagePath] = useState("/");
 
   const onConfirmLeavePage = () => {
     setLeavePageModalOpen(false);
-    navigate(newPagePath);
+    setCurrentPath(newPagePath);
   };
 
   const handleSelection = (path: string) => {
-    if (
-      window.location.pathname === path ||
-      (window.location.pathname.startsWith(path) && path !== "/")
-    )
+    if (currentPath === path || (currentPath.startsWith(path) && path !== "/"))
       return;
-    if (window.location.pathname === "/") {
-      navigate(path);
+    if (currentPath === "/") {
+      setCurrentPath(path);
     } else {
       setNewPagePath(path);
       setLeavePageModalOpen(true);
@@ -59,14 +61,14 @@ export const SideNav = ({ accessToken, idToken }: Props) => {
         sx={{
           gap: 1,
           border:
-            window.location.pathname === path ||
-            (window.location.pathname.startsWith(path) && path !== "/")
+            currentPath === path ||
+            (currentPath.startsWith(path) && path !== "/")
               ? "2px solid var(--sidenav-item-border-current-page)"
               : "2px solid transparent",
           borderRadius: "5px",
           background:
-            window.location.pathname === path ||
-            (window.location.pathname.startsWith(path) && path !== "/")
+            currentPath === path ||
+            (currentPath.startsWith(path) && path !== "/")
               ? theme.palette.secondary.light
               : "none",
           "&:hover": {
