@@ -1,11 +1,13 @@
 import { Button } from "@bcgov/design-system-react-components";
-import { useNavigate } from "react-router-dom";
 import { Stack, Typography, useTheme, Grid2 as Grid } from "@mui/material";
 import { Lan as LanIcon, Computer as ComputerIcon } from "@mui/icons-material";
+import { Context } from "../App";
+import { useContext } from "react";
 
 export const SendRecordsPage = () => {
-  const navigate = useNavigate();
   const theme = useTheme();
+
+  const { setCurrentPath } = useContext(Context) ?? {};
 
   return (
     <Grid container>
@@ -40,7 +42,10 @@ export const SendRecordsPage = () => {
                 </Typography>
               </Stack>
               <Button
-                onPress={() => navigate("/send-records/lan/instructions")}
+                onPress={() => {
+                  if (setCurrentPath)
+                    setCurrentPath("/send-records/lan/instructions");
+                }}
                 style={{ width: "fit-content" }}
               >
                 Start
