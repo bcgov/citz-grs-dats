@@ -7,13 +7,13 @@ import { Box, Stack, Typography } from "@mui/material";
 import { SubAgreementScrollBox } from "@renderer/components";
 import { useState } from "react";
 import { DeclineSubAgreementModal } from "../DeclineSubAgreementModal";
-import { useNavigate } from "react-router-dom";
 
 type Props = {
   accession: string;
   application: string;
   onNextPress: () => void;
   onBackPress: () => void;
+  setCurrentPath?: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export const LanSubmissionAgreementView = ({
@@ -21,8 +21,8 @@ export const LanSubmissionAgreementView = ({
   application,
   onNextPress,
   onBackPress,
+  setCurrentPath,
 }: Props) => {
-  const navigate = useNavigate();
   const [accept, setAccept] = useState<boolean | null>(null);
   const [showDeclineModal, setShowDeclineModal] = useState<boolean>(false);
 
@@ -78,7 +78,7 @@ export const LanSubmissionAgreementView = ({
   };
 
   const handleConfirmDecline = () => {
-    navigate("/");
+    if (setCurrentPath) setCurrentPath("/");
   };
 
   return (

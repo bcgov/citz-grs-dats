@@ -8,14 +8,14 @@ import {
   LanUploadTransferFormView,
   LanConfirmationView,
 } from "@renderer/components/transfer/lan-views";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import {
   getXlsxFileListToastData,
   parseJsonFile,
   type ToastData,
 } from "./utils";
+import { Context } from "../../App";
 
 type Folder = {
   id: number;
@@ -37,9 +37,11 @@ type FileBufferObj = {
   buffer: Buffer;
 };
 
-export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
-  const navigate = useNavigate();
+export const LanTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
+
+  const { accessToken, setCurrentPath } = useContext(Context) ?? {};
+
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [fileList, setFileList] = useState<File | null | undefined>(undefined);
   const [transferForm, setTransferForm] = useState<File | null | undefined>(
@@ -621,7 +623,9 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
   };
 
   // Send to home on completion
-  const handleCompletion = () => navigate("/");
+  const handleCompletion = () => {
+    if (setCurrentPath) setCurrentPath("/");
+  };
 
   return (
     <Grid container sx={{ paddingBottom: "20px" }}>
@@ -666,6 +670,7 @@ export const LanTransferPage = ({ accessToken }: { accessToken?: string }) => {
               application={application!}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
+              setCurrentPath={setCurrentPath}
             />
           )}
           {currentViewIndex === 3 && (
