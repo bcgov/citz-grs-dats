@@ -1,21 +1,20 @@
-import { promises as fsPromises, type Stats } from "node:fs";
+import { promises as fsPromises } from "node:fs";
 import path from "node:path";
 
+const { readdir } = fsPromises;
+
 export const countFiles = async (dir: string): Promise<number> => {
-  const { stat, readdir } = fsPromises;
-  let count = 0;
-  const files = await readdir(dir);
+  const entries = await readdir(dir, { withFileTypes: true });
 
-  for (const file of files) {
-    const filePath = path.join(dir, file);
-    const fileStat: Stats = await stat(filePath);
+  const counts = await Promise.all(
+    entries.map(async (entry) => {
+      const filePath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        return countFiles(filePath); // Recursively count files in subdirectory
+      }
+      return 1; // Count file
+    })
+  );
 
-    if (fileStat.isDirectory()) {
-      count += await countFiles(filePath);
-    } else {
-      count += 1;
-    }
-  }
-
-  return count;
+  return counts.reduce((acc, count) => acc + count, 0);
 };

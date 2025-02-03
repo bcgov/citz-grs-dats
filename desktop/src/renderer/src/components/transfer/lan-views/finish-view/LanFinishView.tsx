@@ -25,7 +25,7 @@ export const LanFinishView = ({
         />
       )}
       {wasRequestSuccessful === null && <RequestLoading />}
-      {!wasRequestSuccessful && <RequestFailed />}
+      {wasRequestSuccessful === false && <RequestFailed />}
     </>
   );
 };
