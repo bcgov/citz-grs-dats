@@ -56,7 +56,7 @@ let currentApiUrl = is.dev ? LOCAL_API_URL : PROD_API_URL;
 
 const pool = createWorkerPool();
 
-const debug = (log: string, data: unknown = '') => {
+const debug = (log: string, data: unknown = "") => {
   if (DEBUG) console.info(log, data);
 };
 
@@ -291,71 +291,94 @@ ipcMain.handle(
 );
 
 const clearAuthState = () => {
-  debug("Beginning clearAuthState function of main process.");
+  debug("Clearing authentication state.");
 
-  // Close auth window
-  authWindow?.close();
+  if (authWindow && !authWindow.isDestroyed()) {
+    authWindow.close();
+  }
   authWindow = null;
 
-  mainWindow.webContents.send("auth-logout");
+  mainWindow?.webContents.send("auth-logout");
 
-  clearInterval(refreshInterval);
-  tokens.accessToken = undefined;
-  tokens.refreshToken = undefined;
-  tokens.idToken = undefined;
-  tokens.accessExpiresIn = undefined;
-  tokens.refreshExpiresIn = undefined;
+  if (refreshInterval) clearInterval(refreshInterval);
+
+  Object.keys(tokens).forEach((key) => {
+    tokens[key] = undefined;
+  });
 };
 
 const scheduleRefreshTokens = () => {
-  debug("Beginning scheduleRefreshTokens function of main process.");
+  debug("Scheduling token refresh.");
 
-  if (!tokens.refreshExpiresIn || !tokens.accessExpiresIn)
-    return console.error("Missing token expiry values after login.");
+  if (!tokens.refreshExpiresIn || !tokens.accessExpiresIn) {
+    console.error("Missing token expiry values after login.");
+    return;
+  }
 
-  const { accessExpiresIn, refreshExpiresIn } = tokens;
+  const accessTokenExpiresMs = Number(tokens.accessExpiresIn) * 1000;
+  const refreshTokenExpiresMs = Number(tokens.refreshExpiresIn) * 1000;
 
-  // Clear any existing intervals before setting a new one
+  // Clear existing intervals before setting a new one
   if (refreshInterval) clearInterval(refreshInterval);
 
-  // Refresh tokens
+  // Refresh the access token before it expires
   refreshInterval = setInterval(() => {
     refreshTokens();
-  }, Number(accessExpiresIn) * 1000);
+  }, accessTokenExpiresMs - 5000); // Refresh slightly before expiration
 
-  // Clear auth state when refresh token expires.
-  setTimeout(() => {
-    clearAuthState();
-    return;
-  }, Number(refreshExpiresIn) * 1000);
+  // Instead of a static timeout, reset it when a new refresh token is acquired
+  if (tokens.refreshToken) {
+    setTimeout(() => {
+      if (tokens.refreshToken) {
+        debug("Refresh token expired, but was replaced. Continuing session.");
+      } else {
+        debug("Refresh token expired with no replacement. Logging out.");
+        clearAuthState();
+      }
+    }, refreshTokenExpiresMs - 5000);
+  }
 };
 
 const refreshTokens = async () => {
-  debug("Beginning refreshTokens function of main process.");
+  debug("Refreshing tokens...");
 
-  if (authWindow) {
-    try {
-      authWindow.loadURL(`${currentApiUrl}/auth/token`);
-
-      setTimeout(async () => {
-        const cookies = await authWindow?.webContents.session.cookies.get({
-          url: currentApiUrl,
-        });
-
-        if (!cookies || cookies?.length === 0)
-          throw new Error("No cookies found for the session.");
-
-        // Find cookies that contain the token information
-        cookies.forEach((cookie) => {
-          if (cookie.name === "access_token") tokens.accessToken = cookie.value;
-        });
-
-        // Send the updated tokens to the renderer process
-        mainWindow.webContents.send("token-refresh-success", tokens);
-      }, 1000);
-    } catch (error) {
-      console.error("Error executing refreshTokens in authWindow:", error);
+  try {
+    if (!tokens.refreshToken) {
+      console.error("No refresh token available.");
+      return clearAuthState();
     }
+
+    authWindow?.loadURL(`${currentApiUrl}/auth/token`);
+
+    setTimeout(async () => {
+      const cookies = await authWindow?.webContents.session.cookies.get({
+        url: currentApiUrl,
+      });
+
+      if (!cookies || cookies.length === 0) {
+        throw new Error("No cookies found for the session.");
+      }
+
+      // Update token values
+      cookies.forEach((cookie) => {
+        if (cookie.name === "access_token") tokens.accessToken = cookie.value;
+        if (cookie.name === "refresh_token") tokens.refreshToken = cookie.value;
+        if (cookie.name === "expires_in") tokens.accessExpiresIn = cookie.value;
+        if (cookie.name === "refresh_expires_in")
+          tokens.refreshExpiresIn = cookie.value;
+      });
+
+      if (tokens.refreshToken) {
+        debug("Successfully refreshed tokens.");
+        scheduleRefreshTokens(); // Reschedule with the new refresh token expiration
+        mainWindow.webContents.send("token-refresh-success", tokens);
+      } else {
+        throw new Error("Failed to retrieve new refresh token.");
+      }
+    }, 1000);
+  } catch (error) {
+    console.error("Error refreshing tokens:", error);
+    clearAuthState(); // Only clear auth if we actually fail to refresh
   }
 };
 
@@ -400,27 +423,27 @@ const menuTemplate = [
   },
   ...(is.dev
     ? [
-      {
-        label: "Developer",
-        submenu: [
-          {
-            label: "Copy Auth Token",
-            click: () => {
-              if (tokens.accessToken) {
-                clipboard.writeText(tokens.accessToken);
-                mainWindow.webContents.send("auth-token-copied", {
-                  message: "Access token copied to clipboard!",
-                });
-              } else {
-                mainWindow.webContents.send("auth-token-copied", {
-                  message: "No access token available to copy.",
-                });
-              }
+        {
+          label: "Developer",
+          submenu: [
+            {
+              label: "Copy Auth Token",
+              click: () => {
+                if (tokens.accessToken) {
+                  clipboard.writeText(tokens.accessToken);
+                  mainWindow.webContents.send("auth-token-copied", {
+                    message: "Access token copied to clipboard!",
+                  });
+                } else {
+                  mainWindow.webContents.send("auth-token-copied", {
+                    message: "No access token available to copy.",
+                  });
+                }
+              },
             },
-          },
-        ],
-      },
-    ]
+          ],
+        },
+      ]
     : []),
 ];
 
@@ -440,6 +463,8 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
+  clearAuthState();
+  pool.shutdown();
   if (process.platform !== "darwin") {
     app.quit();
   }
