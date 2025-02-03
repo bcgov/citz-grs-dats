@@ -1,5 +1,6 @@
 import { parentPort, workerData } from "node:worker_threads";
 import {
+  countFiles,
   doesDirectoryExist,
   generateExtendedMetadata,
   generateMetadataInBatches,
@@ -25,9 +26,12 @@ type WorkerData = {
       });
     }
 
+    const totalFileCount = await countFiles(source);
+
     const { metadata, fileCount, totalSize } = await generateMetadataInBatches(
       source,
       source,
+      totalFileCount,
       batchSize
     );
 

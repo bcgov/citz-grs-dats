@@ -1,7 +1,8 @@
 import { promises as fsPromises } from "node:fs";
 
+const { stat } = fsPromises;
+
 export const doesDirectoryExist = async (dirPath: string): Promise<boolean> => {
-  const { stat } = fsPromises;
   try {
     const stats = await stat(dirPath);
     return stats.isDirectory();

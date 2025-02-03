@@ -2,8 +2,9 @@ import { promises as fsPromises, type Stats } from "node:fs";
 import path from "node:path";
 import { parentPort } from "node:worker_threads";
 
+const { stat, readdir } = fsPromises;
+
 export const countFiles = async (dir: string): Promise<number> => {
-  const { stat, readdir } = fsPromises;
   let count = 0;
   const files = await readdir(dir);
 
