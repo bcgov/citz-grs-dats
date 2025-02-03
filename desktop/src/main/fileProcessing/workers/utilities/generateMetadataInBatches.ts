@@ -66,12 +66,21 @@ export const generateMetadataInBatches = async (
             (processedFileCount / totalFileCount) * 100
           );
 
-          parentPort?.postMessage({
-            type: "progress",
-            source: originalSource,
-            fileProcessed: filePath,
-            progressPercentage,
-          });
+          // Send progress update only if complete or progress is a multiple of 10%
+          if (
+            progressPercentage % 10 === 0 ||
+            processedFileCount === totalFileCount
+          ) {
+            console.log(
+              `Metadata progress of ${originalSource}: ${progressPercentage}`
+            );
+            parentPort?.postMessage({
+              type: "progress",
+              source: originalSource,
+              fileProcessed: filePath,
+              progressPercentage,
+            });
+          }
         }
       })
     );

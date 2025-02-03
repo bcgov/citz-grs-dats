@@ -48,6 +48,7 @@ export const LanTransferPage = () => {
     undefined
   );
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
+
   // Request to send transfer
   const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(
     null
@@ -368,13 +369,28 @@ export const LanTransferPage = () => {
     return newFolder;
   };
 
-  const handleEditClick = async (folderPath: string) => {
+  const handleEditClick = async (folderPath: string): Promise<void> => {
     const result = await api.selectDirectory({ singleSelection: true });
+    const selectedFolderPath = result[0];
+
+    if (!selectedFolderPath) return;
+
+    // Folder already exists in file list.
+    if (folders.some((row) => row.folder === selectedFolderPath)) {
+      toast.error(Toast, {
+        data: {
+          title: "Folder edit unsuccessful",
+          message:
+            "The folder path you selected is already used in the file list. Please select a different folder path.",
+        },
+      });
+      return;
+    }
 
     setFolders((prev) =>
       prev.map((row) => {
         if (row.folder === folderPath)
-          return { ...row, folder: result[0], invalidPath: false };
+          return { ...row, folder: selectedFolderPath, invalidPath: false };
         return row;
       })
     );
@@ -382,11 +398,11 @@ export const LanTransferPage = () => {
       ...prev,
       {
         originalFolderPath: folderPath,
-        newFolderPath: result[0],
+        newFolderPath: selectedFolderPath,
         deleted: false,
       },
     ]);
-    setFoldersToProcess((prev) => [...prev, result[0]]);
+    setFoldersToProcess((prev) => [...prev, selectedFolderPath]);
   };
 
   const parseFileList = async () => {
