@@ -3,7 +3,10 @@ import path from "node:path";
 import { parentPort } from "node:worker_threads";
 import { calculateChecksum } from "./calculateChecksum";
 import { formatFileSize } from "./formatFileSize";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
 
+const execPromise = promisify(exec);
 const { stat, readdir } = fsPromises;
 
 let processedFileCount = 0;
@@ -48,6 +51,22 @@ export const generateMetadataInBatches = async (
           totalSize += subMetadata.totalSize;
         } else {
           const fileChecksum = await calculateChecksum(filePath);
+
+          // Fetch owner metadata (Windows-only)
+          let owner = "";
+          if (process.platform === "win32") {
+            try {
+              const ownerCommand = `powershell.exe -Command "(Get-ACL '${filePath}').Owner"`;
+              const { stdout } = await execPromise(ownerCommand);
+              owner = stdout.trim() ?? "Not Available";
+            } catch (psError) {
+              console.warn(
+                `Failed to retrieve owner metadata for: ${filePath}`,
+                psError
+              );
+            }
+          }
+
           metadata[originalSource].push({
             filepath: filePath,
             filename: path.relative(originalSource, filePath),
@@ -56,6 +75,7 @@ export const generateMetadataInBatches = async (
             lastModified: new Date(fileStat.mtime).toISOString(),
             lastAccessed: new Date(fileStat.atime).toISOString(),
             checksum: fileChecksum,
+            owner,
           });
 
           totalSize += fileStat.size;
