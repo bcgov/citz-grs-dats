@@ -24,15 +24,22 @@ export const generateMetadataInBatches = async (
   console.log("Generating metadata in batches for", rootDir);
   const metadata: Record<string, unknown[]> = { [originalSource]: [] }; // Ensure all metadata is stored under the original source
   const totalFileCount = await countFiles(originalSource);
+  console.log(`${totalFileCount} files counted in metadataWorker.`);
   let fileCount = 0;
   let totalSize = 0;
 
   const files = await readdir(rootDir);
   for (let i = 0; i < files.length; i += batchSize) {
     const batch = files.slice(i, i + batchSize);
+    console.log(
+      `Processing ${rootDir} batch of ${batch.length} in metadataWorker.`
+    );
 
     await Promise.all(
       batch.map(async (file) => {
+        console.log(
+          `Processing file ${file} from ${originalSource} in metadataWorker.`
+        );
         const filePath = path.join(rootDir, file);
         const fileStat: Stats = await stat(filePath);
 
@@ -86,12 +93,21 @@ export const generateMetadataInBatches = async (
             (processedFileCount / totalFileCount) * 100
           );
 
-          parentPort?.postMessage({
-            type: "progress",
-            source: originalSource,
-            fileProcessed: filePath,
-            progressPercentage,
-          });
+          // Send progress update only if complete or progress is a multiple of 10%
+          if (
+            progressPercentage % 10 === 0 ||
+            processedFileCount === totalFileCount
+          ) {
+            console.log(
+              `Metadata progress of ${originalSource}: ${progressPercentage}`
+            );
+            parentPort?.postMessage({
+              type: "progress",
+              source: originalSource,
+              fileProcessed: filePath,
+              progressPercentage,
+            });
+          }
         }
       })
     );
