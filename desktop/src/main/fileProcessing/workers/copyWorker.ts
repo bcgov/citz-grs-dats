@@ -41,21 +41,19 @@ let processedFileCount = 0;
 
 // Recursively count all files in the directory structure
 const countFiles = async (dir: string): Promise<number> => {
-  let count = 0;
-  const files = await readdir(dir);
+  const entries = await readdir(dir, { withFileTypes: true });
 
-  for (const file of files) {
-    const filePath = path.join(dir, file);
-    const fileStat: Stats = await stat(filePath);
+  const counts = await Promise.all(
+    entries.map(async (entry) => {
+      const filePath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        return countFiles(filePath); // Recursively count files in subdirectory
+      }
+      return 1; // Count file
+    })
+  );
 
-    if (fileStat.isDirectory()) {
-      count += await countFiles(filePath); // Count files in subdirectory
-    } else {
-      count += 1; // Count file
-    }
-  }
-
-  return count;
+  return counts.reduce((acc, count) => acc + count, 0);
 };
 
 // Copy a file using streams
@@ -107,15 +105,15 @@ const copyDirectoryInBatches = async (
   originalSource: string,
   batchSize = 10
 ): Promise<FileBuffer[]> => {
-  if (originalSource) {
-    await ensureDirectoryExists(originalSource);
-  }
+  console.log("Generating buffers in batches for", source);
+  if (originalSource) await ensureDirectoryExists(originalSource);
 
   const files = await readdir(source);
   const folderBuffers: FileBuffer[] = [];
 
   for (let i = 0; i < files.length; i += batchSize) {
     const batch = files.slice(i, i + batchSize);
+    console.log(`Processing ${source} batch of ${batch.length} in copyWorker.`);
 
     await Promise.all(
       batch.map(async (file) => {
@@ -147,16 +145,21 @@ const copyDirectoryInBatches = async (
             (processedFileCount / totalFileCount) * 100
           );
 
-          console.log(
-            `Copy progress of ${originalSource}: ${progressPercentage}`
-          );
-
-          parentPort?.postMessage({
-            type: "progress",
-            source: originalSource,
-            fileProcessed: sourcePath,
-            progressPercentage,
-          });
+          // Send progress update only if complete or progress is a multiple of 10%
+          if (
+            progressPercentage % 10 === 0 ||
+            processedFileCount === totalFileCount
+          ) {
+            console.log(
+              `Copy progress of ${originalSource}: ${progressPercentage}`
+            );
+            parentPort?.postMessage({
+              type: "progress",
+              source: originalSource,
+              fileProcessed: sourcePath,
+              progressPercentage,
+            });
+          }
         }
       })
     );
@@ -166,6 +169,7 @@ const copyDirectoryInBatches = async (
 };
 
 (async () => {
+  console.log("[Copy worker] Starting with data:", workerData);
   if (!workerData) return;
   const { source, destination, batchSize } = workerData as WorkerData;
 
@@ -181,6 +185,7 @@ const copyDirectoryInBatches = async (
     }
 
     totalFileCount = await countFiles(source);
+    console.log(`${totalFileCount} files counted in copyWorker.`);
 
     console.log(`Processing files from ${source}`);
     const buffers = await copyDirectoryInBatches(source, source, batchSize);
