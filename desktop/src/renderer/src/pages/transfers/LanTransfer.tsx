@@ -516,6 +516,7 @@ export const LanTransferPage = () => {
   };
 
   useEffect(() => {
+    setProgressMade(!!fileList);
     if (!fileList) {
       // Clear state.
       setAccession(null);
@@ -525,7 +526,6 @@ export const LanTransferPage = () => {
       setMetadata({});
       return;
     }
-    setProgressMade(!!fileList); // Track if progress is made.
     parseFileList();
   }, [fileList]);
 
