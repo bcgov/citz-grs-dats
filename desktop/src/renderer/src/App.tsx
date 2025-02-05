@@ -5,6 +5,7 @@ import { ToastContainer } from "react-toastify";
 import { SideNav, VPNPopup } from "./components";
 import { LeavePageModal } from "./components/LeavePageModal";
 import {
+  EdrmsInstructionsPage,
   FileListPage,
   HomePage,
   LanInstructionsPage,
@@ -110,6 +111,9 @@ function App(): JSX.Element {
             {currentPath === "/send-records/lan" && <LanTransferPage />}
             {currentPath === "/send-records/lan/instructions" && (
               <LanInstructionsPage />
+            )}
+            {currentPath === "/send-records/edrms/instructions" && (
+              <EdrmsInstructionsPage />
             )}
           </Box>
         </Context.Provider>

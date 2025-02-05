@@ -64,7 +64,15 @@ export const SendRecordsPage = () => {
                 <ComputerIcon sx={{ color: theme.palette.info.contrastText }} />
                 <Typography variant="h3">Send records from EDRMS</Typography>
               </Stack>
-              <Button style={{ width: "fit-content" }}>Start</Button>
+              <Button
+                onPress={() => {
+                  if (setCurrentPath)
+                    setCurrentPath("/send-records/edrms/instructions");
+                }}
+                style={{ width: "fit-content" }}
+              >
+                Start
+              </Button>
             </Stack>
           </Stack>
           {/* Note */}
