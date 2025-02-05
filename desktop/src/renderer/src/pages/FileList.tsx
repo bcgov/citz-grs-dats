@@ -131,7 +131,7 @@ export const FileListPage = () => {
     const hasFolders = folders.length > 0;
 
     // Update progress when folders are uploaded.
-    setProgressMade(folders.length > 0);
+    setProgressMade(hasFolders);
 
     // Enable continue button when folders are processed.
     setContinueButtonIsEnabled(
