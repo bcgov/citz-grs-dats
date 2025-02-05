@@ -526,7 +526,7 @@ export const LanTransferPage = () => {
       return;
     }
     setProgressMade(!!fileList); // Track if progress is made.
-    parseFileList(); // Process the file list.
+    parseFileList();
   }, [fileList]);
 
   // Toast message once folders have been successfully uploaded
