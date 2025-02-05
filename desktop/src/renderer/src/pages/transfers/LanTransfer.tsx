@@ -40,8 +40,7 @@ type FileBufferObj = {
 export const LanTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
-  const { accessToken, setCurrentPath, setProgressMade } =
-    useContext(Context) ?? {};
+  const { accessToken, setCurrentPath, setProgressMade } = useContext(Context);
 
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [fileList, setFileList] = useState<File | null | undefined>(undefined);
@@ -519,12 +518,14 @@ export const LanTransferPage = () => {
   useEffect(() => {
     if (!fileList) {
       // Clear state.
+      setAccession(null);
+      setApplication(null);
+      setConfirmAccAppChecked(false);
       setFolders([]);
       setMetadata({});
-      if (setProgressMade) setProgressMade(false); // Track if progress is made.
       return;
     }
-    if (setProgressMade) setProgressMade(true); // Track if progress is made.
+    setProgressMade(!!fileList); // Track if progress is made.
     parseFileList(); // Process the file list.
   }, [fileList]);
 
@@ -654,7 +655,7 @@ export const LanTransferPage = () => {
 
   // Send to home on completion
   const handleCompletion = () => {
-    if (setCurrentPath) setCurrentPath("/");
+    setCurrentPath("/");
   };
 
   return (

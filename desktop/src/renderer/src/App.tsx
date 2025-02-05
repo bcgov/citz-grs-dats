@@ -15,11 +15,19 @@ import {
 type AppContext = {
   accessToken?: string;
   currentPath: string;
-  setCurrentPath: React.Dispatch<React.SetStateAction<string>>;
-  setProgressMade: React.Dispatch<React.SetStateAction<boolean>>;
+  setCurrentPath:
+    | React.Dispatch<React.SetStateAction<string>>
+    | ((value: string) => void);
+  setProgressMade:
+    | React.Dispatch<React.SetStateAction<boolean>>
+    | ((value: boolean) => void);
 };
 
-export const Context = createContext<AppContext | undefined>(undefined);
+export const Context = createContext<AppContext>({
+  currentPath: "/",
+  setCurrentPath: () => {},
+  setProgressMade: () => {},
+});
 
 function App(): JSX.Element {
   const [api] = useState(window.api); // Preload scripts
