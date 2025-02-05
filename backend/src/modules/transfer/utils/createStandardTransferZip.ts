@@ -17,6 +17,14 @@ type Props = {
       filename: string;
       buffer: Buffer;
     };
+    edrmsFilelist?: {
+      filename: string;
+      buffer: Buffer;
+    };
+    edrmsDataport?: {
+      filename: string;
+      buffer: Buffer;
+    };
   };
   metadata: {
     adminBuffer: Buffer;
@@ -79,6 +87,18 @@ export const createStandardTransferZip = async ({
     documentation.subAgreement.buffer,
     `documentation/${documentation.subAgreement.filename}`
   );
+  if (documentation.edrmsFilelist) {
+    zip.addBuffer(
+      documentation.edrmsFilelist.buffer,
+      `documentation/${documentation.edrmsFilelist.filename}`
+    );
+  }
+  if (documentation.edrmsDataport) {
+    zip.addBuffer(
+      documentation.edrmsDataport.buffer,
+      `documentation/${documentation.edrmsDataport.filename}`
+    );
+  }
 
   // Add metadata files
   zip.addBuffer(metadata.adminBuffer, "metadata/admin.json");
