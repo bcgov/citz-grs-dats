@@ -111,7 +111,18 @@ export const LanTransferPage = () => {
 
     const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
       const { path } = event.detail;
-      console.log("Missing", path);
+      console.log("[Metadata] Missing", path);
+      // Update folder invalidPath
+      setFolders((prevRows) =>
+        prevRows.map((row) =>
+          row.folder === path ? { ...row, invalidPath: true } : row
+        )
+      );
+    };
+
+    const handleEmptyFolder = (event: CustomEvent<{ path: string }>) => {
+      const { path } = event.detail;
+      console.log("[Metadata] Empty folder", path);
       // Update folder invalidPath
       setFolders((prevRows) =>
         prevRows.map((row) =>
@@ -154,6 +165,10 @@ export const LanTransferPage = () => {
       handleMissingPath as EventListener
     );
     window.addEventListener(
+      "folder-metadata-empty-folder",
+      handleEmptyFolder as EventListener
+    );
+    window.addEventListener(
       "folder-metadata-completion",
       handleCompletion as EventListener
     );
@@ -166,6 +181,10 @@ export const LanTransferPage = () => {
       window.removeEventListener(
         "folder-metadata-missing-path",
         handleMissingPath as EventListener
+      );
+      window.removeEventListener(
+        "folder-metadata-empty-folder",
+        handleEmptyFolder as EventListener
       );
       window.removeEventListener(
         "folder-metadata-completion",
@@ -197,7 +216,18 @@ export const LanTransferPage = () => {
 
     const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
       const { path } = event.detail;
-      console.log("Missing", path);
+      console.log("[Buffers] Missing", path);
+      // Update folder invalidPath
+      setFolders((prevRows) =>
+        prevRows.map((row) =>
+          row.folder === path ? { ...row, invalidPath: true } : row
+        )
+      );
+    };
+
+    const handleEmptyFolder = (event: CustomEvent<{ path: string }>) => {
+      const { path } = event.detail;
+      console.log("[Buffers] Empty folder", path);
       // Update folder invalidPath
       setFolders((prevRows) =>
         prevRows.map((row) =>
@@ -216,10 +246,9 @@ export const LanTransferPage = () => {
     ) => {
       const { source, success, buffers, error } = event.detail;
 
-      const sourceParts = source.split("\\");
-      const parentFolder = sourceParts[sourceParts.length - 1];
-
       if (success && buffers && buffers.length > 0) {
+        const sourceParts = source?.split("\\");
+        const parentFolder = sourceParts[sourceParts.length - 1];
         setFolderBuffers((prev) => ({
           ...prev,
           [parentFolder ?? source]: buffers,
@@ -242,6 +271,10 @@ export const LanTransferPage = () => {
       handleMissingPath as EventListener
     );
     window.addEventListener(
+      "folder-buffer-empty-folder",
+      handleEmptyFolder as EventListener
+    );
+    window.addEventListener(
       "folder-buffer-completion",
       handleCompletion as EventListener
     );
@@ -254,6 +287,10 @@ export const LanTransferPage = () => {
       window.removeEventListener(
         "folder-buffer-missing-path",
         handleMissingPath as EventListener
+      );
+      window.removeEventListener(
+        "folder-buffer-empty-folder",
+        handleEmptyFolder as EventListener
       );
       window.removeEventListener(
         "folder-buffer-completion",
@@ -519,7 +556,7 @@ export const LanTransferPage = () => {
           data: {
             title: "Folder upload unsuccessful",
             message:
-              "One or more of your folders was not successfully uploaded. Update the folder path(s) by clicking the corresponding Edit icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
+              "One or more of your folders was not successfully uploaded due to an invalid folder path or empty folder. Update the folder path(s) by clicking the corresponding Edit icon or remove the folder by clicking the Delete icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
           },
         });
       }

@@ -56,7 +56,7 @@ let currentApiUrl = is.dev ? LOCAL_API_URL : PROD_API_URL;
 
 const pool = createWorkerPool();
 
-const debug = (log: string, data: unknown = '') => {
+const debug = (log: string, data: unknown = "") => {
   if (DEBUG) console.info(log, data);
 };
 
@@ -214,6 +214,10 @@ ipcMain.on(
       event.sender.send("folder-metadata-missing-path", data);
     };
 
+    const onEmptyFolder = (data: { path: string }) => {
+      event.sender.send("folder-metadata-empty-folder", data);
+    };
+
     const onCompletion = (data: {
       success: boolean;
       metadata?: Record<string, unknown>;
@@ -228,9 +232,9 @@ ipcMain.on(
         pool,
         filePath,
         is.dev,
-        false,
         onProgress,
         onMissingPath,
+        onEmptyFolder,
         onCompletion
       );
     } catch (error) {
@@ -256,6 +260,10 @@ ipcMain.on(
       event.sender.send("folder-buffer-missing-path", data);
     };
 
+    const onEmptyFolder = (data: { path: string }) => {
+      event.sender.send("folder-buffer-empty-folder", data);
+    };
+
     const onCompletion = (data: {
       success: boolean;
       buffers?: FileBufferObj[];
@@ -269,9 +277,9 @@ ipcMain.on(
         pool,
         filePath,
         is.dev,
-        false,
         onProgress,
         onMissingPath,
+        onEmptyFolder,
         onCompletion
       );
     } catch (error) {
@@ -400,27 +408,27 @@ const menuTemplate = [
   },
   ...(is.dev
     ? [
-      {
-        label: "Developer",
-        submenu: [
-          {
-            label: "Copy Auth Token",
-            click: () => {
-              if (tokens.accessToken) {
-                clipboard.writeText(tokens.accessToken);
-                mainWindow.webContents.send("auth-token-copied", {
-                  message: "Access token copied to clipboard!",
-                });
-              } else {
-                mainWindow.webContents.send("auth-token-copied", {
-                  message: "No access token available to copy.",
-                });
-              }
+        {
+          label: "Developer",
+          submenu: [
+            {
+              label: "Copy Auth Token",
+              click: () => {
+                if (tokens.accessToken) {
+                  clipboard.writeText(tokens.accessToken);
+                  mainWindow.webContents.send("auth-token-copied", {
+                    message: "Access token copied to clipboard!",
+                  });
+                } else {
+                  mainWindow.webContents.send("auth-token-copied", {
+                    message: "No access token available to copy.",
+                  });
+                }
+              },
             },
-          },
-        ],
-      },
-    ]
+          ],
+        },
+      ]
     : []),
 ];
 

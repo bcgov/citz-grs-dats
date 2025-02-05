@@ -1,5 +1,6 @@
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
+import { parentPort } from "node:worker_threads";
 
 const { readdir } = fsPromises;
 
@@ -16,5 +17,14 @@ export const countFiles = async (dir: string): Promise<number> => {
     })
   );
 
-  return counts.reduce((acc, count) => acc + count, 0);
+  const totalCount = counts.reduce((acc, count) => acc + count, 0);
+  if (totalCount === 0) {
+    // Folder is empty
+    parentPort?.postMessage({
+      type: "emptyFolder",
+      path: dir,
+    });
+  }
+
+  return totalCount;
 };
