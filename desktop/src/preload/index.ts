@@ -71,6 +71,17 @@ const api = {
       );
 
       ipcRenderer.on(
+        "folder-metadata-empty-folder",
+        (_, data: { path: string }) => {
+          window.dispatchEvent(
+            new CustomEvent("folder-metadata-empty-folder", {
+              detail: data,
+            })
+          );
+        }
+      );
+
+      ipcRenderer.on(
         "folder-metadata-completion",
         (
           _,
@@ -108,6 +119,17 @@ const api = {
         (_, data: { path: string }) => {
           window.dispatchEvent(
             new CustomEvent("folder-buffer-missing-path", {
+              detail: data,
+            })
+          );
+        }
+      );
+
+      ipcRenderer.on(
+        "folder-buffer-empty-folder",
+        (_, data: { path: string }) => {
+          window.dispatchEvent(
+            new CustomEvent("folder-buffer-empty-folder", {
               detail: data,
             })
           );

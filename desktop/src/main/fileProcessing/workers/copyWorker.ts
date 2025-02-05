@@ -1,200 +1,38 @@
 import { parentPort, workerData } from "node:worker_threads";
-import path from "node:path";
 import {
-  promises as fsPromises,
-  type Stats,
-  createReadStream,
-  createWriteStream,
-} from "node:fs";
-
-const { stat, readdir, mkdir } = fsPromises;
+  countFiles,
+  doesDirectoryExist,
+  generateBuffersInBatches,
+} from "./utilities";
 
 type WorkerData = {
   source: string;
-  destination?: string;
   batchSize?: number;
-};
-
-type FileBuffer = {
-  filename: string;
-  path: string;
-  buffer: Buffer;
-};
-
-// Type guard to check if an error is of type ErrnoException
-const isErrnoException = (err: unknown): err is NodeJS.ErrnoException =>
-  err instanceof Error && "code" in err;
-
-// Ensure a directory exists or create it
-const ensureDirectoryExists = async (dirPath: string): Promise<void> => {
-  try {
-    await mkdir(dirPath, { recursive: true });
-  } catch (err) {
-    if (isErrnoException(err) && err.code === "EEXIST") return; // Ignore error if directory already exists
-    throw err; // Throw the error if it's not 'EEXIST'
-  }
-};
-
-// Global counters for total file count and processed file count
-let totalFileCount = 0;
-let processedFileCount = 0;
-
-// Recursively count all files in the directory structure
-const countFiles = async (dir: string): Promise<number> => {
-  const entries = await readdir(dir, { withFileTypes: true });
-
-  const counts = await Promise.all(
-    entries.map(async (entry) => {
-      const filePath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        return countFiles(filePath); // Recursively count files in subdirectory
-      }
-      return 1; // Count file
-    })
-  );
-
-  return counts.reduce((acc, count) => acc + count, 0);
-};
-
-// Copy a file using streams
-const copyFileStream = (
-  sourcePath: string,
-  destinationPath: string
-): Promise<void> => {
-  return new Promise<void>((resolve, reject) => {
-    const readStream = createReadStream(sourcePath);
-    const writeStream = createWriteStream(destinationPath);
-
-    readStream.on("error", reject);
-    writeStream.on("error", reject);
-
-    writeStream.on("finish", resolve);
-
-    readStream.pipe(writeStream);
-  });
-};
-
-// Create a buffer representation of the folder
-const createFolderBuffer = async (dir: string): Promise<FileBuffer[]> => {
-  const buffers: FileBuffer[] = [];
-
-  const files = await readdir(dir, { withFileTypes: true });
-  for (const file of files) {
-    const filePath = path.join(dir, file.name);
-    const fileStat: Stats = await stat(filePath);
-
-    if (fileStat.isDirectory()) {
-      const subBuffers = await createFolderBuffer(filePath);
-      buffers.push(...subBuffers);
-    } else {
-      const fileBuffer = await fsPromises.readFile(filePath);
-      buffers.push({
-        filename: file.name,
-        path: filePath,
-        buffer: fileBuffer,
-      });
-    }
-  }
-
-  return buffers;
-};
-
-// Copy a directory in batches
-const copyDirectoryInBatches = async (
-  source: string,
-  originalSource: string,
-  batchSize = 10
-): Promise<FileBuffer[]> => {
-  console.log("Generating buffers in batches for", source);
-  if (originalSource) await ensureDirectoryExists(originalSource);
-
-  const files = await readdir(source);
-  const folderBuffers: FileBuffer[] = [];
-
-  for (let i = 0; i < files.length; i += batchSize) {
-    const batch = files.slice(i, i + batchSize);
-    console.log(`Processing ${source} batch of ${batch.length} in copyWorker.`);
-
-    await Promise.all(
-      batch.map(async (file) => {
-        console.log(
-          `Processing file ${file} from ${originalSource} in copyWorker.`
-        );
-        const sourcePath = path.join(source, file);
-        const fileStat: Stats = await stat(sourcePath);
-
-        if (fileStat.isDirectory()) {
-          const subBuffers = await copyDirectoryInBatches(
-            sourcePath,
-            originalSource,
-            batchSize
-          );
-          folderBuffers.push(...subBuffers);
-        } else {
-          const fileBuffer = await fsPromises.readFile(sourcePath);
-          folderBuffers.push({
-            filename: file,
-            path: sourcePath.replace(originalSource, ""),
-            buffer: fileBuffer,
-          });
-
-          processedFileCount += 1;
-
-          // Calculate and send progress percentage
-          const progressPercentage = Math.round(
-            (processedFileCount / totalFileCount) * 100
-          );
-
-          // Send progress update only if complete or progress is a multiple of 10%
-          if (
-            progressPercentage % 10 === 0 ||
-            processedFileCount === totalFileCount
-          ) {
-            console.log(
-              `Copy progress of ${originalSource}: ${progressPercentage}`
-            );
-            parentPort?.postMessage({
-              type: "progress",
-              source: originalSource,
-              fileProcessed: sourcePath,
-              progressPercentage,
-            });
-          }
-        }
-      })
-    );
-  }
-
-  return folderBuffers;
 };
 
 (async () => {
   console.log("[Copy worker] Starting with data:", workerData);
   if (!workerData) return;
-  const { source, destination, batchSize } = workerData as WorkerData;
+  const { source, batchSize } = workerData as WorkerData;
 
   try {
-    console.log("Starting copy worker.");
-    const exists = await stat(source)
-      .then((stats) => stats.isDirectory())
-      .catch(() => false);
-
-    if (!exists) {
-      parentPort?.postMessage({ type: "missingPath", path: source });
-      return;
+    const directoryExists = await doesDirectoryExist(source);
+    if (!directoryExists) {
+      console.log(`Missing ${source} in copy worker.`);
+      parentPort?.postMessage({
+        type: "missingPath",
+        path: source,
+      });
     }
 
-    totalFileCount = await countFiles(source);
-    console.log(`${totalFileCount} files counted in copyWorker.`);
+    const totalFileCount = await countFiles(source);
 
-    console.log(`Processing files from ${source}`);
-    const buffers = await copyDirectoryInBatches(source, source, batchSize);
-
-    // Once all files are processed, save to destination
-    if (destination) {
-      await ensureDirectoryExists(destination);
-      await copyFileStream(source, destination);
-    }
+    const buffers = await generateBuffersInBatches(
+      source,
+      source,
+      totalFileCount,
+      batchSize
+    );
 
     if (!buffers || buffers.length === 0)
       throw new Error("Generated without buffers.");

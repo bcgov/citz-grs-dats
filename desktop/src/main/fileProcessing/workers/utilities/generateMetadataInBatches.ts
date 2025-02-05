@@ -2,7 +2,6 @@ import { promises as fsPromises, type Stats } from "node:fs";
 import path from "node:path";
 import { parentPort } from "node:worker_threads";
 import { calculateChecksum } from "./calculateChecksum";
-import { countFiles } from "./countFiles";
 import { formatFileSize } from "./formatFileSize";
 
 const { stat, readdir } = fsPromises;
@@ -10,40 +9,34 @@ const { stat, readdir } = fsPromises;
 let processedFileCount = 0;
 
 export const generateMetadataInBatches = async (
-  rootDir: string,
+  sourceDir: string,
   originalSource: string,
+  totalFileCount: number,
   batchSize = 10
 ): Promise<{
   metadata: Record<string, unknown[]>;
   fileCount: number;
   totalSize: number;
 }> => {
-  console.log("Generating metadata in batches for", rootDir);
-  const metadata: Record<string, unknown[]> = { [originalSource]: [] }; // Ensure all metadata is stored under the original source
-  const totalFileCount = await countFiles(originalSource);
-  console.log(`${totalFileCount} files counted in metadataWorker.`);
+  console.log("Generating metadata in batches for", sourceDir);
+  const metadata: Record<string, unknown[]> = { [originalSource]: [] };
   let fileCount = 0;
   let totalSize = 0;
 
-  const files = await readdir(rootDir);
+  const files = await readdir(sourceDir);
   for (let i = 0; i < files.length; i += batchSize) {
     const batch = files.slice(i, i + batchSize);
-    console.log(
-      `Processing ${rootDir} batch of ${batch.length} in metadataWorker.`
-    );
 
     await Promise.all(
       batch.map(async (file) => {
-        console.log(
-          `Processing file ${file} from ${originalSource} in metadataWorker.`
-        );
-        const filePath = path.join(rootDir, file);
+        const filePath = path.join(sourceDir, file);
         const fileStat: Stats = await stat(filePath);
 
         if (fileStat.isDirectory()) {
           const subMetadata = await generateMetadataInBatches(
             filePath,
             originalSource,
+            totalFileCount,
             batchSize
           );
 
