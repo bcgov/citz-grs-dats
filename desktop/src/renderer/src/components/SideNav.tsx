@@ -27,6 +27,7 @@ type Props = {
   idToken: string | undefined;
   currentPath: string;
   setCurrentPath: React.Dispatch<React.SetStateAction<string>>;
+  progressMade: boolean;
 };
 
 export const SideNav = ({
@@ -34,6 +35,7 @@ export const SideNav = ({
   idToken,
   currentPath,
   setCurrentPath,
+  progressMade,
 }: Props) => {
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
   const [newPagePath, setNewPagePath] = useState("/");
@@ -44,13 +46,16 @@ export const SideNav = ({
   };
 
   const handleSelection = (path: string) => {
+    // Ignore if path is the currentpath or a sub path.
     if (currentPath === path || (currentPath.startsWith(path) && path !== "/"))
       return;
-    if (currentPath === "/") {
-      setCurrentPath(path);
-    } else {
+    if (progressMade && currentPath !== "/") {
+      // Progress has been made, display leave page modal.
       setNewPagePath(path);
       setLeavePageModalOpen(true);
+    } else {
+      // Progress has not been made, navigate to path.
+      setCurrentPath(path);
     }
   };
 
