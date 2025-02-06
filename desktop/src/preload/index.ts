@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
 import { checkApiStatus, checkIpRange } from "./api";
-import { fileToBuffer, safePromise } from "./api/utils";
+import { fileToBuffer, isNonEmptyFolder, safePromise } from "./api/utils";
 import { fetchProtectedRoute, getUser } from "./api/sso";
 import {
   accessionExists,
@@ -35,6 +35,7 @@ const api = {
   utils: {
     safePromise,
     fileToBuffer,
+    isNonEmptyFolder,
   },
   transfer: {
     parseXlsxFileList,
