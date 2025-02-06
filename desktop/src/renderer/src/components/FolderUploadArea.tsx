@@ -3,39 +3,28 @@ import {
   Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { Box, IconButton, Stack, Typography } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Toast } from "./Toast";
 
 type Props = {
-  folderPath?: string | null;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onDrop: (folderPath: string | null | undefined) => void;
+  folderPath?: string | null | undefined;
+  onChange: (folderPath: string | null | undefined) => void;
   onDelete: () => void;
 };
 
-export const FolderUploadArea = ({
-  folderPath,
-  onChange,
-  onDrop,
-  onDelete,
-}: Props) => {
+export const FolderUploadArea = ({ folderPath, onChange, onDelete }: Props) => {
   const [isInvalidFile, setIsInvalidFile] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [api] = useState(window.api); // Preload API
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      const draggedFile = e.dataTransfer.items[0];
+      if (draggedFile.type !== "") setIsInvalidFile(true);
+    }
     e.preventDefault();
     setIsDragging(true);
-
-    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      const item = e.dataTransfer.items[0];
-
-      if (item.type === "") {
-        setIsInvalidFile(false);
-      } else {
-        setIsInvalidFile(true);
-      }
-    }
   };
 
   const handleDragLeave = () => {
@@ -52,48 +41,42 @@ export const FolderUploadArea = ({
       const item = e.dataTransfer.items[0];
 
       if (item.type === "") {
-        onDrop(e.dataTransfer.files[0].path);
+        // This will prevent files with an accept type from being dropped but further
+        // checks need to be done once the file is choosen to remove anything else that
+        // isnt a folder or is an empty folder.
+        onChange(e.dataTransfer.files[0].path);
       } else {
         toast.error(Toast, {
           data: {
             title: "Wrong file type",
-            message: "File type not accepted. Please upload a folder.",
+            message:
+              "File type not accepted. Please upload a non-empty folder.",
           },
         });
-        onDrop(null);
       }
     }
   };
 
-  const fileInputRef = useRef<HTMLInputElement>(null); // Ref for the input element
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
-
-    // Check if the file is a directory (not possible directly via input)
-    if (selectedFile.webkitRelativePath) {
-      onChange(e);
-    } else {
-      toast.error(Toast, {
-        data: {
-          title: "Wrong file type",
-          message: "File type not accepted. Please upload a folder.",
-        },
-      });
-
-      e.target.value = "";
-    }
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  const handleSelectFolder = async () => {
+    const result = await api.selectDirectory();
+    if (result) {
+      onChange(result[0]);
     }
   };
 
   useEffect(() => {
-    // Check if uploaded file is a folder and is not empty
     if (folderPath) {
-      // TODO preload function to check if dir and empty
+      const isNonEmptyFolder = api.utils.isNonEmptyFolder(folderPath);
+      if (!isNonEmptyFolder) {
+        onDelete();
+        toast.error(Toast, {
+          data: {
+            title: "Wrong file type",
+            message:
+              "File type not accepted. Please upload a non-empty folder.",
+          },
+        });
+      }
     }
   }, [folderPath]);
 
@@ -102,21 +85,19 @@ export const FolderUploadArea = ({
       sx={{
         backgroundColor: isDragging
           ? isInvalidFile
-            ? "var(--file_upload_area-bg-invalid)" // Light red for invalid file
-            : "var(--file_upload_area-bg-valid)" // Light blue for valid file
-          : "var(--file_upload_area-bg-default)", // Default background
+            ? "var(--file_upload_area-bg-invalid)"
+            : "var(--file_upload_area-bg-valid)"
+          : "var(--file_upload_area-bg-default)",
         borderColor: isDragging
           ? isInvalidFile
-            ? "var(--file_upload_area-border-invalid)" // Red for invalid file
-            : "var(--file_upload_area-border-valid)" // Blue for valid file
-          : "var(--file_upload_area-border-default)", // Grey for no dragging
+            ? "var(--file_upload_area-border-invalid)"
+            : "var(--file_upload_area-border-valid)"
+          : "var(--file_upload_area-border-default)",
         transition: "all 0.25s",
       }}
       height={"15rem"}
       border={"solid 1px"}
-      onClick={() => {
-        // TODO call preload selectDirectory
-      }}
+      onClick={handleSelectFolder}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -184,18 +165,11 @@ export const FolderUploadArea = ({
                 },
               }}
             >
-              Browse folders
+              Browse folder
             </Typography>
           </Stack>
         )}
       </Box>
-      <input
-        id="folder-input"
-        type="file"
-        ref={fileInputRef}
-        style={{ width: 0 }}
-        onChange={handleFileChange}
-      />
     </Box>
   );
 };
