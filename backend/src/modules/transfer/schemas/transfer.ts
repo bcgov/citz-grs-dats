@@ -41,3 +41,23 @@ export const lanTransferBodySchema = z.object({
 
 // TypeScript type inferred from Zod schema
 export type LanTransferBody = z.infer<typeof lanTransferBodySchema>;
+
+// Schema for FormData fields
+export const edrmsTransferBodySchema = z.object({
+  fileListFilename: z.string(),
+  dataportFilename: z.string(),
+  transferFormFilename: z.string(),
+  metadata: z.object({
+    admin: z
+      .object({
+        application: z.string().optional(),
+        accession: z.string().optional(),
+      })
+      .optional(),
+    folders: z.record(folderMetadataZodSchema),
+    files: z.record(z.array(fileMetadataZodSchema)),
+  }),
+});
+
+// TypeScript type inferred from Zod schema
+export type EDRMSTransferBody = z.infer<typeof edrmsTransferBodySchema>;
