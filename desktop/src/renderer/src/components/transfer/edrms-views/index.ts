@@ -1,1 +1,1 @@
-export * from "./LanUploadFileListView";
+export * from "./EdrmsUploadFolderView";

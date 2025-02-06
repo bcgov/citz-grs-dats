@@ -1,6 +1,6 @@
 import { Button } from "@bcgov/design-system-react-components";
 import { Box, Stack, Typography } from "@mui/material";
-import { FileUploadArea } from "@renderer/components";
+import { FolderUploadArea } from "@renderer/components";
 
 type Props = {
   folderPath?: string | null;
@@ -15,26 +15,20 @@ export const EdrmsUploadFolderView = ({
   setFolderPath,
   onNextPress,
 }: Props) => {
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) setFile(e.target.files[0]);
+  const onChange = (folderPath: string | null | undefined) => {
+    if (folderPath) setFolderPath(folderPath);
   };
 
-  const onDrop = (file: File | null | undefined) => {
-    if (file) setFile(file);
-  };
-
-  const onDelete = () => setFile(undefined);
+  const onDelete = () => setFolderPath(undefined);
 
   return (
     <Stack gap={3}>
       <Stack gap={2}>
         <Typography variant="h3">Upload your EDRMS folder here:</Typography>
-        <FileUploadArea
-          file={file}
+        <FolderUploadArea
+          folderPath={folderPath}
           onChange={onChange}
-          onDrop={onDrop}
           onDelete={onDelete}
-          accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json"
         />
       </Stack>
       <Box sx={{ display: "flex", justifyContent: "right" }}>
