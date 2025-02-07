@@ -10,6 +10,7 @@ import {
   isApplicationValid,
   createZipBuffer,
   parseXlsxFileList,
+  parseEdrmsFiles,
 } from "./api/transfer";
 
 type FileBufferObj = {
@@ -44,6 +45,7 @@ const api = {
     isAccessionValid,
     applicationExists,
     isApplicationValid,
+    parseEdrmsFiles,
   },
   workers: {
     getFolderMetadata: ({ filePath }: { filePath: string }) => {
