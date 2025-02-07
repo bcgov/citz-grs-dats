@@ -15,6 +15,12 @@ export const EdrmsTransferPage = () => {
   const [transferForm, setTransferForm] = useState<File | null | undefined>(
     undefined
   );
+  const [dataportJson, setDataportJson] = useState<
+    Record<string, string>[] | null
+  >(null);
+  const [dataportToJsonFailed, setDataportToJsonFailed] = useState<
+    boolean | null
+  >(null);
 
   const onNextPress = () => {
     setCurrentViewIndex((prev) => prev + 1);
@@ -32,12 +38,33 @@ export const EdrmsTransferPage = () => {
       setTransferForm(parsedTransferForm);
   };
 
+  const parseDataport = async (dataportFile: File) => {
+    // Parse file to json
+    const dataportJson = await api.transfer.parseTabDelimitedTxt(dataportFile);
+    setDataportJson(dataportJson);
+
+    if (!dataportJson) {
+      setDataportToJsonFailed(true);
+      return;
+    }
+
+    // Parse json into admin, folders, and files metadata
+    const metadata = api.transfer.parseDataportJsonMetadata(dataportJson);
+    // TODO add size and checksums save metadata to state
+  };
+
   useEffect(() => {
     if (folderPath) {
       // Check for edrms files when a new folder is chosen
       parseEdrmsFiles(folderPath);
     }
   }, [folderPath]);
+
+  useEffect(() => {
+    if (dataportFile) {
+      parseDataport(dataportFile);
+    }
+  }, [dataportFile]);
 
   return (
     <Grid container sx={{ paddingBottom: "20px" }}>
