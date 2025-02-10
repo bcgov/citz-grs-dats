@@ -1,5 +1,6 @@
 import { ipcRenderer } from "electron";
-import { checkApiStatus, checkIpRange } from "./";
+import { checkApiStatus } from "./checkAPIStatus";
+import { checkIpRange } from "./checkIPRange";
 import sso from "./sso";
 import transfer from "./transfer";
 import utils from "./utils";
