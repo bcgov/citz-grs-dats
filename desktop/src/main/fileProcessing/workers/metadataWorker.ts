@@ -4,7 +4,6 @@ import {
   doesDirectoryExist,
   generateMetadataInBatches,
 } from "./utilities";
-import { generateExtendedMetadataInBatches } from "./utilities/generateExtendedMetadataInBatches";
 
 type WorkerData = {
   source: string;
@@ -28,7 +27,7 @@ type WorkerData = {
 
     const totalFileCount = await countFiles(source);
 
-    const { metadata, fileCount, totalSize } = await generateMetadataInBatches(
+    const { metadata, extendedMetadata, fileCount, totalSize } = await generateMetadataInBatches(
       source,
       source,
       totalFileCount,
@@ -37,7 +36,7 @@ type WorkerData = {
 
     if (!metadata) throw Error("Generated without metadata.");
 
-    const extendedMetadata = await generateExtendedMetadataInBatches(source);
+
 
     parentPort?.postMessage({
       type: "completion",
