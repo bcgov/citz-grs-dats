@@ -2,9 +2,9 @@ import { parentPort, workerData } from "node:worker_threads";
 import {
   countFiles,
   doesDirectoryExist,
-  generateExtendedMetadata,
   generateMetadataInBatches,
 } from "./utilities";
+import { generateExtendedMetadataInBatches } from "./utilities/generateExtendedMetadataInBatches";
 
 type WorkerData = {
   source: string;
@@ -37,7 +37,7 @@ type WorkerData = {
 
     if (!metadata) throw Error("Generated without metadata.");
 
-    const extendedMetadata = await generateExtendedMetadata(source);
+    const extendedMetadata = await generateExtendedMetadataInBatches(source);
 
     parentPort?.postMessage({
       type: "completion",
