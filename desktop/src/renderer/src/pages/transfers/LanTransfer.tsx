@@ -689,9 +689,7 @@ export const LanTransferPage = () => {
           )}
           {currentViewIndex === 2 && (
             <LanSubmissionAgreementView
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
@@ -700,9 +698,7 @@ export const LanTransferPage = () => {
           )}
           {currentViewIndex === 3 && (
             <LanConfirmationView
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
               folders={folders}
               setFolders={setFolders}
@@ -716,9 +712,7 @@ export const LanTransferPage = () => {
           )}
           {currentViewIndex === 4 && (
             <LanFinishView
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
               wasRequestSuccessful={requestSuccessful}
               onNextPress={handleCompletion}
