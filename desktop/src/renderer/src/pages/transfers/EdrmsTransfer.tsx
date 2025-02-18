@@ -3,6 +3,7 @@ import { Stepper, Toast } from "@renderer/components";
 import { EdrmsUploadFolderView } from "@renderer/components/transfer/edrms-views";
 import { EdrmsUploadDataportView } from "@renderer/components/transfer/edrms-views/EdrmsUploadDataportView";
 import { EdrmsUploadFilelistView } from "@renderer/components/transfer/edrms-views/EdrmsUploadFilelistView";
+import { EdrmsUploadTransferFormView } from "@renderer/components/transfer/edrms-views/EdrmsUploadTransferFormView";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -22,6 +23,8 @@ export const EdrmsTransferPage = () => {
   const [transferForm, setTransferForm] = useState<File | null | undefined>(
     undefined
   );
+  const [transferFormFoundInEdrms, setTransferFormFoundInEdrms] =
+    useState<boolean>(false);
   const [dataportJson, setDataportJson] = useState<
     Record<string, string>[] | null
   >(null);
@@ -62,8 +65,10 @@ export const EdrmsTransferPage = () => {
       setFileListFoundInEdrms(true);
     }
     // Transfer form found
-    if (parsedTransferForm && !transferForm)
+    if (parsedTransferForm && !transferForm) {
       setTransferForm(parsedTransferForm);
+      setTransferFormFoundInEdrms(true);
+    }
   };
 
   const parseDataport = async (dataportFile: File) => {
@@ -127,6 +132,13 @@ export const EdrmsTransferPage = () => {
   }, [fileList]);
 
   useEffect(() => {
+    if (!transferForm) {
+      // Reset
+      setTransferFormFoundInEdrms(false);
+    }
+  }, [transferForm]);
+
+  useEffect(() => {
     if (currentViewIndex === 1) {
       // Open of upload dataport view
       if (dataportFoundInEdrms) {
@@ -146,6 +158,17 @@ export const EdrmsTransferPage = () => {
             title: "Filelist file detected",
             message:
               "We have automatically populated your filelist file by scanning the EDRMS folder you uploaded in the previous step.",
+          },
+        });
+      }
+    } else if (currentViewIndex === 3) {
+      // Open of upload transfer form view
+      if (transferFormFoundInEdrms) {
+        toast.success(Toast, {
+          data: {
+            title: "Transfer form detected",
+            message:
+              "We have automatically populated your transfer form by scanning the EDRMS folder you uploaded in the previous step.",
           },
         });
       }
@@ -193,6 +216,14 @@ export const EdrmsTransferPage = () => {
             <EdrmsUploadFilelistView
               file={fileList}
               setFile={setFileList}
+              onNextPress={onNextPress}
+              onBackPress={onBackPress}
+            />
+          )}
+          {currentViewIndex === 3 && (
+            <EdrmsUploadTransferFormView
+              file={transferForm}
+              setFile={setTransferForm}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
             />
