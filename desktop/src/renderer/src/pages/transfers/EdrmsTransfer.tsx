@@ -21,6 +21,11 @@ export const EdrmsTransferPage = () => {
   const [dataportToJsonFailed, setDataportToJsonFailed] = useState<
     boolean | null
   >(null);
+  const [metadata, setMetadata] = useState<Record<string, unknown>>({});
+  const [accession, setAccession] = useState<string | undefined | null>(null);
+  const [application, setApplication] = useState<string | undefined | null>(
+    null
+  );
 
   const onNextPress = () => {
     setCurrentViewIndex((prev) => prev + 1);
@@ -43,14 +48,19 @@ export const EdrmsTransferPage = () => {
     const dataportJson = await api.transfer.parseTabDelimitedTxt(dataportFile);
     setDataportJson(dataportJson);
 
-    if (!dataportJson) {
+    if (!dataportJson || !folderPath) {
       setDataportToJsonFailed(true);
       return;
     }
 
     // Parse json into admin, folders, and files metadata
-    const metadata = api.transfer.parseDataportJsonMetadata(dataportJson);
-    // TODO add size and checksums save metadata to state
+    const metadata = await api.transfer.parseDataportJsonMetadata(
+      dataportJson,
+      folderPath
+    );
+    setMetadata(metadata);
+    setAccession(metadata.admin.accession);
+    setApplication(metadata.admin.application);
   };
 
   useEffect(() => {

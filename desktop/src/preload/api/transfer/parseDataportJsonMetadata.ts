@@ -1,3 +1,7 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import crypto from "node:crypto";
+
 const parseDate = (dateStr: string): string => {
   if (!dateStr) return "";
   if (/^\d{8}$/.test(dateStr)) {
@@ -20,7 +24,36 @@ const parseClassification = (
   return { schedule: match[2], classification: match[1] };
 };
 
-export const parseDataportJsonMetadata = (items: Record<string, string>[]) => {
+const formatFileSize = (size: number) => {
+  if (size < 1024) return `${size} B`;
+  const i = Math.floor(Math.log(size) / Math.log(1024));
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  return `${(size / 1024 ** i).toFixed(2)} ${sizes[i]}`;
+};
+
+const getFileSizeAndChecksum = async (filePath: string) => {
+  try {
+    const stats = await fs.stat(filePath);
+    const size = formatFileSize(stats.size);
+
+    // Read file content for checksum
+    const fileBuffer = await fs.readFile(filePath);
+    const hash = crypto
+      .createHash("sha256")
+      .update(new Uint8Array(fileBuffer))
+      .digest("hex");
+
+    return { size, checksum: hash };
+  } catch (error) {
+    console.error(`Error reading file ${filePath}:`, error);
+    return { size: "0 B", checksum: "" };
+  }
+};
+
+export const parseDataportJsonMetadata = async (
+  items: Record<string, string>[],
+  folderPath: string
+) => {
   if (!items.length)
     return { accession: "", application: "", folders: {}, files: {} };
 
@@ -29,7 +62,7 @@ export const parseDataportJsonMetadata = (items: Record<string, string>[]) => {
   const folders: Record<string, unknown> = {};
   const files: Record<string, unknown[]> = {};
 
-  items.forEach((item) => {
+  for (const item of items) {
     const container = item["Container (Folder/Box)"];
     const expandedNumber = item["Expanded Number"];
 
@@ -49,12 +82,16 @@ export const parseDataportJsonMetadata = (items: Record<string, string>[]) => {
       };
     } else {
       const filename = item["DOS file"].split(/\\+/).pop() || "";
+      const filePath = path.join(folderPath, filename.replaceAll('"', ""));
+
+      const { size, checksum } = await getFileSizeAndChecksum(filePath);
+
       if (!files[container]) files[container] = [];
       files[container].push({
         filepath: `${container}/${filename}`,
         filename,
-        size: "",
-        checksum: "",
+        size,
+        checksum,
         birthtime: parseDate(item["Date Created (Opened)"]),
         lastModified: parseDate(item["Date Modified"]),
         lastAccessed: "-",
@@ -67,7 +104,7 @@ export const parseDataportJsonMetadata = (items: Record<string, string>[]) => {
         programName: "-",
       });
     }
-  });
+  }
 
-  return { accession, application, folders, files };
+  return { admin: { accession, application }, folders, files };
 };
