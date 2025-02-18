@@ -106,6 +106,7 @@ export const EdrmsTransferPage = () => {
       setDataportJson(null);
       setAccession(null);
       setApplication(null);
+      setConfirmAccAppChecked(false);
     }
   }, [dataportFile]);
 
