@@ -1,14 +1,20 @@
 import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { Stepper, Toast } from "@renderer/components";
-import { EdrmsUploadFolderView } from "@renderer/components/transfer/edrms-views";
-import { EdrmsUploadDataportView } from "@renderer/components/transfer/edrms-views/EdrmsUploadDataportView";
-import { EdrmsUploadFilelistView } from "@renderer/components/transfer/edrms-views/EdrmsUploadFilelistView";
-import { EdrmsUploadTransferFormView } from "@renderer/components/transfer/edrms-views/EdrmsUploadTransferFormView";
-import { useEffect, useState } from "react";
+import {
+  EdrmsSubmissionAgreementView,
+  EdrmsUploadDataportView,
+  EdrmsUploadFilelistView,
+  EdrmsUploadFolderView,
+  EdrmsUploadTransferFormView,
+} from "@renderer/components/transfer/edrms-views";
+import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { Context } from "../../App";
 
 export const EdrmsTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
+
+  const { setCurrentPath } = useContext(Context) ?? {};
 
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [folderPath, setFolderPath] = useState<string | null | undefined>(null);
@@ -226,6 +232,17 @@ export const EdrmsTransferPage = () => {
               setFile={setTransferForm}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
+            />
+          )}
+          {currentViewIndex === 4 && (
+            <EdrmsSubmissionAgreementView
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              accession={accession!}
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              application={application!}
+              onNextPress={onNextPress}
+              onBackPress={onBackPress}
+              setCurrentPath={setCurrentPath}
             />
           )}
         </Stack>
