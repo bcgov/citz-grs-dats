@@ -66,8 +66,8 @@ export const FolderUploadArea = ({ folderPath, onChange, onDelete }: Props) => {
 
   useEffect(() => {
     if (folderPath) {
-      const isNonEmptyFolder = api.utils.isNonEmptyFolder(folderPath);
-      if (!isNonEmptyFolder) {
+      const isEmptyFolder = api.utils.isEmptyFolder(folderPath);
+      if (isEmptyFolder) {
         onDelete();
         toast.error(Toast, {
           data: {
