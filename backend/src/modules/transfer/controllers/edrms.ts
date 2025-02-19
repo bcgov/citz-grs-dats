@@ -116,6 +116,10 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
     JSON.stringify(body.metadata.files),
     "utf-8"
   );
+  const extendedMetadataJsonBuffer = Buffer.from(
+    JSON.stringify(body.extendedMetadata),
+    "utf-8"
+  );
 
   // Put together zip buffer
   const standardTransferZipBuffer = await createStandardTransferZip({
@@ -146,6 +150,7 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
       adminBuffer: adminJsonBuffer,
       foldersBuffer: foldersJsonBuffer,
       filesBuffer: filesJsonBuffer,
+      extendedBuffer: extendedMetadataJsonBuffer,
     },
   });
 

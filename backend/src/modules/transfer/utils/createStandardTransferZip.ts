@@ -30,6 +30,7 @@ type Props = {
     adminBuffer: Buffer;
     foldersBuffer: Buffer;
     filesBuffer: Buffer;
+    extendedBuffer?: Buffer;
     notesBuffer?: Buffer | null;
   };
 };
@@ -104,6 +105,8 @@ export const createStandardTransferZip = async ({
   zip.addBuffer(metadata.adminBuffer, "metadata/admin.json");
   zip.addBuffer(metadata.foldersBuffer, "metadata/folders.json");
   zip.addBuffer(metadata.filesBuffer, "metadata/files.json");
+  if (metadata.extendedBuffer)
+    zip.addBuffer(metadata.extendedBuffer, "metadata/extended.json");
   if (metadata.notesBuffer)
     zip.addBuffer(metadata.notesBuffer, "metadata/notes.txt");
 

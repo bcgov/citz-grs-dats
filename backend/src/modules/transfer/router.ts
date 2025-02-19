@@ -39,7 +39,8 @@ router.post(
   upload.any(),
   ((req: Request, res: Response, next: NextFunction) => {
     try {
-      req.body.metadata = JSON.parse(req.body.metadataV2 || "{}");
+      req.body.metadata = JSON.parse(req.body.metadata || "{}");
+      req.body.extendedMetadata = JSON.parse(req.body.extendedMetadata || "{}");
       next();
     } catch (error) {
       return res

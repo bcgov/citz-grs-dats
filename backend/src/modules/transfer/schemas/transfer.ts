@@ -47,6 +47,7 @@ export const edrmsTransferBodySchema = z.object({
   fileListFilename: z.string(),
   dataportFilename: z.string(),
   transferFormFilename: z.string(),
+  extendedMetadata: z.record(z.any()),
   metadata: z.object({
     admin: z
       .object({
