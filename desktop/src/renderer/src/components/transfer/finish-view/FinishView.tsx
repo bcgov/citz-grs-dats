@@ -9,7 +9,7 @@ type Props = {
   onNextPress: () => void;
 };
 
-export const LanFinishView = ({
+export const FinishView = ({
   accession,
   application,
   wasRequestSuccessful,

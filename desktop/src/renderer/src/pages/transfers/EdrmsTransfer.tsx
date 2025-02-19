@@ -11,11 +11,12 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Context } from "../../App";
+import { FinishView } from "@renderer/components/transfer/finish-view";
 
 export const EdrmsTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
-  const { setCurrentPath } = useContext(Context) ?? {};
+  const { accessToken, setCurrentPath } = useContext(Context) ?? {};
 
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [folderPath, setFolderPath] = useState<string | null | undefined>(null);
@@ -52,6 +53,11 @@ export const EdrmsTransferPage = () => {
   const [folderBuffers, setFolderBuffers] = useState<
     Record<string, FileBufferObj[]>
   >({});
+
+  // Request to send transfer
+  const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(
+    null
+  );
 
   const onNextPress = () => {
     setCurrentViewIndex((prev) => prev + 1);
@@ -260,8 +266,64 @@ export const EdrmsTransferPage = () => {
           },
         });
       }
+    } else if (currentViewIndex === 6) {
+      // Open of finish view
+      handleSendRequest();
     }
   }, [currentViewIndex]);
+
+  const handleSendRequest = async () => {
+    if (!dataportFile || !fileList || !transferForm || !accessToken) return;
+
+    // Request url
+    const apiUrl = await api.getCurrentApiUrl();
+    const requestUrl = `${apiUrl}/transfer/edrms`;
+
+    // Prepare file buffers for request body
+    const dataportBuffer = await api.utils.fileToBuffer(dataportFile);
+    const fileListBuffer = await api.utils.fileToBuffer(fileList);
+    const transferFormBuffer = await api.utils.fileToBuffer(transferForm);
+    const contentBuffer = await api.transfer.createZipBuffer(folderBuffers);
+
+    // Formdata for request
+    const formData = new FormData();
+    formData.append("dataportBuffer", new Blob([dataportBuffer]), "file.bin");
+    formData.append("dataportFilename", dataportFile.name);
+    formData.append("fileListBuffer", new Blob([fileListBuffer]), "file.bin");
+    formData.append("fileListFilename", fileList.name);
+    formData.append(
+      "transferFormBuffer",
+      new Blob([transferFormBuffer]),
+      "file.bin"
+    );
+    formData.append("transferFormFilename", transferForm.name);
+    formData.append("contentZipBuffer", new Blob([contentBuffer]), "file.bin");
+    formData.append("metadata", JSON.stringify(metadata));
+    formData.append("extendedMetadata", JSON.stringify(dataportJson));
+
+    // Make request
+    console.log("Making edrms transfer request.");
+    const response = await fetch(requestUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) setRequestSuccessful(false);
+
+    const jsonResponse = await response.json();
+    console.log("Edrms transfer response:", jsonResponse);
+
+    if (jsonResponse.success) setRequestSuccessful(true);
+    else setRequestSuccessful(false);
+  };
+
+  // Send to home on completion
+  const handleCompletion = () => {
+    if (setCurrentPath) setCurrentPath("/");
+  };
 
   return (
     <Grid container sx={{ paddingBottom: "20px" }}>
@@ -333,6 +395,14 @@ export const EdrmsTransferPage = () => {
               folderPath={folderPath!}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
+            />
+          )}
+          {currentViewIndex === 6 && (
+            <FinishView
+              accession={accession!}
+              application={application!}
+              wasRequestSuccessful={requestSuccessful}
+              onNextPress={handleCompletion}
             />
           )}
         </Stack>
