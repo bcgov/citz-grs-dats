@@ -43,8 +43,7 @@ export const SendRecordsPage = () => {
               </Stack>
               <Button
                 onPress={() => {
-                  if (setCurrentPath)
-                    setCurrentPath("/send-records/lan/instructions");
+                  setCurrentPath("/send-records/lan/instructions");
                 }}
                 style={{ width: "fit-content" }}
               >

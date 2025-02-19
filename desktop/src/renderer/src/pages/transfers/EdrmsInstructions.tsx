@@ -60,8 +60,7 @@ export const EdrmsInstructionsPage = () => {
               <li>Transfer form (ARS 617)</li>
             </ul>
             <Typography>
-              You should also be ready to relink any folders whose names have
-              changed since your file list was created.
+              You should also have one folder of records that were sent to you by the EDRMS team. 
             </Typography>
           </Stack>
           {/* Note */}
