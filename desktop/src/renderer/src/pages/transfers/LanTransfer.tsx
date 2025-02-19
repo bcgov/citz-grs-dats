@@ -2,7 +2,6 @@ import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { LoginRequiredModal, Stepper, Toast } from "@renderer/components";
 import { JustifyChangesModal } from "@renderer/components/transfer";
 import {
-  LanFinishView,
   LanSubmissionAgreementView,
   LanUploadFileListView,
   LanUploadTransferFormView,
@@ -16,6 +15,7 @@ import {
   type ToastData,
 } from "./utils";
 import { Context } from "../../App";
+import { FinishView } from "@renderer/components/transfer/finish-view";
 
 type Folder = {
   id: number;
@@ -695,9 +695,7 @@ export const LanTransferPage = () => {
           )}
           {currentViewIndex === 2 && (
             <LanSubmissionAgreementView
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
@@ -706,9 +704,7 @@ export const LanTransferPage = () => {
           )}
           {currentViewIndex === 3 && (
             <LanConfirmationView
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
               folders={folders}
               setFolders={setFolders}
@@ -721,10 +717,8 @@ export const LanTransferPage = () => {
             />
           )}
           {currentViewIndex === 4 && (
-            <LanFinishView
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+            <FinishView
               accession={accession!}
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
               wasRequestSuccessful={requestSuccessful}
               onNextPress={handleCompletion}
