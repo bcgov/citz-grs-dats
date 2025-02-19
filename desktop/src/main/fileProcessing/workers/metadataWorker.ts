@@ -2,7 +2,6 @@ import { parentPort, workerData } from "node:worker_threads";
 import {
   countFiles,
   doesDirectoryExist,
-  generateExtendedMetadata,
   generateMetadataInBatches,
 } from "./utilities";
 
@@ -28,7 +27,7 @@ type WorkerData = {
 
     const totalFileCount = await countFiles(source);
 
-    const { metadata, fileCount, totalSize } = await generateMetadataInBatches(
+    const { metadata, extendedMetadata, fileCount, totalSize } = await generateMetadataInBatches(
       source,
       source,
       totalFileCount,
@@ -37,7 +36,7 @@ type WorkerData = {
 
     if (!metadata) throw Error("Generated without metadata.");
 
-    const extendedMetadata = await generateExtendedMetadata(source);
+
 
     parentPort?.postMessage({
       type: "completion",
