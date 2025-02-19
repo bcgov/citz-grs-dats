@@ -4,6 +4,7 @@ name: GRS DATS API - Image Build, Tag and Push
 on:
   pull_request:
     types: # Triggered by changed or ready for review pull requests.
+      - opened
       - synchronize
       - ready_for_review
     branches:
@@ -16,6 +17,7 @@ jobs:
   GRS-DATS-API-Build-Tag-Push:
     environment: dev
     runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.draft == false }}
     steps:
 
       # check out the repo
@@ -43,6 +45,7 @@ jobs:
     needs: [GRS-DATS-API-Build-Tag-Push]
     name: Update table in wiki
     runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.draft == false }}
     env:
       GH_TOKEN: ${{ github.token }}
 

@@ -18,7 +18,7 @@ export const FileListPage = () => {
   const [continueModalIsOpen, setContinueModalIsOpen] =
     useState<boolean>(false);
 
-  const { accessToken, setCurrentPath } = useContext(Context) ?? {};
+  const { accessToken, setCurrentPath, setProgressMade } = useContext(Context);
   const authenticated = !!accessToken;
 
   const theme = useTheme();
@@ -130,6 +130,10 @@ export const FileListPage = () => {
     );
     const hasFolders = folders.length > 0;
 
+    // Update progress when folders are uploaded.
+    setProgressMade(hasFolders);
+
+    // Enable continue button when folders are processed.
     setContinueButtonIsEnabled(
       allFoldersProcessed && hasFolders && authenticated
     );
