@@ -4,25 +4,29 @@ import {
   HTTP_STATUS_CODES,
   HttpError,
 } from "@bcgov/citz-imb-express-utilities";
-import { lanTransferBodySchema } from "../schemas";
+import { edrmsTransferBodySchema } from "../schemas";
 import { upload } from "src/modules/s3/utils";
 import { ENV } from "src/config";
 import { formatDate } from "src/utils";
 import { createAgreementPDF } from "@/modules/submission-agreement/utils";
 import type { FolderRow } from "@/modules/filelist/utils/excel/worksheets";
-import { updateFileListV2 } from "@/modules/filelist/utils/excel";
+import { createExcelWorkbook } from "@/modules/filelist/utils/excel";
 import type { FileMetadataZodType } from "@/modules/filelist/schemas";
 import { callTransferEndpoint, createStandardTransferZip } from "../utils";
 import crypto from "node:crypto";
+import type { Workbook } from "exceljs";
 
 const { S3_BUCKET } = ENV;
 
-// Create lan transfer.
-export const lan = errorWrapper(async (req: Request, res: Response) => {
+// Create edrms transfer.
+export const edrms = errorWrapper(async (req: Request, res: Response) => {
   const { getStandardResponse, getZodValidatedBody, user, token, files } = req;
-  const body = getZodValidatedBody(lanTransferBodySchema); // Validate request body
+  const body = getZodValidatedBody(edrmsTransferBodySchema); // Validate request body
 
-  let fileListBuffer = (files as Express.Multer.File[])?.find(
+  const dataportBuffer = (files as Express.Multer.File[])?.find(
+    (file) => file.fieldname === "dataportBuffer"
+  )?.buffer;
+  const fileListBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "fileListBuffer"
   )?.buffer;
   const transferFormBuffer = (files as Express.Multer.File[])?.find(
@@ -32,13 +36,18 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     (file) => file.fieldname === "contentZipBuffer"
   )?.buffer;
 
-  const accession = body.metadataV2.admin.accession;
-  const application = body.metadataV2.admin.application;
+  const accession = body.metadata.admin.accession;
+  const application = body.metadata.admin.application;
 
-  if (!fileListBuffer || !transferFormBuffer || !contentZipBuffer)
+  if (
+    !dataportBuffer ||
+    !fileListBuffer ||
+    !transferFormBuffer ||
+    !contentZipBuffer
+  )
     throw new HttpError(
       HTTP_STATUS_CODES.BAD_REQUEST,
-      "Missing one or many of fileListBuffer, transferFormBuffer, contentZipBuffer."
+      "Missing one or many of dataportBuffer, fileListBuffer, transferFormBuffer, contentZipBuffer."
     );
 
   // Create submission agreement file
@@ -57,7 +66,7 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // Format folder rows
-  const folderRows = Object.entries(body.metadataV2.folders).map(
+  const folderRows = Object.entries(body.metadata.folders).map(
     ([folder, metadata]) => ({
       folder, // Add the key as the "folder" property
       ...(metadata as unknown[]), // Spread the properties of the metadata
@@ -66,29 +75,28 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
 
   // Format file rows
   const fileRows = Object.values(
-    body.metadataV2.files
+    body.metadata.files
   ).flat() as FileMetadataZodType[];
 
-  // Update File List
-  fileListBuffer = await updateFileListV2({
-    folders: folderRows,
-    files: fileRows,
-    changes: body.changes,
-    fileListBuffer,
+  // Create Digital File List
+  // Based on metadata from dataport file, EDRMS file list is different.
+  const date = formatDate(new Date().toISOString());
+  const digitalFilelistFilename = `Digital_File_List_${date}.xlsx`;
+
+  // Create workbook
+  const workbook: Workbook = createExcelWorkbook({
+    folderRows,
+    fileRows,
+    accession,
+    application,
   });
 
-  // Notes text
-  const notesBuffer =
-    body.changesJustification !== ""
-      ? Buffer.from(
-          `Justification for changes to the file list: ${body.changesJustification}`,
-          "utf-8"
-        )
-      : null;
+  // Create buffer
+  const digitalFileListBuffer = (await workbook.xlsx.writeBuffer()) as Buffer;
 
   // Add submitted by info to admin metadata
   const updatedAdminMetadata = {
-    ...body.metadataV2.admin,
+    ...body.metadata.admin,
     submittedBy: {
       name: user?.display_name ?? "",
       email: user?.email ?? "",
@@ -101,11 +109,15 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     "utf-8"
   );
   const foldersJsonBuffer = Buffer.from(
-    JSON.stringify(body.metadataV2.folders),
+    JSON.stringify(body.metadata.folders),
     "utf-8"
   );
   const filesJsonBuffer = Buffer.from(
-    JSON.stringify(body.metadataV2.files),
+    JSON.stringify(body.metadata.files),
+    "utf-8"
+  );
+  const extendedMetadataJsonBuffer = Buffer.from(
+    JSON.stringify(body.extendedMetadata),
     "utf-8"
   );
 
@@ -114,8 +126,8 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     contentZipBuffer,
     documentation: {
       fileList: {
-        filename: body.fileListFilename,
-        buffer: fileListBuffer,
+        filename: digitalFilelistFilename,
+        buffer: digitalFileListBuffer,
       },
       transferForm: {
         filename: body.transferFormFilename,
@@ -125,12 +137,20 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
         filename: "Submission_Agreement.pdf",
         buffer: subAgreementBuffer,
       },
+      edrmsFilelist: {
+        filename: body.fileListFilename,
+        buffer: fileListBuffer,
+      },
+      edrmsDataport: {
+        filename: body.dataportFilename,
+        buffer: dataportBuffer,
+      },
     },
     metadata: {
       adminBuffer: adminJsonBuffer,
       foldersBuffer: foldersJsonBuffer,
       filesBuffer: filesJsonBuffer,
-      notesBuffer,
+      extendedBuffer: extendedMetadataJsonBuffer,
     },
   });
 
