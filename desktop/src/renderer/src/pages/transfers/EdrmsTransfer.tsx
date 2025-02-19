@@ -8,7 +8,7 @@ import {
   EdrmsUploadFolderView,
   EdrmsUploadTransferFormView,
 } from "@renderer/components/transfer/edrms-views";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { Context } from "../../App";
 import { FinishView } from "@renderer/components/transfer/finish-view";
@@ -59,6 +59,9 @@ export const EdrmsTransferPage = () => {
     null
   );
 
+  // Allows buffer collection to use metadata without issues of stale state
+  const metadataRef = useRef(metadata);
+
   const onNextPress = () => {
     setCurrentViewIndex((prev) => prev + 1);
   };
@@ -91,12 +94,35 @@ export const EdrmsTransferPage = () => {
       const { source, success, buffers, error } = event.detail;
 
       if (success && buffers && buffers.length > 0) {
-        const sourceParts = source?.split("\\");
-        const parentFolder = sourceParts[sourceParts.length - 1];
-        setFolderBuffers((prev) => ({
-          ...prev,
-          [parentFolder ?? source]: buffers,
-        }));
+        let folderBuffers = {};
+
+        buffers.forEach((buffer) => {
+          const bufferFilename = buffer.filename;
+          const fileMetadata = metadataRef.current.files as Record<
+            string,
+            unknown[]
+          >;
+          let fileFound = false;
+
+          // Find file match in metadata.files
+          Object.entries(fileMetadata as Record<string, unknown[]>).forEach(
+            ([folderName, value]) => {
+              const file = value.find(
+                (f) => (f as { filename: string }).filename === bufferFilename
+              ) as { filename: string };
+
+              if (file && !fileFound) {
+                folderBuffers = {
+                  ...folderBuffers,
+                  [folderName]: [...(folderBuffers[folderName] ?? []), buffer],
+                };
+                fileFound = true;
+              }
+            }
+          );
+        });
+
+        setFolderBuffers(folderBuffers);
         console.log(`Successfully processed folder buffer: ${source}`);
       } else {
         console.error(`Failed to process folder buffer: ${source}`, {
@@ -196,13 +222,17 @@ export const EdrmsTransferPage = () => {
     if (folderPath) {
       // Check for edrms files when a new folder is chosen
       parseEdrmsFiles(folderPath);
-      // Copy buffers from folder
-      getFolderBuffer(folderPath);
-    } else {
-      // Reset
-      setFolderBuffers({});
     }
   }, [folderPath]);
+
+  useEffect(() => {
+    if (folderPath && metadata.files) {
+      // After metadata has been collected
+      metadataRef.current = metadata;
+      // Copy buffers from folder
+      getFolderBuffer(folderPath);
+    }
+  }, [metadata.files]);
 
   useEffect(() => {
     if (dataportFile) {
@@ -211,6 +241,8 @@ export const EdrmsTransferPage = () => {
       // Reset
       setDataportFoundInEdrms(false);
       setMetadata({});
+      metadataRef.current = {};
+      setFolderBuffers({});
       setDataportJson(null);
       setAccession(null);
       setApplication(null);
@@ -299,7 +331,10 @@ export const EdrmsTransferPage = () => {
     formData.append("transferFormFilename", transferForm.name);
     formData.append("contentZipBuffer", new Blob([contentBuffer]), "file.bin");
     formData.append("metadata", JSON.stringify(metadata));
-    formData.append("extendedMetadata", JSON.stringify(dataportJson));
+    formData.append(
+      "extendedMetadata",
+      JSON.stringify({ folders: dataportJson })
+    );
 
     // Make request
     console.log("Making edrms transfer request.");

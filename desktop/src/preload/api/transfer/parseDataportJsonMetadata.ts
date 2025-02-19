@@ -67,10 +67,14 @@ export const parseDataportJsonMetadata = async (
     const expandedNumber = item["Expanded Number"];
 
     if (!container) {
+      const expandedNumberParts = expandedNumber.split("/");
+      const folderName = `${
+        expandedNumberParts[0]
+      }_${expandedNumberParts[1].replace(/^0+/, "")}`;
       const { schedule, classification } = parseClassification(
         item.Classification
       );
-      folders[expandedNumber] = {
+      folders[folderName] = {
         schedule,
         classification,
         file: item["Retrieval Code"],
@@ -83,12 +87,17 @@ export const parseDataportJsonMetadata = async (
     } else {
       const filename = item["DOS file"].split(/\\+/).pop() || "";
       const filePath = path.join(folderPath, filename.replaceAll('"', ""));
+      const containerParts = container.split("/");
+      const folderName = `${containerParts[0]}_${containerParts[1].replace(
+        /^0+/,
+        ""
+      )}`;
 
       const { size, checksum } = await getFileSizeAndChecksum(filePath);
 
-      if (!files[container]) files[container] = [];
-      files[container].push({
-        filepath: `${container}/${filename}`,
+      if (!files[folderName]) files[folderName] = [];
+      files[folderName].push({
+        filepath: `${folderName}/${filename}`,
         filename,
         size,
         checksum,
