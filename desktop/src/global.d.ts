@@ -59,6 +59,18 @@ interface Window {
       applicationExists: (application?: string) => boolean;
       isApplicationValid: (application?: string) => boolean;
       parseEdrmsFiles: (folderPath: string) => Promise<EdrmsFiles>;
+      parseTabDelimitedTxt: (file: File) => Promise<Record<string, string>[]>;
+      parseDataportJsonMetadata: (
+        items: Record<string, string>[],
+        folderPath: string
+      ) => Promise<{
+        admin: {
+          accession: string;
+          application: string;
+        };
+        folders: Record<string, unknown>;
+        files: Record<string, unknown[]>;
+      }>;
     };
 
     workers: {
