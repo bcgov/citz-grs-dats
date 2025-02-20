@@ -4,10 +4,10 @@ import { createZipBuffer } from './createZipBuffer';
 import { parseXlsxFileList } from './parseXlsxFileList';
 
 export default {
-  parseXlsxFileList,
-  createZipBuffer,
   accessionExists,
-  isAccessionValid,
   applicationExists,
+  createZipBuffer,
+  isAccessionValid,
   isApplicationValid,
+  parseXlsxFileList,
 };

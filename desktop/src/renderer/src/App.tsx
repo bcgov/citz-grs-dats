@@ -5,12 +5,14 @@ import { ToastContainer } from "react-toastify";
 import { SideNav, VPNPopup } from "./components";
 import { LeavePageModal } from "./components/LeavePageModal";
 import {
+  EdrmsInstructionsPage,
   FileListPage,
   HomePage,
   LanInstructionsPage,
   LanTransferPage,
   SendRecordsPage,
 } from "./pages";
+import { EdrmsTransferPage } from "./pages/transfers/EdrmsTransfer";
 
 type AppContext = {
   accessToken?: string;
@@ -124,8 +126,12 @@ function App(): JSX.Element {
             {currentPath === "/file-list" && <FileListPage />}
             {currentPath === "/send-records" && <SendRecordsPage />}
             {currentPath === "/send-records/lan" && <LanTransferPage />}
+            {currentPath === "/send-records/edrms" && <EdrmsTransferPage />}
             {currentPath === "/send-records/lan/instructions" && (
               <LanInstructionsPage />
+            )}
+            {currentPath === "/send-records/edrms/instructions" && (
+              <EdrmsInstructionsPage />
             )}
           </Box>
         </Context.Provider>

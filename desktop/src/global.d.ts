@@ -35,6 +35,7 @@ interface Window {
         promise: Promise
       ) => Promise<[Error, null] | [null, ExtendedResponse]>;
       fileToBuffer: (file: File) => Promise<Buffer>;
+      isEmptyFolder: (filePath: string) => boolean;
     };
 
     transfer: {
