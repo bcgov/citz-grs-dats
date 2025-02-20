@@ -2,6 +2,7 @@ import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { Stepper, Toast } from "@renderer/components";
 import { EdrmsUploadFolderView } from "@renderer/components/transfer/edrms-views";
 import { EdrmsUploadDataportView } from "@renderer/components/transfer/edrms-views/EdrmsUploadDataportView";
+import { EdrmsUploadFilelistView } from "@renderer/components/transfer/edrms-views/EdrmsUploadFilelistView";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -11,6 +12,8 @@ export const EdrmsTransferPage = () => {
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [folderPath, setFolderPath] = useState<string | null | undefined>(null);
   const [fileList, setFileList] = useState<File | null | undefined>(undefined);
+  const [fileListFoundInEdrms, setFileListFoundInEdrms] =
+    useState<boolean>(false);
   const [dataportFile, setDataportFile] = useState<File | null | undefined>(
     undefined
   );
@@ -48,11 +51,17 @@ export const EdrmsTransferPage = () => {
       fileList: parsedFileList,
       transferForm: parsedTransferForm,
     } = await api.transfer.parseEdrmsFiles(folderPath);
+    // Dataport found
     if (parsedDataport && !dataportFile) {
       setDataportFile(parsedDataport);
       setDataportFoundInEdrms(true);
     }
-    if (parsedFileList && !fileList) setFileList(parsedFileList);
+    // Filelist found
+    if (parsedFileList && !fileList) {
+      setFileList(parsedFileList);
+      setFileListFoundInEdrms(true);
+    }
+    // Transfer form found
     if (parsedTransferForm && !transferForm)
       setTransferForm(parsedTransferForm);
   };
@@ -111,6 +120,13 @@ export const EdrmsTransferPage = () => {
   }, [dataportFile]);
 
   useEffect(() => {
+    if (!fileList) {
+      // Reset
+      setFileListFoundInEdrms(false);
+    }
+  }, [fileList]);
+
+  useEffect(() => {
     if (currentViewIndex === 1) {
       // Open of upload dataport view
       if (dataportFoundInEdrms) {
@@ -119,6 +135,17 @@ export const EdrmsTransferPage = () => {
             title: "Dataport file detected",
             message:
               "We have automatically populated your dataport file by scanning the EDRMS folder you uploaded in the previous step.",
+          },
+        });
+      }
+    } else if (currentViewIndex === 2) {
+      // Open of upload filelist view
+      if (fileListFoundInEdrms) {
+        toast.success(Toast, {
+          data: {
+            title: "Filelist file detected",
+            message:
+              "We have automatically populated your filelist file by scanning the EDRMS folder you uploaded in the previous step.",
           },
         });
       }
@@ -158,6 +185,14 @@ export const EdrmsTransferPage = () => {
               application={application}
               confirmChecked={confirmAccAppChecked}
               setConfirmChecked={setConfirmAccAppChecked}
+              onNextPress={onNextPress}
+              onBackPress={onBackPress}
+            />
+          )}
+          {currentViewIndex === 2 && (
+            <EdrmsUploadFilelistView
+              file={fileList}
+              setFile={setFileList}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
             />
