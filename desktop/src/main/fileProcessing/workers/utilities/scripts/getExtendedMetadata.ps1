@@ -3,8 +3,8 @@ param (
 )
 
 if (-Not (Test-Path -Path $FilePath -PathType Leaf)) {
-    Write-Host "File does not exist."
-    exit
+    Write-Output "File does not exist."
+    exit 1
 }
 
 function Get-FileMetadata {
@@ -12,20 +12,23 @@ function Get-FileMetadata {
         [string]$Path
     )
 
-    $file = Get-Item -Path $Path
-    $metadata = @{
-        Name = $file.Name
-        FullName = $file.FullName
-        Extension = $file.Extension
-        Size = $file.Length
-        CreationTime = $file.CreationTime
-        LastAccessTime = $file.LastAccessTime
-        LastWriteTime = $file.LastWriteTime
-        Attributes = $file.Attributes
+    try {
+        $properties = Get-ItemProperty -Path $Path
+    } catch {
+        Write-Error $_
+        exit 1
     }
 
-    return $metadata
+    $metadata = @{}
+
+    # Add all properties dynamically
+    foreach ($property in $properties.PSObject.Properties) {
+        write-host $property.Name  = $property.Value
+        $metadata[$property.Name] = $property.Value
+    }
+
+
+    return $metadata["length"]
 }
 
 $fileMetadata = Get-FileMetadata -Path $FilePath
-$fileMetadata | ConvertTo-Json -Depth 10

@@ -85,8 +85,8 @@ export const generateMetadataInBatches = async (
           });
 
           try {
-            const metadataResults = await getExtendedMetadata(filePath);
-            extendedMetadata[originalSource].push(metadataResults);
+            const extendedMetadataResults = await getExtendedMetadata(filePath);
+            extendedMetadata[originalSource].push(extendedMetadataResults);
           }
           catch (error) {
             console.warn(`<<<<<<Failed to retrieve extended metadata for: ${filePath}`, error);
