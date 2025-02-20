@@ -120,7 +120,8 @@ export const FolderUploadArea = ({ folderPath, onChange, onDelete }: Props) => {
               alignItems: "center",
               backgroundColor: "var(--file_upload_area-bg-uploaded-file)",
               padding: "16px",
-              minWidth: "400px",
+              minWidth: "450px",
+              gap: 3,
             }}
           >
             <UploadFileIcon />

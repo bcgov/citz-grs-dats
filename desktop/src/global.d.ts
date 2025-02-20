@@ -4,6 +4,12 @@ type FileBufferObj = {
   buffer: Buffer;
 };
 
+type EdrmsFiles = {
+  dataport?: File;
+  fileList?: File;
+  transferForm?: File;
+};
+
 interface Window {
   electron: ElectronAPI;
   api: {
@@ -52,6 +58,7 @@ interface Window {
       isAccessionValid: (accession?: string) => boolean;
       applicationExists: (application?: string) => boolean;
       isApplicationValid: (application?: string) => boolean;
+      parseEdrmsFiles: (folderPath: string) => Promise<EdrmsFiles>;
     };
 
     workers: {
