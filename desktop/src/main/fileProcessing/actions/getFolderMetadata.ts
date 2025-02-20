@@ -4,6 +4,7 @@ import { app } from "electron";
 
 type WorkerData = {
   source: string;
+  extendedMetadataPowerShellScript: string;
   batchSize?: number;
 };
 
@@ -36,8 +37,13 @@ export const getFolderMetadata = async (
     ? path.resolve(__dirname, "../es-workers/metadataWorker.js")
     : path.join(app.getAppPath(), "../../resources/metadataWorker.cjs");
 
+  const extendedMetadataPowerShellScript = isDev
+    ? path.resolve(__dirname, "../es-workers/scripts/getExtendedMetadata.ps1")
+    : path.join(app.getAppPath(), "../../resources/scripts/getExtendedMetadata.ps1");
+
   const metadataWorkerData: WorkerData = {
     source: filePath,
+    extendedMetadataPowerShellScript,
   };
 
   try {

@@ -16,7 +16,8 @@ export const generateMetadataInBatches = async (
   sourceDir: string,
   originalSource: string,
   totalFileCount: number,
-  batchSize = 10
+  extendedMetadataPowerShellScript: string,
+  batchSize = 100
 ): Promise<{
   metadata: Record<string, unknown[]>;
   extendedMetadata: Record<string, unknown[]>;
@@ -43,6 +44,7 @@ export const generateMetadataInBatches = async (
             filePath,
             originalSource,
             totalFileCount,
+            extendedMetadataPowerShellScript,
             batchSize
           );
 
@@ -84,12 +86,16 @@ export const generateMetadataInBatches = async (
             owner,
           });
 
-          try {
-            const extendedMetadataResults = await getExtendedMetadata(filePath);
-            extendedMetadata[originalSource].push(extendedMetadataResults);
-          }
-          catch (error) {
-            console.warn(`<<<<<<Failed to retrieve extended metadata for: ${filePath}`, error);
+          if (process.platform === "win32") {
+            try {
+              const extendedMetadataResults = await getExtendedMetadata(filePath, extendedMetadataPowerShellScript);
+              extendedMetadata[originalSource].push(extendedMetadataResults);
+            } catch (error) {
+              console.warn(
+                `<<<<<<Failed to retrieve extended metadata for: ${filePath}`,
+                error,
+              );
+            }
           }
 
           totalSize += fileStat.size;

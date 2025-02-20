@@ -7,13 +7,14 @@ import {
 
 type WorkerData = {
   source: string;
+  extendedMetadataPowerShellScript: string;
   batchSize?: number;
 };
 
 (async () => {
   console.log("[Metadata worker] Starting with data:", workerData);
   if (!workerData) return;
-  const { source, batchSize } = workerData as WorkerData;
+  const { source, batchSize, extendedMetadataPowerShellScript } = workerData as WorkerData;
 
   try {
     const directoryExists = await doesDirectoryExist(source);
@@ -31,6 +32,7 @@ type WorkerData = {
       source,
       source,
       totalFileCount,
+      extendedMetadataPowerShellScript,
       batchSize
     );
 
