@@ -9,7 +9,7 @@ export const LanInstructionsPage = () => {
   const { setCurrentPath } = useContext(Context) ?? {};
 
   const goToTransferPage = () => {
-    if (setCurrentPath) setCurrentPath("/send-records/lan");
+    setCurrentPath("/send-records/lan");
   };
 
   const NoteBlock = () => {
