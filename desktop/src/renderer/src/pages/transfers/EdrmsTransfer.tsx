@@ -1,6 +1,7 @@
 import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { Stepper, Toast } from "@renderer/components";
 import {
+  EdrmsConfirmationView,
   EdrmsSubmissionAgreementView,
   EdrmsUploadDataportView,
   EdrmsUploadFilelistView,
@@ -46,6 +47,12 @@ export const EdrmsTransferPage = () => {
   const [confirmAccAppChecked, setConfirmAccAppChecked] =
     useState<boolean>(false);
 
+  // Buffer progress
+  const [bufferProgress, setBufferProgress] = useState<number>(0);
+  const [folderBuffers, setFolderBuffers] = useState<
+    Record<string, FileBufferObj[]>
+  >({});
+
   const onNextPress = () => {
     setCurrentViewIndex((prev) => prev + 1);
   };
@@ -53,6 +60,66 @@ export const EdrmsTransferPage = () => {
   const onBackPress = () => {
     setCurrentViewIndex((prev) => prev - 1);
   };
+
+  // Handle buffer progress and completion events
+  useEffect(() => {
+    const handleProgress = (
+      event: CustomEvent<{ source: string; progressPercentage: number }>
+    ) => {
+      const { source, progressPercentage } = event.detail;
+      console.log(`${source} buffer progress ${progressPercentage}`);
+      // Update folder progress
+      const currentProgress = bufferProgress;
+
+      if (currentProgress !== 100) setBufferProgress(progressPercentage);
+    };
+
+    const handleCompletion = (
+      event: CustomEvent<{
+        source: string;
+        success: boolean;
+        buffers?: FileBufferObj[];
+        error?: unknown;
+      }>
+    ) => {
+      const { source, success, buffers, error } = event.detail;
+
+      if (success && buffers && buffers.length > 0) {
+        const sourceParts = source?.split("\\");
+        const parentFolder = sourceParts[sourceParts.length - 1];
+        setFolderBuffers((prev) => ({
+          ...prev,
+          [parentFolder ?? source]: buffers,
+        }));
+        console.log(`Successfully processed folder buffer: ${source}`);
+      } else {
+        console.error(`Failed to process folder buffer: ${source}`, {
+          success,
+          error,
+        });
+      }
+    };
+
+    window.addEventListener(
+      "folder-buffer-progress",
+      handleProgress as EventListener
+    );
+    window.addEventListener(
+      "folder-buffer-completion",
+      handleCompletion as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "folder-buffer-progress",
+        handleProgress as EventListener
+      );
+      window.removeEventListener(
+        "folder-buffer-completion",
+        handleCompletion as EventListener
+      );
+    };
+  }, []);
 
   const parseEdrmsFiles = async (folderPath: string) => {
     const {
@@ -109,10 +176,25 @@ export const EdrmsTransferPage = () => {
     }
   };
 
+  const getFolderBuffer = async (filePath: string) => {
+    try {
+      await api.workers.getFolderBuffer({
+        filePath,
+      });
+    } catch (error) {
+      console.error(`Failed to fetch buffers for folder ${filePath}:`, error);
+    }
+  };
+
   useEffect(() => {
     if (folderPath) {
       // Check for edrms files when a new folder is chosen
       parseEdrmsFiles(folderPath);
+      // Copy buffers from folder
+      getFolderBuffer(folderPath);
+    } else {
+      // Reset
+      setFolderBuffers({});
     }
   }, [folderPath]);
 
@@ -236,13 +318,21 @@ export const EdrmsTransferPage = () => {
           )}
           {currentViewIndex === 4 && (
             <EdrmsSubmissionAgreementView
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
               setCurrentPath={setCurrentPath}
+            />
+          )}
+          {currentViewIndex === 5 && (
+            <EdrmsConfirmationView
+              accession={accession!}
+              application={application!}
+              bufferProgress={bufferProgress}
+              folderPath={folderPath!}
+              onNextPress={onNextPress}
+              onBackPress={onBackPress}
             />
           )}
         </Stack>
