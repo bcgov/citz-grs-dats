@@ -22,10 +22,10 @@ export const getExtendedMetadata = (filePath: string, extendedMetadataPowerShell
     });
 
     extendedMetadataSpawnProcess.on('close', (code) => {
-      console.log(`[Extended Metadata] child process exited with code ${code}`);
       if (code === 0) {
         resolve(jsonData);
       } else {
+        console.log(`[Extended Metadata] child process exited with code ${code}`);
         reject(code);
       }
     });
