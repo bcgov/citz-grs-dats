@@ -16,7 +16,8 @@ import { FinishView } from "@renderer/components/transfer/finish-view";
 export const EdrmsTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
-  const { accessToken, setCurrentPath } = useContext(Context) ?? {};
+  const { accessToken, setCurrentPath, setProgressMade } =
+    useContext(Context) ?? {};
 
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [folderPath, setFolderPath] = useState<string | null | undefined>(null);
@@ -219,6 +220,7 @@ export const EdrmsTransferPage = () => {
   };
 
   useEffect(() => {
+    setProgressMade(!!folderPath);
     if (folderPath) {
       // Check for edrms files when a new folder is chosen
       parseEdrmsFiles(folderPath);
