@@ -8,14 +8,15 @@ import {
   EdrmsUploadFolderView,
   EdrmsUploadTransferFormView,
 } from "@renderer/components/transfer/edrms-views";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { Context } from "../../App";
+import { FinishView } from "@renderer/components/transfer/finish-view";
 
 export const EdrmsTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
-  const { setCurrentPath } = useContext(Context) ?? {};
+  const { accessToken, setCurrentPath } = useContext(Context) ?? {};
 
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [folderPath, setFolderPath] = useState<string | null | undefined>(null);
@@ -53,6 +54,14 @@ export const EdrmsTransferPage = () => {
     Record<string, FileBufferObj[]>
   >({});
 
+  // Request to send transfer
+  const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(
+    null
+  );
+
+  // Allows buffer collection to use metadata without issues of stale state
+  const metadataRef = useRef(metadata);
+
   const onNextPress = () => {
     setCurrentViewIndex((prev) => prev + 1);
   };
@@ -85,12 +94,35 @@ export const EdrmsTransferPage = () => {
       const { source, success, buffers, error } = event.detail;
 
       if (success && buffers && buffers.length > 0) {
-        const sourceParts = source?.split("\\");
-        const parentFolder = sourceParts[sourceParts.length - 1];
-        setFolderBuffers((prev) => ({
-          ...prev,
-          [parentFolder ?? source]: buffers,
-        }));
+        let folderBuffers = {};
+
+        buffers.forEach((buffer) => {
+          const bufferFilename = buffer.filename;
+          const fileMetadata = metadataRef.current.files as Record<
+            string,
+            unknown[]
+          >;
+          let fileFound = false;
+
+          // Find file match in metadata.files
+          Object.entries(fileMetadata as Record<string, unknown[]>).forEach(
+            ([folderName, value]) => {
+              const file = value.find(
+                (f) => (f as { filename: string }).filename === bufferFilename
+              ) as { filename: string };
+
+              if (file && !fileFound) {
+                folderBuffers = {
+                  ...folderBuffers,
+                  [folderName]: [...(folderBuffers[folderName] ?? []), buffer],
+                };
+                fileFound = true;
+              }
+            }
+          );
+        });
+
+        setFolderBuffers(folderBuffers);
         console.log(`Successfully processed folder buffer: ${source}`);
       } else {
         console.error(`Failed to process folder buffer: ${source}`, {
@@ -190,13 +222,17 @@ export const EdrmsTransferPage = () => {
     if (folderPath) {
       // Check for edrms files when a new folder is chosen
       parseEdrmsFiles(folderPath);
-      // Copy buffers from folder
-      getFolderBuffer(folderPath);
-    } else {
-      // Reset
-      setFolderBuffers({});
     }
   }, [folderPath]);
+
+  useEffect(() => {
+    if (folderPath && metadata.files) {
+      // After metadata has been collected
+      metadataRef.current = metadata;
+      // Copy buffers from folder
+      getFolderBuffer(folderPath);
+    }
+  }, [metadata.files]);
 
   useEffect(() => {
     if (dataportFile) {
@@ -205,6 +241,8 @@ export const EdrmsTransferPage = () => {
       // Reset
       setDataportFoundInEdrms(false);
       setMetadata({});
+      metadataRef.current = {};
+      setFolderBuffers({});
       setDataportJson(null);
       setAccession(null);
       setApplication(null);
@@ -260,8 +298,67 @@ export const EdrmsTransferPage = () => {
           },
         });
       }
+    } else if (currentViewIndex === 6) {
+      // Open of finish view
+      handleSendRequest();
     }
   }, [currentViewIndex]);
+
+  const handleSendRequest = async () => {
+    if (!dataportFile || !fileList || !transferForm || !accessToken) return;
+
+    // Request url
+    const apiUrl = await api.getCurrentApiUrl();
+    const requestUrl = `${apiUrl}/transfer/edrms`;
+
+    // Prepare file buffers for request body
+    const dataportBuffer = await api.utils.fileToBuffer(dataportFile);
+    const fileListBuffer = await api.utils.fileToBuffer(fileList);
+    const transferFormBuffer = await api.utils.fileToBuffer(transferForm);
+    const contentBuffer = await api.transfer.createZipBuffer(folderBuffers);
+
+    // Formdata for request
+    const formData = new FormData();
+    formData.append("dataportBuffer", new Blob([dataportBuffer]), "file.bin");
+    formData.append("dataportFilename", dataportFile.name);
+    formData.append("fileListBuffer", new Blob([fileListBuffer]), "file.bin");
+    formData.append("fileListFilename", fileList.name);
+    formData.append(
+      "transferFormBuffer",
+      new Blob([transferFormBuffer]),
+      "file.bin"
+    );
+    formData.append("transferFormFilename", transferForm.name);
+    formData.append("contentZipBuffer", new Blob([contentBuffer]), "file.bin");
+    formData.append("metadata", JSON.stringify(metadata));
+    formData.append(
+      "extendedMetadata",
+      JSON.stringify({ folders: dataportJson })
+    );
+
+    // Make request
+    console.log("Making edrms transfer request.");
+    const response = await fetch(requestUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) setRequestSuccessful(false);
+
+    const jsonResponse = await response.json();
+    console.log("Edrms transfer response:", jsonResponse);
+
+    if (jsonResponse.success) setRequestSuccessful(true);
+    else setRequestSuccessful(false);
+  };
+
+  // Send to home on completion
+  const handleCompletion = () => {
+    if (setCurrentPath) setCurrentPath("/");
+  };
 
   return (
     <Grid container sx={{ paddingBottom: "20px" }}>
@@ -333,6 +430,14 @@ export const EdrmsTransferPage = () => {
               folderPath={folderPath!}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
+            />
+          )}
+          {currentViewIndex === 6 && (
+            <FinishView
+              accession={accession!}
+              application={application!}
+              wasRequestSuccessful={requestSuccessful}
+              onNextPress={handleCompletion}
             />
           )}
         </Stack>

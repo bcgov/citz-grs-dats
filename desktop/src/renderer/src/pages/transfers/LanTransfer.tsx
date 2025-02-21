@@ -2,7 +2,6 @@ import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { LoginRequiredModal, Stepper, Toast } from "@renderer/components";
 import { JustifyChangesModal } from "@renderer/components/transfer";
 import {
-  LanFinishView,
   LanSubmissionAgreementView,
   LanUploadFileListView,
   LanUploadTransferFormView,
@@ -16,6 +15,7 @@ import {
   type ToastData,
 } from "./utils";
 import { Context } from "../../App";
+import { FinishView } from "@renderer/components/transfer/finish-view";
 
 type Folder = {
   id: number;
@@ -717,7 +717,7 @@ export const LanTransferPage = () => {
             />
           )}
           {currentViewIndex === 4 && (
-            <LanFinishView
+            <FinishView
               accession={accession!}
               application={application!}
               wasRequestSuccessful={requestSuccessful}
