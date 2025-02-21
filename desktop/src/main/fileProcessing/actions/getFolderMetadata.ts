@@ -34,12 +34,15 @@ export const getFolderMetadata = async (
 ): Promise<void> => {
   console.log(`[Metadata Action] Processing folder ${filePath}`);
   const metadataWorkerScript = isDev
-    ? path.resolve(__dirname, "../es-workers/metadataWorker.js")
-    : path.join(app.getAppPath(), "../../resources/metadataWorker.cjs");
+    ? path.resolve(__dirname, "../es-workers/workers/metadataWorker.js")
+    : path.join(app.getAppPath(), "../../resources/workers/metadataWorker.cjs");
 
   const extendedMetadataPowerShellScript = isDev
     ? path.resolve(__dirname, "../es-workers/scripts/getExtendedMetadata.ps1")
-    : path.join(app.getAppPath(), "../../resources/scripts/getExtendedMetadata.ps1");
+    : path.join(
+        app.getAppPath(),
+        "../../resources/scripts/getExtendedMetadata.ps1"
+      );
 
   const metadataWorkerData: WorkerData = {
     source: filePath,

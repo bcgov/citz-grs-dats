@@ -37,8 +37,8 @@ export const getFolderBuffer = async (
   }) => void
 ): Promise<void> => {
   const workerScript = isDev
-    ? path.resolve(__dirname, "../es-workers/copyWorker.js")
-    : path.join(app.getAppPath(), "../../resources/copyWorker.cjs");
+    ? path.resolve(__dirname, "../es-workers/workers/copyWorker.js")
+    : path.join(app.getAppPath(), "../../resources/workers/copyWorker.cjs");
 
   const workerData: WorkerData = {
     source: filePath,
