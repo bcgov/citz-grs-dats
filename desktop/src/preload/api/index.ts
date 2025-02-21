@@ -1,2 +1,1 @@
-export * from "./checkAPIStatus";
-export * from "./checkIPRange";
+export * from "./api";

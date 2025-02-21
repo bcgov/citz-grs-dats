@@ -5,6 +5,7 @@ import { calculateChecksum } from "./calculateChecksum";
 import { formatFileSize } from "./formatFileSize";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import { getExtendedMetadata } from "./getExtendedMetadata";
 
 const execPromise = promisify(exec);
 const { stat, readdir } = fsPromises;
@@ -15,14 +16,17 @@ export const generateMetadataInBatches = async (
   sourceDir: string,
   originalSource: string,
   totalFileCount: number,
-  batchSize = 10
+  extendedMetadataPowerShellScript: string,
+  batchSize = 100
 ): Promise<{
   metadata: Record<string, unknown[]>;
+  extendedMetadata: Record<string, unknown[]>;
   fileCount: number;
   totalSize: number;
 }> => {
   console.log("Generating metadata in batches for", sourceDir);
   const metadata: Record<string, unknown[]> = { [originalSource]: [] };
+  const extendedMetadata: Record<string, unknown[]> = { [originalSource]: [] };
   let fileCount = 0;
   let totalSize = 0;
 
@@ -40,12 +44,16 @@ export const generateMetadataInBatches = async (
             filePath,
             originalSource,
             totalFileCount,
+            extendedMetadataPowerShellScript,
             batchSize
           );
 
           // Merge file metadata from subdirectories into the original source key
           metadata[originalSource].push(
             ...subMetadata.metadata[originalSource]
+          );
+          extendedMetadata[originalSource].push(
+            ...subMetadata.extendedMetadata[originalSource]
           );
           fileCount += subMetadata.fileCount;
           totalSize += subMetadata.totalSize;
@@ -78,6 +86,18 @@ export const generateMetadataInBatches = async (
             owner,
           });
 
+          if (process.platform === "win32") {
+            try {
+              const extendedMetadataResults = await getExtendedMetadata(filePath, extendedMetadataPowerShellScript);
+              extendedMetadata[originalSource].push(extendedMetadataResults);
+            } catch (error) {
+              console.warn(
+                `<<<<<<Failed to retrieve extended metadata for: ${filePath}`,
+                error,
+              );
+            }
+          }
+
           totalSize += fileStat.size;
           fileCount += 1;
           processedFileCount += 1;
@@ -106,5 +126,5 @@ export const generateMetadataInBatches = async (
     );
   }
 
-  return { metadata, fileCount, totalSize };
+  return { metadata, extendedMetadata, fileCount, totalSize };
 };

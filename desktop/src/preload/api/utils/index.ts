@@ -1,3 +1,9 @@
-export * from "./safePromise";
-export * from "./fileToBuffer";
-export * from "./isEmptyFolder";
+import { fileToBuffer } from "./fileToBuffer";
+import { isEmptyFolder } from "./isEmptyFolder";
+import { safePromise } from "./safePromise";
+
+export default {
+  fileToBuffer,
+  isEmptyFolder,
+  safePromise,
+};

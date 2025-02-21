@@ -198,8 +198,7 @@ ipcMain.handle("start-logout-process", async (_, idToken: string) => {
   });
 });
 
-ipcMain.on(
-  "get-folder-metadata",
+ipcMain.on("get-folder-metadata",
   async (event, { filePath }: { filePath: string }) => {
     debug('Beginning "get-folder-metadata" of main process.');
 
@@ -244,8 +243,7 @@ ipcMain.on(
   }
 );
 
-ipcMain.on(
-  "get-folder-buffer",
+ipcMain.on("get-folder-buffer",
   async (event, { filePath }: { filePath: string }) => {
     debug('Beginning "get-folder-buffer" of main process.');
 
@@ -289,8 +287,7 @@ ipcMain.on(
   }
 );
 
-ipcMain.handle(
-  "select-directory",
+ipcMain.handle("select-directory",
   (_, { singleSelection }: { singleSelection?: boolean } = {}) => {
     debug('Beginning "select-directory" of main process.');
     // returns selected folder or undefined if no folder was selected
@@ -431,27 +428,27 @@ const menuTemplate = [
   },
   ...(is.dev
     ? [
-        {
-          label: "Developer",
-          submenu: [
-            {
-              label: "Copy Auth Token",
-              click: () => {
-                if (tokens.accessToken) {
-                  clipboard.writeText(tokens.accessToken);
-                  mainWindow.webContents.send("auth-token-copied", {
-                    message: "Access token copied to clipboard!",
-                  });
-                } else {
-                  mainWindow.webContents.send("auth-token-copied", {
-                    message: "No access token available to copy.",
-                  });
-                }
-              },
+      {
+        label: "Developer",
+        submenu: [
+          {
+            label: "Copy Auth Token",
+            click: () => {
+              if (tokens.accessToken) {
+                clipboard.writeText(tokens.accessToken);
+                mainWindow.webContents.send("auth-token-copied", {
+                  message: "Access token copied to clipboard!",
+                });
+              } else {
+                mainWindow.webContents.send("auth-token-copied", {
+                  message: "No access token available to copy.",
+                });
+              }
             },
-          ],
-        },
-      ]
+          },
+        ],
+      },
+    ]
     : []),
 ];
 
