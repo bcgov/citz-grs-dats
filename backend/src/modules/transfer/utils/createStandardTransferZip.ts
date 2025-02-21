@@ -17,11 +17,20 @@ type Props = {
       filename: string;
       buffer: Buffer;
     };
+    edrmsFilelist?: {
+      filename: string;
+      buffer: Buffer;
+    };
+    edrmsDataport?: {
+      filename: string;
+      buffer: Buffer;
+    };
   };
   metadata: {
     adminBuffer: Buffer;
     foldersBuffer: Buffer;
     filesBuffer: Buffer;
+    extendedBuffer?: Buffer;
     notesBuffer?: Buffer | null;
   };
 };
@@ -79,11 +88,25 @@ export const createStandardTransferZip = async ({
     documentation.subAgreement.buffer,
     `documentation/${documentation.subAgreement.filename}`
   );
+  if (documentation.edrmsFilelist) {
+    zip.addBuffer(
+      documentation.edrmsFilelist.buffer,
+      `documentation/${documentation.edrmsFilelist.filename}`
+    );
+  }
+  if (documentation.edrmsDataport) {
+    zip.addBuffer(
+      documentation.edrmsDataport.buffer,
+      `documentation/${documentation.edrmsDataport.filename}`
+    );
+  }
 
   // Add metadata files
   zip.addBuffer(metadata.adminBuffer, "metadata/admin.json");
   zip.addBuffer(metadata.foldersBuffer, "metadata/folders.json");
   zip.addBuffer(metadata.filesBuffer, "metadata/files.json");
+  if (metadata.extendedBuffer)
+    zip.addBuffer(metadata.extendedBuffer, "metadata/extended.json");
   if (metadata.notesBuffer)
     zip.addBuffer(metadata.notesBuffer, "metadata/notes.txt");
 
