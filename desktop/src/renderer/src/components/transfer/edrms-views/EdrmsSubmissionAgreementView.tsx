@@ -9,11 +9,13 @@ import { useState } from "react";
 import { DeclineSubAgreementModal } from "../DeclineSubAgreementModal";
 
 type Props = {
-  accession: string;
-  application: string;
-  onNextPress: () => void;
-  onBackPress: () => void;
-  setCurrentPath?: React.Dispatch<React.SetStateAction<string>>;
+	accession: string;
+	application: string;
+	onNextPress: () => void;
+	onBackPress: () => void;
+	setCurrentPath?:
+		| React.Dispatch<React.SetStateAction<string>>
+		| ((value: string) => void);
 };
 
 export const EdrmsSubmissionAgreementView = ({
