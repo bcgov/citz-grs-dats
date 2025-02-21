@@ -40,7 +40,7 @@ type FileBufferObj = {
 export const LanTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
-  const { accessToken, setCurrentPath } = useContext(Context) ?? {};
+  const { accessToken, setCurrentPath, setProgressMade } = useContext(Context);
 
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [fileList, setFileList] = useState<File | null | undefined>(undefined);
@@ -516,9 +516,15 @@ export const LanTransferPage = () => {
   };
 
   useEffect(() => {
+    setProgressMade(!!fileList);
     if (!fileList) {
+      // Clear state.
+      setAccession(null);
+      setApplication(null);
+      setConfirmAccAppChecked(false);
       setFolders([]);
       setMetadata({});
+      return;
     }
     parseFileList();
   }, [fileList]);
@@ -649,7 +655,7 @@ export const LanTransferPage = () => {
 
   // Send to home on completion
   const handleCompletion = () => {
-    if (setCurrentPath) setCurrentPath("/");
+    setCurrentPath("/");
   };
 
   return (
@@ -689,9 +695,7 @@ export const LanTransferPage = () => {
           )}
           {currentViewIndex === 2 && (
             <LanSubmissionAgreementView
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
               onNextPress={onNextPress}
               onBackPress={onBackPress}
@@ -700,9 +704,7 @@ export const LanTransferPage = () => {
           )}
           {currentViewIndex === 3 && (
             <LanConfirmationView
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
               folders={folders}
               setFolders={setFolders}
@@ -716,9 +718,7 @@ export const LanTransferPage = () => {
           )}
           {currentViewIndex === 4 && (
             <LanFinishView
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               accession={accession!}
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
               application={application!}
               wasRequestSuccessful={requestSuccessful}
               onNextPress={handleCompletion}

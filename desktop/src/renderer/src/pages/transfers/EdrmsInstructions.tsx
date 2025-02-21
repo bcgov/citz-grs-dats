@@ -3,13 +3,13 @@ import { Box, Grid2 as Grid, Stack, Typography, useTheme } from "@mui/material";
 import { Context } from "../../App";
 import { useContext } from "react";
 
-export const LanInstructionsPage = () => {
+export const EdrmsInstructionsPage = () => {
   const theme = useTheme();
 
   const { setCurrentPath } = useContext(Context) ?? {};
 
   const goToTransferPage = () => {
-    setCurrentPath("/send-records/lan");
+    if (setCurrentPath) setCurrentPath("/send-records/edrms");
   };
 
   const NoteBlock = () => {
@@ -27,8 +27,8 @@ export const LanInstructionsPage = () => {
         <Typography variant="h4">For an optimal experience...</Typography>
         <ul>
           <li>
-            Keep the DATS app open for the duration of the LAN drive transfer
-            process, including during long file uploading times.
+            Keep the DATS app open for the duration of the process, including
+            during long file uploading times.
           </li>
           <li>
             <Typography variant="h4">
@@ -47,20 +47,20 @@ export const LanInstructionsPage = () => {
       <Grid size={2} />
       <Grid size={8} sx={{ paddingTop: 3 }}>
         <Stack gap={3}>
-          <Typography variant="h2">Send records from LAN Drive</Typography>
+          <Typography variant="h2">Send records from EDRMS</Typography>
           <Stack gap={2}>
             <Typography variant="h3">Getting started</Typography>
             <Typography>
-              Before you start your LAN drive transfer process, ensure you have
-              the following documents:
+              Before you start the process, ensure you have the following
+              documents:
             </Typography>
             <ul>
+              <li>EDRMS Dataport text file</li>
+              <li>Approved EDRMS list file</li>
               <li>Transfer form (ARS 617)</li>
-              <li>Digital file list (ARS 622)</li>
             </ul>
             <Typography>
-              You should also be ready to relink any folders whose names have
-              changed since your file list was created.
+              You should also have one folder of records that were sent to you by the EDRMS team. 
             </Typography>
           </Stack>
           {/* Note */}

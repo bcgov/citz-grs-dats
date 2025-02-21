@@ -13,12 +13,10 @@ type Props = {
   application: string;
   onNextPress: () => void;
   onBackPress: () => void;
-  setCurrentPath:
-    | React.Dispatch<React.SetStateAction<string>>
-    | ((value: string) => void);
+  setCurrentPath?: React.Dispatch<React.SetStateAction<string>>;
 };
 
-export const LanSubmissionAgreementView = ({
+export const EdrmsSubmissionAgreementView = ({
   accession,
   application,
   onNextPress,
@@ -80,7 +78,7 @@ export const LanSubmissionAgreementView = ({
   };
 
   const handleConfirmDecline = () => {
-    setCurrentPath("/");
+    if (setCurrentPath) setCurrentPath("/");
   };
 
   return (

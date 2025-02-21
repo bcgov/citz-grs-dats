@@ -5,26 +5,41 @@ import { ToastContainer } from "react-toastify";
 import { SideNav, VPNPopup } from "./components";
 import { LeavePageModal } from "./components/LeavePageModal";
 import {
+  EdrmsInstructionsPage,
   FileListPage,
   HomePage,
   LanInstructionsPage,
   LanTransferPage,
   SendRecordsPage,
 } from "./pages";
+import { EdrmsTransferPage } from "./pages/transfers/EdrmsTransfer";
 
 type AppContext = {
   accessToken?: string;
   currentPath: string;
-  setCurrentPath: React.Dispatch<React.SetStateAction<string>>;
+  setCurrentPath:
+    | React.Dispatch<React.SetStateAction<string>>
+    | ((value: string) => void);
+  setProgressMade:
+    | React.Dispatch<React.SetStateAction<boolean>>
+    | ((value: boolean) => void);
 };
 
-export const Context = createContext<AppContext | undefined>(undefined);
+export const Context = createContext<AppContext>({
+  currentPath: "/",
+  setCurrentPath: () => {},
+  setProgressMade: () => {},
+});
 
 function App(): JSX.Element {
   const [api] = useState(window.api); // Preload scripts
   const [showVPNPopup, setShowVPNPopup] = useState<boolean | null>(null);
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState("/");
+
+  // Track when progress has been made in the app so we can warn the
+  // user about navigating away and losing progress.
+  const [progressMade, setProgressMade] = useState(false);
 
   // Authentication state
   const [accessToken, setAccessToken] = useState<string | undefined>(undefined);
@@ -93,6 +108,7 @@ function App(): JSX.Element {
           idToken={idToken}
           currentPath={currentPath}
           setCurrentPath={setCurrentPath}
+          progressMade={progressMade}
         />
       </Grid>
       <Grid size={10}>
@@ -102,14 +118,20 @@ function App(): JSX.Element {
             <Button onClick={() => setLeavePageModalOpen(true)} />
           }
         />
-        <Context.Provider value={{ accessToken, currentPath, setCurrentPath }}>
+        <Context.Provider
+          value={{ accessToken, currentPath, setCurrentPath, setProgressMade }}
+        >
           <Box>
             {currentPath === "/" && <HomePage />}
             {currentPath === "/file-list" && <FileListPage />}
             {currentPath === "/send-records" && <SendRecordsPage />}
             {currentPath === "/send-records/lan" && <LanTransferPage />}
+            {currentPath === "/send-records/edrms" && <EdrmsTransferPage />}
             {currentPath === "/send-records/lan/instructions" && (
               <LanInstructionsPage />
+            )}
+            {currentPath === "/send-records/edrms/instructions" && (
+              <EdrmsInstructionsPage />
             )}
           </Box>
         </Context.Provider>

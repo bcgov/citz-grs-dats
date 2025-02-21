@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
 import { checkApiStatus, checkIpRange } from "./api";
-import { fileToBuffer, safePromise } from "./api/utils";
+import { fileToBuffer, isEmptyFolder, safePromise } from "./api/utils";
 import { fetchProtectedRoute, getUser } from "./api/sso";
 import {
   accessionExists,
@@ -10,6 +10,9 @@ import {
   isApplicationValid,
   createZipBuffer,
   parseXlsxFileList,
+  parseEdrmsFiles,
+  parseTabDelimitedTxt,
+  parseDataportJsonMetadata,
 } from "./api/transfer";
 
 type FileBufferObj = {
@@ -35,6 +38,7 @@ const api = {
   utils: {
     safePromise,
     fileToBuffer,
+    isEmptyFolder,
   },
   transfer: {
     parseXlsxFileList,
@@ -43,6 +47,9 @@ const api = {
     isAccessionValid,
     applicationExists,
     isApplicationValid,
+    parseEdrmsFiles,
+    parseTabDelimitedTxt,
+    parseDataportJsonMetadata,
   },
   workers: {
     getFolderMetadata: ({ filePath }: { filePath: string }) => {
