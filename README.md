@@ -31,7 +31,7 @@ The DATS project will be transferring inactive Full Retention (FR) government di
 
 To switch API environments:
 
-1. In the app, go to `Edit > Select Environment`.
+1. In the app, go to `Developer > Select Environment`.
 
 2. Choose `Local`, `Dev`, `Test`, or `Prod`.
   - Default: `Local` during development using `npm run dev`, `Prod` in executable builds.
