@@ -4,35 +4,8 @@ import yazl from "yazl";
 // Define the Props type
 type Props = {
   contentZipBuffer: Buffer;
-  documentation: {
-    fileList: {
-      filename: string;
-      buffer: Buffer;
-    };
-    transferForm: {
-      filename: string;
-      buffer: Buffer;
-    };
-    subAgreement: {
-      filename: string;
-      buffer: Buffer;
-    };
-    edrmsFilelist?: {
-      filename: string;
-      buffer: Buffer;
-    };
-    edrmsDataport?: {
-      filename: string;
-      buffer: Buffer;
-    };
-  };
-  metadata: {
-    adminBuffer: Buffer;
-    foldersBuffer: Buffer;
-    filesBuffer: Buffer;
-    extendedBuffer?: Buffer;
-    notesBuffer?: Buffer | null;
-  };
+  documentation: Record<string, Buffer | null>;
+  metadata: Record<string, Buffer | null>;
 };
 
 // Utility function to extract content from a zip buffer and add it to another zip
@@ -76,39 +49,16 @@ export const createStandardTransferZip = async ({
   await extractZip(contentZipBuffer, zip);
 
   // Add documentation files
-  zip.addBuffer(
-    documentation.fileList.buffer,
-    `documentation/${documentation.fileList.filename}`
-  );
-  zip.addBuffer(
-    documentation.transferForm.buffer,
-    `documentation/${documentation.transferForm.filename}`
-  );
-  zip.addBuffer(
-    documentation.subAgreement.buffer,
-    `documentation/${documentation.subAgreement.filename}`
-  );
-  if (documentation.edrmsFilelist) {
-    zip.addBuffer(
-      documentation.edrmsFilelist.buffer,
-      `documentation/${documentation.edrmsFilelist.filename}`
-    );
-  }
-  if (documentation.edrmsDataport) {
-    zip.addBuffer(
-      documentation.edrmsDataport.buffer,
-      `documentation/${documentation.edrmsDataport.filename}`
-    );
-  }
+  Object.entries(documentation).forEach(([filename, buffer]) => {
+    if (!buffer) return;
+    zip.addBuffer(buffer, `documentation/${filename}`);
+  });
 
   // Add metadata files
-  zip.addBuffer(metadata.adminBuffer, "metadata/admin.json");
-  zip.addBuffer(metadata.foldersBuffer, "metadata/folders.json");
-  zip.addBuffer(metadata.filesBuffer, "metadata/files.json");
-  if (metadata.extendedBuffer)
-    zip.addBuffer(metadata.extendedBuffer, "metadata/extended.json");
-  if (metadata.notesBuffer)
-    zip.addBuffer(metadata.notesBuffer, "metadata/notes.txt");
+  Object.entries(metadata).forEach(([filename, buffer]) => {
+    if (!buffer) return;
+    zip.addBuffer(buffer, `metadata/${filename}`);
+  });
 
   // Finalize zip and return buffer
   return new Promise((resolve, reject) => {

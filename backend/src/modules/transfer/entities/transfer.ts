@@ -35,6 +35,7 @@ const transferSchema = new Schema({
     folders: { type: Map, of: folderMetadataSchema, required: true }, // Record<string, folderMetadataSchema>
     files: { type: Map, of: [fileMetadataSchema], required: true }, // Record<string, fileMetadataSchema[]>
   },
+  extendedMetadata: { type: Map, of: Schema.Types.Mixed, required: false },
 });
 
 // Mongoose Model
@@ -62,6 +63,7 @@ export const transferZodSchema = z.object({
     folders: z.record(folderMetadataZodSchema),
     files: z.record(z.array(fileMetadataZodSchema)),
   }),
+  extendedMetadata: z.record(z.any()).optional(),
 });
 
 // TypeScript Types

@@ -14,6 +14,7 @@ import { updateFileListV2 } from "@/modules/filelist/utils/excel";
 import type { FileMetadataZodType } from "@/modules/filelist/schemas";
 import { callTransferEndpoint, createStandardTransferZip } from "../utils";
 import crypto from "node:crypto";
+import { TransferService } from "../services";
 
 const { S3_BUCKET } = ENV;
 
@@ -95,6 +96,13 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     },
   };
 
+  // Get original extended metadata
+  const transferEntry = await TransferService.getTransferWhere({
+    accession,
+    application,
+  });
+  const originalExtendedMetadataJson = transferEntry?.extendedMetadata ?? {};
+
   // Metadata files
   const adminJsonBuffer = Buffer.from(
     JSON.stringify(updatedAdminMetadata),
@@ -108,29 +116,32 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     JSON.stringify(body.metadataV2.files),
     "utf-8"
   );
+  const extendedMetadataJsonBuffer = Buffer.from(
+    JSON.stringify(body.extendedMetadata),
+    "utf-8"
+  );
+  const originalExtendedMetadataJsonBuffer = Buffer.from(
+    JSON.stringify(originalExtendedMetadataJson),
+    "utf-8"
+  );
+
+  const today = new Date().toISOString().split("T")[0];
 
   // Put together zip buffer
   const standardTransferZipBuffer = await createStandardTransferZip({
     contentZipBuffer,
     documentation: {
-      fileList: {
-        filename: body.fileListFilename,
-        buffer: fileListBuffer,
-      },
-      transferForm: {
-        filename: body.transferFormFilename,
-        buffer: transferFormBuffer,
-      },
-      subAgreement: {
-        filename: "Submission_Agreement.pdf",
-        buffer: subAgreementBuffer,
-      },
+      [body.fileListFilename]: fileListBuffer,
+      [body.transferFormFilename]: transferFormBuffer,
+      "Submission_Agreement.pdf": subAgreementBuffer,
     },
     metadata: {
-      adminBuffer: adminJsonBuffer,
-      foldersBuffer: foldersJsonBuffer,
-      filesBuffer: filesJsonBuffer,
-      notesBuffer,
+      "admin.json": adminJsonBuffer,
+      "folders.json": foldersJsonBuffer,
+      "files.json": filesJsonBuffer,
+      [`extended_new_${today}.json`]: extendedMetadataJsonBuffer,
+      "extended_original.json": originalExtendedMetadataJsonBuffer,
+      "notes.txt": notesBuffer,
     },
   });
 

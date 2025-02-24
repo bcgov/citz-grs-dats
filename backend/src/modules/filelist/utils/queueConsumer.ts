@@ -100,6 +100,7 @@ export const queueConsumer = async (
         application: filelist.metadata?.admin?.application,
         folders: filelist.metadata.folders,
         files: filelist.metadata.files,
+        extendedMetadata: filelist.extendedMetadata ?? {},
       });
 
       // Generate JSON string and buffer
