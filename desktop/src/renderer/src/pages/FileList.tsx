@@ -27,6 +27,7 @@ export const FileListPage = () => {
     folders,
     setFolders,
     setMetaData,
+    setExtendedMetaData,
     addPathArrayToFolders,
     removeFolder,
     submit,
@@ -52,22 +53,29 @@ export const FileListPage = () => {
         source: string;
         success: boolean;
         metadata?: Record<string, unknown>;
+        extendedMetadata?: Record<string, unknown>;
         error?: unknown;
       }>
     ) => {
-      const { source, success, metadata: newMetadata } = event.detail;
+      const {
+        source,
+        success,
+        metadata: newMetadata,
+        extendedMetadata: newExtendedMetadata,
+      } = event.detail;
 
       if (success && newMetadata) {
         setMetaData((prev) => ({
           ...prev,
           [source]: newMetadata[source],
         }));
+        if (newExtendedMetadata) setExtendedMetaData(newExtendedMetadata);
         console.info(`Successfully processed folder: ${source}`);
       } else {
         console.error(`Failed to process folder: ${source}`);
       }
     },
-    [setMetaData]
+    [setMetaData, setExtendedMetaData]
   );
 
   const handleRowUpdate = useCallback(
