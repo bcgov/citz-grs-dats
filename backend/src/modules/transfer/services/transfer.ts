@@ -23,6 +23,7 @@ type CreateTransferData = {
   jobID?: string | null;
   checksum?: string | null;
   status?: (typeof TRANSFER_STATUSES)[number];
+  extendedMetadata?: Record<string, unknown> | undefined;
 };
 
 type UpdateTransferData = Partial<
@@ -45,6 +46,7 @@ export const TransferService = {
     jobID,
     checksum,
     status = "Pre-Transfer",
+    extendedMetadata = {},
   }: CreateTransferData) {
     try {
       const transferDatabaseEntry: TransferMongoose = {
@@ -63,6 +65,7 @@ export const TransferService = {
           folders,
           files,
         },
+        extendedMetadata: new Map(Object.entries(extendedMetadata)),
       };
 
       // Insert the document into the database
@@ -93,6 +96,7 @@ export const TransferService = {
     jobID,
     checksum,
     status = "Pre-Transfer",
+    extendedMetadata = {},
   }: CreateTransferData) {
     try {
       const transferDatabaseEntry: TransferMongoose = {
@@ -111,6 +115,7 @@ export const TransferService = {
           folders,
           files,
         },
+        extendedMetadata: new Map(Object.entries(extendedMetadata)),
       };
 
       // Find an existing entry by `application` and `accession`
@@ -146,7 +151,7 @@ export const TransferService = {
    */
   async getTransferWhere(where: Record<string, unknown>) {
     try {
-      const transferDocument = await TransferModel.findOne(where);
+      const transferDocument = await TransferModel.findOne(where).lean().exec();
       return transferDocument;
     } catch (error) {
       console.error(ERROR_IN_GET_TRANSFER_WHERE, error);
@@ -183,11 +188,9 @@ export const TransferService = {
 
       if (updates.user && transferDocument.metadata?.admin) {
         transferDocument.metadata.admin.submittedBy = {
-          // biome-ignore lint/style/noNonNullAssertion: <explanation>
           name:
             updates.user.display_name ??
             transferDocument.metadata?.admin?.submittedBy?.name!,
-          // biome-ignore lint/style/noNonNullAssertion: <explanation>
           email:
             updates.user.email ??
             transferDocument.metadata?.admin?.submittedBy?.email!,

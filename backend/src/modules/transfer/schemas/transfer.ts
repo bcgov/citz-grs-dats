@@ -29,6 +29,7 @@ export const lanTransferBodySchema = z.object({
     folders: z.record(folderMetadataZodSchema),
     files: z.record(z.array(fileMetadataZodSchema)),
   }),
+  extendedMetadata: z.record(z.any()),
   changes: z.array(
     z.object({
       originalFolderPath: z.string(),

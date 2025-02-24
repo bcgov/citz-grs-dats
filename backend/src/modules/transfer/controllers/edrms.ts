@@ -15,6 +15,7 @@ import type { FileMetadataZodType } from "@/modules/filelist/schemas";
 import { callTransferEndpoint, createStandardTransferZip } from "../utils";
 import crypto from "node:crypto";
 import type { Workbook } from "exceljs";
+import { TransferService } from "../services";
 
 const { S3_BUCKET } = ENV;
 
@@ -49,6 +50,16 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
       HTTP_STATUS_CODES.BAD_REQUEST,
       "Missing one or many of dataportBuffer, fileListBuffer, transferFormBuffer, contentZipBuffer."
     );
+
+  // Save data for transfer
+  await TransferService.createOrUpdateTransferEntry({
+    user,
+    application: body.metadata?.admin?.application,
+    accession: body.metadata?.admin?.accession,
+    folders: body.metadata.folders,
+    files: body.metadata.files,
+    extendedMetadata: body.extendedMetadata,
+  });
 
   // Create submission agreement file
   const subAgreementBuffer = await createAgreementPDF({
@@ -125,32 +136,17 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   const standardTransferZipBuffer = await createStandardTransferZip({
     contentZipBuffer,
     documentation: {
-      fileList: {
-        filename: digitalFilelistFilename,
-        buffer: digitalFileListBuffer,
-      },
-      transferForm: {
-        filename: body.transferFormFilename,
-        buffer: transferFormBuffer,
-      },
-      subAgreement: {
-        filename: "Submission_Agreement.pdf",
-        buffer: subAgreementBuffer,
-      },
-      edrmsFilelist: {
-        filename: body.fileListFilename,
-        buffer: fileListBuffer,
-      },
-      edrmsDataport: {
-        filename: body.dataportFilename,
-        buffer: dataportBuffer,
-      },
+      [digitalFilelistFilename]: digitalFileListBuffer,
+      [body.transferFormFilename]: transferFormBuffer,
+      "Submission_Agreement.pdf": subAgreementBuffer,
+      [body.fileListFilename]: fileListBuffer,
+      [body.dataportFilename]: dataportBuffer,
     },
     metadata: {
-      adminBuffer: adminJsonBuffer,
-      foldersBuffer: foldersJsonBuffer,
-      filesBuffer: filesJsonBuffer,
-      extendedBuffer: extendedMetadataJsonBuffer,
+      "admin.json": adminJsonBuffer,
+      "folders.json": foldersJsonBuffer,
+      "files.json": filesJsonBuffer,
+      "extended.json": extendedMetadataJsonBuffer,
     },
   });
 
