@@ -19,8 +19,10 @@ export const updateFileListV2 = async ({
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(fileListBuffer as unknown as ExcelJS.Buffer);
 
-  const folderListV2Worksheet = workbook.addWorksheet("FILE LIST V2");
-  const metadataV2Worksheet = workbook.addWorksheet("METADATA V2");
+  const today = new Date().toISOString().split("T")[0];
+
+  const folderListV2Worksheet = workbook.addWorksheet(`FILE LIST ${today}`);
+  const metadataV2Worksheet = workbook.addWorksheet(`METADATA ${today}`);
 
   setupFolderListV2({
     worksheet: folderListV2Worksheet,
