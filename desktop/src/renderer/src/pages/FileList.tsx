@@ -1,27 +1,34 @@
 import { useFolderList } from "@/hooks";
-import { Lightbulb as TipIcon } from "@mui/icons-material";
-import { Box, Stack, Typography, useTheme, Grid2 as Grid } from "@mui/material";
+import { Box, Stack, Typography, Grid2 as Grid } from "@mui/material";
 import { useGridApiRef } from "@mui/x-data-grid";
 import {
+  AccAppCheck,
   ContinueButton,
   ContinueModal,
   FolderDisplayGrid,
   type FolderRow,
+  Instruction,
   SelectFolderButton,
 } from "@renderer/components/file-list";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Context } from "../App";
+import { LoginRequiredModal } from "@renderer/components";
 
 export const FileListPage = () => {
+  const [api] = useState(window.api); // Preload scripts
+
   const [continueButtonIsEnabled, setContinueButtonIsEnabled] =
+    useState<boolean>(false);
+  const [accAppCheckIsEnabled, setAccAppCheckIsEnabled] =
     useState<boolean>(false);
   const [continueModalIsOpen, setContinueModalIsOpen] =
     useState<boolean>(false);
+  const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
+  const [hasAccApp, setHasAccApp] = useState<boolean | null>(null);
 
   const { accessToken, setCurrentPath, setProgressMade } = useContext(Context);
   const authenticated = !!accessToken;
 
-  const theme = useTheme();
   const apiRef = useGridApiRef();
   const {
     folders,
@@ -141,70 +148,84 @@ export const FileListPage = () => {
     // Update progress when folders are uploaded.
     setProgressMade(hasFolders);
 
+    setAccAppCheckIsEnabled(allFoldersProcessed && hasFolders);
+
     // Enable continue button when folders are processed.
     setContinueButtonIsEnabled(
-      allFoldersProcessed && hasFolders && authenticated
+      allFoldersProcessed && hasFolders && authenticated && hasAccApp !== null
     );
-  }, [folders, authenticated]);
+  }, [folders, authenticated, hasAccApp]);
 
   return (
     <Grid container>
       <Grid size={0.5} />
       <Grid size={11} sx={{ paddingTop: 3 }}>
-        <Stack
-          direction="column"
-          spacing={1}
-          sx={{
-            width: "100%",
-            minHeight: "7vh",
-            padding: 2,
-            flexShrink: 0,
-            background: `${theme.palette.primary}`,
-          }}
-        >
-          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+        <Stack gap={2}>
+          <Typography variant="h2">Create file list</Typography>
+
+          <Stack gap={2}>
+            <Typography variant="h4">Instructions</Typography>
+            <Instruction
+              num={1}
+              instruction="Click the “Add folder(s)” button to start adding folders to your file list"
+              required={true}
+              tip="Upload multiple folders at once by selecting several folders in the file explorer window, or by clicking “upload folder(s)” again while a previously added folder is in progress."
+            />
+            <Instruction
+              num={2}
+              instruction="Provide additional information about your folder(s) in the columns provided or, if preferred, do it later in Excel"
+              required={false}
+            />
+            <Instruction
+              num={3}
+              instruction="Remove any unwanted folders by clicking the delete icon"
+              required={false}
+            />
+          </Stack>
+
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
             <SelectFolderButton
               onRowChange={(inputPaths) =>
                 addPathArrayToFolders(inputPaths, apiRef)
               }
             />
-            <ContinueButton
-              onContinue={handleOpenContinueModel}
-              isEnabled={continueButtonIsEnabled}
-            />
           </Box>
-          <Stack direction="row" spacing={1}>
-            <TipIcon sx={{ fontSize: "0.9em", color: "var(--bcgov-yellow)" }} />
-            <Typography sx={{ fontSize: "0.75em", color: "var(--tip)" }}>
-              <b>View/Edit Mode:</b> If a row is in 'View Mode' you can double
-              click on any cell to put it in 'Edit Mode'.
-            </Typography>
-          </Stack>
-        </Stack>
-        <Box
-          sx={{
-            height: "90vh",
-            paddingLeft: 2,
-            paddingRight: 2,
-            flexShrink: 0,
-            background: `${theme.palette.primary}`,
-          }}
-        >
+
           <FolderDisplayGrid
             rows={folders}
             onFolderDelete={removeFolder}
             processRowUpdate={handleRowUpdate}
             apiRef={apiRef}
           />
-        </Box>
-        {continueModalIsOpen && (
+
+          <AccAppCheck
+            hasAccApp={hasAccApp}
+            setHasAccApp={setHasAccApp}
+            enabled={accAppCheckIsEnabled}
+          />
+
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <ContinueButton
+              onContinue={handleOpenContinueModel}
+              isEnabled={continueButtonIsEnabled}
+            />
+          </Box>
+
+          <LoginRequiredModal
+            open={showLoginRequiredModal}
+            onClose={() => setShowLoginRequiredModal(false)}
+            onConfirm={() => {
+              setShowLoginRequiredModal(false);
+              api.sso.startLoginProcess();
+            }}
+          />
           <ContinueModal
             modalOpen={continueModalIsOpen}
             modalClose={handleClose}
             modalSubmit={handleFormSubmit}
             setCurrentPath={setCurrentPath}
           />
-        )}
+        </Stack>
       </Grid>
       <Grid size={0.5} />
     </Grid>

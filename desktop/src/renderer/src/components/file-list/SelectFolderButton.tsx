@@ -2,22 +2,22 @@ import { useState } from "react";
 import { Button } from "@bcgov/design-system-react-components";
 
 export const SelectFolderButton = ({ onRowChange }): JSX.Element => {
-	const [api] = useState(window.api); // preload scripts
+  const [api] = useState(window.api); // preload scripts
 
-	const handleClick = async () => {
-		const result = await api.selectDirectory();
+  const handleClick = async () => {
+    const result = await api.selectDirectory();
 
-		onRowChange(result);
-		return result;
-	};
+    onRowChange(result);
+    return result;
+  };
 
-	return (
-		<Button
-			variant="primary"
-			style={{ justifyContent: "center", width: "15%" }}
-			onPress={handleClick}
-		>
-			Select Folder(s)
-		</Button>
-	);
+  return (
+    <Button
+      variant="secondary"
+      style={{ justifyContent: "center", width: "12%" }}
+      onPress={handleClick}
+    >
+      Add Folder(s)
+    </Button>
+  );
 };
