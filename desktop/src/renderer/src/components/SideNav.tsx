@@ -123,7 +123,7 @@ export const SideNav = ({
             {accessToken && (
               <>
                 <NavItem
-                  path="/file-list"
+                  path="/file-list/instructions"
                   label="Create file list"
                   icon={<FileListIcon sx={{ color: "var(--sidenav-icon)" }} />}
                 />

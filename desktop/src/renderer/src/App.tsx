@@ -6,13 +6,14 @@ import { SideNav, Toast, VPNPopup } from "./components";
 import { LeavePageModal } from "./components/LeavePageModal";
 import {
   EdrmsInstructionsPage,
+  EdrmsTransferPage,
+  FileListInstructionsPage,
   FileListPage,
   HomePage,
   LanInstructionsPage,
   LanTransferPage,
   SendRecordsPage,
 } from "./pages";
-import { EdrmsTransferPage } from "./pages/transfers/EdrmsTransfer";
 
 type AppContext = {
   accessToken?: string;
@@ -134,6 +135,9 @@ function App(): JSX.Element {
         >
           <Box>
             {currentPath === "/" && <HomePage />}
+            {currentPath === "/file-list/instructions" && (
+              <FileListInstructionsPage />
+            )}
             {currentPath === "/file-list" && <FileListPage />}
             {currentPath === "/send-records" && <SendRecordsPage />}
             {currentPath === "/send-records/lan" && <LanTransferPage />}
