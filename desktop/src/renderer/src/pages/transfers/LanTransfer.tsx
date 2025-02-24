@@ -56,6 +56,9 @@ export const LanTransferPage = () => {
 
   // File list
   const [metadata, setMetadata] = useState<Record<string, unknown>>({});
+  const [extendedMetadata, setExtendedMetadata] = useState<
+    Record<string, unknown>
+  >({});
   const [originalFolderList, setOriginalFolderList] = useState<
     Record<string, unknown>
   >({});
@@ -135,16 +138,24 @@ export const LanTransferPage = () => {
         source: string;
         success: boolean;
         metadata?: Record<string, unknown>;
+        extendedMetadata?: Record<string, unknown>;
         error?: unknown;
       }>
     ) => {
-      const { source, success, metadata: newMetadata, error } = event.detail;
+      const {
+        source,
+        success,
+        metadata: newMetadata,
+        extendedMetadata: newExtendedMetadata,
+        error,
+      } = event.detail;
 
       if (success && newMetadata) {
         setMetadata((prev) => ({
           ...prev,
           [source]: newMetadata[source],
         }));
+        if (newExtendedMetadata) setExtendedMetadata(newExtendedMetadata);
         console.log(`Successfully processed folder metadata: ${source}`);
       } else {
         console.error(`Failed to process folder metadata: ${source}`, {
@@ -524,6 +535,7 @@ export const LanTransferPage = () => {
       setConfirmAccAppChecked(false);
       setFolders([]);
       setMetadata({});
+      setExtendedMetadata({});
       return;
     }
     parseFileList();
@@ -631,6 +643,7 @@ export const LanTransferPage = () => {
       JSON.stringify(originalFolderList)
     );
     formData.append("metadataV2", JSON.stringify(metadataV2));
+    formData.append("extendedMetadata", JSON.stringify(extendedMetadata));
     formData.append("changes", JSON.stringify(changes));
     formData.append("changesJustification", changesJustification);
 
