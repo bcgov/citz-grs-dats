@@ -1,8 +1,8 @@
 import { Header } from "@bcgov/design-system-react-components";
 import { Box, Button, Grid2 as Grid } from "@mui/material";
 import { createContext, useEffect, useState } from "react";
-import { ToastContainer } from "react-toastify";
-import { SideNav, VPNPopup } from "./components";
+import { toast, ToastContainer } from "react-toastify";
+import { SideNav, Toast, VPNPopup } from "./components";
 import { LeavePageModal } from "./components/LeavePageModal";
 import {
   EdrmsInstructionsPage,
@@ -33,7 +33,7 @@ export const Context = createContext<AppContext>({
 
 function App(): JSX.Element {
   const [api] = useState(window.api); // Preload scripts
-  const [showVPNPopup, setShowVPNPopup] = useState<boolean | null>(null);
+  const [showVPNPopup, setShowVPNPopup] = useState<boolean>(false);
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState("/");
 
@@ -90,6 +90,17 @@ function App(): JSX.Element {
   };
 
   useEffect(() => {
+    if (showVPNPopup) {
+      toast.error(Toast, {
+        data: {
+          title: "DATS is unavailable",
+          message: "Please connect to the BC Gov network or VPN to resume.",
+        },
+      });
+    }
+  }, [showVPNPopup]);
+
+  useEffect(() => {
     // Check for VPN or gov Network use on load, and every 5 seconds
     handleIPStatusUpdate();
     const interval = setInterval(handleIPStatusUpdate, 5 * 1000);
@@ -101,7 +112,7 @@ function App(): JSX.Element {
 
   return (
     <Grid container sx={{ height: "100vh" }}>
-      {showVPNPopup && <VPNPopup />}
+      <VPNPopup open={showVPNPopup} />
       <Grid size={2}>
         <SideNav
           accessToken={accessToken}
