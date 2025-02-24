@@ -21,6 +21,7 @@ type CreateFileListData = {
   outputFileType: "excel" | "json";
   folders: NonNullable<FileListMongoose["metadata"]>["folders"];
   files: NonNullable<FileListMongoose["metadata"]>["files"];
+  extendedMetadata?: Record<string, unknown> | undefined;
 };
 
 export const FileListService = {
@@ -38,6 +39,7 @@ export const FileListService = {
     outputFileType,
     folders,
     files,
+    extendedMetadata = {},
   }: CreateFileListData) {
     try {
       const fileListDatabaseEntry: FileListMongoose = {
@@ -55,6 +57,7 @@ export const FileListService = {
           folders,
           files,
         },
+        extendedMetadata: new Map(Object.entries(extendedMetadata)),
       };
 
       // Insert the document into the database

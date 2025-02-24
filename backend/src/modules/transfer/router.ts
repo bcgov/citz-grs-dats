@@ -21,6 +21,7 @@ router.post(
         req.body.originalFoldersMetadata || "{}"
       );
       req.body.metadataV2 = JSON.parse(req.body.metadataV2 || "{}");
+      req.body.extendedMetadata = JSON.parse(req.body.extendedMetadata || "{}");
       req.body.changes = JSON.parse(req.body.changes || "[]");
       next();
     } catch (error) {
