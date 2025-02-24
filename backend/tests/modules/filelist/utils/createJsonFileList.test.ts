@@ -82,6 +82,7 @@ describe("Test suite for createJsonFileList", () => {
       },
       folderList: body.metadata.folders,
       metadata: body.metadata.files,
+      extendedMetadata: {},
     });
   });
 
@@ -129,6 +130,7 @@ describe("Test suite for createJsonFileList", () => {
       },
       folderList: body.metadata.folders,
       metadata: body.metadata.files,
+      extendedMetadata: {},
     });
   });
 
@@ -165,6 +167,7 @@ describe("Test suite for createJsonFileList", () => {
       },
       folderList: {},
       metadata: {},
+      extendedMetadata: {},
     });
   });
 
@@ -215,6 +218,7 @@ describe("Test suite for createJsonFileList", () => {
       },
       folderList: body.metadata.folders,
       metadata: body.metadata.files,
+      extendedMetadata: {},
     });
   });
 });

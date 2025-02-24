@@ -151,7 +151,7 @@ export const TransferService = {
    */
   async getTransferWhere(where: Record<string, unknown>) {
     try {
-      const transferDocument = await TransferModel.findOne(where);
+      const transferDocument = await TransferModel.findOne(where).lean().exec();
       return transferDocument;
     } catch (error) {
       console.error(ERROR_IN_GET_TRANSFER_WHERE, error);
