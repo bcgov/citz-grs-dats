@@ -22,8 +22,38 @@ const mongoUri = `mongodb://${MONGO_USER}:${encodeURIComponent(
 
 mongoose
   .connect(mongoUri)
-  .then(() => {
+  .then(async () => {
     console.log(CONNECTION_SUCCESS);
+
+    // Retrieve MongoDB Storage Stats
+    try {
+      const db = mongoose.connection.db;
+      const stats = await db?.stats();
+
+      console.log("MongoDB Storage Stats:");
+      console.log(` - Data Size: ${stats?.dataSize} bytes`);
+      console.log(` - Storage Size: ${stats?.storageSize} bytes`);
+      console.log(` - Index Size: ${stats?.indexSize} bytes`);
+      console.log(` - Collections: ${stats?.collections}`);
+      console.log(` - Objects: ${stats?.objects}`);
+
+      if (stats?.totalSize && stats?.storageSize) {
+        const freeStorage = stats.totalSize - stats.storageSize;
+        const freeStoragePercentage = (
+          (freeStorage / stats.totalSize) *
+          100
+        ).toFixed(2);
+
+        console.log(
+          ` - Free Storage (Unused): ${freeStorage} bytes (${freeStoragePercentage}%)`
+        );
+      } else {
+        console.log(" - Free Storage (Unused): Data unavailable");
+      }
+    } catch (error) {
+      console.error("Failed to retrieve MongoDB stats:", error);
+    }
+
     app.listen(PORT, () => {
       try {
         // Log server start information.
