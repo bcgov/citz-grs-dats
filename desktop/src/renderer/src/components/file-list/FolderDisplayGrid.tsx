@@ -7,27 +7,20 @@ import {
   type GridCellParams,
   type MuiEvent,
 } from "@mui/x-data-grid";
-import {
-  DeleteOutline as DeleteIcon,
-  CheckCircle as CheckIcon,
-  Circle as LoadingIcon,
-} from "@mui/icons-material";
+import { DeleteOutline as DeleteIcon } from "@mui/icons-material";
 import {
   IconButton,
-  Stack,
   Tooltip,
-  Typography,
   InputBase,
   type InputBaseProps,
   Box,
-  useTheme,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import type { Dayjs } from "dayjs";
 import { styled } from "@mui/material/styles";
-import { useEffect } from "react";
+import { AnimatedProgress } from "./AnimatedProgress";
 
 export type FolderRow = {
   id: number;
@@ -93,8 +86,6 @@ export const FolderDisplayGrid = ({
   processRowUpdate,
   apiRef,
 }: Props) => {
-  const theme = useTheme();
-
   const columns: GridColDef<(typeof rows)[number]>[] = [
     {
       field: "progress",
@@ -102,16 +93,7 @@ export const FolderDisplayGrid = ({
       headerName: "Status",
       width: 100,
       renderCell: (params) => (
-        <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-          <Stack direction="row" gap={1}>
-            {params.row.progress === 100 ? (
-              <CheckIcon color="success" />
-            ) : (
-              <LoadingIcon style={{ color: `${theme.palette.warning.main}` }} />
-            )}
-            <Typography>{params.row.progress}%</Typography>
-          </Stack>
-        </Box>
+        <AnimatedProgress progress={params.row.progress} />
       ),
     },
     {
@@ -271,20 +253,10 @@ export const FolderDisplayGrid = ({
     }
   };
 
-  // Keep all cells in edit mode permanently
-  useEffect(() => {
-    if (!apiRef.current) return;
-
-    requestAnimationFrame(() => {
-      rows.forEach((row) => {
-        columns.forEach((col) => {
-          if (col.editable) {
-            apiRef.current.startCellEditMode({ id: row.id, field: col.field });
-          }
-        });
-      });
-    });
-  }, [apiRef, rows, columns]);
+  const handleCellClick = (params: GridCellParams) => {
+    if (!params.colDef.editable) return; // Ensure only editable fields trigger edit mode
+    apiRef.current.startRowEditMode({ id: params.id });
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -300,6 +272,12 @@ export const FolderDisplayGrid = ({
           hideFooter
           processRowUpdate={processRowUpdate}
           onCellKeyDown={handleCellKeyDown}
+          onCellClick={handleCellClick}
+          sx={{
+            "& .MuiDataGrid-cell:focus-within": {
+              border: "3px solid #2E5DD7", // Cell focus
+            },
+          }}
         />
       </Box>
     </LocalizationProvider>

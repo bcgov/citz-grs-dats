@@ -148,7 +148,8 @@ export const FileListPage = () => {
     // Update progress when folders are uploaded.
     setProgressMade(hasFolders);
 
-    setAccAppCheckIsEnabled(allFoldersProcessed && hasFolders);
+    setAccAppCheckIsEnabled(hasFolders);
+    if (!hasFolders) setHasAccApp(null);
 
     // Enable continue button when folders are processed.
     setContinueButtonIsEnabled(

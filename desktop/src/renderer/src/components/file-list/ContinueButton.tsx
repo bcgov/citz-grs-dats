@@ -29,7 +29,7 @@ export const ContinueButton = ({ onContinue, isEnabled }): JSX.Element => {
     return (
       <Button
         variant="primary"
-        style={{ minWidth: "12%", fontSize: "0.9em" }}
+        style={{ justifyContent: "center", minWidth: "12%", fontSize: "0.9em" }}
         onPress={onContinue}
       >
         Continue
