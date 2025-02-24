@@ -6,6 +6,7 @@ import {
   Menu,
   clipboard,
   type MenuItemConstructorOptions,
+  dialog,
 } from "electron";
 import { join } from "node:path";
 import { is } from "@electron-toolkit/utils";
@@ -461,11 +462,50 @@ app.whenReady().then(() => {
   // Start checking for updates after the window is ready
   const autoUpdater = getAutoUpdater();
   autoUpdater.checkForUpdatesAndNotify();
+
+  // Auto Update Event Listeners
+  autoUpdater.on("update-available", () => {
+    dialog.showMessageBox({
+      type: "info",
+      title: "Update Available",
+      message:
+        "A new version is available. It will be downloaded in the background.",
+    });
+  });
+
+  autoUpdater.on("update-downloaded", () => {
+    dialog
+      .showMessageBox({
+        type: "question",
+        title: "Update Ready",
+        message:
+          "An update has been downloaded. Do you want to install it now?",
+        buttons: ["Restart & Install", "Later"],
+      })
+      .then((result) => {
+        if (result.response === 0) {
+          autoUpdater.quitAndInstall();
+        }
+      });
+  });
+});
+
+// Ensure all windows are closed when quitting
+app.on("before-quit", () => {
+  ipcMain.removeAllListeners();
+
+  if (mainWindow) {
+    mainWindow.removeAllListeners();
+    mainWindow.close();
+  }
+  if (authWindow) {
+    authWindow.removeAllListeners();
+    authWindow.close();
+  }
 });
 
 app.on("window-all-closed", () => {
   clearAuthState();
-  pool.shutdown();
 
   if (process.platform !== "darwin") {
     setTimeout(() => {
@@ -474,4 +514,9 @@ app.on("window-all-closed", () => {
       }
     }, 100); // Delay ensures everything has cleaned up before quitting
   }
+});
+
+app.on("quit", () => {
+  if (pool) pool.shutdown(); // Ensure worker pool is terminated
+  process.exit(0); // Forcefully kill the process
 });
