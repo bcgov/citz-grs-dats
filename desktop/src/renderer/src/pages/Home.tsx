@@ -7,13 +7,23 @@ import {
   Link,
 } from "@mui/material";
 import { ListAlt as ListIcon } from "@mui/icons-material";
-import type { ReactNode } from "react";
+import { useContext, useEffect, useState, type ReactNode } from "react";
 import { Button } from "@bcgov/design-system-react-components";
 import HomeDatsWorksAccordion from "@renderer/components/HowDatsWorksAccordion";
 import { TransferRecordsIcon } from "@renderer/components";
+import { Context } from "@renderer/App";
 
 export const HomePage = () => {
+  const [sso] = useState(window.api.sso); // Preload scripts
   const theme = useTheme();
+
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState<string | null>(
+    null
+  );
+
+  const handleLogin = async () => await sso.startLoginProcess();
+
+  const { accessToken, setCurrentPath } = useContext(Context);
 
   type PageLinkProps = {
     title: string;
@@ -22,6 +32,19 @@ export const HomePage = () => {
     buttonText: string;
     pageRoute: string;
   };
+
+  const handleGoToPage = (page: string) => {
+    if (accessToken) setCurrentPath(page);
+    else {
+      setRedirectAfterLogin(page);
+      handleLogin();
+    }
+  };
+
+  useEffect(() => {
+    // Redirect after login
+    if (accessToken && redirectAfterLogin) setCurrentPath(redirectAfterLogin);
+  }, [accessToken]);
 
   const PageLinkCard = ({
     title,
@@ -37,9 +60,13 @@ export const HomePage = () => {
           <Typography variant="h4">{title}</Typography>
         </Stack>
         <Typography sx={{ fontSize: "0.9em" }}>{desc}</Typography>
-        <Link href={pageRoute}>
-          <Button variant="primary">{buttonText}</Button>
-        </Link>
+        <Button
+          variant="primary"
+          style={{ width: "fit-content" }}
+          onPress={() => handleGoToPage(pageRoute)}
+        >
+          {buttonText}
+        </Button>
       </Stack>
     );
   };

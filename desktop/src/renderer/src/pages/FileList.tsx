@@ -12,7 +12,8 @@ import {
 } from "@renderer/components/file-list";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Context } from "../App";
-import { LoginRequiredModal, Instruction } from "@renderer/components";
+import { LoginRequiredModal, Instruction, Toast } from "@renderer/components";
+import { toast } from "react-toastify";
 
 export const FileListPage = () => {
   const [api] = useState(window.api); // Preload scripts
@@ -28,8 +29,11 @@ export const FileListPage = () => {
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
   const [hasAccApp, setHasAccApp] = useState<boolean | null>(null);
 
-  const { accessToken, setCurrentPath, setProgressMade } = useContext(Context);
+  const { idToken, accessToken, setCurrentPath, setProgressMade } =
+    useContext(Context);
   const authenticated = !!accessToken;
+
+  const handleLogout = async () => await api.sso.logout(idToken);
 
   const apiRef = useGridApiRef();
   const {
@@ -116,10 +120,23 @@ export const FileListPage = () => {
   }, []);
 
   const handleFormSubmit = useCallback(
-    (formData) => {
-      submit(formData);
-      setFinalizeModalIsOpen(false);
-      setReturnHomeModalIsOpen(true);
+    async (formData) => {
+      try {
+        await submit(formData);
+        setFinalizeModalIsOpen(false);
+        setReturnHomeModalIsOpen(true);
+      } catch (error) {
+        console.error(error);
+        handleLogout();
+        setFinalizeModalIsOpen(false);
+        toast.error(Toast, {
+          data: {
+            title: "Submission failed",
+            message:
+              "We were unable to fulfill your request to create a file list. Please try again.",
+          },
+        });
+      }
     },
     [submit]
   );

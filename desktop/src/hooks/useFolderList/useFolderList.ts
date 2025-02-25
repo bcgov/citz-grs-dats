@@ -112,7 +112,7 @@ export const useFolderList = ({ accessToken }) => {
       };
       const apiUrl = await window.api.getCurrentApiUrl();
 
-      const response = await fetchProtectedRoute(
+      const [error, data] = await fetchProtectedRoute(
         `${apiUrl}/filelist`,
         accessToken,
         {
@@ -123,11 +123,19 @@ export const useFolderList = ({ accessToken }) => {
           body: JSON.stringify(payload),
         }
       );
+
+      if (error) throw new Error(`Failed create file list request: ${error}`);
+
+      const result = data.result.json;
+
+      if (result && !result.success)
+        throw new Error(`Failed create file list request: ${result.message}`);
+
       setFolders([]);
       setMetaData({});
       setExtendedMetaData({});
 
-      console.log("finish submit", { response, folders, metaData });
+      console.log("finish submit", { error, data, folders, metaData });
     },
     [accessToken, fetchProtectedRoute, folders, metaData]
   );
