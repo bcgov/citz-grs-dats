@@ -22,7 +22,7 @@ export const FileListPage = () => {
     useState<boolean>(false);
   const [accAppCheckIsEnabled, setAccAppCheckIsEnabled] =
     useState<boolean>(false);
-  const [continueModalIsOpen, setContinueModalIsOpen] =
+  const [finalizeModalIsOpen, setFinalizeModalIsOpen] =
     useState<boolean>(false);
   const [returnHomeModalIsOpen, setReturnHomeModalIsOpen] =
     useState<boolean>(false);
@@ -105,21 +105,21 @@ export const FileListPage = () => {
 
     if (!continueButtonIsEnabled) isOpen = false;
 
-    setContinueModalIsOpen(isOpen);
+    setFinalizeModalIsOpen(isOpen);
   }, [continueButtonIsEnabled]);
 
-  const handleContinueModalClose = useCallback(() => {
-    setContinueModalIsOpen(false);
+  const handleFinalizeModalClose = useCallback(() => {
+    setFinalizeModalIsOpen(false);
   }, []);
 
   const handleReturnHomeModalClose = useCallback(() => {
-    setContinueModalIsOpen(false);
+    setReturnHomeModalIsOpen(false);
   }, []);
 
   const handleFormSubmit = useCallback(
     (formData) => {
       submit(formData);
-      setContinueModalIsOpen(false);
+      setFinalizeModalIsOpen(false);
       setReturnHomeModalIsOpen(true);
     },
     [submit]
@@ -230,8 +230,8 @@ export const FileListPage = () => {
             }}
           />
           <FinalizeFilelistModal
-            open={continueModalIsOpen}
-            onClose={handleContinueModalClose}
+            open={finalizeModalIsOpen}
+            onClose={handleFinalizeModalClose}
             onSubmit={handleFormSubmit}
             hasAccApp={hasAccApp ?? false}
           />
