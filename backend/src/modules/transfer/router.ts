@@ -4,7 +4,13 @@ import { create, lan } from "./controllers";
 import multer from "multer";
 import { edrms } from "./controllers/edrms";
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024 * 1024, // 5 GB
+    fieldSize: 5 * 1024 * 1024 * 1024, // 5 GB per field
+  },
+});
 
 const router = Router();
 
