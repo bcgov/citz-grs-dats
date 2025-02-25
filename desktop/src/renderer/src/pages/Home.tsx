@@ -1,20 +1,47 @@
 import {
   Box,
-  Link,
   Stack,
   Typography,
   useTheme,
   Grid2 as Grid,
+  Link,
 } from "@mui/material";
-
-import { Context } from "../App";
-import { useContext } from "react";
+import { ListAlt as ListIcon } from "@mui/icons-material";
+import type { ReactNode } from "react";
+import { Button } from "@bcgov/design-system-react-components";
+import HomeDatsWorksAccordion from "@renderer/components/HowDatsWorksAccordion";
 
 export const HomePage = () => {
   const theme = useTheme();
 
-  const { accessToken } = useContext(Context) ?? {};
-  const authenticated = !!accessToken;
+  type PageLinkProps = {
+    title: string;
+    icon: ReactNode;
+    desc: string;
+    buttonText: string;
+    pageRoute: string;
+  };
+
+  const PageLinkCard = ({
+    title,
+    icon,
+    desc,
+    buttonText,
+    pageRoute,
+  }: PageLinkProps) => {
+    return (
+      <Stack gap={2} sx={{ padding: "16px", background: "#FAF9F8" }}>
+        <Stack direction="row" gap={1} sx={{ alignItems: "center" }}>
+          {icon}
+          <Typography variant="h4">{title}</Typography>
+        </Stack>
+        <Typography sx={{ fontSize: "0.9em" }}>{desc}</Typography>
+        <Link href={pageRoute}>
+          <Button variant="primary">{buttonText}</Button>
+        </Link>
+      </Stack>
+    );
+  };
 
   return (
     <Grid container>
@@ -25,120 +52,79 @@ export const HomePage = () => {
             padding: 4,
             flexShrink: 0,
             background: `${theme.palette.primary}`,
+            marginBottom: 3,
+            marginTop: "-15px",
           }}
           gap={3}
         >
-          <Box>
-            <Typography variant="h1">Welcome to DATS</Typography>
-            <Typography variant="h4">
-              Digital Archives Transfer Service
-            </Typography>
-          </Box>
+          <Typography variant="h1" sx={{ fontWeight: 600, color: "#474543" }}>
+            Welcome to DATS
+          </Typography>
+          <Typography variant="h3">
+            Digital Archives Transfer Service
+          </Typography>
 
           <Box>
-            <Typography variant="h3">How It Works</Typography>
-            <Stack gap={3} sx={{ margin: 2 }}>
-              <Stack gap={1}>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  1. Start the Process
-                </Typography>
-                <Typography variant="h4" sx={{ marginLeft: 2 }}>
-                  Begin by creating a Transfer Form (ARS 617) to document your
-                  intent to transfer records.
-                </Typography>
-              </Stack>
-
-              <Stack gap={1}>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  2. Create File List
-                </Typography>
-                <Typography variant="h4" sx={{ marginLeft: 2 }}>
-                  For LAN Transfers, use DATS to generate a Digital File List
-                  (ARS 662), a detailed inventory of your records.
-                </Typography>
-              </Stack>
-
-              <Stack gap={1}>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  3. Submit for Review
-                </Typography>
-                <Typography variant="h4" sx={{ marginLeft: 2 }}>
-                  Submit your Transfer Form and File List to GIM staff for a
-                  Quality Assurance Review.
-                </Typography>
-              </Stack>
-
-              <Stack gap={1}>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  4. Transfer Records
-                </Typography>
-                <Typography variant="h4" sx={{ marginLeft: 2 }}>
-                  Once approved, utilize DATS to securely transfer your digital
-                  FR records to the Digital Archives.
-                </Typography>
-              </Stack>
-            </Stack>
+            <Typography>
+              The Digital Archives Transfer Service (DATS) is a secure, evidence
+              handling application that helps you:
+            </Typography>
+            <ul>
+              <li>
+                send your Full Retention (FR) archival records to the Digital
+                Archives; and
+              </li>
+              <li>
+                create digital file lists that include checksums and metadata.
+              </li>
+            </ul>
           </Box>
 
-          <Stack gap={1}>
-            <Typography variant="h3" sx={{ marginBottom: 1 }}>
-              Getting Started with DATS
-            </Typography>
-            {authenticated ? (
-              <Stack gap={1} sx={{ marginLeft: 2 }}>
-                <Typography variant="h4">Select a tab to start:</Typography>
-                <Typography variant="h4" sx={{ marginLeft: 2 }}>
-                  • <b>Create File List</b>: Generate your Digital File List
-                  (ARS 662).
-                </Typography>
-                <Typography variant="h4" sx={{ marginLeft: 2 }}>
-                  • <b>Send Records</b>: Transfer your approved FR records to
-                  the Digital Archives.
-                </Typography>
-              </Stack>
-            ) : (
-              <Typography variant="h4" sx={{ marginLeft: 2 }}>
-                Please sign in to begin using DATS. Use the <b>Login</b> button
-                at the bottom left to get started.
-              </Typography>
-            )}
-          </Stack>
+          <Typography sx={{ fontStyle: "italic" }}>
+            To use DATS you must be connected to the network via VPN and logged
+            into the DATS Application.
+          </Typography>
 
-          <Stack sx={{ marginTop: 1 }}>
-            <Typography variant="h3" sx={{ marginBottom: "10px" }}>
-              Need Assistance?
-            </Typography>
+          <PageLinkCard
+            title="Create file list"
+            icon={<ListIcon />}
+            buttonText="Create file list"
+            desc="Use DATS to create a Digital File List (ARS 662). A digital file list is required to transfer records to the Digital Archives from a LAN drive."
+            pageRoute="/file-list/instructions"
+          />
 
-            <Stack
-              direction="row"
-              gap={"5px"}
-              sx={{ alignItems: "center", marginLeft: 2 }}
+          <PageLinkCard
+            title="Transfer records"
+            icon={
+              <img
+                src="/src/assets/transfer-records.svg"
+                alt="Transfer Records"
+              />
+            }
+            buttonText="Send records"
+            desc="Use DATS to securely transfer your digital FR records to the Digital Archives from either a LAN Drive or EDRMS Content Manager v.9.2."
+            pageRoute="/send-records"
+          />
+
+          <HomeDatsWorksAccordion />
+
+          <Typography>
+            If you want to learn more about the process,{" "}
+            <Link
+              href="https://www2.gov.bc.ca/gov/content/governments/services-for-government/information-management-technology/records-management/records-contacts"
+              target="_blank"
             >
-              <Typography variant="h4">For assistance, contact your</Typography>
-              <Link
-                href="https://www2.gov.bc.ca/gov/content/governments/services-for-government/information-management-technology/records-management/records-contacts/ministries"
-                target="_blank"
-              >
-                Government Information Management (GIM) Specialists.
-              </Link>
-            </Stack>
-
-            <Stack
-              direction="row"
-              gap={"5px"}
-              sx={{ alignItems: "center", marginLeft: 2 }}
+              contact your GIM Specialists
+            </Link>{" "}
+            or check out{" "}
+            <Link
+              href="https://intranet.gov.bc.ca/thehub/ocio/cirmo/grs/grs-learning"
+              target="_blank"
             >
-              <Typography variant="h4">
-                For all inquiries, please contact
-              </Typography>
-              <Link href="mailto:GIM@gov.bc.ca?subject=Records%20Transfer%20Question">
-                GIM@gov.bc.ca
-              </Link>
-              <Typography variant="h4">
-                We monitor this inbox from 8am-4pm Mon-Fri.
-              </Typography>
-            </Stack>
-          </Stack>
+              GIM Learning
+            </Link>
+            .
+          </Typography>
         </Stack>
       </Grid>
       <Grid size={2} />
