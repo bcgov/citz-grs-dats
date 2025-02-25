@@ -4,10 +4,11 @@ import { useGridApiRef } from "@mui/x-data-grid";
 import {
   AccAppCheck,
   ContinueButton,
-  ContinueModal,
+  FinalizeFilelistModal,
   FolderDisplayGrid,
   type FolderRow,
   Instruction,
+  ReturnToHomeModal,
   SelectFolderButton,
 } from "@renderer/components/file-list";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -22,6 +23,8 @@ export const FileListPage = () => {
   const [accAppCheckIsEnabled, setAccAppCheckIsEnabled] =
     useState<boolean>(false);
   const [continueModalIsOpen, setContinueModalIsOpen] =
+    useState<boolean>(false);
+  const [returnHomeModalIsOpen, setReturnHomeModalIsOpen] =
     useState<boolean>(false);
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
   const [hasAccApp, setHasAccApp] = useState<boolean | null>(null);
@@ -105,13 +108,19 @@ export const FileListPage = () => {
     setContinueModalIsOpen(isOpen);
   }, [continueButtonIsEnabled]);
 
-  const handleClose = useCallback(() => {
+  const handleContinueModalClose = useCallback(() => {
+    setContinueModalIsOpen(false);
+  }, []);
+
+  const handleReturnHomeModalClose = useCallback(() => {
     setContinueModalIsOpen(false);
   }, []);
 
   const handleFormSubmit = useCallback(
     (formData) => {
       submit(formData);
+      setContinueModalIsOpen(false);
+      setReturnHomeModalIsOpen(true);
     },
     [submit]
   );
@@ -220,10 +229,15 @@ export const FileListPage = () => {
               api.sso.startLoginProcess();
             }}
           />
-          <ContinueModal
-            modalOpen={continueModalIsOpen}
-            modalClose={handleClose}
-            modalSubmit={handleFormSubmit}
+          <FinalizeFilelistModal
+            open={continueModalIsOpen}
+            onClose={handleContinueModalClose}
+            onSubmit={handleFormSubmit}
+            hasAccApp={hasAccApp ?? false}
+          />
+          <ReturnToHomeModal
+            open={returnHomeModalIsOpen}
+            onClose={handleReturnHomeModalClose}
             setCurrentPath={setCurrentPath}
           />
         </Stack>
