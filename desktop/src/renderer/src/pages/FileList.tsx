@@ -4,10 +4,11 @@ import { useGridApiRef } from "@mui/x-data-grid";
 import {
   AccAppCheck,
   ContinueButton,
-  ContinueModal,
+  FinalizeFilelistModal,
   FolderDisplayGrid,
   type FolderRow,
   Instruction,
+  ReturnToHomeModal,
   SelectFolderButton,
 } from "@renderer/components/file-list";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -21,7 +22,9 @@ export const FileListPage = () => {
     useState<boolean>(false);
   const [accAppCheckIsEnabled, setAccAppCheckIsEnabled] =
     useState<boolean>(false);
-  const [continueModalIsOpen, setContinueModalIsOpen] =
+  const [finalizeModalIsOpen, setFinalizeModalIsOpen] =
+    useState<boolean>(false);
+  const [returnHomeModalIsOpen, setReturnHomeModalIsOpen] =
     useState<boolean>(false);
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
   const [hasAccApp, setHasAccApp] = useState<boolean | null>(null);
@@ -102,16 +105,22 @@ export const FileListPage = () => {
 
     if (!continueButtonIsEnabled) isOpen = false;
 
-    setContinueModalIsOpen(isOpen);
+    setFinalizeModalIsOpen(isOpen);
   }, [continueButtonIsEnabled]);
 
-  const handleClose = useCallback(() => {
-    setContinueModalIsOpen(false);
+  const handleFinalizeModalClose = useCallback(() => {
+    setFinalizeModalIsOpen(false);
+  }, []);
+
+  const handleReturnHomeModalClose = useCallback(() => {
+    setReturnHomeModalIsOpen(false);
   }, []);
 
   const handleFormSubmit = useCallback(
     (formData) => {
       submit(formData);
+      setFinalizeModalIsOpen(false);
+      setReturnHomeModalIsOpen(true);
     },
     [submit]
   );
@@ -220,10 +229,15 @@ export const FileListPage = () => {
               api.sso.startLoginProcess();
             }}
           />
-          <ContinueModal
-            modalOpen={continueModalIsOpen}
-            modalClose={handleClose}
-            modalSubmit={handleFormSubmit}
+          <FinalizeFilelistModal
+            open={finalizeModalIsOpen}
+            onClose={handleFinalizeModalClose}
+            onSubmit={handleFormSubmit}
+            hasAccApp={hasAccApp ?? false}
+          />
+          <ReturnToHomeModal
+            open={returnHomeModalIsOpen}
+            onClose={handleReturnHomeModalClose}
             setCurrentPath={setCurrentPath}
           />
         </Stack>
