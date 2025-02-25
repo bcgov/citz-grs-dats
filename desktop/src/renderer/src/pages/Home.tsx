@@ -10,6 +10,7 @@ import { ListAlt as ListIcon } from "@mui/icons-material";
 import type { ReactNode } from "react";
 import { Button } from "@bcgov/design-system-react-components";
 import HomeDatsWorksAccordion from "@renderer/components/HowDatsWorksAccordion";
+import { TransferRecordsIcon } from "@renderer/components";
 
 export const HomePage = () => {
   const theme = useTheme();
@@ -95,12 +96,7 @@ export const HomePage = () => {
 
           <PageLinkCard
             title="Transfer records"
-            icon={
-              <img
-                src="/src/assets/transfer-records.svg"
-                alt="Transfer Records"
-              />
-            }
+            icon={<TransferRecordsIcon />}
             buttonText="Send records"
             desc="Use DATS to securely transfer your digital FR records to the Digital Archives from either a LAN Drive or EDRMS Content Manager v.9.2."
             pageRoute="/send-records"
