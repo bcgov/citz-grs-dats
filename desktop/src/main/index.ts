@@ -494,11 +494,12 @@ app.whenReady().then(() => {
 app.on("before-quit", () => {
   ipcMain.removeAllListeners();
 
-  if (mainWindow) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.removeAllListeners();
     mainWindow.close();
   }
-  if (authWindow) {
+
+  if (authWindow && !authWindow.isDestroyed()) {
     authWindow.removeAllListeners();
     authWindow.close();
   }

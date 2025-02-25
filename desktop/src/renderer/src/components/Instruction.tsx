@@ -1,13 +1,14 @@
 import { Box, Stack, Typography } from "@mui/material";
+import type { ReactNode } from "react";
 
 type Props = {
   num: number;
   instruction: string;
-  required: boolean;
-  tip?: string;
+  required: boolean | null;
+  desc?: string | ReactNode;
 };
 
-export const Instruction = ({ num, instruction, required, tip }: Props) => {
+export const Instruction = ({ num, instruction, required, desc }: Props) => {
   return (
     <Stack direction="row" gap={2}>
       <Box
@@ -22,9 +23,14 @@ export const Instruction = ({ num, instruction, required, tip }: Props) => {
       </Box>
       <Stack gap={1} sx={{ marginTop: "3px" }}>
         <Typography sx={{ fontSize: "0.8em" }}>
-          <b>{instruction}</b> ({required ? "required" : "optional"})
+          <b>{instruction}</b>{" "}
+          {required !== null && `(${required ? "required" : "optional"})`}
         </Typography>
-        {tip && <Typography sx={{ fontSize: "0.8em" }}>Tip: {tip}</Typography>}
+        {desc && typeof desc === "string" ? (
+          <Typography sx={{ fontSize: "0.8em" }}>{desc}</Typography>
+        ) : (
+          desc
+        )}
       </Stack>
     </Stack>
   );

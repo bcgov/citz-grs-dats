@@ -7,13 +7,12 @@ import {
   FinalizeFilelistModal,
   FolderDisplayGrid,
   type FolderRow,
-  Instruction,
   ReturnToHomeModal,
   SelectFolderButton,
 } from "@renderer/components/file-list";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Context } from "../App";
-import { LoginRequiredModal } from "@renderer/components";
+import { LoginRequiredModal, Instruction } from "@renderer/components";
 
 export const FileListPage = () => {
   const [api] = useState(window.api); // Preload scripts
@@ -179,7 +178,7 @@ export const FileListPage = () => {
               num={1}
               instruction="Click the “Add folder(s)” button to start adding folders to your file list"
               required={true}
-              tip="Upload multiple folders at once by selecting several folders in the file explorer window, or by clicking “upload folder(s)” again while a previously added folder is in progress."
+              desc="Tip: Upload multiple folders at once by selecting several folders in the file explorer window, or by clicking “upload folder(s)” again while a previously added folder is in progress."
             />
             <Instruction
               num={2}
