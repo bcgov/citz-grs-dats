@@ -16,6 +16,7 @@ import {
 } from "./pages";
 
 type AppContext = {
+  idToken?: string;
   accessToken?: string;
   currentPath: string;
   setCurrentPath:
@@ -131,7 +132,13 @@ function App(): JSX.Element {
           }
         />
         <Context.Provider
-          value={{ accessToken, currentPath, setCurrentPath, setProgressMade }}
+          value={{
+            idToken,
+            accessToken,
+            currentPath,
+            setCurrentPath,
+            setProgressMade,
+          }}
         >
           <Box>
             {currentPath === "/" && <HomePage />}

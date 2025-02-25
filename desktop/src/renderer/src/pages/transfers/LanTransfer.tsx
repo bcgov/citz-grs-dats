@@ -40,7 +40,10 @@ type FileBufferObj = {
 export const LanTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
-  const { accessToken, setCurrentPath, setProgressMade } = useContext(Context);
+  const { idToken, accessToken, setCurrentPath, setProgressMade } =
+    useContext(Context);
+
+  const handleLogout = async () => await api.sso.logout(idToken);
 
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [fileList, setFileList] = useState<File | null | undefined>(undefined);
@@ -648,27 +651,38 @@ export const LanTransferPage = () => {
     formData.append("changesJustification", changesJustification);
 
     // Make request
-    console.log("Making lan transfer request.");
-    const response = await fetch(requestUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: formData,
-    });
+    try {
+      console.log("Making lan transfer request.");
+      const response = await fetch(requestUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
 
-    if (!response.ok) setRequestSuccessful(false);
+      if (!response.ok) setRequestSuccessful(false);
 
-    const jsonResponse = await response.json();
-    console.log("Lan transfer response:", jsonResponse);
+      const jsonResponse = await response.json();
+      console.log("Lan transfer response:", jsonResponse);
 
-    if (jsonResponse.success) setRequestSuccessful(true);
-    else setRequestSuccessful(false);
+      if (jsonResponse.success) setRequestSuccessful(true);
+      else setRequestSuccessful(false);
+    } catch (error) {
+      console.error(error);
+      setRequestSuccessful(false);
+    }
   };
 
   // Send to home on completion
   const handleCompletion = () => {
     setCurrentPath("/");
+  };
+
+  const handleRetrySubmission = () => {
+    handleLogout();
+    setRequestSuccessful(null);
+    setCurrentViewIndex(3);
   };
 
   return (
@@ -735,6 +749,8 @@ export const LanTransferPage = () => {
               application={application!}
               wasRequestSuccessful={requestSuccessful}
               onNextPress={handleCompletion}
+              setCurrentPath={setCurrentPath}
+              handleRetrySubmission={handleRetrySubmission}
             />
           )}
           <JustifyChangesModal

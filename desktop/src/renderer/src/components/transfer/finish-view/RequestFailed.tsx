@@ -1,9 +1,39 @@
-import { Stack, Typography } from "@mui/material";
+import { Button } from "@bcgov/design-system-react-components";
+import { Link, Stack, Typography } from "@mui/material";
 
-export const RequestFailed = () => {
+type Props = {
+  setCurrentPath:
+    | React.Dispatch<React.SetStateAction<string>>
+    | ((value: string) => void);
+  handleRetrySubmission: () => void;
+};
+
+export const RequestFailed = ({
+  setCurrentPath,
+  handleRetrySubmission,
+}: Props) => {
   return (
     <Stack gap={2}>
-      <Typography>An unexpected error occured.</Typography>
+      <Typography variant="h3">Submission failed</Typography>
+      <Typography>
+        We were unable to send your records to the Digital Archives. Please try
+        again.
+      </Typography>
+      <Stack direction="row" gap={1}>
+        <Button variant="secondary" onPress={() => setCurrentPath("/")}>
+          Return to home
+        </Button>
+        <Button variant="primary" onPress={() => handleRetrySubmission()}>
+          Retry submission
+        </Button>
+      </Stack>
+      <Typography>
+        If the issue persist, please contact{" "}
+        <Link href="mailto:gim@gov.bc.ca" target="_blank">
+          GIM@gov.bc.ca
+        </Link>{" "}
+        for assistance.
+      </Typography>
     </Stack>
   );
 };

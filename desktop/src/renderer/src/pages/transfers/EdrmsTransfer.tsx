@@ -16,8 +16,10 @@ import { FinishView } from "@renderer/components/transfer/finish-view";
 export const EdrmsTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
-  const { accessToken, setCurrentPath, setProgressMade } =
+  const { idToken, accessToken, setCurrentPath, setProgressMade } =
     useContext(Context) ?? {};
+
+  const handleLogout = async () => await api.sso.logout(idToken);
 
   const [currentViewIndex, setCurrentViewIndex] = useState(0);
   const [folderPath, setFolderPath] = useState<string | null | undefined>(null);
@@ -339,27 +341,38 @@ export const EdrmsTransferPage = () => {
     );
 
     // Make request
-    console.log("Making edrms transfer request.");
-    const response = await fetch(requestUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: formData,
-    });
+    try {
+      console.log("Making edrms transfer request.");
+      const response = await fetch(requestUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
 
-    if (!response.ok) setRequestSuccessful(false);
+      if (!response.ok) setRequestSuccessful(false);
 
-    const jsonResponse = await response.json();
-    console.log("Edrms transfer response:", jsonResponse);
+      const jsonResponse = await response.json();
+      console.log("Edrms transfer response:", jsonResponse);
 
-    if (jsonResponse.success) setRequestSuccessful(true);
-    else setRequestSuccessful(false);
+      if (jsonResponse.success) setRequestSuccessful(true);
+      else setRequestSuccessful(false);
+    } catch (error) {
+      console.error(error);
+      setRequestSuccessful(false);
+    }
   };
 
   // Send to home on completion
   const handleCompletion = () => {
     if (setCurrentPath) setCurrentPath("/");
+  };
+
+  const handleRetrySubmission = () => {
+    handleLogout();
+    setRequestSuccessful(null);
+    setCurrentViewIndex(5);
   };
 
   return (
@@ -440,6 +453,8 @@ export const EdrmsTransferPage = () => {
               application={application!}
               wasRequestSuccessful={requestSuccessful}
               onNextPress={handleCompletion}
+              setCurrentPath={setCurrentPath}
+              handleRetrySubmission={handleRetrySubmission}
             />
           )}
         </Stack>
