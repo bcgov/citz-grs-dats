@@ -49,8 +49,10 @@ const tokens: Record<string, string | undefined> = {
 const LOCAL_API_URL = "http://localhost:3200";
 const DEV_API_URL =
   "https://citz-grs-dats-api-v2-route-ede50e-dev.apps.silver.devops.gov.bc.ca";
-const TEST_API_URL = "https://test.api.com";
-const PROD_API_URL = "https://prod.api.com";
+const TEST_API_URL =
+  "https://citz-grs-dats-api-v2-route-ede50e-test.apps.silver.devops.gov.bc.ca";
+const PROD_API_URL =
+  "https://citz-grs-dats-api-v2-route-ede50e-prod.apps.silver.devops.gov.bc.ca";
 
 // Set initial API URL based on environment
 let currentApiUrl = is.dev ? LOCAL_API_URL : PROD_API_URL;
