@@ -147,6 +147,7 @@ jobs:
           files: |
             ./desktop/dist/**/*.exe
             ./desktop/dist/**/*.dmg
+            ./desktop/dist/**/*.yml
           tag_name: ${{ needs.version_bump.outputs.VERSION }}
           name: Release ${{ needs.version_bump.outputs.VERSION }}
           body: "Release ${{ needs.version_bump.outputs.VERSION }} for electron-updater"
