@@ -56,12 +56,18 @@ export const FILELIST = {
 
 export const TRANSFER = {
   CONSUMER: {
-    TRANSFER_NOT_FOUND: `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Transfer not found in queueConsumer.${RESET}`,
-    METADATA_NOT_FOUND: `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Transfer metadata not found in queueConsumer.${RESET}`,
-    MISMATCH_CHECKSUM: `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Checksum of buffer and transfer.checksum do not match in queueConsumer.${RESET}`,
-    EMAIL_NOT_FOUND: `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Email not found in transfer admin metadata.${RESET}`,
-    FILELIST_NOT_FOUND: `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Couldn't find Digital File List in documentation/.${RESET}`,
-    SUB_AGREEMENT_NOT_FOUND: `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Couldn't find Submission Agreement in documentation/.${RESET}`,
+    TRANSFER_NOT_FOUND: (jobID: string) =>
+      `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Transfer not found in queueConsumer of Job: ${jobID}.${RESET}`,
+    METADATA_NOT_FOUND: (jobID: string) =>
+      `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Transfer metadata not found in queueConsumer of Job: ${jobID}.${RESET}`,
+    MISMATCH_CHECKSUM: (accession: string, application: string) =>
+      `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Checksum of buffer and transfer.checksum do not match in queueConsumer of TR_${accession}_${application}.${RESET}`,
+    EMAIL_NOT_FOUND: (accession: string, application: string) =>
+      `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Email not found in transfer admin metadata of TR_${accession}_${application}.${RESET}`,
+    FILELIST_NOT_FOUND: (accession: string, application: string) =>
+      `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Couldn't find Digital File List in documentation/ of TR_${accession}_${application}.${RESET}`,
+    SUB_AGREEMENT_NOT_FOUND: (accession: string, application: string) =>
+      `${LIGHT_BLUE}[Transfer Consumer]${RESET} ${RED}Couldn't find Submission Agreement in documentation/ of TR_${accession}_${application}.${RESET}`,
     COMPLETED_TRANSFER: (accession: string, application: string) =>
       `${LIGHT_BLUE}[Transfer Consumer]${RESET} Completed transfer of TR_${accession}_${application}`,
   },
