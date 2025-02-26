@@ -20,10 +20,10 @@ export const SendRecordsPage = () => {
           <Typography>
             Send Full Retention (FR) digital records to the Digital Archives
             from a LAN drive or EDRMS. This process sends authentic copies of
-            records to the archives for processing. Original records will remain
-            in tact on your device/drive. When the records are preserved in the
-            archives an archivist will contact you so you can destroy the
-            originals as redundant copies.
+            records to the archives for processing. The original records will
+            remain intact on your device or drive. Once the records are
+            preserved in the archives, an archivist will contact you so you can
+            destroy the originals as redundant copies.
           </Typography>
           <Stack direction="row" gap={3}>
             {/* LAN TRANSFER */}
