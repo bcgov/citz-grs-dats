@@ -483,6 +483,16 @@ export const LanTransferPage = () => {
       const application = json.admin.application;
       const folders = json.folders;
 
+      const foldersMissingScheduleOrClassification = Object.values(
+        folders
+      ).some((f) => {
+        const folder = f as unknown as {
+          schedule: string;
+          classification: string;
+        };
+        return folder.schedule === "" || folder.classification === "";
+      });
+
       const accAndAppExist =
         api.transfer.accessionExists(accession) &&
         api.transfer.applicationExists(application);
@@ -497,6 +507,15 @@ export const LanTransferPage = () => {
           message:
             "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘admin’ property in the file list and save it, then try uploading the file again.",
         };
+
+      if (foldersMissingScheduleOrClassification) {
+        // Folder is missing schedule and/or classification value.
+        toastData = {
+          title: "Missing schedule and/or classification value",
+          message:
+            "Your file list (ARS 662) is missing a schedule and/or classification value. Please review this information in the ‘File list’ tab of your file list and save it, then try uploading the file again.",
+        };
+      }
 
       if (accAndAppExist && !accAndAppAreValid)
         // Invalid accession and/or application numbers.

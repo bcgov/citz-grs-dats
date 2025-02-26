@@ -16,6 +16,13 @@ export const getXlsxFileListToastData = (msg: string): ToastData => {
         "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘Cover Page’ tab in the file list and save it, then try uploading the file again.",
     };
 
+  if (msg === "Folders is missing schedule and/or classification.")
+    toastData = {
+      title: "Missing schedule and/or classification value",
+      message:
+        "Your file list (ARS 662) is missing a schedule and/or classification value. Please review this information in the ‘File list’ tab of your file list and save it, then try uploading the file again.",
+    };
+
   if (msg === "Invalid accession and/or application.")
     toastData = {
       title: "Invalid accession and/or application number",
