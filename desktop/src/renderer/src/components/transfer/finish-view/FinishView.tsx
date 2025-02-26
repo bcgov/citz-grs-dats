@@ -11,6 +11,7 @@ type Props = {
     | React.Dispatch<React.SetStateAction<string>>
     | ((value: string) => void);
   handleRetrySubmission: () => void;
+  isLan: boolean;
 };
 
 export const FinishView = ({
@@ -20,6 +21,7 @@ export const FinishView = ({
   onNextPress,
   setCurrentPath,
   handleRetrySubmission,
+  isLan,
 }: Props) => {
   return (
     <>
@@ -28,6 +30,7 @@ export const FinishView = ({
           accession={accession}
           application={application}
           onNextPress={onNextPress}
+          isLan={isLan}
         />
       )}
       {wasRequestSuccessful === null && <RequestLoading />}

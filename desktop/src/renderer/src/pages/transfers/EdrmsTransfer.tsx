@@ -455,6 +455,7 @@ export const EdrmsTransferPage = () => {
               onNextPress={handleCompletion}
               setCurrentPath={setCurrentPath}
               handleRetrySubmission={handleRetrySubmission}
+              isLan={false}
             />
           )}
         </Stack>

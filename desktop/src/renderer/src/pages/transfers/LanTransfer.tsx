@@ -751,6 +751,7 @@ export const LanTransferPage = () => {
               onNextPress={handleCompletion}
               setCurrentPath={setCurrentPath}
               handleRetrySubmission={handleRetrySubmission}
+              isLan={true}
             />
           )}
           <JustifyChangesModal
