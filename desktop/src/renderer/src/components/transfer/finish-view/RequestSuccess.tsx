@@ -48,8 +48,7 @@ export const RequestSuccess = ({
         <Typography>
           Your transfer will be processed by an archivist. They will contact you
           with next steps. Please continue to hold the records on the{" "}
-          {isLan ? "LAN drive" : "EDRMS"}
-          until you receive further instruction.
+          {isLan ? "LAN drive" : "EDRMS"} until you receive further instruction.
         </Typography>
       </Stack>
       <Box sx={{ display: "flex", justifyContent: "right" }}>
