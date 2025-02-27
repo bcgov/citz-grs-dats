@@ -481,8 +481,8 @@ app.whenReady().then(() => {
         type: "question",
         title: "Update Ready",
         message:
-          "An update has been downloaded. Do you want to install it now?",
-        buttons: ["Restart & Install", "Later"],
+          "An update has been downloaded. Please update before continuing.",
+        buttons: ["Restart and Install"],
       })
       .then((result) => {
         if (result.response === 0) {
