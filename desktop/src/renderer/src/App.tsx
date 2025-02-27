@@ -114,6 +114,7 @@ function App(): JSX.Element {
 
   // Reset progress made when route is changed
   useEffect(() => {
+    api.workers.shutdown();
     setProgressMade(false);
   }, [currentPath]);
 
