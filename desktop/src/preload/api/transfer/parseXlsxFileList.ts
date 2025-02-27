@@ -66,6 +66,22 @@ export const parseXlsxFileList = (
           if (folders.length === 0)
             return reject(new Error("Folders is empty."));
 
+          const foldersMissingScheduleOrClassification = Object.values(
+            foldersMetadata
+          ).some((f) => {
+            const folder = f as unknown as {
+              schedule: string;
+              classification: string;
+            };
+            return folder.schedule === "" || folder.classification === "";
+          });
+
+          if (foldersMissingScheduleOrClassification) {
+            return reject(
+              new Error("Folders is missing schedule and/or classification.")
+            );
+          }
+
           resolve({
             accession,
             application,
