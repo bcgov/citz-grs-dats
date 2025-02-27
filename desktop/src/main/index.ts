@@ -107,6 +107,10 @@ ipcMain.handle("get-current-api-url", () => {
   return currentApiUrl;
 });
 
+ipcMain.handle("shutdown-workers", () => {
+  pool.shutdown();
+});
+
 ipcMain.handle("start-login-process", async () => {
   debug('Beginning "start-login-process" of main process.');
 
