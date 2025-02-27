@@ -5,12 +5,14 @@ type Props = {
   accession: string;
   application: string;
   onNextPress: () => void;
+  isLan: boolean;
 };
 
 export const RequestSuccess = ({
   accession,
   application,
   onNextPress,
+  isLan,
 }: Props) => {
   return (
     <Stack gap={3}>
@@ -34,7 +36,10 @@ export const RequestSuccess = ({
             email will contain:
           </Typography>
           <ul>
-            <li>An updated copy of the digital file list (ARS 662).</li>
+            <li>
+              {isLan ? "An updated" : "A courtesy"} copy of the digital file
+              list (ARS 662).
+            </li>
             <li>A copy of the submission agreement.</li>
             <li>Instructions for next steps.</li>
           </ul>
@@ -42,7 +47,8 @@ export const RequestSuccess = ({
         <Typography variant="h3">Next steps</Typography>
         <Typography>
           Your transfer will be processed by an archivist. They will contact you
-          with next steps. Please continue to hold the records on the LAN drive
+          with next steps. Please continue to hold the records on the{" "}
+          {isLan ? "LAN drive" : "EDRMS"}
           until you receive further instruction.
         </Typography>
       </Stack>
