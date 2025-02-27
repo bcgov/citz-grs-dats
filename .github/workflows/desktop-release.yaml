@@ -116,6 +116,14 @@ jobs:
         run: npm run build:${{ matrix.os }}
         working-directory: desktop
 
+      # Rename files to replace spaces with dashes
+      - name: Rename build artifacts
+        run: |
+          cd desktop/dist
+          for file in *; do
+            mv "$file" "$(echo "$file" | tr ' ' '-')"
+          done
+
       # Upload artifacts
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -145,9 +153,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ./desktop/dist/**/*.exe
-            ./desktop/dist/**/*.dmg
-            ./desktop/dist/**/*.yml
+            ./desktop/dist/**/*
           tag_name: ${{ needs.version_bump.outputs.VERSION }}
           name: Release ${{ needs.version_bump.outputs.VERSION }}
           body: "Release ${{ needs.version_bump.outputs.VERSION }} for electron-updater"
