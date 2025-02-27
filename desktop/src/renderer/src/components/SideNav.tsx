@@ -6,8 +6,10 @@ import {
   Typography,
   useTheme,
   Box,
+  Stack,
 } from "@mui/material";
 import {
+  HelpOutline as HelpIcon,
   HomeOutlined as HomeOutlinedIcon,
   DescriptionOutlined as FileListIcon,
   DriveFileMoveOutlined as SendRecordsIcon,
@@ -15,6 +17,7 @@ import {
 import { type ReactNode, useState } from "react";
 import { AuthButton } from "./AuthButton";
 import { LeavePageModal } from "./LeavePageModal";
+import { HelpModal } from "./HelpModal";
 
 type NavItemProps = {
   path: string;
@@ -38,6 +41,7 @@ export const SideNav = ({
   progressMade,
 }: Props) => {
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [newPagePath, setNewPagePath] = useState("/");
 
   const onConfirmLeavePage = () => {
@@ -137,7 +141,25 @@ export const SideNav = ({
               </>
             )}
           </List>
-          <AuthButton accessToken={accessToken} idToken={idToken} />
+          <Stack gap={2}>
+            <button
+              type="button"
+              style={{
+                background: "transparent",
+                border: "none",
+                width: "fit-content",
+                cursor: "pointer",
+              }}
+              onClick={() => setHelpModalOpen(!helpModalOpen)}
+            >
+              <Stack direction="row" gap={1}>
+                <HelpIcon />
+                <Typography>Help</Typography>
+              </Stack>
+            </button>
+            <Divider />
+            <AuthButton accessToken={accessToken} idToken={idToken} />
+          </Stack>
         </Box>
       </Drawer>
       <LeavePageModal
@@ -145,6 +167,7 @@ export const SideNav = ({
         onClose={() => setLeavePageModalOpen(false)}
         onConfirm={onConfirmLeavePage}
       />
+      <HelpModal open={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
     </>
   );
 };

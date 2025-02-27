@@ -11,3 +11,4 @@ export * from "./SubAgreementScrollBox";
 export * from "./LoginRequiredModal";
 export * from "./Instruction";
 export * from "./TransferRecordsIcon";
+export * from "./HelpModal";
