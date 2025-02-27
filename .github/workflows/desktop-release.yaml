@@ -121,7 +121,12 @@ jobs:
         run: |
           cd desktop/dist
           for file in *; do
-            mv "$file" "$(echo "$file" | tr ' ' '-')"
+            if [ -f "$file" ]; then
+              new_name=$(echo "$file" | tr ' ' '-')
+              if [ "$file" != "$new_name" ]; then
+                mv "$file" "$new_name"
+              fi
+            fi
           done
 
       # Upload artifacts
