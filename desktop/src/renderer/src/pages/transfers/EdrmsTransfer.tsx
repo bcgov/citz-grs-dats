@@ -262,7 +262,21 @@ export const EdrmsTransferPage = () => {
   }, [fileList]);
 
   useEffect(() => {
-    if (!transferForm) {
+    if (transferForm) {
+      const filename = transferForm.name;
+      const regex = /^(Transfer_Form|617)/;
+      if (!regex.test(filename)) {
+        // Filename doesnt match regex
+        toast.error(Toast, {
+          data: {
+            title: "Invalid filename",
+            message:
+              "Your Transfer Form ARS 617 file name must begin with 'Transfer_Form' or '617'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
+          },
+        });
+        setTransferForm(null);
+      }
+    } else {
       // Reset
       setTransferFormFoundInEdrms(false);
     }
