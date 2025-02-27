@@ -42,12 +42,12 @@ export const queueConsumer = async (
   const transfer = await TransferService.getTransferWhere({ jobID: jobID });
   if (!transfer) {
     channel.ack(msg);
-    return console.error(TRANSFER_NOT_FOUND);
+    return console.error(TRANSFER_NOT_FOUND(jobID));
   }
 
   if (!transfer.metadata) {
     channel.ack(msg);
-    return console.error(METADATA_NOT_FOUND);
+    return console.error(METADATA_NOT_FOUND(jobID));
   }
 
   const metadata = JSON.parse(JSON.stringify(transfer.metadata));
@@ -67,10 +67,9 @@ export const queueConsumer = async (
   const buffer = await streamToBuffer(stream);
 
   // Check to make sure record was not editted in s3
-  // biome-ignore lint/style/noNonNullAssertion: <explanation>
   if (!isChecksumValid({ buffer, checksum: transfer.checksum! })) {
     channel.ack(msg);
-    return console.error(MISMATCH_CHECKSUM);
+    return console.error(MISMATCH_CHECKSUM(accession, application));
   }
 
   // Process transfer
@@ -124,12 +123,12 @@ export const queueConsumer = async (
 
   if (!fileListPath) {
     channel.ack(msg);
-    return console.error(FILELIST_NOT_FOUND);
+    return console.error(FILELIST_NOT_FOUND(accession, application));
   }
 
   if (!subAgreementPath) {
     channel.ack(msg);
-    return console.error(SUB_AGREEMENT_NOT_FOUND);
+    return console.error(SUB_AGREEMENT_NOT_FOUND(accession, application));
   }
 
   const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath);
@@ -147,7 +146,7 @@ export const queueConsumer = async (
   const email = metadata.admin?.submittedBy?.email;
   if (!email) {
     channel.ack(msg);
-    return console.error(EMAIL_NOT_FOUND);
+    return console.error(EMAIL_NOT_FOUND(accession, application));
   }
 
   // Send completion email
