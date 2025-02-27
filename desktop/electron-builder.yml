@@ -14,7 +14,7 @@ asarUnpack:
 win:
   executableName: desktop
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${name}.${version}.setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
