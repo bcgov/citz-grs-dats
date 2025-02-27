@@ -118,6 +118,7 @@ jobs:
 
       # Rename files to replace spaces with dashes
       - name: Rename build artifacts
+        shell: bash
         run: |
           cd desktop/dist
           for file in *; do
