@@ -550,7 +550,21 @@ export const LanTransferPage = () => {
 
   useEffect(() => {
     setProgressMade(!!fileList);
-    if (!fileList) {
+    if (fileList) {
+      const filename = fileList.name;
+      const regex = /^(Digital_File_List|File\sList)/;
+      if (!regex.test(filename)) {
+        // Filename doesnt match regex
+        toast.error(Toast, {
+          data: {
+            title: "Invalid filename",
+            message:
+              "Your Digital File List file name must begin with 'Digital_File_List' or 'File List'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
+          },
+        });
+        setFileList(null);
+      }
+    } else {
       // Clear state.
       setAccession(null);
       setApplication(null);
@@ -562,6 +576,24 @@ export const LanTransferPage = () => {
     }
     parseFileList();
   }, [fileList]);
+
+  useEffect(() => {
+    if (transferForm) {
+      const filename = transferForm.name;
+      const regex = /^(Transfer_Form|617)/;
+      if (!regex.test(filename)) {
+        // Filename doesnt match regex
+        toast.error(Toast, {
+          data: {
+            title: "Invalid filename",
+            message:
+              "Your Transfer Form ARS 617 file name must begin with 'Transfer_Form' or '617'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
+          },
+        });
+        setTransferForm(null);
+      }
+    }
+  }, [transferForm]);
 
   // Toast message once folders have been successfully uploaded
   useEffect(() => {
