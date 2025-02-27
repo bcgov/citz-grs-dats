@@ -116,6 +116,14 @@ jobs:
         run: npm run build:${{ matrix.os }}
         working-directory: desktop
 
+      # Rename files to replace spaces with dashes
+      - name: Rename build artifacts
+        run: |
+          cd desktop/dist
+          for file in *; do
+            mv "$file" "$(echo "$file" | tr ' ' '-')"
+          done
+
       # Upload artifacts
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
