@@ -112,6 +112,11 @@ function App(): JSX.Element {
     };
   }, []);
 
+  // Reset progress made when route is changed
+  useEffect(() => {
+    setProgressMade(false);
+  }, [currentPath]);
+
   return (
     <Grid container sx={{ height: "100vh" }}>
       <VPNPopup open={showVPNPopup} />
