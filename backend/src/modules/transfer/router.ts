@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction, RequestHandler } from "express";
 import { Router } from "express";
-import { create, edrms, lan, view } from "./controllers";
+import { create, download, edrms, lan, view } from "./controllers";
 import multer from "multer";
 
 const upload = multer({
@@ -13,8 +13,13 @@ const upload = multer({
 
 const router = Router();
 
+// Get completed transfers
 router.get("/", view);
 
+// Get download link for transfer.
+router.get("/download", download);
+
+// Create standard transfer.
 router.post("/", upload.single("file"), create);
 
 // The second middleware is used to convert the stringified objects in the request body
