@@ -8,6 +8,7 @@ import {
   edrms,
   view,
   download,
+  remove,
 } from "@/modules/transfer/controllers";
 
 // Mock the controller functions
@@ -25,6 +26,9 @@ jest.mock("@/modules/transfer/controllers", () => ({
     res.status(200).send("Complete")
   ),
   download: jest.fn((req: Request, res: Response) =>
+    res.status(200).send("Complete")
+  ),
+  remove: jest.fn((req: Request, res: Response) =>
     res.status(200).send("Complete")
   ),
 }));
@@ -51,6 +55,13 @@ describe("Transfer Router", () => {
     const app = createApp();
     await request(app).get("/").expect(200, "Complete");
     expect(view).toHaveBeenCalled();
+  });
+
+  // Test case: DELETE / route
+  it("should call the remove controller on DELETE / route", async () => {
+    const app = createApp();
+    await request(app).delete("/").expect(200, "Complete");
+    expect(remove).toHaveBeenCalled();
   });
 
   // Test case: GET /download route
