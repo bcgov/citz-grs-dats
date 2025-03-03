@@ -7,6 +7,7 @@ import {
 import { downloadTransferBodySchema } from "../schemas";
 import { getDownloadUrl } from "src/modules/s3/utils";
 import { ENV } from "@/config";
+import { TransferService } from "../services";
 
 const { S3_BUCKET } = ENV;
 
@@ -25,6 +26,11 @@ export const download = errorWrapper(async (req: Request, res: Response) => {
       HTTP_STATUS_CODES.NOT_FOUND,
       `Transfer with accession: ${body.accession}, application: ${body.application} not found in s3.`
     );
+
+  // Update mongo record
+  await TransferService.updateTransferEntry(body.accession, body.application, {
+    status: "Downloaded",
+  });
 
   const result = getStandardResponse({
     data: {
