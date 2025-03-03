@@ -11,6 +11,9 @@ export const TRANSFER_STATUSES = [
   "Pre-Transfer",
   "Transferring",
   "Transferred",
+  "Downloaded",
+  "Downloaded & Preserved",
+  "Preserved",
 ] as const;
 
 // Mongoose Schema

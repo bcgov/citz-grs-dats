@@ -9,6 +9,7 @@ const {
       ERROR_CREATING_ENTRY,
       ERROR_CREATING_OR_UPDATING_ENTRY,
       ERROR_IN_GET_TRANSFER_WHERE,
+      ERROR_IN_GET_TRANSFERS,
       ERROR_UPDATING_ENTRY,
     },
   },
@@ -24,6 +25,7 @@ type CreateTransferData = {
   checksum?: string | null;
   status?: (typeof TRANSFER_STATUSES)[number];
   extendedMetadata?: Record<string, unknown> | undefined;
+  transferDate?: string;
 };
 
 type UpdateTransferData = Partial<
@@ -155,6 +157,36 @@ export const TransferService = {
       return transferDocument;
     } catch (error) {
       console.error(ERROR_IN_GET_TRANSFER_WHERE, error);
+      throw new Error(
+        `Failed to get Transfer entry: ${
+          error instanceof Error ? error.message : error
+        }`
+      );
+    }
+  },
+
+  /**
+   * Retrieves all completed Transfer entries.
+   * @returns The Transfer documents.
+   * @throws Error if the retrieval fails.
+   */
+  async getCompletedTransfers() {
+    try {
+      const transferDocuments = await TransferModel.find({
+        status: {
+          $in: [
+            "Transferred",
+            "Downloaded",
+            "Preserved",
+            "Downloaded & Preserved",
+          ],
+        },
+      })
+        .lean()
+        .exec();
+      return transferDocuments;
+    } catch (error) {
+      console.error(ERROR_IN_GET_TRANSFERS, error);
       throw new Error(
         `Failed to get Transfer entry: ${
           error instanceof Error ? error.message : error
