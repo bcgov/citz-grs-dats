@@ -13,6 +13,7 @@ import {
   HomeOutlined as HomeOutlinedIcon,
   DescriptionOutlined as FileListIcon,
   DriveFileMoveOutlined as SendRecordsIcon,
+  AnalyticsOutlined as ViewStatusIcon,
 } from "@mui/icons-material";
 import { type ReactNode, useState } from "react";
 import { AuthButton } from "./AuthButton";
@@ -136,6 +137,13 @@ export const SideNav = ({
                   label="Send records"
                   icon={
                     <SendRecordsIcon sx={{ color: "var(--sidenav-icon)" }} />
+                  }
+                />
+                <NavItem
+                  path="/view-transfers"
+                  label="View status"
+                  icon={
+                    <ViewStatusIcon sx={{ color: "var(--sidenav-icon)" }} />
                   }
                 />
               </>

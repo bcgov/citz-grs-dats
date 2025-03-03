@@ -20,9 +20,7 @@ type Transfer = {
 export const ViewTransfersPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
-  const { idToken, accessToken } = useContext(Context);
-
-  const handleLogout = async () => await api.sso.logout(idToken);
+  const { accessToken } = useContext(Context);
 
   // Modals
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
@@ -32,9 +30,15 @@ export const ViewTransfersPage = () => {
     useState(false);
 
   const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [currentAccession, setCurrentAccession] = useState<string | null>(null);
+  const [currentApplication, setCurrentApplication] = useState<string | null>(
+    null
+  );
 
   const handleTransferDelete = (accession: string, application: string) => {
-    // TBD
+    setCurrentAccession(accession);
+    setCurrentApplication(application);
+    setShowConfirmDeletionModal(true);
   };
 
   const handleTransferDownload = (
@@ -42,11 +46,14 @@ export const ViewTransfersPage = () => {
     application: string,
     previouslyDownloaded: boolean
   ) => {
-    // TBD
+    setCurrentAccession(accession);
+    setCurrentApplication(application);
+    if (previouslyDownloaded) setShowConfirmReDownloadModal(true);
+    else handleDownloadTransferRequest();
   };
 
   const handleFailedToFetchTransfers = () => {
-    toast.success(Toast, {
+    toast.error(Toast, {
       data: {
         title: "Failed to load transfers",
         message:
@@ -56,21 +63,21 @@ export const ViewTransfersPage = () => {
   };
 
   const handleFailedToDeleteTransfer = () => {
-    toast.success(Toast, {
+    toast.error(Toast, {
       data: {
-        title: "Failed to delete transfer",
+        title: "Deletion unsuccessful",
         message:
-          "We were unable to delete the transfer. Please log out and try again.",
+          "Deletion failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
       },
     });
   };
 
-  const handleFailedToDownloadTransfers = () => {
-    toast.success(Toast, {
+  const handleFailedToDownloadTransfer = () => {
+    toast.error(Toast, {
       data: {
-        title: "Failed to download transfer",
+        title: "Download unsuccessful",
         message:
-          "We were unable to download the transfer. Please log out and try again.",
+          "Download failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
       },
     });
   };
@@ -92,7 +99,7 @@ export const ViewTransfersPage = () => {
         },
       });
 
-      if (!response.ok) handleFailedToFetchTransfers();
+      if (!response.ok) return handleFailedToFetchTransfers();
       const jsonResponse = await response.json();
 
       if (jsonResponse.success) {
@@ -107,10 +114,88 @@ export const ViewTransfersPage = () => {
           };
         });
         setTransfers(fetchedTransfers);
-      } else handleFailedToFetchTransfers();
+      } else return handleFailedToFetchTransfers();
     } catch (error) {
       console.error(error);
       handleFailedToFetchTransfers();
+    }
+  };
+
+  const handleDeleteTransferRequest = async () => {
+    if (!accessToken) return;
+
+    // Request url
+    const apiUrl = await api.getCurrentApiUrl();
+    const requestUrl = `${apiUrl}/transfer`;
+
+    // Make request
+    try {
+      console.log("Making delete transfer request.");
+      const response = await fetch(requestUrl, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          accession: currentAccession,
+          application: currentApplication,
+        }),
+      });
+
+      if (!response.ok) return handleFailedToDeleteTransfer();
+      const jsonResponse = await response.json();
+
+      if (jsonResponse.success) {
+        // Deletion successful
+        toast.success(Toast, {
+          data: {
+            title: "File deleted",
+            message: "The file has been deleted successfully.",
+          },
+        });
+      } else return handleFailedToDeleteTransfer();
+    } catch (error) {
+      console.error(error);
+      handleFailedToDeleteTransfer();
+    }
+  };
+
+  const handleDownloadTransferRequest = async () => {
+    if (!accessToken) return;
+
+    // Request url
+    const apiUrl = await api.getCurrentApiUrl();
+    const requestUrl = `${apiUrl}/transfer/download`;
+
+    // Make request
+    try {
+      console.log("Making download transfer request.");
+      const response = await fetch(requestUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          accession: currentAccession,
+          application: currentApplication,
+        }),
+      });
+
+      if (!response.ok) return handleFailedToDownloadTransfer();
+      const jsonResponse = await response.json();
+
+      if (jsonResponse.success) {
+        // Download successful
+        toast.success(Toast, {
+          data: {
+            title: "Download complete!",
+            message: "The file has been downloaded successfully.",
+          },
+        });
+      } else return handleFailedToDownloadTransfer();
+    } catch (error) {
+      console.error(error);
+      handleFailedToDownloadTransfer();
     }
   };
 

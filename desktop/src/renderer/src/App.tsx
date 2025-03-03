@@ -13,6 +13,7 @@ import {
   LanInstructionsPage,
   LanTransferPage,
   SendRecordsPage,
+  ViewTransfersPage,
 } from "./pages";
 
 type AppContext = {
@@ -161,6 +162,7 @@ function App(): JSX.Element {
             {currentPath === "/send-records/edrms/instructions" && (
               <EdrmsInstructionsPage />
             )}
+            {currentPath === "/view-transfers" && <ViewTransfersPage />}
           </Box>
         </Context.Provider>
         <ToastContainer
