@@ -11,6 +11,7 @@ const {
       ERROR_IN_GET_TRANSFER_WHERE,
       ERROR_IN_GET_TRANSFERS,
       ERROR_UPDATING_ENTRY,
+      ERROR_DELETING_ENTRY,
     },
   },
 } = logs;
@@ -265,6 +266,39 @@ export const TransferService = {
       console.error(ERROR_UPDATING_ENTRY, error);
       throw new Error(
         `Failed to update Transfer entry: ${
+          error instanceof Error ? error.message : error
+        }`
+      );
+    }
+  },
+
+  /**
+   * Deletes a Transfer entry based on `application` and `accession`.
+   * @param application - The application identifier.
+   * @param accession - The accession identifier.
+   * @returns The deleted document.
+   * @throws Error if the deletion fails or if the document is not found.
+   */
+  async deleteTransferEntry(accession: string, application: string) {
+    try {
+      // Find and delete the document in one atomic operation
+      const deletedDocument = await TransferModel.findOneAndDelete({
+        "metadata.admin.application": String(application),
+        "metadata.admin.accession": String(accession),
+      });
+
+      // Throw error if no document was found
+      if (!deletedDocument) {
+        throw new Error(
+          `Transfer entry not found with accession: ${accession}, application: ${application}.`
+        );
+      }
+
+      return deletedDocument;
+    } catch (error) {
+      console.error(ERROR_DELETING_ENTRY, error);
+      throw new Error(
+        `Failed to delete Transfer entry: ${
           error instanceof Error ? error.message : error
         }`
       );

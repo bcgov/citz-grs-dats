@@ -29,6 +29,8 @@ export const download = errorWrapper(async (req: Request, res: Response) => {
   const result = getStandardResponse({
     data: {
       user: `${user?.first_name} ${user?.last_name}`,
+      accession: body.accession,
+      application: body.application,
       url: s3Location,
     },
     message: "Returned download link.",

@@ -112,4 +112,26 @@ export const FileListService = {
       );
     }
   },
+
+  /**
+   * Deletes a document from the FileList collection by accession and application.
+   * @returns The result of the delete operation.
+   * @throws Error if the deletion fails.
+   */
+  async deleteFileListByAccApp(accession: string, application: string) {
+    try {
+      const deletedDocument = await FileListModel.findOneAndDelete({
+        "metadata.admin.application": String(application),
+        "metadata.admin.accession": String(accession),
+      });
+      return deletedDocument;
+    } catch (error) {
+      console.error(ERROR_DELETING_ENTRY, error);
+      throw new Error(
+        `Failed to delete FileList entry: ${
+          error instanceof Error ? error.message : error
+        }`
+      );
+    }
+  },
 };
