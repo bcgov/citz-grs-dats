@@ -82,5 +82,6 @@ export const TRANSFER = {
     ERROR_CREATING_OR_UPDATING_ENTRY: `${MAGENTA}[Transfer Service]${RESET} ${RED}Error creating or updating Transfer entry:${RESET}`,
     ERROR_UPDATING_ENTRY: `${MAGENTA}[Transfer Service]${RESET} ${RED}Error updating Transfer entry:${RESET}`,
     ERROR_IN_GET_TRANSFER_WHERE: `${MAGENTA}[Transfer Service]${RESET} ${RED}Error in getTransferWhere:${RESET}`,
+    ERROR_IN_GET_TRANSFERS: `${MAGENTA}[Transfer Service]${RESET} ${RED}Error in getAllTransfers:${RESET}`,
   },
 };
