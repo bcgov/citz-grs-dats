@@ -1,8 +1,7 @@
 import type { Request, Response, NextFunction, RequestHandler } from "express";
 import { Router } from "express";
-import { create, lan } from "./controllers";
+import { create, edrms, lan, view } from "./controllers";
 import multer from "multer";
-import { edrms } from "./controllers/edrms";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -13,6 +12,8 @@ const upload = multer({
 });
 
 const router = Router();
+
+router.get("/", view);
 
 router.post("/", upload.single("file"), create);
 
