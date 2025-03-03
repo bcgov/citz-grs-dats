@@ -204,50 +204,62 @@ export const TransferService = {
    * @throws Error if the update fails.
    */
   async updateTransferEntry(
-    application: string,
     accession: string,
+    application: string,
     updates: UpdateTransferData
   ) {
     try {
-      const transferDocument = await TransferModel.findOne({
-        "metadata.admin.application": application,
-        "metadata.admin.accession": accession,
-      });
+      // Construct the update object dynamically
+      const updateFields: Record<string, unknown> = {};
 
-      if (!transferDocument) {
-        throw new Error("Transfer entry not found.");
-      }
-
-      if (updates.user && transferDocument.metadata?.admin) {
-        transferDocument.metadata.admin.submittedBy = {
-          name:
-            updates.user.display_name ??
-            transferDocument.metadata?.admin?.submittedBy?.name!,
-          email:
-            updates.user.email ??
-            transferDocument.metadata?.admin?.submittedBy?.email!,
+      // Update submittedBy if `updates.user` exists
+      if (updates.user) {
+        updateFields["metadata.admin.submittedBy"] = {
+          name: updates.user.display_name ?? undefined,
+          email: updates.user.email ?? undefined,
         };
       }
 
-      if (updates.folders && transferDocument.metadata) {
-        transferDocument.metadata.folders = updates.folders;
+      // Update folders if provided
+      if (updates.folders) {
+        updateFields["metadata.folders"] = updates.folders;
       }
 
-      if (updates.files && transferDocument.metadata) {
-        transferDocument.metadata.files = updates.files;
+      // Update files if provided
+      if (updates.files) {
+        updateFields["metadata.files"] = updates.files;
       }
 
+      // Update other top-level fields
       if (updates.jobID !== undefined) {
-        transferDocument.jobID = updates.jobID as NonNullable<
-          TransferMongoose["jobID"]
-        >;
+        updateFields.jobID = updates.jobID;
+      }
+
+      if (updates.transferDate !== undefined) {
+        updateFields.transferDate = updates.transferDate;
       }
 
       if (updates.status) {
-        transferDocument.status = updates.status;
+        updateFields.status = updates.status;
       }
 
-      const updatedDocument = await transferDocument.save();
+      // Find and update the document in one atomic operation
+      const updatedDocument = await TransferModel.findOneAndUpdate(
+        {
+          "metadata.admin.application": String(application),
+          "metadata.admin.accession": String(accession),
+        },
+        { $set: updateFields },
+        { new: true, runValidators: true }
+      );
+
+      // Throw error if no document was found
+      if (!updatedDocument) {
+        throw new Error(
+          `Transfer entry not found with accession: ${accession}, application: ${application}.`
+        );
+      }
+
       return updatedDocument;
     } catch (error) {
       console.error(ERROR_UPDATING_ENTRY, error);
