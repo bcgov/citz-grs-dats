@@ -30,14 +30,27 @@ export const ViewTransfersPage = () => {
     useState(false);
 
   const [transfers, setTransfers] = useState<Transfer[]>([]);
-  const [currentAccession, setCurrentAccession] = useState<string | null>(null);
-  const [currentApplication, setCurrentApplication] = useState<string | null>(
+  const [downloadAccession, setDownloadAccession] = useState<string | null>(
+    null
+  );
+  const [downloadApplication, setDownloadApplication] = useState<string | null>(
+    null
+  );
+  const [deleteAccession, setDeleteAccession] = useState<string | null>(null);
+  const [deleteApplication, setDeleteApplication] = useState<string | null>(
     null
   );
 
+  const [loadTransfersSuccess, setLoadTransfersSuccess] = useState<
+    boolean | null
+  >(null);
+  const [downloadSuccess, setDownloadSuccess] = useState<boolean | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState<boolean | null>(null);
+  const [recentDownloadFilePath, setRecentDownloadFilePath] = useState("");
+
   const handleTransferDelete = (accession: string, application: string) => {
-    setCurrentAccession(accession);
-    setCurrentApplication(application);
+    setDeleteAccession(accession);
+    setDeleteApplication(application);
     setShowConfirmDeletionModal(true);
   };
 
@@ -46,44 +59,74 @@ export const ViewTransfersPage = () => {
     application: string,
     previouslyDownloaded: boolean
   ) => {
-    setCurrentAccession(accession);
-    setCurrentApplication(application);
+    setDownloadAccession(accession);
+    setDownloadApplication(application);
     if (previouslyDownloaded) setShowConfirmReDownloadModal(true);
-    else handleDownloadTransferRequest();
   };
 
-  const handleFailedToFetchTransfers = () => {
-    toast.error(Toast, {
-      data: {
-        title: "Failed to load transfers",
-        message:
-          "We were unable to load transfers. Please log out and try again.",
-      },
-    });
-  };
+  useEffect(() => {
+    if (!showConfirmReDownloadModal && downloadAccession && downloadApplication)
+      handleDownloadTransferRequest();
+  }, [downloadAccession, downloadApplication, showConfirmReDownloadModal]);
 
-  const handleFailedToDeleteTransfer = () => {
-    toast.error(Toast, {
-      data: {
-        title: "Deletion unsuccessful",
-        message:
-          "Deletion failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
-      },
-    });
-  };
+  useEffect(() => {
+    if (loadTransfersSuccess === false) {
+      // Failed to load transfers
+      toast.error(Toast, {
+        data: {
+          title: "Failed to load transfers",
+          message:
+            "We were unable to load transfers. Please log out and try again.",
+        },
+      });
+    }
+  }, [loadTransfersSuccess]);
 
-  const handleFailedToDownloadTransfer = () => {
-    toast.error(Toast, {
-      data: {
-        title: "Download unsuccessful",
-        message:
-          "Download failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
-      },
-    });
-  };
+  useEffect(() => {
+    if (deleteSuccess === true) {
+      // Success
+      toast.success(Toast, {
+        data: {
+          title: "File deleted",
+          message: "The file has been deleted successfully.",
+        },
+      });
+    } else if (deleteSuccess === false) {
+      // Failed to delete transfer
+      toast.error(Toast, {
+        data: {
+          title: "Deletion unsuccessful",
+          message:
+            "Deletion failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
+        },
+      });
+    }
+  }, [deleteSuccess]);
+
+  useEffect(() => {
+    if (downloadSuccess === true) {
+      // Success
+      toast.success(Toast, {
+        data: {
+          title: "Download complete!",
+          message: `The file has been downloaded successfully to ${recentDownloadFilePath}`,
+        },
+      });
+    } else if (downloadSuccess === false) {
+      // Failed to download transfer
+      toast.error(Toast, {
+        data: {
+          title: "Download unsuccessful",
+          message:
+            "Download failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
+        },
+      });
+    }
+  }, [downloadSuccess]);
 
   const handleFetchTransfers = async () => {
     if (!accessToken) return;
+    setLoadTransfersSuccess(null);
 
     // Request url
     const apiUrl = await api.getCurrentApiUrl();
@@ -99,7 +142,7 @@ export const ViewTransfersPage = () => {
         },
       });
 
-      if (!response.ok) return handleFailedToFetchTransfers();
+      if (!response.ok) return setLoadTransfersSuccess(false);
       const jsonResponse = await response.json();
 
       if (jsonResponse.success) {
@@ -116,15 +159,16 @@ export const ViewTransfersPage = () => {
           }
         );
         setTransfers(fetchedTransfers);
-      } else return handleFailedToFetchTransfers();
+      } else return setLoadTransfersSuccess(false);
     } catch (error) {
       console.error(error);
-      handleFailedToFetchTransfers();
+      setLoadTransfersSuccess(false);
     }
   };
 
   const handleDeleteTransferRequest = async () => {
     if (!accessToken) return;
+    setDeleteSuccess(null);
 
     // Request url
     const apiUrl = await api.getCurrentApiUrl();
@@ -137,33 +181,39 @@ export const ViewTransfersPage = () => {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          accession: currentAccession,
-          application: currentApplication,
+          accession: deleteAccession,
+          application: deleteApplication,
         }),
       });
 
-      if (!response.ok) return handleFailedToDeleteTransfer();
+      if (!response.ok) return setDeleteSuccess(false);
       const jsonResponse = await response.json();
 
       if (jsonResponse.success) {
         // Deletion successful
-        toast.success(Toast, {
-          data: {
-            title: "File deleted",
-            message: "The file has been deleted successfully.",
-          },
+        setDeleteSuccess(true);
+
+        // Update state
+        setTransfers((prev) => {
+          return prev.filter(
+            (t) =>
+              t.accession !== deleteAccession &&
+              t.application !== deleteApplication
+          );
         });
-      } else return handleFailedToDeleteTransfer();
+      } else return setDeleteSuccess(false);
     } catch (error) {
       console.error(error);
-      handleFailedToDeleteTransfer();
+      setDeleteSuccess(false);
     }
   };
 
   const handleDownloadTransferRequest = async () => {
     if (!accessToken) return;
+    setDownloadSuccess(null);
 
     // Request url
     const apiUrl = await api.getCurrentApiUrl();
@@ -173,33 +223,61 @@ export const ViewTransfersPage = () => {
     try {
       console.log("Making download transfer request.");
       const response = await fetch(requestUrl, {
-        method: "GET",
+        method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          accession: currentAccession,
-          application: currentApplication,
+          accession: downloadAccession,
+          application: downloadApplication,
         }),
       });
 
-      if (!response.ok) return handleFailedToDownloadTransfer();
+      if (!response.ok) return setDownloadSuccess(false);
       const jsonResponse = await response.json();
 
       if (jsonResponse.success) {
-        // Download successful
-        toast.success(Toast, {
-          data: {
-            title: "Download complete!",
-            message: "The file has been downloaded successfully.",
-          },
+        // Download file
+        const downloadURL = jsonResponse.data.url;
+
+        // Update state
+        setTransfers((prev) => {
+          const updatedTransfers = prev.map((t) => {
+            if (
+              t.accession === downloadAccession &&
+              t.application === downloadApplication
+            ) {
+              // Make edit to status
+              return { ...t, status: "Downloaded" };
+            }
+            return t; // Return unchanged
+          });
+          return updatedTransfers;
         });
-      } else return handleFailedToDownloadTransfer();
+
+        // Send download request to the Main process
+        window.electron.ipcRenderer.send("download-transfer", downloadURL);
+      } else return setDownloadSuccess(false);
     } catch (error) {
       console.error(error);
-      handleFailedToDownloadTransfer();
+      setDownloadSuccess(false);
     }
   };
+
+  window.electron.ipcRenderer.on(
+    "download-transfer-complete",
+    (_event, filePath) => {
+      if (downloadSuccess !== true) {
+        setRecentDownloadFilePath(filePath);
+        setDownloadSuccess(true);
+      }
+    }
+  );
+
+  window.electron.ipcRenderer.on("download-transfer-failed", () => {
+    if (downloadSuccess !== false) setDownloadSuccess(false);
+  });
 
   useEffect(() => {
     // Fetch transfers on mount

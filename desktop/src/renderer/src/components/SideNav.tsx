@@ -41,9 +41,13 @@ export const SideNav = ({
   setCurrentPath,
   progressMade,
 }: Props) => {
+  const [api] = useState(window.api);
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [newPagePath, setNewPagePath] = useState("/");
+
+  const user = api.sso.getUser(accessToken);
+  const isArchivist = user?.hasRoles(["Archivist"]) ?? false;
 
   const onConfirmLeavePage = () => {
     setLeavePageModalOpen(false);
@@ -139,13 +143,15 @@ export const SideNav = ({
                     <SendRecordsIcon sx={{ color: "var(--sidenav-icon)" }} />
                   }
                 />
-                <NavItem
-                  path="/view-transfers"
-                  label="View status"
-                  icon={
-                    <ViewStatusIcon sx={{ color: "var(--sidenav-icon)" }} />
-                  }
-                />
+                {isArchivist && (
+                  <NavItem
+                    path="/view-transfers"
+                    label="View status"
+                    icon={
+                      <ViewStatusIcon sx={{ color: "var(--sidenav-icon)" }} />
+                    }
+                  />
+                )}
               </>
             )}
           </List>

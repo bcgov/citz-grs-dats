@@ -24,7 +24,7 @@ export const DownloadCell = ({
 }: Props) => {
   return (
     <Tooltip
-      title="Download transfer."
+      title="Download transfer file."
       sx={{
         display: "flex",
         justifyContent: "center",
@@ -35,6 +35,8 @@ export const DownloadCell = ({
     >
       <IconButton
         color="error"
+        disableFocusRipple
+        disableRipple
         onClick={() =>
           onTransferDownload(
             params.row.accession,
