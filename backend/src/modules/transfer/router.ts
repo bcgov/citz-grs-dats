@@ -17,7 +17,7 @@ const router = Router();
 router.get("/", view);
 
 // Get download link for transfer.
-router.get("/download", download);
+router.post("/download", download);
 
 // Create standard transfer.
 router.post("/", upload.single("file"), create);
