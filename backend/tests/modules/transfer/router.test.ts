@@ -64,10 +64,10 @@ describe("Transfer Router", () => {
     expect(remove).toHaveBeenCalled();
   });
 
-  // Test case: GET /download route
-  it("should call the download controller on GET /download route", async () => {
+  // Test case: POST /download route
+  it("should call the download controller on POST /download route", async () => {
     const app = createApp();
-    await request(app).get("/download").expect(200, "Complete");
+    await request(app).post("/download").expect(200, "Complete");
     expect(download).toHaveBeenCalled();
   });
 

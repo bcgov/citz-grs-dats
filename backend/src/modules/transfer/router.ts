@@ -17,7 +17,7 @@ const router = Router();
 router.get("/", view);
 
 // Get download link for transfer.
-router.get("/download", download);
+router.post("/download", download);
 
 // Remove transfer.
 router.delete("/", remove);
