@@ -104,15 +104,17 @@ export const ViewTransfersPage = () => {
 
       if (jsonResponse.success) {
         // Set transfers
-        const fetchedTransfers = jsonResponse.transfers.map((t, index) => {
-          return {
-            id: index,
-            accession: t.metadata.admin.accession,
-            application: t.metadata.admin.application,
-            status: t.status,
-            transferDate: t.transferDate,
-          };
-        });
+        const fetchedTransfers = jsonResponse.data.transfers?.map(
+          (t, index) => {
+            return {
+              id: index,
+              accession: t.metadata.admin.accession,
+              application: t.metadata.admin.application,
+              status: t.status,
+              transferDate: t.transferDate,
+            };
+          }
+        );
         setTransfers(fetchedTransfers);
       } else return handleFailedToFetchTransfers();
     } catch (error) {
