@@ -1,4 +1,4 @@
-import { Grid2 as Grid, Stack, Typography } from "@mui/material";
+import { Grid2 as Grid, Stack, TextField, Typography } from "@mui/material";
 import { LoginRequiredModal, Toast } from "@renderer/components";
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -14,13 +14,17 @@ type Transfer = {
   accession: string;
   application: string;
   status: string;
-  transferDate: string;
+  transferDate: string; // Format YYYY/MM/DD
 };
 
 export const ViewTransfersPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
   const { accessToken } = useContext(Context);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [filteredTransfers, setFilteredTransfers] = useState<Transfer[]>([]);
 
   // Modals
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
@@ -29,7 +33,6 @@ export const ViewTransfersPage = () => {
   const [showConfirmReDownloadModal, setShowConfirmReDownloadModal] =
     useState(false);
 
-  const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [downloadAccession, setDownloadAccession] = useState<string | null>(
     null
   );
@@ -279,6 +282,26 @@ export const ViewTransfersPage = () => {
     if (downloadSuccess !== false) setDownloadSuccess(false);
   });
 
+  // Filter transfers based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredTransfers(transfers);
+      return;
+    }
+
+    const lowerCaseQuery = searchQuery.toLowerCase();
+
+    const filtered = transfers.filter(
+      ({ accession, application, status, transferDate }) =>
+        accession.toLowerCase().includes(lowerCaseQuery) ||
+        application.toLowerCase().includes(lowerCaseQuery) ||
+        status.toLowerCase().includes(lowerCaseQuery) ||
+        transferDate.includes(searchQuery)
+    );
+
+    setFilteredTransfers(filtered);
+  }, [searchQuery, transfers]);
+
   useEffect(() => {
     // Fetch transfers on mount
     handleFetchTransfers();
@@ -290,8 +313,17 @@ export const ViewTransfersPage = () => {
       <Grid size={8} sx={{ paddingTop: 3 }}>
         <Stack gap={2}>
           <Typography variant="h2">View transfer status</Typography>
+          <Stack direction="row" spacing={1}>
+            <TextField
+              sx={{ width: "350px" }}
+              size="small"
+              placeholder="Search within"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </Stack>
           <TransfersGrid
-            rows={transfers}
+            rows={filteredTransfers}
             onTransferDelete={handleTransferDelete}
             onTransferDownload={handleTransferDownload}
           />
