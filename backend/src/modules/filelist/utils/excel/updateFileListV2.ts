@@ -21,8 +21,24 @@ export const updateFileListV2 = async ({
 
   const today = new Date().toISOString().split("T")[0];
 
-  const folderListV2Worksheet = workbook.addWorksheet(`FILE LIST ${today}`);
-  const metadataV2Worksheet = workbook.addWorksheet(`METADATA ${today}`);
+  // Function to generate a unique sheet name
+  const getUniqueSheetName = (baseName: string): string => {
+    let sheetName = baseName;
+    let counter = 1;
+
+    while (workbook.worksheets.some((ws) => ws.name === sheetName)) {
+      sheetName = `${baseName} (Updated${counter > 1 ? ` ${counter}` : ""})`;
+      counter++;
+    }
+
+    return sheetName;
+  };
+
+  const folderListSheetName = getUniqueSheetName(`FILE LIST ${today}`);
+  const metadataSheetName = getUniqueSheetName(`METADATA ${today}`);
+
+  const folderListV2Worksheet = workbook.addWorksheet(folderListSheetName);
+  const metadataV2Worksheet = workbook.addWorksheet(metadataSheetName);
 
   setupFolderListV2({
     worksheet: folderListV2Worksheet,
