@@ -56,6 +56,7 @@ export const LanTransferPage = () => {
   const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(
     null
   );
+  const [uploadSuccess, setUploadSuccess] = useState<boolean | null>(null);
 
   // File list
   const [metadata, setMetadata] = useState<Record<string, unknown>>({});
@@ -572,6 +573,7 @@ export const LanTransferPage = () => {
       setFolders([]);
       setMetadata({});
       setExtendedMetadata({});
+      setUploadSuccess(null);
       return;
     }
     parseFileList();
@@ -595,6 +597,28 @@ export const LanTransferPage = () => {
     }
   }, [transferForm]);
 
+  useEffect(() => {
+    if (uploadSuccess === true) {
+      // Success
+      toast.success(Toast, {
+        data: {
+          title: "Folder upload successful",
+          message:
+            "Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
+        },
+      });
+    } else if (uploadSuccess === false) {
+      // Failed to download transfer
+      toast.error(Toast, {
+        data: {
+          title: "Folder upload unsuccessful",
+          message:
+            "One or more of your folders was not successfully uploaded due to an invalid folder path or empty folder. Update the folder path(s) by clicking the corresponding Edit icon or remove the folder by clicking the Delete icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
+        },
+      });
+    }
+  }, [uploadSuccess]);
+
   // Toast message once folders have been successfully uploaded
   useEffect(() => {
     if (
@@ -603,29 +627,21 @@ export const LanTransferPage = () => {
       folders.every(
         (folder) =>
           folder.bufferProgress === 100 && folder.metadataProgress === 100
-      )
+      ) &&
+      uploadSuccess !== true
     ) {
-      toast.success(Toast, {
-        data: {
-          title: "Folder upload successful",
-          message:
-            "Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
-        },
-      });
+      setUploadSuccess(true);
     }
   }, [folders, currentViewIndex]);
 
   useEffect(() => {
     if (currentViewIndex === 3) {
       // Open of upload view
-      if (folders.some((folder) => folder.invalidPath)) {
-        toast.error(Toast, {
-          data: {
-            title: "Folder upload unsuccessful",
-            message:
-              "One or more of your folders was not successfully uploaded due to an invalid folder path or empty folder. Update the folder path(s) by clicking the corresponding Edit icon or remove the folder by clicking the Delete icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
-          },
-        });
+      if (
+        folders.some((folder) => folder.invalidPath) &&
+        uploadSuccess !== false
+      ) {
+        setUploadSuccess(false);
       }
     } else if (currentViewIndex === 4) {
       // Open of finish view
