@@ -8,6 +8,7 @@ import {
   ConfirmReDownloadModal,
   TransfersGrid,
 } from "@renderer/components/view-transfers";
+import { Button } from "@bcgov/design-system-react-components";
 
 type Transfer = {
   id: number;
@@ -162,6 +163,7 @@ export const ViewTransfersPage = () => {
           }
         );
         setTransfers(fetchedTransfers);
+        setFilteredTransfers(fetchedTransfers);
       } else return setLoadTransfersSuccess(false);
     } catch (error) {
       console.error(error);
@@ -282,8 +284,7 @@ export const ViewTransfersPage = () => {
     if (downloadSuccess !== false) setDownloadSuccess(false);
   });
 
-  // Filter transfers based on search query
-  useEffect(() => {
+  const handleSearch = () => {
     if (searchQuery.trim() === "") {
       setFilteredTransfers(transfers);
       return;
@@ -300,7 +301,7 @@ export const ViewTransfersPage = () => {
     );
 
     setFilteredTransfers(filtered);
-  }, [searchQuery, transfers]);
+  };
 
   useEffect(() => {
     // Fetch transfers on mount
@@ -321,6 +322,7 @@ export const ViewTransfersPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            <Button onPress={handleSearch}>Search</Button>
           </Stack>
           <TransfersGrid
             rows={filteredTransfers}
