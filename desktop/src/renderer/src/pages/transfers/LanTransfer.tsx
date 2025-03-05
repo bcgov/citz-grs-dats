@@ -444,6 +444,7 @@ export const LanTransferPage = () => {
         setFoldersToProcess(folders);
         setOriginalFolderList(foldersMetadata);
       } catch (error) {
+        setFileList(null);
         if (error instanceof Error) {
           const toastData = getXlsxFileListToastData(error.message);
 
@@ -483,6 +484,9 @@ export const LanTransferPage = () => {
       const application = json.admin.application;
       const folders = json.folders;
 
+      const folderKeys = Object.keys(folders);
+      const hasDuplicates = new Set(folderKeys).size !== folderKeys.length;
+
       const foldersMissingScheduleOrClassification = Object.values(
         folders
       ).some((f) => {
@@ -507,6 +511,15 @@ export const LanTransferPage = () => {
           message:
             "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘admin’ property in the file list and save it, then try uploading the file again.",
         };
+
+      if (hasDuplicates) {
+        // File list has duplicate folders
+        toastData = {
+          title: "Duplicate folder",
+          message:
+            "Your file list (ARS 662) includes duplicate folders. Please remove duplicate folders from the ‘File List’ tab in the file list and save it, then try uploading the file again.",
+        };
+      }
 
       if (foldersMissingScheduleOrClassification) {
         // Folder is missing schedule and/or classification value.
@@ -535,6 +548,7 @@ export const LanTransferPage = () => {
 
       if (toastData) {
         // Create a toast message
+        setFileList(null);
         return toast.error(Toast, { data: toastData });
       }
 
