@@ -64,15 +64,21 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
   });
 
   if (!subAgreementPath) {
-    const subAgreementStream = await download({
-      bucketName: S3_BUCKET,
-      key: `submission-agreements/${body.accession}_${body.application}.pdf`,
-    });
-    if (!subAgreementStream)
+    let subAgreementStream = undefined;
+
+    try {
+      subAgreementStream = await download({
+        bucketName: S3_BUCKET,
+        key: `submission-agreements/${body.accession}_${body.application}.pdf`,
+      });
+
+      if (!subAgreementStream) throw new Error("Missing submission agreement.");
+    } catch (error) {
       throw new HttpError(
         HTTP_STATUS_CODES.NOT_FOUND,
         "Submission Agreement (beginning with 'Submission_Agreement') must be included and have a .pdf extension in the documentation directory."
       );
+    }
 
     console.log(SUB_AGREEMENT_NOT_FOUND(body.accession, body.application));
 
