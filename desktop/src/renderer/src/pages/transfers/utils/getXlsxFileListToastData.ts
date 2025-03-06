@@ -16,6 +16,13 @@ export const getXlsxFileListToastData = (msg: string): ToastData => {
         "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘Cover Page’ tab in the file list and save it, then try uploading the file again.",
     };
 
+  if (msg === "Duplicate folder in file list.")
+    toastData = {
+      title: "Duplicate folder",
+      message:
+        "Your file list (ARS 662) includes duplicate folders. Please remove duplicate folders from the ‘File List’ tab in the file list and save it, then try uploading the file again.",
+    };
+
   if (msg === "Folders is missing schedule and/or classification.")
     toastData = {
       title: "Missing schedule and/or classification value",
