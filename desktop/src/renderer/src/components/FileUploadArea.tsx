@@ -112,6 +112,7 @@ export const FileUploadArea = ({
             : fileExtensions;
         toast.error(Toast, {
           data: {
+            success: false,
             title: "Wrong file type",
             message: `File type not accepted. Please upload an ${fileTypes} file.`,
           },
@@ -158,6 +159,7 @@ export const FileUploadArea = ({
       // Show an error message if the file type is not accepted
       toast.error(Toast, {
         data: {
+          success: false,
           title: "Wrong file type",
           message: `File type not accepted. Please upload an ${fileTypes} file.`,
         },
@@ -191,7 +193,6 @@ export const FileUploadArea = ({
       height={"15rem"}
       border={"solid 1px"}
       onClick={() =>
-        // biome-ignore lint/style/noNonNullAssertion: <explanation>
         !isInvalidFile && document.getElementById("file-input")!.click()
       }
       onDrop={handleDrop}

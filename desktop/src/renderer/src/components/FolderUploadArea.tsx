@@ -48,6 +48,7 @@ export const FolderUploadArea = ({ folderPath, onChange, onDelete }: Props) => {
       } else {
         toast.error(Toast, {
           data: {
+            success: false,
             title: "Wrong file type",
             message:
               "File type not accepted. Please upload a non-empty folder.",
@@ -71,6 +72,7 @@ export const FolderUploadArea = ({ folderPath, onChange, onDelete }: Props) => {
         onDelete();
         toast.error(Toast, {
           data: {
+            success: false,
             title: "Wrong file type",
             message:
               "File type not accepted. Please upload a non-empty folder.",
