@@ -13,3 +13,4 @@ export * from "./Instruction";
 export * from "./TransferRecordsIcon";
 export * from "./HelpModal";
 export * from "./DownloadIcon";
+export * from "./CloseApplicationModal";

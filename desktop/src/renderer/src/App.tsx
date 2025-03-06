@@ -2,7 +2,7 @@ import { Header } from "@bcgov/design-system-react-components";
 import { Box, Button, Grid2 as Grid } from "@mui/material";
 import { createContext, useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import { SideNav, Toast, VPNPopup } from "./components";
+import { CloseApplicationModal, SideNav, Toast, VPNPopup } from "./components";
 import { LeavePageModal } from "./components/LeavePageModal";
 import {
   EdrmsInstructionsPage,
@@ -14,6 +14,7 @@ import {
   LanTransferPage,
   SendRecordsPage,
 } from "./pages";
+import { useAppCloseHandler } from "@/hooks";
 
 type AppContext = {
   idToken?: string;
@@ -38,6 +39,8 @@ function App(): JSX.Element {
   const [showVPNPopup, setShowVPNPopup] = useState<boolean>(false);
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState("/");
+
+  const { showClosePrompt, confirmClose, cancelClose } = useAppCloseHandler();
 
   // Track when progress has been made in the app so we can warn the
   // user about navigating away and losing progress.
@@ -121,6 +124,11 @@ function App(): JSX.Element {
   return (
     <Grid container sx={{ height: "100vh" }}>
       <VPNPopup open={showVPNPopup} />
+      <CloseApplicationModal
+        open={showClosePrompt}
+        onClose={cancelClose}
+        onConfirm={confirmClose}
+      />
       <Grid size={2}>
         <SideNav
           accessToken={accessToken}
