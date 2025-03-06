@@ -1,5 +1,6 @@
 import { Box, Stack, Tooltip, Typography } from "@mui/material";
 import { Circle as ProgressIcon } from "@mui/icons-material";
+import { useState, useEffect } from "react";
 import type {
   GridRenderCellParams,
   GridTreeNodeWithRender,
@@ -11,27 +12,25 @@ type Props = {
 };
 
 const getStatusDetails = ({ params }: Props) => {
-  const complete =
-    params.row.metadataProgress + params.row.bufferProgress === 200;
   const invalidPath = params.row.invalidPath;
   const progress = Math.floor(
     (params.row.metadataProgress + params.row.bufferProgress) / 2
   );
 
   // Upload complete
-  if (complete && !invalidPath)
+  if (progress === 100 && !invalidPath)
     return {
       tooltip: "Upload complete",
       iconColor: "var(--progress-complete)",
-      progressMsg: `${progress}%`,
+      progress,
     };
 
   // Upload in progress
-  if (!complete && !invalidPath)
+  if (progress !== 100 && !invalidPath)
     return {
       tooltip: "Upload in progress.",
       iconColor: "var(--progress-incomplete)",
-      progressMsg: progress > 0 ? `${progress}%` : "",
+      progress,
     };
 
   // Invalid path
@@ -39,15 +38,34 @@ const getStatusDetails = ({ params }: Props) => {
     tooltip:
       "Folder path not found or folder is empty. Use the edit button to update or the delete button to remove.",
     iconColor: "var(--progress-cancelled)",
-    progressMsg: "",
+    progress: null,
   };
 };
 
 export const StatusCell = ({ params }: Props) => {
-  const { tooltip, iconColor, progressMsg } = getStatusDetails({ params });
+  const { tooltip, iconColor, progress } = getStatusDetails({ params });
+  const [showText, setShowText] = useState(true);
+
+  useEffect(() => {
+    if (progress === 100) {
+      const timer = setTimeout(() => {
+        setShowText(false);
+      }, 2000); // Hide text after 2 seconds
+      () => clearTimeout(timer);
+      return;
+    }
+    setShowText(true);
+  }, [progress]);
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100%",
+      }}
+    >
       <Stack direction="row" gap={1}>
         <Tooltip title={tooltip}>
           <ProgressIcon
@@ -56,7 +74,7 @@ export const StatusCell = ({ params }: Props) => {
             }}
           />
         </Tooltip>
-        <Typography>{progressMsg}</Typography>
+        {showText && progress !== null && <Typography>{progress}%</Typography>}
       </Stack>
     </Box>
   );
