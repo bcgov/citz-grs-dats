@@ -1,1 +1,2 @@
-export * from './useFolderList/useFolderList';
+export * from "./useFolderList/useFolderList";
+export * from "./useAppCloseHandler";
