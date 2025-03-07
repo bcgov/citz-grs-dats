@@ -23,6 +23,11 @@ export const ViewTransfersPage = () => {
 
   const { accessToken } = useContext(Context);
 
+  /**
+   * transfers is the original unfiltered state. We use filteredState to track the filtered
+   * transfer list when a search query is made but we need the original state to go back to
+   * when the search query is cleared.
+   */
   const [searchQuery, setSearchQuery] = useState("");
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [filteredTransfers, setFilteredTransfers] = useState<Transfer[]>([]);
@@ -78,6 +83,7 @@ export const ViewTransfersPage = () => {
       // Failed to load transfers
       toast.error(Toast, {
         data: {
+          success: false,
           title: "Failed to load transfers",
           message:
             "We were unable to load transfers. Please log out and try again.",
@@ -91,6 +97,7 @@ export const ViewTransfersPage = () => {
       // Success
       toast.success(Toast, {
         data: {
+          success: true,
           title: "File deleted",
           message: "The file has been deleted successfully.",
         },
@@ -99,6 +106,7 @@ export const ViewTransfersPage = () => {
       // Failed to delete transfer
       toast.error(Toast, {
         data: {
+          success: false,
           title: "Deletion unsuccessful",
           message:
             "Deletion failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
@@ -112,6 +120,7 @@ export const ViewTransfersPage = () => {
       // Success
       toast.success(Toast, {
         data: {
+          success: true,
           title: "Download complete!",
           message: `The file has been downloaded successfully to ${recentDownloadFilePath}`,
         },
@@ -120,6 +129,7 @@ export const ViewTransfersPage = () => {
       // Failed to download transfer
       toast.error(Toast, {
         data: {
+          success: false,
           title: "Download unsuccessful",
           message:
             "Download failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
@@ -285,11 +295,6 @@ export const ViewTransfersPage = () => {
   });
 
   const handleSearch = () => {
-    if (searchQuery.trim() === "") {
-      setFilteredTransfers(transfers);
-      return;
-    }
-
     const lowerCaseQuery = searchQuery.toLowerCase();
 
     const filtered = transfers.filter(
