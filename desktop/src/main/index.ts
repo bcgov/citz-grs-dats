@@ -91,6 +91,11 @@ function createWindow(): void {
     mainWindow.show();
   });
 
+  mainWindow.on("close", (event) => {
+    event.preventDefault(); // Prevent default closing
+    mainWindow.webContents.send("app-close-requested"); // Notify renderer
+  });
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);
     return { action: "deny" };
@@ -494,6 +499,10 @@ app.whenReady().then(() => {
         }
       });
   });
+});
+
+ipcMain.handle("force-quit-app", () => {
+  app.quit();
 });
 
 // Ensure all windows are closed when quitting

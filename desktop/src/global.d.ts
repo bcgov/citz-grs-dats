@@ -78,5 +78,8 @@ interface Window {
       getFolderBuffer: ({ filePath }: { filePath: string }) => Promise<void>;
       shutdown: () => Promise<void>;
     };
+
+    onAppCloseRequested: (callback: () => void) => void;
+    forceQuitApp: () => Promise<unknown>;
   };
 }
