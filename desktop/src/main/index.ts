@@ -8,7 +8,7 @@ import {
   type MenuItemConstructorOptions,
   dialog,
 } from "electron";
-import { join } from "node:path";
+import path, { join } from "node:path";
 import { is } from "@electron-toolkit/utils";
 import electronUpdater, { type AppUpdater } from "electron-updater";
 import { createWorkerPool } from "./fileProcessing";
@@ -18,6 +18,11 @@ import {
   selectDirectory,
 } from "./fileProcessing/actions";
 import EventEmitter from "node:events";
+import { pipeline } from "node:stream";
+import { promisify } from "node:util";
+import fs from "node:fs";
+
+const streamPipeline = promisify(pipeline);
 
 // Set because we have many listeners when the worker scripts are running for every folder uploaded.
 EventEmitter.defaultMaxListeners = 1000; // Set globally for all EventEmitters
@@ -403,6 +408,39 @@ const refreshTokens = async () => {
     clearAuthState(); // Only clear auth if we actually fail to refresh
   }
 };
+
+ipcMain.on("download-transfer", async (_event, downloadURL: string) => {
+  try {
+    console.log(`Downloading file from: ${downloadURL}`);
+
+    const response = await fetch(downloadURL);
+    if (!response.ok)
+      throw new Error(`Failed to fetch file: ${response.statusText}`);
+    if (!response.body)
+      throw new Error("Response body is null. Cannot download file.");
+
+    // Get the file name from the URL
+    const fileName = path.basename(new URL(downloadURL).pathname);
+    const savePath = path.join(app.getPath("downloads"), fileName);
+
+    // Stream the file to the filesystem
+    const fileStream = fs.createWriteStream(savePath);
+    // biome-ignore lint/suspicious/noExplicitAny:
+    await streamPipeline(response.body as any, fileStream);
+
+    console.log("Download transfer complete:", savePath);
+
+    // Notify the Renderer process
+    BrowserWindow.getAllWindows().forEach((win) => {
+      win.webContents.send("download-transfer-complete", savePath);
+    });
+  } catch (error) {
+    console.error("Download transfer error:", error);
+    BrowserWindow.getAllWindows().forEach((win) => {
+      win.webContents.send("download-transfer-failed");
+    });
+  }
+});
 
 const menuTemplate = [
   ...(process.platform === "darwin"
