@@ -6,7 +6,10 @@ import {
   Grid2 as Grid,
   Link,
 } from "@mui/material";
-import { ListAlt as ListIcon } from "@mui/icons-material";
+import {
+  ListAlt as ListIcon,
+  AnalyticsOutlined as ViewStatusIcon,
+} from "@mui/icons-material";
 import { useContext, useEffect, useState, type ReactNode } from "react";
 import { Button } from "@bcgov/design-system-react-components";
 import HomeDatsWorksAccordion from "@renderer/components/HowDatsWorksAccordion";
@@ -24,6 +27,9 @@ export const HomePage = () => {
   const handleLogin = async () => await sso.startLoginProcess();
 
   const { accessToken, setCurrentPath } = useContext(Context);
+
+  const user = sso.getUser(accessToken);
+  const isArchivist = user?.hasRoles(["Archivist"]) ?? false;
 
   type PageLinkProps = {
     title: string;
@@ -128,6 +134,16 @@ export const HomePage = () => {
             desc="Use DATS to securely transfer your digital FR records to the Digital Archives from either a LAN Drive or EDRMS Content Manager v.9.2."
             pageRoute="/send-records"
           />
+
+          {isArchivist && (
+            <PageLinkCard
+              title="View transfer status"
+              icon={<ViewStatusIcon />}
+              buttonText="View transfer status"
+              desc="View transfers sent to the Digital Archives via DATS."
+              pageRoute="/view-transfers"
+            />
+          )}
 
           <HomeDatsWorksAccordion />
 
