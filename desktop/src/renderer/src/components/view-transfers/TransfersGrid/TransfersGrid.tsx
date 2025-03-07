@@ -58,7 +58,7 @@ export const TransfersGrid = ({
     {
       field: "download",
       headerName: "Download",
-      description: "Download transfer.",
+      description: "Download transfer file.",
       width: 100,
       renderCell: (params) => (
         <DownloadCell
@@ -74,10 +74,18 @@ export const TransfersGrid = ({
     {
       field: "delete",
       headerName: "Delete",
-      description: "Delete transfer.",
+      description: "Delete transfer records in DATS.",
       width: 100,
       renderCell: (params) => (
-        <DeleteCell params={params} onTransferDelete={onTransferDelete} />
+        <DeleteCell
+          params={params}
+          disable={
+            !["Downloaded", "Downloaded & Preserved", "Preserved"].includes(
+              params.row.status
+            )
+          }
+          onTransferDelete={onTransferDelete}
+        />
       ),
     },
   ];
