@@ -2,8 +2,7 @@ import type { Request, Response } from "express";
 import express from "express";
 import request from "supertest";
 import router from "@/modules/transfer/router";
-import { create, lan } from "@/modules/transfer/controllers";
-import multer from "multer";
+import { create, lan, edrms, view } from "@/modules/transfer/controllers";
 
 // Mock the controller functions
 jest.mock("@/modules/transfer/controllers", () => ({
@@ -12,6 +11,12 @@ jest.mock("@/modules/transfer/controllers", () => ({
   ),
   lan: jest.fn((req: Request, res: Response) =>
     res.status(200).json({ success: true })
+  ),
+  edrms: jest.fn((req: Request, res: Response) =>
+    res.status(200).json({ success: true })
+  ),
+  view: jest.fn((req: Request, res: Response) =>
+    res.status(200).send("Complete")
   ),
 }));
 
@@ -32,6 +37,13 @@ describe("Transfer Router", () => {
     expect(create).toHaveBeenCalled();
   });
 
+  // Test case: GET / route
+  it("should call the view controller on GET / route", async () => {
+    const app = createApp();
+    await request(app).get("/").expect(200, "Complete");
+    expect(view).toHaveBeenCalled();
+  });
+
   // Test case: POST /lan route with valid JSON
   it("should call the lan controller on POST /lan with valid JSON", async () => {
     const app = createApp();
@@ -44,6 +56,18 @@ describe("Transfer Router", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ success: true });
     expect(lan).toHaveBeenCalled();
+  });
+
+  // Test case: POST /edrms route with valid JSON
+  it("should call the edrms controller on POST /edrms with valid JSON", async () => {
+    const app = createApp();
+    const response = await request(app)
+      .post("/edrms")
+      .field("metadata", JSON.stringify({ version: 2 }));
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ success: true });
+    expect(edrms).toHaveBeenCalled();
   });
 
   // Test case: POST /lan route with invalid JSON

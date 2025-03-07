@@ -11,6 +11,9 @@ export const TRANSFER_STATUSES = [
   "Pre-Transfer",
   "Transferring",
   "Transferred",
+  "Downloaded",
+  "Downloaded & Preserved",
+  "Preserved",
 ] as const;
 
 // Mongoose Schema
@@ -24,18 +27,42 @@ const transferSchema = new Schema({
   jobID: { type: String, required: false },
   checksum: { type: String, required: false },
   metadata: {
-    admin: {
-      application: { type: String, required: true },
-      accession: { type: String, required: true },
-      submittedBy: {
-        name: { type: String, required: true },
-        email: { type: String, required: true },
+    type: new Schema(
+      {
+        admin: {
+          type: new Schema(
+            {
+              application: { type: String, required: true },
+              accession: { type: String, required: true },
+              submittedBy: {
+                type: new Schema(
+                  {
+                    name: { type: String, required: true },
+                    email: { type: String, required: true },
+                  },
+                  { _id: false }
+                ),
+                required: true,
+              },
+            },
+            { _id: false }
+          ),
+          required: true,
+        },
+        folders: { type: Map, of: folderMetadataSchema, required: true },
+        files: { type: Map, of: [fileMetadataSchema], required: true },
       },
-    },
-    folders: { type: Map, of: folderMetadataSchema, required: true }, // Record<string, folderMetadataSchema>
-    files: { type: Map, of: [fileMetadataSchema], required: true }, // Record<string, fileMetadataSchema[]>
+      { _id: false }
+    ),
+    required: true,
   },
   extendedMetadata: { type: Map, of: Schema.Types.Mixed, required: false },
+  transferDate: { type: String, required: false },
+});
+
+transferSchema.index({
+  "metadata.admin.application": 1,
+  "metadata.admin.accession": 1,
 });
 
 // Mongoose Model
@@ -64,6 +91,7 @@ export const transferZodSchema = z.object({
     files: z.record(z.array(fileMetadataZodSchema)),
   }),
   extendedMetadata: z.record(z.any()).optional(),
+  transferDate: z.string().optional(),
 });
 
 // TypeScript Types
