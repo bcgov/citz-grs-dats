@@ -16,9 +16,15 @@ export const downloadTransferBodySchema = z.object({
   accession: z.string(),
 });
 
+export const removeTransferBodySchema = z.object({
+  application: z.string(),
+  accession: z.string(),
+});
+
 // TypeScript type inferred from Zod schema
 export type CreateTransferBody = z.infer<typeof createTransferBodySchema>;
 export type DownloadTransferBody = z.infer<typeof downloadTransferBodySchema>;
+export type RemoveTransferBody = z.infer<typeof removeTransferBodySchema>;
 
 // Schema for FormData fields
 export const lanTransferBodySchema = z.object({

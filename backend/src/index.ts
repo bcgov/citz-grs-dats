@@ -16,7 +16,7 @@ if (!(MONGO_HOST && MONGO_DATABASE_NAME && MONGO_USER && MONGO_PASSWORD))
     "One or more of [MONGO_USER, MONGO_PASSWORD, MONGO_DATABASE_NAME, MONGO_HOST] env vars is undefined."
   );
 
-// Create the MongoDB connection URI
+// Create the MongoDB connection URI.
 const mongoUri = `mongodb://${MONGO_USER}:${encodeURIComponent(
   MONGO_PASSWORD
 )}@${MONGO_HOST}/${MONGO_DATABASE_NAME}?authSource=admin`;
