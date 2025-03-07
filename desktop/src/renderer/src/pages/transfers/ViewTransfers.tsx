@@ -1,4 +1,4 @@
-import { Grid2 as Grid, Stack, Typography } from "@mui/material";
+import { Grid2 as Grid, Stack, TextField, Typography } from "@mui/material";
 import { LoginRequiredModal, Toast } from "@renderer/components";
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -8,19 +8,29 @@ import {
   ConfirmReDownloadModal,
   TransfersGrid,
 } from "@renderer/components/view-transfers";
+import { Button } from "@bcgov/design-system-react-components";
 
 type Transfer = {
   id: number;
   accession: string;
   application: string;
   status: string;
-  transferDate: string;
+  transferDate: string; // Format YYYY/MM/DD
 };
 
 export const ViewTransfersPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
   const { accessToken } = useContext(Context);
+
+  /**
+   * transfers is the original unfiltered state. We use filteredState to track the filtered
+   * transfer list when a search query is made but we need the original state to go back to
+   * when the search query is cleared.
+   */
+  const [searchQuery, setSearchQuery] = useState("");
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [filteredTransfers, setFilteredTransfers] = useState<Transfer[]>([]);
 
   // Modals
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
@@ -29,7 +39,6 @@ export const ViewTransfersPage = () => {
   const [showConfirmReDownloadModal, setShowConfirmReDownloadModal] =
     useState(false);
 
-  const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [downloadAccession, setDownloadAccession] = useState<string | null>(
     null
   );
@@ -74,6 +83,7 @@ export const ViewTransfersPage = () => {
       // Failed to load transfers
       toast.error(Toast, {
         data: {
+          success: false,
           title: "Failed to load transfers",
           message:
             "We were unable to load transfers. Please log out and try again.",
@@ -87,6 +97,7 @@ export const ViewTransfersPage = () => {
       // Success
       toast.success(Toast, {
         data: {
+          success: true,
           title: "File deleted",
           message: "The file has been deleted successfully.",
         },
@@ -95,6 +106,7 @@ export const ViewTransfersPage = () => {
       // Failed to delete transfer
       toast.error(Toast, {
         data: {
+          success: false,
           title: "Deletion unsuccessful",
           message:
             "Deletion failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
@@ -108,6 +120,7 @@ export const ViewTransfersPage = () => {
       // Success
       toast.success(Toast, {
         data: {
+          success: true,
           title: "Download complete!",
           message: `The file has been downloaded successfully to ${recentDownloadFilePath}`,
         },
@@ -116,6 +129,7 @@ export const ViewTransfersPage = () => {
       // Failed to download transfer
       toast.error(Toast, {
         data: {
+          success: false,
           title: "Download unsuccessful",
           message:
             "Download failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
@@ -159,6 +173,7 @@ export const ViewTransfersPage = () => {
           }
         );
         setTransfers(fetchedTransfers);
+        setFilteredTransfers(fetchedTransfers);
       } else return setLoadTransfersSuccess(false);
     } catch (error) {
       console.error(error);
@@ -279,6 +294,20 @@ export const ViewTransfersPage = () => {
     if (downloadSuccess !== false) setDownloadSuccess(false);
   });
 
+  const handleSearch = () => {
+    const lowerCaseQuery = searchQuery.toLowerCase();
+
+    const filtered = transfers.filter(
+      ({ accession, application, status, transferDate }) =>
+        accession.toLowerCase().includes(lowerCaseQuery) ||
+        application.toLowerCase().includes(lowerCaseQuery) ||
+        status.toLowerCase().includes(lowerCaseQuery) ||
+        transferDate.includes(searchQuery)
+    );
+
+    setFilteredTransfers(filtered);
+  };
+
   useEffect(() => {
     // Fetch transfers on mount
     handleFetchTransfers();
@@ -290,8 +319,18 @@ export const ViewTransfersPage = () => {
       <Grid size={8} sx={{ paddingTop: 3 }}>
         <Stack gap={2}>
           <Typography variant="h2">View transfer status</Typography>
+          <Stack direction="row" spacing={1}>
+            <TextField
+              sx={{ width: "350px" }}
+              size="small"
+              placeholder="Search within"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Button onPress={handleSearch}>Search</Button>
+          </Stack>
           <TransfersGrid
-            rows={transfers}
+            rows={filteredTransfers}
             onTransferDelete={handleTransferDelete}
             onTransferDownload={handleTransferDownload}
           />
