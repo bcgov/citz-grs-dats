@@ -21,12 +21,17 @@ export const parseXlsxFileList = (
           const data = new Uint8Array(event.target.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: "array" });
           const coverPage = workbook.Sheets["COVER PAGE"];
-          const fileList = workbook.Sheets["FILE LIST"];
 
-          if (!coverPage || !fileList)
+          const fileListSheetName = workbook.SheetNames.find((name) =>
+            name.startsWith("FILE LIST")
+          );
+
+          if (!coverPage || !fileListSheetName)
             return reject(
               new Error('Missing on or more of ["COVER PAGE", "FILE LIST"].')
             );
+
+          const fileList = workbook.Sheets[fileListSheetName];
 
           // Access cells
           const accession = coverPage?.B3?.v?.toString();
@@ -46,6 +51,9 @@ export const parseXlsxFileList = (
           while (true) {
             const folderName = fileList[`A${rowIndex}`]?.v?.toString();
             if (!folderName) break;
+
+            if (folders.includes(folderName))
+              return reject(new Error("Duplicate folder in file list."));
 
             folders.push(folderName);
 

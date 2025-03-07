@@ -1,5 +1,6 @@
 import { Box, Stack, Tooltip, Typography } from "@mui/material";
 import { Circle as ProgressIcon } from "@mui/icons-material";
+import { useState, useEffect } from "react";
 
 type Props = {
   bufferProgress: number;
@@ -14,24 +15,41 @@ const getStatusDetails = ({ bufferProgress }: Props) => {
     return {
       tooltip: "Upload complete",
       iconColor: "var(--progress-complete)",
-      progressMsg: `${progress}%`,
+      progress,
     };
 
   // Upload in progress
   return {
     tooltip: "Upload in progress.",
     iconColor: "var(--progress-incomplete)",
-    progressMsg: progress > 0 ? `${progress}%` : "",
+    progress,
   };
 };
 
 export const StatusCell = ({ bufferProgress }: Props) => {
-  const { tooltip, iconColor, progressMsg } = getStatusDetails({
-    bufferProgress,
-  });
+  const { tooltip, iconColor, progress } = getStatusDetails({ bufferProgress });
+  const [showText, setShowText] = useState(true);
+
+  useEffect(() => {
+    if (progress === 100) {
+      const timer = setTimeout(() => {
+        setShowText(false);
+      }, 2000); // Hide text after 2 seconds
+      () => clearTimeout(timer);
+      return;
+    }
+    setShowText(true);
+  }, [progress]);
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100%",
+      }}
+    >
       <Stack direction="row" gap={1}>
         <Tooltip title={tooltip}>
           <ProgressIcon
@@ -40,7 +58,7 @@ export const StatusCell = ({ bufferProgress }: Props) => {
             }}
           />
         </Tooltip>
-        <Typography>{progressMsg}</Typography>
+        {showText && progress !== null && <Typography>{progress}%</Typography>}
       </Stack>
     </Box>
   );
