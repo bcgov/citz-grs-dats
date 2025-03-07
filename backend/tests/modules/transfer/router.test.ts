@@ -2,7 +2,13 @@ import type { Request, Response } from "express";
 import express from "express";
 import request from "supertest";
 import router from "@/modules/transfer/router";
-import { create, lan, edrms, view } from "@/modules/transfer/controllers";
+import {
+  create,
+  lan,
+  edrms,
+  view,
+  download,
+} from "@/modules/transfer/controllers";
 
 // Mock the controller functions
 jest.mock("@/modules/transfer/controllers", () => ({
@@ -16,6 +22,9 @@ jest.mock("@/modules/transfer/controllers", () => ({
     res.status(200).json({ success: true })
   ),
   view: jest.fn((req: Request, res: Response) =>
+    res.status(200).send("Complete")
+  ),
+  download: jest.fn((req: Request, res: Response) =>
     res.status(200).send("Complete")
   ),
 }));
@@ -42,6 +51,13 @@ describe("Transfer Router", () => {
     const app = createApp();
     await request(app).get("/").expect(200, "Complete");
     expect(view).toHaveBeenCalled();
+  });
+
+  // Test case: POST /download route
+  it("should call the download controller on POST /download route", async () => {
+    const app = createApp();
+    await request(app).post("/download").expect(200, "Complete");
+    expect(download).toHaveBeenCalled();
   });
 
   // Test case: POST /lan route with valid JSON
