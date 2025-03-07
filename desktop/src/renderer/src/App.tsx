@@ -98,6 +98,7 @@ function App(): JSX.Element {
     if (showVPNPopup) {
       toast.error(Toast, {
         data: {
+          success: false,
           title: "DATS is unavailable",
           message: "Please connect to the BC Gov network or VPN to resume.",
         },
@@ -173,7 +174,7 @@ function App(): JSX.Element {
         </Context.Provider>
         <ToastContainer
           position="bottom-left"
-          autoClose={5000}
+          autoClose={false}
           hideProgressBar
           pauseOnHover
         />
