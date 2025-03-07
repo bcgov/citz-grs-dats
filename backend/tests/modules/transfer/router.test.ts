@@ -67,7 +67,7 @@ describe("Transfer Router", () => {
   // Test case: GET /download route
   it("should call the download controller on GET /download route", async () => {
     const app = createApp();
-    await request(app).get("/download").expect(200, "Complete");
+    await request(app).post("/download").expect(200, "Complete");
     expect(download).toHaveBeenCalled();
   });
 

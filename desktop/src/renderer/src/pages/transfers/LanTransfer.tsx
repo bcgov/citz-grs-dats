@@ -56,6 +56,7 @@ export const LanTransferPage = () => {
   const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(
     null
   );
+  const [uploadSuccess, setUploadSuccess] = useState<boolean | null>(null);
 
   // File list
   const [metadata, setMetadata] = useState<Record<string, unknown>>({});
@@ -393,6 +394,7 @@ export const LanTransferPage = () => {
     if (folders.some((row) => row.folder === selectedFolderPath)) {
       toast.error(Toast, {
         data: {
+          success: false,
           title: "Folder edit unsuccessful",
           message:
             "The folder path you selected is already used in the file list. Please select a different folder path.",
@@ -444,6 +446,7 @@ export const LanTransferPage = () => {
         setFoldersToProcess(folders);
         setOriginalFolderList(foldersMetadata);
       } catch (error) {
+        setFileList(null);
         if (error instanceof Error) {
           const toastData = getXlsxFileListToastData(error.message);
 
@@ -453,6 +456,7 @@ export const LanTransferPage = () => {
         // Unexpected error
         return toast.error(Toast, {
           data: {
+            success: false,
             title: "Unexpected error",
             message: `Encountered an unexpected error while parsing your file list (ARS 662). Please contact someone from the DATS team for assistance. Error: ${error}`,
           },
@@ -472,6 +476,7 @@ export const LanTransferPage = () => {
         // Invalid JSON
         return toast.error(Toast, {
           data: {
+            success: false,
             title: "Invalid json",
             message:
               "Your file list (ARS 662) could not be parsed. Please make sure it is formatted correctly and save it, then try uploading the file again.",
@@ -482,6 +487,9 @@ export const LanTransferPage = () => {
       const accession = json.admin.accession;
       const application = json.admin.application;
       const folders = json.folders;
+
+      const folderKeys = Object.keys(folders);
+      const hasDuplicates = new Set(folderKeys).size !== folderKeys.length;
 
       const foldersMissingScheduleOrClassification = Object.values(
         folders
@@ -503,14 +511,26 @@ export const LanTransferPage = () => {
       if (!accAndAppExist)
         // Missing accession and/or application numbers.
         toastData = {
+          success: false,
           title: "Missing accession and/or application number",
           message:
             "Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘admin’ property in the file list and save it, then try uploading the file again.",
         };
 
+      if (hasDuplicates) {
+        // File list has duplicate folders
+        toastData = {
+          success: false,
+          title: "Duplicate folder",
+          message:
+            "Your file list (ARS 662) includes duplicate folders. Please remove duplicate folders from the ‘File List’ tab in the file list and save it, then try uploading the file again.",
+        };
+      }
+
       if (foldersMissingScheduleOrClassification) {
         // Folder is missing schedule and/or classification value.
         toastData = {
+          success: false,
           title: "Missing schedule and/or classification value",
           message:
             "Your file list (ARS 662) is missing a schedule and/or classification value. Please review this information in the ‘File list’ tab of your file list and save it, then try uploading the file again.",
@@ -520,6 +540,7 @@ export const LanTransferPage = () => {
       if (accAndAppExist && !accAndAppAreValid)
         // Invalid accession and/or application numbers.
         toastData = {
+          success: false,
           title: "Invalid accession and/or application number",
           message:
             "Your file list (ARS 662) has an invalid accession and/or application number. Please make sure to only use numbers (with the exception of a dash in the accession number). Please update this information and save it, then try uploading the file again.",
@@ -528,6 +549,7 @@ export const LanTransferPage = () => {
       if (!folders || Object.keys(folders).length === 0)
         // Missing folders property.
         toastData = {
+          success: false,
           title: "Missing folders",
           message:
             "Your file list (ARS 662) is missing the ‘folders’ property. Please add this information to the file list and save it, then try uploading the file again.",
@@ -535,6 +557,7 @@ export const LanTransferPage = () => {
 
       if (toastData) {
         // Create a toast message
+        setFileList(null);
         return toast.error(Toast, { data: toastData });
       }
 
@@ -557,6 +580,7 @@ export const LanTransferPage = () => {
         // Filename doesnt match regex
         toast.error(Toast, {
           data: {
+            success: false,
             title: "Invalid filename",
             message:
               "Your Digital File List file name must begin with 'Digital_File_List' or 'File List'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
@@ -572,6 +596,7 @@ export const LanTransferPage = () => {
       setFolders([]);
       setMetadata({});
       setExtendedMetadata({});
+      setUploadSuccess(null);
       return;
     }
     parseFileList();
@@ -585,6 +610,7 @@ export const LanTransferPage = () => {
         // Filename doesnt match regex
         toast.error(Toast, {
           data: {
+            success: false,
             title: "Invalid filename",
             message:
               "Your Transfer Form ARS 617 file name must begin with 'Transfer_Form' or '617'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
@@ -595,6 +621,30 @@ export const LanTransferPage = () => {
     }
   }, [transferForm]);
 
+  useEffect(() => {
+    if (uploadSuccess === true) {
+      // Success
+      toast.success(Toast, {
+        data: {
+          success: true,
+          title: "Folder upload successful",
+          message:
+            "Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
+        },
+      });
+    } else if (uploadSuccess === false) {
+      // Failed to download transfer
+      toast.error(Toast, {
+        data: {
+          success: false,
+          title: "Folder upload unsuccessful",
+          message:
+            "One or more of your folders was not successfully uploaded due to an invalid folder path or empty folder. Update the folder path(s) by clicking the corresponding Edit icon or remove the folder by clicking the Delete icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
+        },
+      });
+    }
+  }, [uploadSuccess]);
+
   // Toast message once folders have been successfully uploaded
   useEffect(() => {
     if (
@@ -603,29 +653,21 @@ export const LanTransferPage = () => {
       folders.every(
         (folder) =>
           folder.bufferProgress === 100 && folder.metadataProgress === 100
-      )
+      ) &&
+      uploadSuccess !== true
     ) {
-      toast.success(Toast, {
-        data: {
-          title: "Folder upload successful",
-          message:
-            "Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
-        },
-      });
+      setUploadSuccess(true);
     }
   }, [folders, currentViewIndex]);
 
   useEffect(() => {
     if (currentViewIndex === 3) {
       // Open of upload view
-      if (folders.some((folder) => folder.invalidPath)) {
-        toast.error(Toast, {
-          data: {
-            title: "Folder upload unsuccessful",
-            message:
-              "One or more of your folders was not successfully uploaded due to an invalid folder path or empty folder. Update the folder path(s) by clicking the corresponding Edit icon or remove the folder by clicking the Delete icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
-          },
-        });
+      if (
+        folders.some((folder) => folder.invalidPath) &&
+        uploadSuccess !== false
+      ) {
+        setUploadSuccess(false);
       }
     } else if (currentViewIndex === 4) {
       // Open of finish view
