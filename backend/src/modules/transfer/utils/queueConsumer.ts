@@ -149,6 +149,15 @@ export const queueConsumer = async (
     return console.error(EMAIL_NOT_FOUND(accession, application));
   }
 
+  const today = new Date().toISOString().split("T")[0].replaceAll("-", "/");
+
+  // Save data for transfer to Mongo
+  await TransferService.updateTransferEntry(accession, application, {
+    jobID,
+    status: "Transferred",
+    transferDate: today,
+  });
+
   // Send completion email
   sendEmail({
     attachments: [

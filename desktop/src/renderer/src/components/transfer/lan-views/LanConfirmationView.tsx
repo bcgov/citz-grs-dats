@@ -72,9 +72,10 @@ export const LanConfirmationView = ({
     console.log(`Deleted folder: ${folder}`);
   };
 
-  const disableNext = !folders.every(
-    (folder) => folder.metadataProgress + folder.bufferProgress === 200
-  );
+  const disableNext =
+    !folders.every(
+      (folder) => folder.metadataProgress + folder.bufferProgress === 200
+    ) || folders.length === 0;
 
   return (
     <Stack gap={3}>

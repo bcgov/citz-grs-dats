@@ -131,6 +131,7 @@ export const FileListPage = () => {
         setFinalizeModalIsOpen(false);
         toast.error(Toast, {
           data: {
+            success: false,
             title: "Submission failed",
             message:
               "We were unable to fulfill your request to create a file list. Please try again.",

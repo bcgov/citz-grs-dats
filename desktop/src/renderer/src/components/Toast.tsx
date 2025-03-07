@@ -1,5 +1,7 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import type { ToastContentProps } from "react-toastify";
+import { ToastSuccessIcon } from "./ToastSuccessIcon";
+import { ToastErrorIcon } from "./ToastErrorIcon";
 
 /**
  * Example usage (Calling test will make the toast appear):
@@ -19,11 +21,16 @@ import type { ToastContentProps } from "react-toastify";
 
 export const Toast = ({
   data,
-}: ToastContentProps<{ title: string; message: string }>) => {
+}: ToastContentProps<{ title: string; message: string; success: boolean }>) => {
   return (
-    <Box>
-      <Typography variant="h4">{data.title}</Typography>
-      <Typography>{data.message}</Typography>
-    </Box>
+    <Stack direction="row" spacing={1}>
+      <Box sx={{ width: "20px" }}>
+        {data.success ? <ToastSuccessIcon /> : <ToastErrorIcon />}
+      </Box>
+      <Stack gap={1}>
+        <Typography variant="h4">{data.title}</Typography>
+        <Typography>{data.message}</Typography>
+      </Stack>
+    </Stack>
   );
 };

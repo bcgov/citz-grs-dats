@@ -17,4 +17,8 @@ export const api = {
   utils,
   transfer,
   workers,
+  onAppCloseRequested: (callback: () => void) => {
+    ipcRenderer.on("app-close-requested", callback);
+  },
+  forceQuitApp: () => ipcRenderer.invoke("force-quit-app"),
 };

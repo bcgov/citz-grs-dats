@@ -9,7 +9,9 @@ const {
       ERROR_CREATING_ENTRY,
       ERROR_CREATING_OR_UPDATING_ENTRY,
       ERROR_IN_GET_TRANSFER_WHERE,
+      ERROR_IN_GET_TRANSFERS,
       ERROR_UPDATING_ENTRY,
+      ERROR_DELETING_ENTRY,
     },
   },
 } = logs;
@@ -24,6 +26,7 @@ type CreateTransferData = {
   checksum?: string | null;
   status?: (typeof TRANSFER_STATUSES)[number];
   extendedMetadata?: Record<string, unknown> | undefined;
+  transferDate?: string;
 };
 
 type UpdateTransferData = Partial<
@@ -164,6 +167,36 @@ export const TransferService = {
   },
 
   /**
+   * Retrieves all completed Transfer entries.
+   * @returns The Transfer documents.
+   * @throws Error if the retrieval fails.
+   */
+  async getCompletedTransfers() {
+    try {
+      const transferDocuments = await TransferModel.find({
+        status: {
+          $in: [
+            "Transferred",
+            "Downloaded",
+            "Preserved",
+            "Downloaded & Preserved",
+          ],
+        },
+      })
+        .lean()
+        .exec();
+      return transferDocuments;
+    } catch (error) {
+      console.error(ERROR_IN_GET_TRANSFERS, error);
+      throw new Error(
+        `Failed to get Transfer entry: ${
+          error instanceof Error ? error.message : error
+        }`
+      );
+    }
+  },
+
+  /**
    * Updates a Transfer entry based on `application` and `accession`.
    * @param application - The application identifier.
    * @param accession - The accession identifier.
@@ -172,55 +205,100 @@ export const TransferService = {
    * @throws Error if the update fails.
    */
   async updateTransferEntry(
-    application: string,
     accession: string,
+    application: string,
     updates: UpdateTransferData
   ) {
     try {
-      const transferDocument = await TransferModel.findOne({
-        "metadata.admin.application": application,
-        "metadata.admin.accession": accession,
-      });
+      // Construct the update object dynamically
+      const updateFields: Record<string, unknown> = {};
 
-      if (!transferDocument) {
-        throw new Error("Transfer entry not found.");
-      }
-
-      if (updates.user && transferDocument.metadata?.admin) {
-        transferDocument.metadata.admin.submittedBy = {
-          name:
-            updates.user.display_name ??
-            transferDocument.metadata?.admin?.submittedBy?.name!,
-          email:
-            updates.user.email ??
-            transferDocument.metadata?.admin?.submittedBy?.email!,
+      // Update submittedBy if `updates.user` exists
+      if (updates.user) {
+        updateFields["metadata.admin.submittedBy"] = {
+          name: updates.user.display_name ?? undefined,
+          email: updates.user.email ?? undefined,
         };
       }
 
-      if (updates.folders && transferDocument.metadata) {
-        transferDocument.metadata.folders = updates.folders;
+      // Update folders if provided
+      if (updates.folders) {
+        updateFields["metadata.folders"] = updates.folders;
       }
 
-      if (updates.files && transferDocument.metadata) {
-        transferDocument.metadata.files = updates.files;
+      // Update files if provided
+      if (updates.files) {
+        updateFields["metadata.files"] = updates.files;
       }
 
+      // Update other top-level fields
       if (updates.jobID !== undefined) {
-        transferDocument.jobID = updates.jobID as NonNullable<
-          TransferMongoose["jobID"]
-        >;
+        updateFields.jobID = updates.jobID;
+      }
+
+      if (updates.transferDate !== undefined) {
+        updateFields.transferDate = updates.transferDate;
       }
 
       if (updates.status) {
-        transferDocument.status = updates.status;
+        updateFields.status = updates.status;
       }
 
-      const updatedDocument = await transferDocument.save();
+      // Find and update the document in one atomic operation
+      const updatedDocument = await TransferModel.findOneAndUpdate(
+        {
+          "metadata.admin.application": String(application),
+          "metadata.admin.accession": String(accession),
+        },
+        { $set: updateFields },
+        { new: true, runValidators: true }
+      );
+
+      // Throw error if no document was found
+      if (!updatedDocument) {
+        throw new Error(
+          `Transfer entry not found with accession: ${accession}, application: ${application}.`
+        );
+      }
+
       return updatedDocument;
     } catch (error) {
       console.error(ERROR_UPDATING_ENTRY, error);
       throw new Error(
         `Failed to update Transfer entry: ${
+          error instanceof Error ? error.message : error
+        }`
+      );
+    }
+  },
+
+  /**
+   * Deletes a Transfer entry based on `application` and `accession`.
+   * @param application - The application identifier.
+   * @param accession - The accession identifier.
+   * @returns The deleted document.
+   * @throws Error if the deletion fails or if the document is not found.
+   */
+  async deleteTransferEntry(accession: string, application: string) {
+    try {
+      // Find and delete the document in one atomic operation
+      const deletedDocument = await TransferModel.findOneAndDelete({
+        "metadata.admin.application": String(application),
+        "metadata.admin.accession": String(accession),
+      });
+
+      // Throw error if no document was found
+      if (!deletedDocument) {
+        throw new Error(
+          `Transfer entry not found with accession: ${accession}, application: ${application}.`
+        );
+      }
+
+      return deletedDocument;
+    } catch (error) {
+      console.error(ERROR_DELETING_ENTRY, error);
+      throw new Error(
+        `Failed to delete Transfer entry: ${
           error instanceof Error ? error.message : error
         }`
       );

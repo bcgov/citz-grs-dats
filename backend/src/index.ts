@@ -3,6 +3,7 @@ import app from "./express";
 import { serverStartupLogs } from "@bcgov/citz-imb-express-utilities";
 import { ENV } from "./config";
 import { handleTermination, logs } from "./utils";
+import { TransferModel } from "./modules/transfer/entities";
 
 const { PORT, MONGO_USER, MONGO_PASSWORD, MONGO_DATABASE_NAME, MONGO_HOST } =
   ENV;
@@ -15,7 +16,7 @@ if (!(MONGO_HOST && MONGO_DATABASE_NAME && MONGO_USER && MONGO_PASSWORD))
     "One or more of [MONGO_USER, MONGO_PASSWORD, MONGO_DATABASE_NAME, MONGO_HOST] env vars is undefined."
   );
 
-// Create the MongoDB connection URI
+// Create the MongoDB connection URI.
 const mongoUri = `mongodb://${MONGO_USER}:${encodeURIComponent(
   MONGO_PASSWORD
 )}@${MONGO_HOST}/${MONGO_DATABASE_NAME}?authSource=admin`;
@@ -29,6 +30,9 @@ mongoose
     try {
       const db = mongoose.connection.db;
       const stats = await db?.stats();
+
+      // Ensure indexes are created
+      await TransferModel.syncIndexes();
 
       console.log("MongoDB Storage Stats:");
       console.log(` - Data Size: ${stats?.dataSize} bytes`);
