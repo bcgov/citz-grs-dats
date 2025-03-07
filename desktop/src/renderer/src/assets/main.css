@@ -92,6 +92,10 @@
 	--toastify-icon-color-success: #42814a !important;
 }
 
+.Toastify__toast-icon {
+	display: none;
+}
+
 .Toastify__close-button {
 	color: #2d2d2d;
 	padding: 7px;

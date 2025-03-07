@@ -49,19 +49,20 @@ const contentStyle = {
   padding: "8px 24px",
 };
 
-export const LeavePageModal = ({ open, onClose, onConfirm }: Props) => {
+export const CloseApplicationModal = ({ open, onClose, onConfirm }: Props) => {
   return (
     <Modal open={open} onClose={onClose}>
       <Stack gap={3} sx={modalStyle}>
         <Box sx={headerStyle}>
           <WarningAmberIcon sx={{ color: "#F8BB47", width: "20px" }} />
-          <Typography variant="h3">Leave page?</Typography>
+          <Typography variant="h3">Close application?</Typography>
         </Box>
 
         <Box sx={contentStyle}>
           <Typography>
-            If you leave this page, <b>any unsaved progress will be lost</b>.
-            Are you sure you want to continue?
+            If you close the application,{" "}
+            <b>any unsaved progress will be lost</b>. Are you sure you want to
+            continue?
           </Typography>
         </Box>
 
@@ -74,7 +75,7 @@ export const LeavePageModal = ({ open, onClose, onConfirm }: Props) => {
             style={innerButtonStyle}
             onPress={onConfirm}
           >
-            Confirm leave
+            Confirm close
           </Button>
         </Box>
       </Stack>
