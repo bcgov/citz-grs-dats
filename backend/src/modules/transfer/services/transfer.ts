@@ -118,7 +118,7 @@ export const TransferService = {
           folders,
           files,
         },
-        extendedMetadata: new Map(Object.entries(extendedMetadata)),
+        extendedMetadata: extendedMetadata as unknown as Map<string, unknown>,
       };
 
       // Find an existing entry by `application` and `accession`

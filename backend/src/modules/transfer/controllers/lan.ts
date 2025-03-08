@@ -98,8 +98,8 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
 
   // Get original extended metadata
   const transferEntry = await TransferService.getTransferWhere({
-    accession,
-    application,
+    "metadata.admin.accession": accession,
+    "metadata.admin.application": application,
   });
   const originalExtendedMetadataJson = transferEntry?.extendedMetadata ?? {};
 
