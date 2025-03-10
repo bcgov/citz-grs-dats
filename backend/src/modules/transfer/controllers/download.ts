@@ -27,9 +27,20 @@ export const download = errorWrapper(async (req: Request, res: Response) => {
       `Transfer with accession: ${body.accession}, application: ${body.application} not found in s3.`
     );
 
+  // Get existing transfer metadata
+  const transferEntry = await TransferService.getTransferWhere({
+    "metadata.admin.accession": body.accession,
+    "metadata.admin.application": body.application,
+  });
+
+  const newStatus =
+    transferEntry?.status === "Preserved"
+      ? "Downloaded & Preserved"
+      : "Downloaded";
+
   // Update mongo record
   await TransferService.updateTransferEntry(body.accession, body.application, {
-    status: "Downloaded",
+    status: newStatus,
   });
 
   const result = getStandardResponse({

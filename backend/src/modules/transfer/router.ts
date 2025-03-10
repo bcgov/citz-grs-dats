@@ -1,6 +1,14 @@
 import type { Request, Response, NextFunction, RequestHandler } from "express";
 import { Router } from "express";
-import { create, download, edrms, lan, remove, view } from "./controllers";
+import {
+  create,
+  download,
+  edrms,
+  lan,
+  remove,
+  view,
+  preserve,
+} from "./controllers";
 import multer from "multer";
 
 const upload = multer({
@@ -18,6 +26,9 @@ router.get("/", view);
 
 // Get download link for transfer.
 router.post("/download", download);
+
+// Preserve to LibSafe.
+router.post("/preserve", preserve);
 
 // Remove transfer.
 router.delete("/", remove);

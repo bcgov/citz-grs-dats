@@ -4,3 +4,4 @@ export * from "./edrms";
 export * from "./view";
 export * from "./download";
 export * from "./remove";
+export * from "./preserve";
