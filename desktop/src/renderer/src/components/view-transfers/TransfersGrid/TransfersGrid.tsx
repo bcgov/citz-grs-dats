@@ -2,6 +2,7 @@ import { Box } from "@mui/material";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { DeleteCell } from "./DeleteCell";
 import { DownloadCell } from "./DownloadCell";
+import { PreserveCell } from "./PreserveCell";
 
 export type Row = {
   id: number;
@@ -22,12 +23,17 @@ type Props = {
     application: string,
     previouslyDownloaded: boolean
   ) => Promise<void> | void;
+  onTransferPreserve: (
+    accession: string,
+    application: string
+  ) => Promise<void> | void;
 };
 
 export const TransfersGrid = ({
   rows,
   onTransferDelete,
   onTransferDownload,
+  onTransferPreserve,
 }: Props) => {
   const columns: GridColDef<(typeof rows)[number]>[] = [
     {
@@ -54,6 +60,21 @@ export const TransfersGrid = ({
         const dateB = new Date(b.replace(/\//g, "-"));
         return dateA.getTime() - dateB.getTime();
       },
+    },
+    {
+      field: "preserve",
+      headerName: "Preserve",
+      description: "Preserve transfer file to LibSafe.",
+      width: 100,
+      renderCell: (params) => (
+        <PreserveCell
+          params={params}
+          onTransferPreserve={onTransferPreserve}
+          preserved={["Preserved", "Downloaded & Preserved"].includes(
+            params.row.status
+          )}
+        />
+      ),
     },
     {
       field: "download",

@@ -8,7 +8,7 @@ import { preserveTransferBodySchema } from "../schemas";
 import { ENV } from "@/config";
 import { TransferService } from "../services";
 import { download } from "@/modules/s3/utils";
-import { streamToBuffer } from "@/utils";
+import { streamToBuffer, logs } from "@/utils";
 
 const {
   LIBSAFE_API_URL,
@@ -22,6 +22,10 @@ const {
   S3_BUCKET,
 } = ENV;
 
+const {
+  LIBSAFE: { CREATE_CONTAINER, CONTAINER_UPLOAD },
+} = logs;
+
 // Preserve a transfer to Libsafe.
 export const preserve = errorWrapper(async (req: Request, res: Response) => {
   const { getStandardResponse, getZodValidatedBody, user } = req;
@@ -33,6 +37,8 @@ export const preserve = errorWrapper(async (req: Request, res: Response) => {
       "Missing LIBSAFE_API_KEY env var."
     );
 
+  let containerDetails = {};
+
   if (SAVE_TO_LIBSAFE) {
     const containerEndpoint = `${LIBSAFE_API_URL}/container`;
 
@@ -43,7 +49,7 @@ export const preserve = errorWrapper(async (req: Request, res: Response) => {
     // Make request to LIBSAFE, create container
     const containerResponse = await fetch(containerEndpoint, {
       method: "POST",
-      headers,
+      headers: { ...headers, "Content-Type": "application/json" },
       body: JSON.stringify({
         archival_structure_id: LIBSAFE_ARCHIVAL_STRUCTURE_ID,
         auto_check_in: true,
@@ -70,6 +76,10 @@ export const preserve = errorWrapper(async (req: Request, res: Response) => {
         "The LibSafe create container request failed."
       );
 
+    containerDetails = containerJsonResponse.result;
+
+    console.log(CREATE_CONTAINER(containerJsonResponse.result.id));
+
     const containerUploadEndpoint = `${LIBSAFE_API_URL}/container/${containerJsonResponse.result.id}/file/upload`;
 
     // Get transfer from s3
@@ -86,24 +96,19 @@ export const preserve = errorWrapper(async (req: Request, res: Response) => {
       const end = Math.min(start + chunkSize, buffer.length);
       const fileChunk = buffer.slice(start, end);
 
+      const transferFilename = `TR_${body.accession}_${body.application}.zip`;
+
       // Create FormData for this chunk
       const formData = new FormData();
       formData.append("chunkIndex", chunkIndex.toString());
       formData.append("chunkCount", chunkCount.toString());
-      formData.append(
-        "file",
-        new Blob([fileChunk]),
-        `TR_${body.accession}_${body.application}.zip`
-      );
-      formData.append(
-        "fileName",
-        `TR_${body.accession}_${body.application}.zip`
-      );
+      formData.append("file", new Blob([fileChunk]), transferFilename);
+      formData.append("fileName", transferFilename);
 
       // Make request to LIBSAFE, upload to container
       const response = await fetch(containerUploadEndpoint, {
         method: "POST",
-        headers,
+        headers: { ...headers, "Content-Type": "multipart/form-data" },
         body: formData,
       });
 
@@ -111,6 +116,15 @@ export const preserve = errorWrapper(async (req: Request, res: Response) => {
         console.error(`Chunk ${chunkIndex + 1} failed:`, await response.text());
         throw new Error(`Failed to upload chunk ${chunkIndex + 1}`);
       }
+
+      console.log(
+        CONTAINER_UPLOAD(
+          containerJsonResponse.result.id,
+          transferFilename,
+          chunkIndex + 1,
+          chunkCount
+        )
+      );
     }
   }
 
@@ -135,6 +149,7 @@ export const preserve = errorWrapper(async (req: Request, res: Response) => {
       user: `${user?.first_name} ${user?.last_name}`,
       accession: body.accession,
       application: body.application,
+      container: containerDetails,
     },
     message: SAVE_TO_LIBSAFE
       ? "Preserved to LibSafe."

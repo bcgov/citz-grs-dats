@@ -42,6 +42,18 @@ export const S3 = {
     `${MAGENTA}[S3]${RESET} File deleted successfully from bucket: ${bucketName}, key: ${key}`,
 };
 
+export const LIBSAFE = {
+  CREATE_CONTAINER: (containerID: string) =>
+    `${MAGENTA}[LIBSAFE]${RESET} Container created: ${containerID}`,
+  CONTAINER_UPLOAD: (
+    containerID: string,
+    transfer: string,
+    chunk: number,
+    chunkCount: number
+  ) =>
+    `${MAGENTA}[LIBSAFE]${RESET} File chunk ${chunk} of ${chunkCount} uploaded successfully to container: ${containerID}, transfer: ${transfer}`,
+};
+
 export const FILELIST = {
   CONSUMER: {
     FILELIST_NOT_FOUND: `${LIGHT_BLUE}[File List Consumer]${RESET} ${RED}Filelist not found in queueConsumer.${RESET}`,
