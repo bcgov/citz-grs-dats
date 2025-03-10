@@ -8,6 +8,7 @@ import {
   edrms,
   view,
   download,
+  preserve,
   remove,
 } from "@/modules/transfer/controllers";
 
@@ -26,6 +27,9 @@ jest.mock("@/modules/transfer/controllers", () => ({
     res.status(200).send("Complete")
   ),
   download: jest.fn((req: Request, res: Response) =>
+    res.status(200).send("Complete")
+  ),
+  preserve: jest.fn((req: Request, res: Response) =>
     res.status(200).send("Complete")
   ),
   remove: jest.fn((req: Request, res: Response) =>
@@ -69,6 +73,13 @@ describe("Transfer Router", () => {
     const app = createApp();
     await request(app).post("/download").expect(200, "Complete");
     expect(download).toHaveBeenCalled();
+  });
+
+  // Test case: POST /preserve route
+  it("should call the preserve controller on POST /preserve route", async () => {
+    const app = createApp();
+    await request(app).post("/preserve").expect(200, "Complete");
+    expect(preserve).toHaveBeenCalled();
   });
 
   // Test case: POST /lan route with valid JSON
