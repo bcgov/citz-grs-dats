@@ -49,11 +49,18 @@ export const ViewTransfersPage = () => {
   const [deleteApplication, setDeleteApplication] = useState<string | null>(
     null
   );
+  const [preserveAccession, setPreserveAccession] = useState<string | null>(
+    null
+  );
+  const [preserveApplication, setPreserveApplication] = useState<string | null>(
+    null
+  );
 
   const [loadTransfersSuccess, setLoadTransfersSuccess] = useState<
     boolean | null
   >(null);
   const [downloadSuccess, setDownloadSuccess] = useState<boolean | null>(null);
+  const [preserveSuccess, setPreserveSuccess] = useState<boolean | null>(null);
   const [deleteSuccess, setDeleteSuccess] = useState<boolean | null>(null);
   const [recentDownloadFilePath, setRecentDownloadFilePath] = useState("");
 
@@ -72,6 +79,16 @@ export const ViewTransfersPage = () => {
     setDownloadApplication(application);
     if (previouslyDownloaded) setShowConfirmReDownloadModal(true);
   };
+
+  const handleTransferPreserve = (accession: string, application: string) => {
+    setPreserveAccession(accession);
+    setPreserveApplication(application);
+  };
+
+  useEffect(() => {
+    if (preserveAccession && preserveApplication)
+      handlePreserveTransferRequest();
+  }, [preserveAccession, preserveApplication]);
 
   useEffect(() => {
     if (!showConfirmReDownloadModal && downloadAccession && downloadApplication)
@@ -138,6 +155,29 @@ export const ViewTransfersPage = () => {
     }
   }, [downloadSuccess]);
 
+  useEffect(() => {
+    if (preserveSuccess === true) {
+      // Success
+      toast.success(Toast, {
+        data: {
+          success: true,
+          title: "Preserve complete!",
+          message: "The file has been preserved to LibSafe successfully.",
+        },
+      });
+    } else if (preserveSuccess === false) {
+      // Failed to preserve transfer
+      toast.error(Toast, {
+        data: {
+          success: false,
+          title: "Preserve unsuccessful",
+          message:
+            "Preserve failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
+        },
+      });
+    }
+  }, [preserveSuccess]);
+
   const handleFetchTransfers = async () => {
     if (!accessToken) return;
     setLoadTransfersSuccess(null);
@@ -173,7 +213,6 @@ export const ViewTransfersPage = () => {
           }
         );
         setTransfers(fetchedTransfers);
-        setFilteredTransfers(fetchedTransfers);
       } else return setLoadTransfersSuccess(false);
     } catch (error) {
       console.error(error);
@@ -264,7 +303,13 @@ export const ViewTransfersPage = () => {
               t.application === downloadApplication
             ) {
               // Make edit to status
-              return { ...t, status: "Downloaded" };
+              return {
+                ...t,
+                status:
+                  t.status === "Preserved"
+                    ? "Downloaded & Preserved"
+                    : "Downloaded",
+              };
             }
             return t; // Return unchanged
           });
@@ -277,6 +322,72 @@ export const ViewTransfersPage = () => {
     } catch (error) {
       console.error(error);
       setDownloadSuccess(false);
+    }
+  };
+
+  const handlePreserveTransferRequest = async () => {
+    if (!accessToken) return;
+    setPreserveSuccess(null);
+
+    toast.success(Toast, {
+      data: {
+        success: true,
+        title: "Starting preserve",
+        message:
+          "Wait a few moments while we start the preservation process...",
+      },
+    });
+
+    // Request url
+    const apiUrl = await api.getCurrentApiUrl();
+    const requestUrl = `${apiUrl}/transfer/preserve`;
+
+    // Make request
+    try {
+      console.log("Making preserve transfer request.");
+      const response = await fetch(requestUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          accession: preserveAccession,
+          application: preserveApplication,
+        }),
+      });
+
+      if (!response.ok) return setPreserveSuccess(false);
+      const jsonResponse = await response.json();
+
+      if (jsonResponse.success) {
+        // Preserve successful
+        setPreserveSuccess(true);
+
+        // Update state
+        setTransfers((prev) => {
+          const updatedTransfers = prev.map((t) => {
+            if (
+              t.accession === preserveAccession &&
+              t.application === preserveApplication
+            ) {
+              // Make edit to status
+              return {
+                ...t,
+                status:
+                  t.status === "Downloaded"
+                    ? "Downloaded & Preserved"
+                    : "Preserved",
+              };
+            }
+            return t; // Return unchanged
+          });
+          return updatedTransfers;
+        });
+      } else return setPreserveSuccess(false);
+    } catch (error) {
+      console.error(error);
+      setPreserveSuccess(false);
     }
   };
 
@@ -309,6 +420,10 @@ export const ViewTransfersPage = () => {
   };
 
   useEffect(() => {
+    setFilteredTransfers(transfers);
+  }, [transfers]);
+
+  useEffect(() => {
     // Fetch transfers on mount
     handleFetchTransfers();
   }, []);
@@ -333,6 +448,7 @@ export const ViewTransfersPage = () => {
             rows={filteredTransfers}
             onTransferDelete={handleTransferDelete}
             onTransferDownload={handleTransferDownload}
+            onTransferPreserve={handleTransferPreserve}
           />
           <ConfirmDeletionModal
             open={showConfirmDeletionModal}

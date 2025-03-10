@@ -176,7 +176,7 @@ function App(): JSX.Element {
         </Context.Provider>
         <ToastContainer
           position="bottom-left"
-          autoClose={false}
+          autoClose={4000}
           hideProgressBar
           pauseOnHover
         />

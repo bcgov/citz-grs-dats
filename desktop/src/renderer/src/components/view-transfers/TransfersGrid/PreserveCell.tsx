@@ -1,6 +1,6 @@
 import { IconButton, Tooltip } from "@mui/material";
 import { DownloadDone as DoneIcon } from "@mui/icons-material";
-import { DownloadIcon } from "@renderer/components/DownloadIcon";
+import { PreserveIcon } from "@renderer/components/PreserveIcon";
 import type {
   GridRenderCellParams,
   GridTreeNodeWithRender,
@@ -9,22 +9,21 @@ import type { Row } from "./TransfersGrid";
 
 type Props = {
   params: GridRenderCellParams<Row, unknown, unknown, GridTreeNodeWithRender>;
-  onTransferDownload: (
+  onTransferPreserve: (
     accession: string,
-    application: string,
-    previouslyDownloaded: boolean
+    application: string
   ) => Promise<void> | void;
-  previouslyDownloaded: boolean;
+  preserved: boolean;
 };
 
-export const DownloadCell = ({
+export const PreserveCell = ({
   params,
-  onTransferDownload,
-  previouslyDownloaded,
+  onTransferPreserve,
+  preserved,
 }: Props) => {
   return (
     <Tooltip
-      title="Download transfer file."
+      title="Preserve transfer file to LibSafe."
       sx={{
         display: "flex",
         justifyContent: "center",
@@ -38,18 +37,14 @@ export const DownloadCell = ({
         disableFocusRipple
         disableRipple
         onClick={() =>
-          onTransferDownload(
-            params.row.accession,
-            params.row.application,
-            previouslyDownloaded
-          )
+          onTransferPreserve(params.row.accession, params.row.application)
         }
-        aria-label="download"
+        aria-label="preserve to libsafe"
       >
-        {previouslyDownloaded ? (
+        {preserved ? (
           <DoneIcon sx={{ color: "var(--icon)" }} />
         ) : (
-          <DownloadIcon />
+          <PreserveIcon />
         )}
       </IconButton>
     </Tooltip>
