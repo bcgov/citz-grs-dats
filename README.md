@@ -24,6 +24,10 @@ The DATS project will be transferring inactive Full Retention (FR) government di
 
 - [Change API URL](#change-api-url)
 - [Test Desktop App Executable](#test-desktop-app-executable)
+- [Publish Desktop App Updates](#publish-desktop-app-updates)
+- [Worker Scripts](#worker-scripts)
+- [VPN/BC Gov Network Requirement](#vpnbc-gov-network-requirement)
+- [Architecture Diagram](#architecture-diagram)
 
 <br />
 
@@ -65,6 +69,38 @@ npm run build:ubuntu-latest
         e.g., `C:\Users\<username>\AppData\Local\Programs\DATS\DATS.exe`
     b. Mac: Open Terminal and run `<file location>`
         e.g., `/Applications/DATS.app/Contents/MacOS/DATS`
+
+<br />
+
+## Publish Desktop App Updates
+
+The desktop app will automatically look for updates every time it is started. It looks at the releases in this repo for newer versions. Details in `desktop/package.json` such as `version` and `build.publish` control the updates.
+
+To create a new release, run the `Build and Publish Electron App` workflow under `Actions` in the repo and choose to update by a patch (y of 'x.x.y'), minor (y of 'x.y.x'), or major (y of 'y.x.x'). The workflow has an error in the last step but it still works.
+
+<br />
+
+## Worker Scripts
+
+The desktop application utilizes worker scripts to collect metadata and copy files from the user's machine. They run on their own threads outside of the main application.
+
+IMPORTANT: Every time changes are made to these workers, the app must be re-built.
+
+The workers are found under `desktop\src\main\fileProcessing\workers`.
+
+The `desktop\src\main\fileProcessing\WorkerPool.ts` controls how the workers are run, handling start up, messaging, and shutdown.
+
+The `desktop\src\main\fileProcessing\actions` are functions that will run the worker scripts. These functions are called by events in the main process.
+
+<br />
+
+## VPN/BC Gov Network Requirement
+
+Use of the application requires a connection to the BC Gov Network (directly or via vpn). 
+
+In the desktop app we check for this every 5 seconds by calling `desktop\src\preload\api\checkIPRange.ts` from a useEffect in `desktop\src\renderer\src\App.tsx`. This checks the users IP list to find one of the allowed ip ranges from a list we got from https://ipinfo.io/AS3633 which gathers ip ranges for `gov.bc.ca`.
+
+In OpenShift we block all requests from outside the ip ranges detailed above.
 
 <br />
 
