@@ -81,5 +81,8 @@ interface Window {
 
     onAppCloseRequested: (callback: () => void) => void;
     forceQuitApp: () => Promise<unknown>;
+    getReleaseNotes: () => Promise<Record<string, string>>;
+    getCurrentAppVersion: () => Promise<string>;
+    updateViewedReleaseVersion: () => Promise<void>;
   };
 }

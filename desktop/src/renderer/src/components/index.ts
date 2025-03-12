@@ -15,3 +15,4 @@ export * from "./HelpModal";
 export * from "./DownloadIcon";
 export * from "./PreserveIcon";
 export * from "./CloseApplicationModal";
+export * from "./ReleaseNotesModal";

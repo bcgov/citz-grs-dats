@@ -21,4 +21,8 @@ export const api = {
     ipcRenderer.on("app-close-requested", callback);
   },
   forceQuitApp: () => ipcRenderer.invoke("force-quit-app"),
+  getReleaseNotes: () => ipcRenderer.invoke("get-release-notes"),
+  getCurrentAppVersion: () => ipcRenderer.invoke("get-current-app-version"),
+  updateViewedReleaseVersion: () =>
+    ipcRenderer.invoke("update-viewed-release-version"),
 };
