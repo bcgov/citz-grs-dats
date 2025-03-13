@@ -2,7 +2,13 @@ import { Header } from "@bcgov/design-system-react-components";
 import { Box, Button, Grid2 as Grid } from "@mui/material";
 import { createContext, useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import { CloseApplicationModal, SideNav, Toast, VPNPopup } from "./components";
+import {
+  CloseApplicationModal,
+  ReleaseNotesModal,
+  SideNav,
+  Toast,
+  VPNPopup,
+} from "./components";
 import { LeavePageModal } from "./components/LeavePageModal";
 import {
   EdrmsInstructionsPage,
@@ -39,7 +45,14 @@ function App(): JSX.Element {
   const [api] = useState(window.api); // Preload scripts
   const [showVPNPopup, setShowVPNPopup] = useState<boolean>(false);
   const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
+  const [releaseNotesModalOpen, setReleaseNotesModalOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState("/");
+
+  const [appVersion, setAppVersion] = useState<string | null>(null);
+  const [releaseNotes, setReleaseNotes] = useState<Record<
+    string,
+    string
+  > | null>(null);
 
   const { showClosePrompt, confirmClose, cancelClose } = useAppCloseHandler();
 
@@ -55,6 +68,27 @@ function App(): JSX.Element {
     setLeavePageModalOpen(false);
     window.location.href = "/";
   };
+
+  useEffect(() => {
+    const fetchReleaseNotes = async () => {
+      const notes = await api.getReleaseNotes();
+      setReleaseNotes(notes);
+    };
+    const fetchAppVersion = async () => {
+      const version = await api.getCurrentAppVersion();
+      setAppVersion(version);
+    };
+
+    fetchReleaseNotes();
+    fetchAppVersion();
+  }, []);
+
+  useEffect(() => {
+    // Show release notes
+    if (appVersion && releaseNotes) {
+      setReleaseNotesModalOpen(true);
+    }
+  }, [appVersion, releaseNotes]);
 
   useEffect(() => {
     // Handle "auth-success" message from main process
@@ -89,6 +123,11 @@ function App(): JSX.Element {
       window.electron.ipcRenderer.removeAllListeners("auth-token-copied");
     };
   }, []);
+
+  const handleCloseReleaseNotesModal = async () => {
+    await api.updateViewedReleaseVersion();
+    setReleaseNotesModalOpen(false);
+  };
 
   const handleIPStatusUpdate = async () => {
     const ipStatusOK = await api.checkIpRange();
@@ -130,6 +169,17 @@ function App(): JSX.Element {
         open={showClosePrompt}
         onClose={cancelClose}
         onConfirm={confirmClose}
+      />
+      <LeavePageModal
+        open={leavePageModalOpen}
+        onClose={() => setLeavePageModalOpen(false)}
+        onConfirm={onConfirmLeavePage}
+      />
+      <ReleaseNotesModal
+        open={releaseNotesModalOpen}
+        onClose={handleCloseReleaseNotesModal}
+        releaseNotes={releaseNotes}
+        appVersion={appVersion}
       />
       <Grid size={2}>
         <SideNav
@@ -181,11 +231,6 @@ function App(): JSX.Element {
           pauseOnHover
         />
       </Grid>
-      <LeavePageModal
-        open={leavePageModalOpen}
-        onClose={() => setLeavePageModalOpen(false)}
-        onConfirm={onConfirmLeavePage}
-      />
     </Grid>
   );
 }

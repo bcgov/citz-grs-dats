@@ -21,6 +21,10 @@ import EventEmitter from "node:events";
 import { pipeline } from "node:stream";
 import { promisify } from "node:util";
 import fs from "node:fs";
+import fsPromises from "node:fs/promises";
+
+const appVersion = app.getVersion();
+console.log(`App Version: ${appVersion}`);
 
 const streamPipeline = promisify(pipeline);
 
@@ -112,6 +116,47 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
 }
+
+const releaseNotesJsonPath = is.dev
+  ? path.resolve(__dirname, "../../resources/release_notes.json")
+  : path.join(app.getAppPath(), "../../resources/release_notes.json");
+
+ipcMain.handle("get-release-notes", async () => {
+  try {
+    const releaseNotesData = await fsPromises.readFile(
+      releaseNotesJsonPath,
+      "utf-8"
+    );
+    return JSON.parse(releaseNotesData);
+  } catch (error) {
+    console.error("Error reading release notes:", error);
+    return null;
+  }
+});
+
+ipcMain.handle("update-viewed-release-version", async () => {
+  try {
+    // Read the existing release notes
+    const data = await fsPromises.readFile(releaseNotesJsonPath, "utf-8");
+    const releaseNotes = JSON.parse(data);
+
+    // Update the `viewedReleaseVersion`
+    releaseNotes.viewedReleaseVersion = appVersion;
+
+    // Write the updated JSON back to the file
+    await fsPromises.writeFile(
+      releaseNotesJsonPath,
+      JSON.stringify(releaseNotes, null, 2),
+      "utf-8"
+    );
+  } catch (error) {
+    console.error("Error updating viewed release version:", error);
+  }
+});
+
+ipcMain.handle("get-current-app-version", () => {
+  return appVersion;
+});
 
 ipcMain.handle("get-current-api-url", () => {
   return currentApiUrl;
@@ -450,6 +495,9 @@ const menuTemplate = [
   {
     label: "Developer",
     submenu: [
+      {
+        label: `App Version ${appVersion}`,
+      },
       {
         label: "Select Environment",
         submenu: [
