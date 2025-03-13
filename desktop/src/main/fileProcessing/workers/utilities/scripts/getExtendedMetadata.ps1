@@ -38,22 +38,21 @@ function Get-ExtendedFileMetadata {
 
     $propertyIndex = 0
 
-    while ($true) {
+    do {
         $propertyName = $folder.GetDetailsOf($folder.Items, $propertyIndex)
         $propertyValue = $folder.GetDetailsOf($file, $propertyIndex)
 
-        if (-not $propertyName) {
-            break  # Stop if no more properties exist
-        }
-
-        if ($propertyValue) {
-            Write-Host "$propertyName = $propertyValue"
-        } else {
-            Write-Host "$propertyName = ~"
+        if ($propertyName) {
+            if ($propertyValue) {
+                Write-Host "$propertyName = $propertyValue"
+            } else {
+                Write-Host "$propertyName = ~"
+            }
         }
 
         $propertyIndex++
-    }
+
+    } while ($propertyName)  # Continue while there are properties
 }
 
 function Get-AlternateDataStreams {
