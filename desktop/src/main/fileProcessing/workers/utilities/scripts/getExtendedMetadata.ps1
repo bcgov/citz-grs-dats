@@ -19,17 +19,12 @@ function Get-FileMetadata {
         exit 1
     }
 
-    $metadata = @{}
-
     # Extract metadata using Select-Object *
     foreach ($property in $file.PSObject.Properties) {
         if ($property.Value -ne $null) {
             Write-Host "$($property.Name) = $($property.Value)"
-            $metadata[$property.Name] = $property.Value
         }
     }
-
-    return $metadata
 }
 
 function Get-ExtendedFileMetadata {
@@ -41,19 +36,23 @@ function Get-ExtendedFileMetadata {
     $folder = $shell.Namespace((Get-Item $Path).DirectoryName)
     $file = $folder.ParseName((Get-Item $Path).Name)
 
-    $extendedMetadata = @{}
+    $propertyIndex = 0
 
-    for ($i = 0; $i -lt 300; $i++) {  # Some properties may be empty
-        $propertyName = $folder.GetDetailsOf($folder.Items, $i)
-        $propertyValue = $folder.GetDetailsOf($file, $i)
+    do {
+        $propertyName = $folder.GetDetailsOf($folder.Items, $propertyIndex)
+        $propertyValue = $folder.GetDetailsOf($file, $propertyIndex)
 
-        if ($propertyName -and $propertyValue) {
-            Write-Host "$propertyName = $propertyValue"
-            $extendedMetadata[$propertyName] = $propertyValue
+        if ($propertyName) {
+            if ($propertyValue) {
+                Write-Host "$propertyName = $propertyValue"
+            } else {
+                Write-Host "$propertyName = ~"
+            }
         }
-    }
 
-    return $extendedMetadata
+        $propertyIndex++
+
+    } while ($propertyName)  # Continue while there are properties
 }
 
 function Get-AlternateDataStreams {
@@ -71,28 +70,22 @@ function Get-FileHashMetadata {
     param (
         [string]$Path
     )
-    $hashes = @{}
     $hashTypes = @("MD5", "SHA1", "SHA256", "SHA512")
 
     foreach ($hashType in $hashTypes) {
         $hash = Get-FileHash -Path $Path -Algorithm $hashType
         Write-Host "$hashType = $($hash.Hash)"
-        $hashes[$hashType] = $hash.Hash
     }
-    return $hashes
 }
 
 function Get-NTFSAttributes {
     param (
         [string]$Path
     )
-    $attributes = @{}
     $fsutilOutput = fsutil file queryExtents $Path 2>$null
     if ($fsutilOutput) {
         Write-Host "Extents: $fsutilOutput"
-        $attributes["Extents"] = $fsutilOutput
     }
-    return $attributes
 }
 
 function Get-DigitalSignature {
@@ -120,27 +113,6 @@ function Get-DigitalSignature {
     }
 }
 
-function Get-AllShellProperties {
-    param (
-        [string]$Path
-    )
-    $shell = New-Object -ComObject Shell.Application
-    $folder = $shell.Namespace((Get-Item $Path).DirectoryName)
-    $file = $folder.ParseName((Get-Item $Path).Name)
-
-    $shellMetadata = @{}
-    for ($i = 0; $i -lt 500; $i++) {  # Some properties may be empty
-        $propertyName = $folder.GetDetailsOf($folder.Items, $i)
-        $propertyValue = $folder.GetDetailsOf($file, $i)
-
-        if ($propertyName -and $propertyValue) {
-            Write-Host "$propertyName = $propertyValue"
-            $shellMetadata[$propertyName] = $propertyValue
-        }
-    }
-    return $shellMetadata
-}
-
 # Retrieve all metadata
 $fileMetadata = Get-FileMetadata -Path $FilePath
 $extendedMetadata = Get-ExtendedFileMetadata -Path $FilePath
@@ -148,4 +120,3 @@ $adsMetadata = Get-AlternateDataStreams -Path $FilePath
 $fileHashes = Get-FileHashMetadata -Path $FilePath
 $ntfsAttributes = Get-NTFSAttributes -Path $FilePath
 $signatureInfo = Get-DigitalSignature -Path $FilePath
-$allShellProperties = Get-AllShellProperties -Path $FilePath
