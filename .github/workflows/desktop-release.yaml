@@ -169,7 +169,9 @@ jobs:
         id: formatted_release_notes
         run: |
           RELEASE_NOTES=$(echo "${{ github.event.inputs.releaseNotes }}" | sed 's/,/\n- /g')
-          echo "FORMATTED_NOTES=- $RELEASE_NOTES" >> $GITHUB_ENV
+          echo "FORMATTED_NOTES<<EOF" >> $GITHUB_ENV
+          echo "- $RELEASE_NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         
       - name: Create GitHub Release
         id: create_release
