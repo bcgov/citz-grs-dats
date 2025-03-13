@@ -32,7 +32,7 @@ const [newVersion] = process.argv.slice(2);
 const [releaseNotes] = process.argv.slice(3);
 
 if (!newVersion || !releaseNotes) {
-	console.error("Usage: node add-release-notes.js <newVersion> <releaseNotes>");
+	console.error("Usage: node add-release-notes.js <newVersion> '<releaseNotes>'");
 	process.exit(1);
 }
 
