@@ -1,4 +1,5 @@
 {
-	"viewedReleaseVersion": "2.0.1",
-	"2.0.2": "Fix"
+  "viewedReleaseVersion": "2.0.1",
+  "2.0.2": "Fix",
+  "2.0.3": "Fix for release notes workflow."
 }
