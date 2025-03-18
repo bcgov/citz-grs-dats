@@ -1,6 +1,6 @@
 {
   "name": "dats",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Digital Archives Transfer Service",
   "author": "CITZ IMB/CIRMO",
   "main": "./out/main/index.js",
@@ -22,6 +22,10 @@
       {
         "from": "out/es-workers/scripts/getExtendedMetadata.ps1",
         "to": "resources/scripts/getExtendedMetadata.ps1"
+      },
+      {
+        "from": "out/es-workers/resources/release_notes.json",
+        "to": "resources/release_notes.json"
       }
     ],
     "publish": [
