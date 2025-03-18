@@ -1,5 +1,6 @@
 {
   "viewedReleaseVersion": "2.0.3",
   "2.0.2": "Fix",
-  "2.0.3": "Fix for release notes workflow."
+  "2.0.3": "Fix for release notes workflow.",
+  "2.0.4": "Updated security policy for prod api connection."
 }
