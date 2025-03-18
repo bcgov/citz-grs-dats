@@ -23,7 +23,6 @@ export const Layout = ({ children }) => {
 					accessToken={accessToken}
 					idToken={idToken}
 					currentPath={'/'}
-					setCurrentPath={() => {}}
 					progressMade={false}
 				/>
 			</Grid>

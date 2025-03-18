@@ -1,265 +1,273 @@
-import { useFolderList } from "@/hooks";
-import { Box, Stack, Typography, Grid2 as Grid } from "@mui/material";
-import { useGridApiRef } from "@mui/x-data-grid";
+import { useFolderList } from '@/hooks';
+import { Box, Stack, Typography, Grid2 as Grid } from '@mui/material';
+import { useGridApiRef } from '@mui/x-data-grid';
 import {
-  AccAppCheck,
-  ContinueButton,
-  FinalizeFilelistModal,
-  FolderDisplayGrid,
-  type FolderRow,
-  ReturnToHomeModal,
-  SelectFolderButton,
-} from "@renderer/components/file-list";
-import { useCallback, useContext, useEffect, useState } from "react";
-import { Context } from "../App";
-import { LoginRequiredModal, Instruction, Toast } from "@renderer/components";
-import { toast } from "react-toastify";
+	AccAppCheck,
+	ContinueButton,
+	FinalizeFilelistModal,
+	FolderDisplayGrid,
+	type FolderRow,
+	ReturnToHomeModal,
+	SelectFolderButton,
+} from '@renderer/components/file-list';
+import { useCallback, useEffect, useState } from 'react';
+import { LoginRequiredModal, Instruction, Toast } from '@renderer/components';
+import { toast } from 'react-toastify';
+import { useAuth, useProgress } from '@renderer/utilities';
+import { useNavigate } from 'react-router-dom';
 
 export const FileListPage = () => {
-  const [api] = useState(window.api); // Preload scripts
+	const [api] = useState(window.api); // Preload scripts
 
-  const [continueButtonIsEnabled, setContinueButtonIsEnabled] =
-    useState<boolean>(false);
-  const [accAppCheckIsEnabled, setAccAppCheckIsEnabled] =
-    useState<boolean>(false);
-  const [finalizeModalIsOpen, setFinalizeModalIsOpen] =
-    useState<boolean>(false);
-  const [returnHomeModalIsOpen, setReturnHomeModalIsOpen] =
-    useState<boolean>(false);
-  const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
-  const [hasAccApp, setHasAccApp] = useState<boolean | null>(null);
+	const [continueButtonIsEnabled, setContinueButtonIsEnabled] =
+		useState<boolean>(false);
+	const [accAppCheckIsEnabled, setAccAppCheckIsEnabled] =
+		useState<boolean>(false);
+	const [finalizeModalIsOpen, setFinalizeModalIsOpen] =
+		useState<boolean>(false);
+	const [returnHomeModalIsOpen, setReturnHomeModalIsOpen] =
+		useState<boolean>(false);
+	const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
+	const [hasAccApp, setHasAccApp] = useState<boolean | null>(null);
 
-  const { idToken, accessToken, setCurrentPath, setProgressMade } =
-    useContext(Context);
-  const authenticated = !!accessToken;
+	const { setProgressMade } = useProgress();
 
-  const handleLogout = async () => await api.sso.logout(idToken);
+	const navigate = useNavigate();
 
-  const apiRef = useGridApiRef();
-  const {
-    folders,
-    setFolders,
-    setMetaData,
-    setExtendedMetaData,
-    addPathArrayToFolders,
-    removeFolder,
-    submit,
-  } = useFolderList({ accessToken });
+	const { idToken, accessToken } = useAuth();
 
-  const handleProgress = useCallback(
-    (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
-      const { source, progressPercentage } = event.detail;
-      setFolders((prevFolderList) =>
-        prevFolderList.map((folder) =>
-          folder.folder === source
-            ? { ...folder, progress: progressPercentage }
-            : folder
-        )
-      );
-    },
-    [setFolders]
-  );
+	const authenticated = !!accessToken;
 
-  const handleCompletion = useCallback(
-    (
-      event: CustomEvent<{
-        source: string;
-        success: boolean;
-        metadata?: Record<string, unknown>;
-        extendedMetadata?: Record<string, unknown>;
-        error?: unknown;
-      }>
-    ) => {
-      const {
-        source,
-        success,
-        metadata: newMetadata,
-        extendedMetadata: newExtendedMetadata,
-      } = event.detail;
+	const handleLogout = async () => await api.sso.logout(idToken);
 
-      if (success && newMetadata) {
-        setMetaData((prev) => ({
-          ...prev,
-          [source]: newMetadata[source],
-        }));
-        if (newExtendedMetadata) setExtendedMetaData(newExtendedMetadata);
-        console.info(`Successfully processed folder: ${source}`);
-      } else {
-        console.error(`Failed to process folder: ${source}`);
-      }
-    },
-    [setMetaData, setExtendedMetaData]
-  );
+	const apiRef = useGridApiRef();
+	const {
+		folders,
+		setFolders,
+		setMetaData,
+		setExtendedMetaData,
+		addPathArrayToFolders,
+		removeFolder,
+		submit,
+	} = useFolderList({ accessToken });
 
-  const handleRowUpdate = useCallback(
-    (newFolder: FolderRow) => {
-      setFolders((prevFolderList) =>
-        prevFolderList.map((folder) =>
-          folder.id === newFolder.id ? newFolder : folder
-        )
-      );
-      return newFolder;
-    },
-    [setFolders]
-  );
+	const handleProgress = useCallback(
+		(event: CustomEvent<{ source: string; progressPercentage: number }>) => {
+			const { source, progressPercentage } = event.detail;
+			setFolders((prevFolderList) =>
+				prevFolderList.map((folder) =>
+					folder.folder === source
+						? { ...folder, progress: progressPercentage }
+						: folder,
+				),
+			);
+		},
+		[setFolders],
+	);
 
-  const handleOpenContinueModel = useCallback(() => {
-    let isOpen = true;
+	const handleCompletion = useCallback(
+		(
+			event: CustomEvent<{
+				source: string;
+				success: boolean;
+				metadata?: Record<string, unknown>;
+				extendedMetadata?: Record<string, unknown>;
+				error?: unknown;
+			}>,
+		) => {
+			const {
+				source,
+				success,
+				metadata: newMetadata,
+				extendedMetadata: newExtendedMetadata,
+			} = event.detail;
 
-    if (!continueButtonIsEnabled) isOpen = false;
+			if (success && newMetadata) {
+				setMetaData((prev) => ({
+					...prev,
+					[source]: newMetadata[source],
+				}));
+				if (newExtendedMetadata) setExtendedMetaData(newExtendedMetadata);
+				console.info(`Successfully processed folder: ${source}`);
+			} else {
+				console.error(`Failed to process folder: ${source}`);
+			}
+		},
+		[setMetaData, setExtendedMetaData],
+	);
 
-    setFinalizeModalIsOpen(isOpen);
-  }, [continueButtonIsEnabled]);
+	const handleRowUpdate = useCallback(
+		(newFolder: FolderRow) => {
+			setFolders((prevFolderList) =>
+				prevFolderList.map((folder) =>
+					folder.id === newFolder.id ? newFolder : folder,
+				),
+			);
+			return newFolder;
+		},
+		[setFolders],
+	);
 
-  const handleFinalizeModalClose = useCallback(() => {
-    setFinalizeModalIsOpen(false);
-  }, []);
+	const handleOpenContinueModel = useCallback(() => {
+		let isOpen = true;
 
-  const handleReturnHomeModalClose = useCallback(() => {
-    setReturnHomeModalIsOpen(false);
-  }, []);
+		if (!continueButtonIsEnabled) isOpen = false;
 
-  const handleFormSubmit = useCallback(
-    async (formData) => {
-      try {
-        await submit(formData);
-        setFinalizeModalIsOpen(false);
-        setReturnHomeModalIsOpen(true);
-      } catch (error) {
-        console.error(error);
-        handleLogout();
-        setFinalizeModalIsOpen(false);
-        toast.error(Toast, {
-          data: {
-            success: false,
-            title: "Submission failed",
-            message:
-              "We were unable to fulfill your request to create a file list. Please try again.",
-          },
-        });
-      }
-    },
-    [submit]
-  );
+		setFinalizeModalIsOpen(isOpen);
+	}, [continueButtonIsEnabled]);
 
-  useEffect(() => {
-    window.addEventListener(
-      "folder-metadata-progress",
-      handleProgress as EventListener
-    );
+	const handleFinalizeModalClose = useCallback(() => {
+		setFinalizeModalIsOpen(false);
+	}, []);
 
-    window.addEventListener(
-      "folder-metadata-completion",
-      handleCompletion as EventListener
-    );
+	const handleReturnHomeModalClose = useCallback(() => {
+		setReturnHomeModalIsOpen(false);
+	}, []);
 
-    return () => {
-      window.removeEventListener(
-        "folder-metadata-progress",
-        handleProgress as EventListener
-      );
-      window.removeEventListener(
-        "folder-metadata-completion",
-        handleCompletion as EventListener
-      );
-    };
-  }, [handleCompletion, handleProgress]);
+	const handleFormSubmit = useCallback(
+		async (formData) => {
+			try {
+				await submit(formData);
+				setFinalizeModalIsOpen(false);
+				setReturnHomeModalIsOpen(true);
+			} catch (error) {
+				console.error(error);
+				handleLogout();
+				setFinalizeModalIsOpen(false);
+				toast.error(Toast, {
+					data: {
+						success: false,
+						title: 'Submission failed',
+						message:
+							'We were unable to fulfill your request to create a file list. Please try again.',
+					},
+				});
+			}
+		},
+		[submit],
+	);
 
-  useEffect(() => {
-    const allFoldersProcessed = folders.every(
-      (folder) => folder.progress === 100
-    );
-    const hasFolders = folders.length > 0;
+	useEffect(() => {
+		window.addEventListener(
+			'folder-metadata-progress',
+			handleProgress as EventListener,
+		);
 
-    // Update progress when folders are uploaded.
-    setProgressMade(hasFolders);
+		window.addEventListener(
+			'folder-metadata-completion',
+			handleCompletion as EventListener,
+		);
 
-    setAccAppCheckIsEnabled(hasFolders);
-    if (!hasFolders) setHasAccApp(null);
+		return () => {
+			window.removeEventListener(
+				'folder-metadata-progress',
+				handleProgress as EventListener,
+			);
+			window.removeEventListener(
+				'folder-metadata-completion',
+				handleCompletion as EventListener,
+			);
+		};
+	}, [handleCompletion, handleProgress]);
 
-    // Enable continue button when folders are processed.
-    setContinueButtonIsEnabled(
-      allFoldersProcessed && hasFolders && authenticated && hasAccApp !== null
-    );
-  }, [folders, authenticated, hasAccApp]);
+	useEffect(() => {
+		const allFoldersProcessed = folders.every(
+			(folder) => folder.progress === 100,
+		);
+		const hasFolders = folders.length > 0;
 
-  return (
-    <Grid container>
-      <Grid size={0.5} />
-      <Grid size={11} sx={{ paddingTop: 3 }}>
-        <Stack gap={2}>
-          <Typography variant="h2">Create file list</Typography>
+		// Update progress when folders are uploaded.
+		setProgressMade(hasFolders);
 
-          <Stack gap={2}>
-            <Typography variant="h4">Instructions</Typography>
-            <Instruction
-              num={1}
-              instruction="Click the “Add folder(s)” button to start adding folders to your file list"
-              required={true}
-              desc="Tip: Upload multiple folders at once by selecting several folders in the file explorer window, or by clicking “upload folder(s)” again while a previously added folder is in progress."
-            />
-            <Instruction
-              num={2}
-              instruction="Provide additional information about your folder(s) in the columns provided or, if preferred, do it later in Excel"
-              required={false}
-            />
-            <Instruction
-              num={3}
-              instruction="Remove any unwanted folders by clicking the delete icon"
-              required={false}
-            />
-          </Stack>
+		setAccAppCheckIsEnabled(hasFolders);
+		if (!hasFolders) setHasAccApp(null);
 
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-            <SelectFolderButton
-              onRowChange={(inputPaths) =>
-                addPathArrayToFolders(inputPaths, apiRef)
-              }
-            />
-          </Box>
+		// Enable continue button when folders are processed.
+		setContinueButtonIsEnabled(
+			allFoldersProcessed && hasFolders && authenticated && hasAccApp !== null,
+		);
+	}, [folders, authenticated, hasAccApp]);
 
-          <FolderDisplayGrid
-            rows={folders}
-            onFolderDelete={removeFolder}
-            processRowUpdate={handleRowUpdate}
-            apiRef={apiRef}
-          />
+	return (
+		<Grid container>
+			<Grid size={0.5} />
+			<Grid
+				size={11}
+				sx={{ paddingTop: 3 }}
+			>
+				<Stack gap={2}>
+					<Typography variant='h2'>Create file list</Typography>
 
-          <AccAppCheck
-            hasAccApp={hasAccApp}
-            setHasAccApp={setHasAccApp}
-            enabled={accAppCheckIsEnabled}
-          />
+					<Stack gap={2}>
+						<Typography variant='h4'>Instructions</Typography>
+						<Instruction
+							num={1}
+							instruction='Click the “Add folder(s)” button to start adding folders to your file list'
+							required={true}
+							desc='Tip: Upload multiple folders at once by selecting several folders in the file explorer window, or by clicking “upload folder(s)” again while a previously added folder is in progress.'
+						/>
+						<Instruction
+							num={2}
+							instruction='Provide additional information about your folder(s) in the columns provided or, if preferred, do it later in Excel'
+							required={false}
+						/>
+						<Instruction
+							num={3}
+							instruction='Remove any unwanted folders by clicking the delete icon'
+							required={false}
+						/>
+					</Stack>
 
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-            <ContinueButton
-              onContinue={handleOpenContinueModel}
-              isEnabled={continueButtonIsEnabled}
-            />
-          </Box>
+					<Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+						<SelectFolderButton
+							onRowChange={(inputPaths) =>
+								addPathArrayToFolders(inputPaths, apiRef)
+							}
+						/>
+					</Box>
 
-          <LoginRequiredModal
-            open={showLoginRequiredModal}
-            onClose={() => setShowLoginRequiredModal(false)}
-            onConfirm={() => {
-              setShowLoginRequiredModal(false);
-              api.sso.startLoginProcess();
-            }}
-          />
-          <FinalizeFilelistModal
-            open={finalizeModalIsOpen}
-            onClose={handleFinalizeModalClose}
-            onSubmit={handleFormSubmit}
-            hasAccApp={hasAccApp ?? false}
-          />
-          <ReturnToHomeModal
-            open={returnHomeModalIsOpen}
-            onClose={handleReturnHomeModalClose}
-            setCurrentPath={setCurrentPath}
-          />
-        </Stack>
-      </Grid>
-      <Grid size={0.5} />
-    </Grid>
-  );
+					<FolderDisplayGrid
+						rows={folders}
+						onFolderDelete={removeFolder}
+						processRowUpdate={handleRowUpdate}
+						apiRef={apiRef}
+					/>
+
+					<AccAppCheck
+						hasAccApp={hasAccApp}
+						setHasAccApp={setHasAccApp}
+						enabled={accAppCheckIsEnabled}
+					/>
+
+					<Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+						<ContinueButton
+							onContinue={handleOpenContinueModel}
+							isEnabled={continueButtonIsEnabled}
+						/>
+					</Box>
+
+					<LoginRequiredModal
+						open={showLoginRequiredModal}
+						onClose={() => setShowLoginRequiredModal(false)}
+						onConfirm={() => {
+							setShowLoginRequiredModal(false);
+							api.sso.startLoginProcess();
+						}}
+					/>
+					<FinalizeFilelistModal
+						open={finalizeModalIsOpen}
+						onClose={handleFinalizeModalClose}
+						onSubmit={handleFormSubmit}
+						hasAccApp={hasAccApp ?? false}
+					/>
+					<ReturnToHomeModal
+						open={returnHomeModalIsOpen}
+						onClose={handleReturnHomeModalClose}
+						setCurrentPath={(path) => navigate(path)}
+					/>
+				</Stack>
+			</Grid>
+			<Grid size={0.5} />
+		</Grid>
+	);
 };

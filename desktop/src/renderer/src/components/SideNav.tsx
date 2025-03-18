@@ -31,7 +31,6 @@ type Props = {
 	accessToken: string | undefined;
 	idToken: string | undefined;
 	currentPath: string;
-	setCurrentPath: React.Dispatch<React.SetStateAction<string>>;
 	progressMade: boolean;
 };
 
@@ -39,7 +38,6 @@ export const SideNav = ({
 	accessToken,
 	idToken,
 	currentPath,
-	setCurrentPath,
 	progressMade,
 }: Props) => {
 	const [api] = useState(window.api);
@@ -49,13 +47,12 @@ export const SideNav = ({
 
 	const user = api.sso.getUser(accessToken);
 	const isArchivist = user?.hasRoles(['Archivist']) ?? false;
+	const navigate = useNavigate();
 
 	const onConfirmLeavePage = () => {
 		setLeavePageModalOpen(false);
-		setCurrentPath(newPagePath);
+		navigate(newPagePath);
 	};
-
-	const navigate = useNavigate();
 
 	const handleSelection = (path: string) => {
 		// Ignore if path is the currentpath or a sub path.
@@ -67,7 +64,7 @@ export const SideNav = ({
 			setLeavePageModalOpen(true);
 		} else {
 			// Progress has not been made, navigate to path.
-			setCurrentPath(path);
+			navigate(path);
 		}
 	};
 
