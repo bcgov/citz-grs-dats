@@ -64,6 +64,10 @@ export default defineConfig({
           src: "src/main/fileProcessing/workers/utilities/scripts/getExtendedMetadata.ps1",
           dest: "scripts",
         },
+        {
+          src: "resources/release_notes.json",
+          dest: "resources",
+        },
       ],
     }),
   ],
