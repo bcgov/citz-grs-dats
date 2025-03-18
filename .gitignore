@@ -7,4 +7,4 @@ coverage
 desktop/resources/transfers
 .DS_Store
 Test-Environment
-.old
+*.old
