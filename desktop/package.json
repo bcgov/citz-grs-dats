@@ -76,6 +76,7 @@
     "dayjs": "1.11.13",
     "electron-cookies": "1.1.0",
     "electron-updater": "6.3.9",
+    "react-router-dom": "7.3.0",
     "react-toastify": "11.0.2",
     "xlsx": "0.18.5",
     "yazl": "3.3.1"
