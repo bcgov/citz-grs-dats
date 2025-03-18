@@ -76,7 +76,7 @@ jobs:
 
       # Update release notes
       - name: Update release notes in resources/release_notes.json
-        run: node add-release-notes ${{ steps.package_version.outputs.VERSION }} ${{ github.event.inputs.releaseNotes }}
+        run: node add-release-notes ${{ steps.package_version.outputs.VERSION }} "${{ github.event.inputs.releaseNotes }}"
         working-directory: desktop
 
       # Commit changes to the repo
