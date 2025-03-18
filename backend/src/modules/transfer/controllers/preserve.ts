@@ -102,13 +102,17 @@ export const preserve = errorWrapper(async (req: Request, res: Response) => {
       const formData = new FormData();
       formData.append("chunkIndex", chunkIndex.toString());
       formData.append("chunkCount", chunkCount.toString());
-      formData.append("file", new Blob([fileChunk]), transferFilename);
+      formData.append(
+        "file",
+        new Blob([fileChunk], { type: "application/zip" }),
+        transferFilename
+      );
       formData.append("fileName", transferFilename);
 
       // Make request to LIBSAFE, upload to container
       const response = await fetch(containerUploadEndpoint, {
         method: "POST",
-        headers: { ...headers, "Content-Type": "multipart/form-data" },
+        headers,
         body: formData,
       });
 
