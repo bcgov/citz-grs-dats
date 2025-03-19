@@ -1,4 +1,4 @@
-import { Route, Routes as ReactRoutes } from 'react-router-dom';
+import { Route, Routes as ReactRoutes } from 'react-router';
 import {
 	EdrmsInstructionsPage,
 	EdrmsTransferPage,

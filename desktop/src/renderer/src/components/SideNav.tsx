@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { useAuth } from '@renderer/utilities';
 import { type ReactNode, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { AuthButton } from './AuthButton';
 import { HelpModal } from './HelpModal';
 

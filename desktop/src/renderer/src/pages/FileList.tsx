@@ -14,7 +14,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { LoginRequiredModal, Instruction, Toast } from '@renderer/components';
 import { toast } from 'react-toastify';
 import { useAuth, useProgress } from '@renderer/utilities';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 export const FileListPage = () => {
 	const [api] = useState(window.api); // Preload scripts

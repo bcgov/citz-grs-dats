@@ -11,7 +11,7 @@ import {
 import { FinishView } from '@renderer/components/transfer/finish-view';
 import { useAuth, useProgress } from '@renderer/utilities';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 
 export const EdrmsTransferPage = () => {

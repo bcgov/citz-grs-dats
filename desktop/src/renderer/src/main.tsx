@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@mui/material/styles";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import App from "./App";
 import "./assets/main.css";
 import { theme } from "./theme";

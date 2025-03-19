@@ -1,21 +1,21 @@
 import { Button } from '@bcgov/design-system-react-components';
 import {
-  ListAlt as ListIcon,
-  AnalyticsOutlined as ViewStatusIcon,
+	ListAlt as ListIcon,
+	AnalyticsOutlined as ViewStatusIcon,
 } from '@mui/icons-material';
 import {
-  Box,
-  Grid2 as Grid,
-  Link,
-  Stack,
-  Typography,
-  useTheme,
+	Box,
+	Grid2 as Grid,
+	Link,
+	Stack,
+	Typography,
+	useTheme,
 } from '@mui/material';
 import { TransferRecordsIcon } from '@renderer/components';
 import HomeDatsWorksAccordion from '@renderer/components/HowDatsWorksAccordion';
 import { useAuth } from '@renderer/utilities';
 import { useEffect, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 export const HomePage = () => {
 	const [sso] = useState(window.api.sso); // Preload scripts
@@ -29,7 +29,7 @@ export const HomePage = () => {
 
 	const handleLogin = async () => await sso.startLoginProcess();
 
-  const { accessToken} = useAuth();
+	const { accessToken } = useAuth();
 
 	const user = sso.getUser(accessToken);
 	const isArchivist = user?.hasRoles(['Archivist']) ?? false;

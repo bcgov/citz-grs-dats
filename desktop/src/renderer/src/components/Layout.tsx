@@ -1,10 +1,8 @@
 import { useAppCloseHandler, useNavigateAway } from '@/hooks';
 import { Header } from '@bcgov/design-system-react-components';
 import { Button, Grid2 as Grid } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import {
-	SideNav
-} from '../components';
+import { useNavigate } from 'react-router';
+import { SideNav } from '../components';
 
 export const Layout = ({ children }) => {
 	const navigate = useNavigate();
