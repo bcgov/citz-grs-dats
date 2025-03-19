@@ -1,16 +1,14 @@
-import { useAppCloseHandler } from '@/hooks';
+import { useAppCloseHandler, useReleaseNotes } from '@/hooks';
 import { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import {
   CloseApplicationModal,
   Layout,
+  LeavePageModal,
   ReleaseNotesModal
 } from './components';
-import { LeavePageModal } from './components/LeavePageModal';
-import { useReleaseNotes } from './hooks/useReleaseNotes';
 import { Routes } from './routes';
-import { AuthProvider, VPNMonitor } from './utilities';
-import { ProgressProvider } from './utilities/progress';
+import { AuthProvider, ProgressProvider, VPNMonitor } from './utilities';
 
 function App(): JSX.Element {
 	const [api] = useState(window.api); // Preload scripts
