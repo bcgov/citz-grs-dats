@@ -1,25 +1,26 @@
+import { useNavigateAway } from '@/hooks';
 import {
-	Drawer,
-	List,
-	ListItem,
-	Divider,
-	Typography,
-	useTheme,
-	Box,
-	Stack,
-} from '@mui/material';
-import {
+	DescriptionOutlined as FileListIcon,
 	HelpOutline as HelpIcon,
 	HomeOutlined as HomeOutlinedIcon,
-	DescriptionOutlined as FileListIcon,
 	DriveFileMoveOutlined as SendRecordsIcon,
 	AnalyticsOutlined as ViewStatusIcon,
 } from '@mui/icons-material';
+import {
+	Box,
+	Divider,
+	Drawer,
+	List,
+	ListItem,
+	Stack,
+	Typography,
+	useTheme,
+} from '@mui/material';
+import { useAuth } from '@renderer/utilities';
 import { type ReactNode, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthButton } from './AuthButton';
-import { LeavePageModal } from './LeavePageModal';
 import { HelpModal } from './HelpModal';
-import { useNavigate } from 'react-router-dom';
 
 type NavItemProps = {
 	path: string;
@@ -27,68 +28,41 @@ type NavItemProps = {
 	icon: ReactNode;
 };
 
-type Props = {
-	accessToken: string | undefined;
-	idToken: string | undefined;
-	currentPath: string;
-	progressMade: boolean;
-};
-
-export const SideNav = ({
-	accessToken,
-	idToken,
-	currentPath,
-	progressMade,
-}: Props) => {
-	const [api] = useState(window.api);
-	const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
+export const SideNav = () => {
 	const [helpModalOpen, setHelpModalOpen] = useState(false);
-	const [newPagePath, setNewPagePath] = useState('/');
 
-	const user = api.sso.getUser(accessToken);
-	const isArchivist = user?.hasRoles(['Archivist']) ?? false;
+	const { accessToken, idToken, isArchivist } = useAuth();
+
 	const navigate = useNavigate();
+	const location = useLocation();
 
-	const onConfirmLeavePage = () => {
-		setLeavePageModalOpen(false);
-		navigate(newPagePath);
-	};
-
-	const handleSelection = (path: string) => {
-		// Ignore if path is the currentpath or a sub path.
-		if (currentPath === path || (currentPath.startsWith(path) && path !== '/'))
-			return;
-		if (progressMade && currentPath !== '/') {
-			// Progress has been made, display leave page modal.
-			setNewPagePath(path);
-			setLeavePageModalOpen(true);
-		} else {
-			// Progress has not been made, navigate to path.
-			navigate(path);
-		}
-	};
+	const { NavigateAwayModal } = useNavigateAway();
 
 	const NavItem = ({ path, label, icon }: NavItemProps) => {
 		const theme = useTheme();
+
+		const currentPath = location.pathname;
+
+		const sx = () => {
+			return {
+				gap: 1,
+				border:
+					currentPath === path || (currentPath.startsWith(path) && path !== '/')
+						? '2px solid var(--sidenav-item-border-current-page)'
+						: '2px solid transparent',
+				borderRadius: '5px',
+				background:
+					currentPath === path || (currentPath.startsWith(path) && path !== '/')
+						? theme.palette.secondary.light
+						: 'none',
+				'&:hover': {
+					background: theme.palette.secondary.dark,
+				},
+			};
+		};
 		return (
 			<ListItem
-				sx={{
-					gap: 1,
-					border:
-						currentPath === path ||
-						(currentPath.startsWith(path) && path !== '/')
-							? '2px solid var(--sidenav-item-border-current-page)'
-							: '2px solid transparent',
-					borderRadius: '5px',
-					background:
-						currentPath === path ||
-						(currentPath.startsWith(path) && path !== '/')
-							? theme.palette.secondary.light
-							: 'none',
-					'&:hover': {
-						background: theme.palette.secondary.dark,
-					},
-				}}
+				sx={sx}
 				component='button'
 				onClick={() => navigate(path)}
 			>
@@ -182,11 +156,7 @@ export const SideNav = ({
 					</Stack>
 				</Box>
 			</Drawer>
-			<LeavePageModal
-				open={leavePageModalOpen}
-				onClose={() => setLeavePageModalOpen(false)}
-				onConfirm={onConfirmLeavePage}
-			/>
+			<NavigateAwayModal />
 			<HelpModal
 				open={helpModalOpen}
 				onClose={() => setHelpModalOpen(false)}

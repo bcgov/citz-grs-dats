@@ -1,28 +1,24 @@
-import { useAppCloseHandler, useReleaseNotes } from '@/hooks';
+import { useAppCloseHandler, useReleaseNotes, useNavigateAway } from '@/hooks';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import {
-  CloseApplicationModal,
-  Layout,
-  LeavePageModal,
-  ReleaseNotesModal
-} from './components';
+import { CloseApplicationModal, Layout, ReleaseNotesModal } from './components';
 import { Routes } from './routes';
 import { AuthProvider, ProgressProvider, VPNMonitor } from './utilities';
 
 function App(): JSX.Element {
 	const [api] = useState(window.api); // Preload scripts
 
-	const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
+	const navigate = useNavigate();
 
-  const releaseNotesHook = useReleaseNotes();
+	const releaseNotesHook = useReleaseNotes();
 
 	const { showClosePrompt, confirmClose, cancelClose } = useAppCloseHandler();
 
-	const onConfirmLeavePage = () => {
-		setLeavePageModalOpen(false);
-		window.location.href = '/';
-	};
+	const { NavigateAwayModal } = useNavigateAway({
+		onClose: cancelClose,
+		onConfirm: () => navigate('/'),
+	});
 
 	const handleCloseReleaseNotesModal = async () => {
 		await api.updateViewedReleaseVersion();
@@ -41,11 +37,7 @@ function App(): JSX.Element {
 						onClose={cancelClose}
 						onConfirm={confirmClose}
 					/>
-					<LeavePageModal
-						open={leavePageModalOpen}
-						onClose={() => setLeavePageModalOpen(false)}
-						onConfirm={onConfirmLeavePage}
-					/>
+					<NavigateAwayModal />
 					<ReleaseNotesModal
 						open={releaseNotesHook.showModal}
 						onClose={handleCloseReleaseNotesModal}
