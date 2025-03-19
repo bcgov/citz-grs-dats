@@ -136,6 +136,10 @@ ipcMain.handle("get-release-notes", async () => {
 
 ipcMain.handle("update-viewed-release-version", async () => {
   try {
+    // Dont update in development because this is supposed to be updated on the user's
+    // machine and note pushed as an update to github.
+    if (is.dev) return;
+
     // Read the existing release notes
     const data = await fsPromises.readFile(releaseNotesJsonPath, "utf-8");
     const releaseNotes = JSON.parse(data);
