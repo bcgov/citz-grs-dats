@@ -1,5 +1,5 @@
 import { useAppCloseHandler } from '@/hooks';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import {
   CloseApplicationModal,
@@ -7,39 +7,17 @@ import {
   ReleaseNotesModal
 } from './components';
 import { LeavePageModal } from './components/LeavePageModal';
+import { useReleaseNotes } from './hooks/useReleaseNotes';
 import { Routes } from './routes';
 import { AuthProvider, VPNMonitor } from './utilities';
 import { ProgressProvider } from './utilities/progress';
-
-// type AppContext = {
-	// idToken?: string;
-	// accessToken?: string;
-	// currentPath: string;
-	// setCurrentPath:
-		// | React.Dispatch<React.SetStateAction<string>>
-		// | ((value: string) => void);
-	// setProgressMade:
-		// | React.Dispatch<React.SetStateAction<boolean>>
-		// | ((value: boolean) => void);
-// };
-
-// export const Context = createContext<AppContext>({
-	// currentPath: '/',
-	// setCurrentPath: () => {},
-	// setProgressMade: () => {},
-// });
 
 function App(): JSX.Element {
 	const [api] = useState(window.api); // Preload scripts
 
 	const [leavePageModalOpen, setLeavePageModalOpen] = useState(false);
-	const [releaseNotesModalOpen, setReleaseNotesModalOpen] = useState(false);
 
-	const [appVersion, setAppVersion] = useState<string | null>(null);
-	const [releaseNotes, setReleaseNotes] = useState<Record<
-		string,
-		string
-	> | null>(null);
+  const releaseNotesHook = useReleaseNotes();
 
 	const { showClosePrompt, confirmClose, cancelClose } = useAppCloseHandler();
 
@@ -48,31 +26,9 @@ function App(): JSX.Element {
 		window.location.href = '/';
 	};
 
-	useEffect(() => {
-		const fetchReleaseNotes = async () => {
-			const notes = await api.getReleaseNotes();
-			setReleaseNotes(notes);
-		};
-		const fetchAppVersion = async () => {
-			const version = await api.getCurrentAppVersion();
-			setAppVersion(version);
-		};
-
-		fetchReleaseNotes();
-		fetchAppVersion();
-	}, []);
-
-	useEffect(() => {
-		// Show release notes
-		if (appVersion && releaseNotes) {
-			setReleaseNotesModalOpen(true);
-		}
-	}, [appVersion, releaseNotes]);
-
-
 	const handleCloseReleaseNotesModal = async () => {
 		await api.updateViewedReleaseVersion();
-		setReleaseNotesModalOpen(false);
+		releaseNotesHook.closeModal();
 	};
 
 	return (
@@ -93,10 +49,10 @@ function App(): JSX.Element {
 						onConfirm={onConfirmLeavePage}
 					/>
 					<ReleaseNotesModal
-						open={releaseNotesModalOpen}
+						open={releaseNotesHook.showModal}
 						onClose={handleCloseReleaseNotesModal}
-						releaseNotes={releaseNotes}
-						appVersion={appVersion}
+						releaseNotes={releaseNotesHook.releaseNotes}
+						appVersion={releaseNotesHook.appVersion}
 					/>
 					<ToastContainer
 						position='bottom-left'
