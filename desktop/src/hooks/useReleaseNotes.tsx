@@ -1,4 +1,4 @@
-import { app } from 'electron';
+import { ReleaseNotesModal } from '@renderer/components';
 import { useEffect, useState } from 'react';
 
 export const useReleaseNotes = () => {
@@ -10,6 +10,11 @@ export const useReleaseNotes = () => {
 		string
 	> | null>(null);
 	const [appVersion, setAppVersion] = useState<string | null>(null);
+
+	const handleClose = async () => {
+		await api.updateViewedReleaseVersion();
+		setShowModal(false);
+	};
 
 	const fetchReleaseNotes = async () => {
 		const notes = await api.getReleaseNotes();
@@ -27,6 +32,14 @@ export const useReleaseNotes = () => {
 	}, [appVersion, releaseNotes]);
 
 	return {
+		ReleaseNotesModal: () => (
+			<ReleaseNotesModal
+				open={showModal}
+				onClose={handleClose}
+				releaseNotes={releaseNotes}
+				appVersion={appVersion}
+			/>
+		),
 		showModal,
 		openModal: () => setShowModal(true),
 		closeModal: () => setShowModal(false),

@@ -1,17 +1,14 @@
-import { useAppCloseHandler, useReleaseNotes, useNavigateAway } from '@/hooks';
-import { useState } from 'react';
+import { useAppCloseHandler, useNavigateAway, useReleaseNotes } from '@/hooks';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import { CloseApplicationModal, Layout, ReleaseNotesModal } from './components';
+import { CloseApplicationModal, Layout } from './components';
 import { Routes } from './routes';
 import { AuthProvider, ProgressProvider, VPNMonitor } from './utilities';
 
 function App(): JSX.Element {
-	const [api] = useState(window.api); // Preload scripts
-
 	const navigate = useNavigate();
 
-	const releaseNotesHook = useReleaseNotes();
+	const { ReleaseNotesModal } = useReleaseNotes();
 
 	const { showClosePrompt, confirmClose, cancelClose } = useAppCloseHandler();
 
@@ -19,11 +16,6 @@ function App(): JSX.Element {
 		onClose: cancelClose,
 		onConfirm: () => navigate('/'),
 	});
-
-	const handleCloseReleaseNotesModal = async () => {
-		await api.updateViewedReleaseVersion();
-		releaseNotesHook.closeModal();
-	};
 
 	return (
 		<VPNMonitor>
@@ -38,12 +30,7 @@ function App(): JSX.Element {
 						onConfirm={confirmClose}
 					/>
 					<NavigateAwayModal />
-					<ReleaseNotesModal
-						open={releaseNotesHook.showModal}
-						onClose={handleCloseReleaseNotesModal}
-						releaseNotes={releaseNotesHook.releaseNotes}
-						appVersion={releaseNotesHook.appVersion}
-					/>
+					<ReleaseNotesModal />
 					<ToastContainer
 						position='bottom-left'
 						autoClose={4000}
