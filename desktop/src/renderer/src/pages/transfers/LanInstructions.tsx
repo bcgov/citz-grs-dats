@@ -1,15 +1,13 @@
 import { Button } from "@bcgov/design-system-react-components";
 import { Box, Grid2 as Grid, Stack, Typography, useTheme } from "@mui/material";
-import { Context } from "../../App";
-import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const LanInstructionsPage = () => {
   const theme = useTheme();
-
-  const { setCurrentPath } = useContext(Context) ?? {};
+  const navigate = useNavigate();
 
   const goToTransferPage = () => {
-    setCurrentPath("/send-records/lan");
+    navigate("/send-records/lan");
   };
 
   const NoteBlock = () => {

@@ -7,7 +7,7 @@ type Props = {
   application: string;
   wasRequestSuccessful: boolean | null;
   onNextPress: () => void;
-  setCurrentPath:
+  setCurrentPath?:
     | React.Dispatch<React.SetStateAction<string>>
     | ((value: string) => void);
   handleRetrySubmission: () => void;
@@ -36,7 +36,7 @@ export const FinishView = ({
       {wasRequestSuccessful === null && <RequestLoading />}
       {wasRequestSuccessful === false && (
         <RequestFailed
-          setCurrentPath={setCurrentPath}
+          // setCurrentPath={setCurrentPath}
           handleRetrySubmission={handleRetrySubmission}
         />
       )}

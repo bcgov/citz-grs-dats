@@ -29,7 +29,6 @@ export const HomePage = () => {
 
 	const handleLogin = async () => await sso.startLoginProcess();
 
-	// const { accessToken, setCurrentPath } = useContext(Context);
   const { accessToken} = useAuth();
 
 	const user = sso.getUser(accessToken);

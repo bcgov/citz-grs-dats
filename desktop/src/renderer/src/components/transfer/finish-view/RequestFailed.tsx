@@ -1,8 +1,9 @@
 import { Button } from "@bcgov/design-system-react-components";
 import { Link, Stack, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
-  setCurrentPath:
+  setCurrentPath?:
     | React.Dispatch<React.SetStateAction<string>>
     | ((value: string) => void);
   handleRetrySubmission: () => void;
@@ -12,6 +13,8 @@ export const RequestFailed = ({
   setCurrentPath,
   handleRetrySubmission,
 }: Props) => {
+  const navigate = useNavigate();
+
   return (
     <Stack gap={2}>
       <Typography variant="h3">Submission failed</Typography>
@@ -20,7 +23,7 @@ export const RequestFailed = ({
         again.
       </Typography>
       <Stack direction="row" gap={1}>
-        <Button variant="secondary" onPress={() => setCurrentPath("/")}>
+        <Button variant="secondary" onPress={() => navigate("/")}>
           Return to home
         </Button>
         <Button variant="primary" onPress={() => handleRetrySubmission()}>

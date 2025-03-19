@@ -1,14 +1,14 @@
+import { Button } from "@bcgov/design-system-react-components";
 import { Grid2 as Grid, Stack, TextField, Typography } from "@mui/material";
 import { LoginRequiredModal, Toast } from "@renderer/components";
-import { useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { Context } from "../../App";
 import {
   ConfirmDeletionModal,
   ConfirmReDownloadModal,
   TransfersGrid,
 } from "@renderer/components/view-transfers";
-import { Button } from "@bcgov/design-system-react-components";
+import { useAuth } from "@renderer/utilities";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 type Transfer = {
   id: number;
@@ -21,7 +21,7 @@ type Transfer = {
 export const ViewTransfersPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
-  const { accessToken } = useContext(Context);
+  const { accessToken } = useAuth();
 
   /**
    * transfers is the original unfiltered state. We use filteredState to track the filtered
