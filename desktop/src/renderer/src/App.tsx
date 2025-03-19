@@ -1,21 +1,13 @@
-import { useAppCloseHandler, useNavigateAway, useReleaseNotes } from '@/hooks';
-import { useNavigate } from 'react-router-dom';
+import { useAppCloseHandler, useReleaseNotes } from '@/hooks';
 import { ToastContainer } from 'react-toastify';
 import { CloseApplicationModal, Layout } from './components';
 import { Routes } from './routes';
 import { AuthProvider, ProgressProvider, VPNMonitor } from './utilities';
 
 function App(): JSX.Element {
-	const navigate = useNavigate();
-
 	const { ReleaseNotesModal } = useReleaseNotes();
 
 	const { showClosePrompt, confirmClose, cancelClose } = useAppCloseHandler();
-
-	const { NavigateAwayModal } = useNavigateAway({
-		onClose: cancelClose,
-		onConfirm: () => navigate('/'),
-	});
 
 	return (
 		<VPNMonitor>
@@ -29,7 +21,6 @@ function App(): JSX.Element {
 						onClose={cancelClose}
 						onConfirm={confirmClose}
 					/>
-					<NavigateAwayModal />
 					<ReleaseNotesModal />
 					<ToastContainer
 						position='bottom-left'
