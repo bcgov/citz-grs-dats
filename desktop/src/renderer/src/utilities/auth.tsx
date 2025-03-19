@@ -3,12 +3,16 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const AuthContext = createContext({
 	accessToken: undefined as string | undefined,
 	idToken: undefined as string | undefined,
+	isArchivist: false,
 });
 
 export const AuthProvider = ({ children }) => {
+	const [api] = useState(window.api);
+
 	// Authentication state
 	const [accessToken, setAccessToken] = useState<string | undefined>(undefined);
 	const [idToken, setIdToken] = useState<string | undefined>(undefined);
+	const [isArchivist, setIsArchivist] = useState<boolean>(false);
 
 	useEffect(() => {
 		// Handle "auth-success" message from main process
@@ -44,8 +48,13 @@ export const AuthProvider = ({ children }) => {
 		};
 	}, []);
 
+	useEffect(() => {
+		const user = api.sso.getUser(accessToken);
+		setIsArchivist(user?.hasRoles(['Archivist']) ?? false);
+	}, [accessToken]);
+
 	return (
-		<AuthContext.Provider value={{ accessToken, idToken }}>
+		<AuthContext.Provider value={{ accessToken, idToken, isArchivist }}>
 			{children}
 		</AuthContext.Provider>
 	);
