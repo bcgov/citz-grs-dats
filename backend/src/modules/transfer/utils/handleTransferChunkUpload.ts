@@ -5,8 +5,15 @@ import {
   HTTP_STATUS_CODES,
   HttpError,
 } from "@bcgov/citz-imb-express-utilities";
+import { logs } from "@/utils";
 
 const UPLOAD_BASE_DIR = path.join(__dirname, "..", "..", "uploads");
+
+const {
+  TRANSFER: {
+    CHUNKING: { CHUNK_RECEIVED, CHUNKS_MERGED, ALL_CHUNKS_RECEIVED },
+  },
+} = logs;
 
 export const handleTransferChunkUpload = async ({
   accession,
@@ -46,7 +53,7 @@ export const handleTransferChunkUpload = async ({
   // Save chunk
   const chunkPath = path.join(transferDir, `chunk_${chunkIndex}.bin`);
   fs.writeFileSync(chunkPath, chunkBuffer);
-  console.log(`Chunk ${chunkIndex + 1}/${totalChunks} received.`);
+  console.log(CHUNK_RECEIVED(accession, application, chunkIndex, totalChunks));
 
   // Check if all chunks have been received
   const receivedChunks = fs
@@ -57,7 +64,7 @@ export const handleTransferChunkUpload = async ({
     return null; // Not all chunks received yet
   }
 
-  console.log("All chunks received. Reassembling...");
+  console.log(ALL_CHUNKS_RECEIVED(accession, application));
 
   // Reassemble chunks
   const zipBufferArray = [];
@@ -78,8 +85,6 @@ export const handleTransferChunkUpload = async ({
     throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Checksum mismatch.");
   }
 
-  console.log("Checksum verified. Proceeding with transfer...");
-
   // Cleanup chunk files
   fs.readdirSync(transferDir).forEach((file) => {
     if (file.startsWith("chunk_")) {
@@ -87,6 +92,6 @@ export const handleTransferChunkUpload = async ({
     }
   });
 
-  console.log("Chunks merged successfully.");
+  console.log(CHUNKS_MERGED(accession, application));
   return contentZipBuffer;
 };

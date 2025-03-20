@@ -56,8 +56,8 @@ export const lanTransferBodySchema = z.object({
     })
   ),
   changesJustification: z.string(),
-  chunkIndex: z.number().int().min(0),
-  totalChunks: z.number().int().min(1),
+  chunkIndex: z.string(),
+  totalChunks: z.string(),
   contentChecksum: z.string(),
 });
 

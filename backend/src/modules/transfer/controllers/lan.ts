@@ -62,8 +62,6 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     return res.status(HTTP_STATUS_CODES.ACCEPTED).json(jsonResponse);
   }
 
-  console.log("Chunks merged successfully.");
-
   let fileListBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "fileListBuffer"
   )?.buffer;
