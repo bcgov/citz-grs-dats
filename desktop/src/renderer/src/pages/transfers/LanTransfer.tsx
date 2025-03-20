@@ -767,12 +767,20 @@ export const LanTransferPage = () => {
           body: formData,
         });
 
-        if (!response.ok)
-          throw new Error(`Failed to upload chunk ${index + 1}`);
-        console.log(`Chunk ${index + 1} uploaded successfully.`);
+        if (!response.ok) {
+          setRequestSuccessful(false);
+          console.log(`Chunk ${index + 1} uploaded successfully.`);
+          return;
+        }
+
+        const jsonResponse = await response.json();
+        console.log("Lan transfer response:", jsonResponse);
+
+        if (jsonResponse.success && index === totalChunks - 1)
+          setRequestSuccessful(true);
       } catch (error) {
-        console.error(`Error uploading chunk ${index + 1}:`, error);
-        return;
+        console.error(error);
+        setRequestSuccessful(false);
       }
     }
 
