@@ -56,6 +56,9 @@ export const lanTransferBodySchema = z.object({
     })
   ),
   changesJustification: z.string(),
+  chunkIndex: z.string(),
+  totalChunks: z.string(),
+  contentChecksum: z.string(),
 });
 
 // TypeScript type inferred from Zod schema

@@ -85,6 +85,21 @@ export const TRANSFER = {
     COMPLETED_TRANSFER: (accession: string, application: string) =>
       `${LIGHT_BLUE}[Transfer Consumer]${RESET} Completed transfer of TR_${accession}_${application}`,
   },
+  CHUNKING: {
+    CHUNK_RECEIVED: (
+      accession: string,
+      application: string,
+      chunkIndex: number,
+      totalChunks: number
+    ) =>
+      `${LIGHT_BLUE}[Transfer]${RESET} Chunk ${
+        chunkIndex + 1
+      }/${totalChunks} received for TR_${accession}_${application}`,
+    ALL_CHUNKS_RECEIVED: (accession: string, application: string) =>
+      `${LIGHT_BLUE}[Transfer]${RESET} All chunks received. Reassembling TR_${accession}_${application}`,
+    CHUNKS_MERGED: (accession: string, application: string) =>
+      `${LIGHT_BLUE}[Transfer]${RESET} Chunks merged successfully for TR_${accession}_${application}`,
+  },
   CONTROLLER: {
     SUB_AGREEMENT_NOT_FOUND: (accession: string, application: string) =>
       `${LIGHT_BLUE}[POST /transfer]${RESET} ${RED}No Submission Agreement was found in the transfer files for TR_${accession}_${application}.${RESET}`,
