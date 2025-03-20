@@ -94,7 +94,7 @@ export const TRANSFER = {
     ) =>
       `${LIGHT_BLUE}[Transfer]${RESET} Chunk ${
         chunkIndex + 1
-      }/${totalChunks} received of TR_${accession}_${application}`,
+      }/${totalChunks} received for TR_${accession}_${application}`,
     ALL_CHUNKS_RECEIVED: (accession: string, application: string) =>
       `${LIGHT_BLUE}[Transfer]${RESET} All chunks received. Reassembling TR_${accession}_${application}`,
     CHUNKS_MERGED: (accession: string, application: string) =>
