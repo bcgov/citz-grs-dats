@@ -12,7 +12,11 @@ import { createAgreementPDF } from "@/modules/submission-agreement/utils";
 import type { FolderRow } from "@/modules/filelist/utils/excel/worksheets";
 import { updateFileListV2 } from "@/modules/filelist/utils/excel";
 import type { FileMetadataZodType } from "@/modules/filelist/schemas";
-import { callTransferEndpoint, createStandardTransferZip } from "../utils";
+import {
+  callTransferEndpoint,
+  createStandardTransferZip,
+  handleTransferChunkUpload,
+} from "../utils";
 import crypto from "node:crypto";
 import { TransferService } from "../services";
 
@@ -23,18 +27,49 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   const { getStandardResponse, getZodValidatedBody, user, token, files } = req;
   const body = getZodValidatedBody(lanTransferBodySchema); // Validate request body
 
+  const { accession, application } = body.metadataV2.admin;
+  const chunkIndex = Number.parseInt(body.chunkIndex);
+  const totalChunks = Number.parseInt(body.totalChunks);
+  const receivedChecksum = body.contentChecksum;
+
+  const chunkBuffer = (files as Express.Multer.File[])?.find(
+    (file) => file.fieldname === "contentZipChunk"
+  )?.buffer;
+
+  if (!chunkBuffer) {
+    throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Chunk data missing.");
+  }
+
+  // Process chunk upload and check if file is fully reconstructed
+  const contentZipBuffer = await handleTransferChunkUpload({
+    accession,
+    application,
+    chunkIndex,
+    totalChunks,
+    receivedChecksum,
+    chunkBuffer,
+  });
+
+  // If not all chunks received yet, return success response to continue upload
+  if (!contentZipBuffer) {
+    const jsonResponse = getStandardResponse({
+      message: `Chunk ${
+        chunkIndex + 1
+      } received. Waiting for remaining chunks.`,
+      success: true,
+    });
+
+    return res.status(HTTP_STATUS_CODES.ACCEPTED).json(jsonResponse);
+  }
+
+  console.log("Chunks merged successfully.");
+
   let fileListBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "fileListBuffer"
   )?.buffer;
   const transferFormBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "transferFormBuffer"
   )?.buffer;
-  const contentZipBuffer = (files as Express.Multer.File[])?.find(
-    (file) => file.fieldname === "contentZipBuffer"
-  )?.buffer;
-
-  const accession = body.metadataV2.admin.accession;
-  const application = body.metadataV2.admin.application;
 
   if (!fileListBuffer || !transferFormBuffer || !contentZipBuffer)
     throw new HttpError(
@@ -146,9 +181,9 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // Make checksum of zip buffer
-  const hash = crypto.createHash("sha256");
-  hash.update(standardTransferZipBuffer);
-  const standardTransferZipChecksum = hash.digest("hex");
+  const standardTransferHash = crypto.createHash("sha256");
+  standardTransferHash.update(standardTransferZipBuffer);
+  const standardTransferZipChecksum = standardTransferHash.digest("hex");
 
   // Make request to standard transfer
   const {
