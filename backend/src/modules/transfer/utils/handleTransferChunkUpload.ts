@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { pipeline } from "node:stream/promises";
 import {
   HTTP_STATUS_CODES,
   HttpError,
@@ -41,57 +42,71 @@ export const handleTransferChunkUpload = async ({
     );
   }
 
-  // Define upload directory
   const transferDir = path.join(
     UPLOAD_BASE_DIR,
     `TR_${accession}_${application}`
   );
-  if (!fs.existsSync(transferDir)) {
-    fs.mkdirSync(transferDir, { recursive: true });
-  }
+  await fs.promises.mkdir(transferDir, { recursive: true });
 
-  // Save chunk
   const chunkPath = path.join(transferDir, `chunk_${chunkIndex}.bin`);
-  fs.writeFileSync(chunkPath, chunkBuffer);
+  await fs.promises.writeFile(chunkPath, chunkBuffer);
+
   console.log(CHUNK_RECEIVED(accession, application, chunkIndex, totalChunks));
 
-  // Check if all chunks have been received
-  const receivedChunks = fs
-    .readdirSync(transferDir)
-    .filter((file) => file.startsWith("chunk_")).length;
+  const receivedChunks = (await fs.promises.readdir(transferDir)).filter((f) =>
+    f.startsWith("chunk_")
+  ).length;
 
   if (receivedChunks < totalChunks) {
-    return null; // Not all chunks received yet
+    return null; // Wait for remaining chunks
   }
 
   console.log(ALL_CHUNKS_RECEIVED(accession, application));
 
-  // Reassemble chunks
-  const zipBufferArray = [];
+  const mergedPath = path.join(transferDir, "merged.zip");
+  const mergedWriteStream = fs.createWriteStream(mergedPath);
+  const hash = crypto.createHash("sha256");
+
   for (let i = 0; i < totalChunks; i++) {
-    const chunkData = fs.readFileSync(path.join(transferDir, `chunk_${i}.bin`));
-    zipBufferArray.push(chunkData);
+    const chunkStream = fs.createReadStream(
+      path.join(transferDir, `chunk_${i}.bin`)
+    );
+    // Pipe each chunk to both the hash and final merged stream
+    await pipeline(
+      chunkStream,
+      async function* (source) {
+        for await (const chunk of source) {
+          hash.update(chunk);
+          yield chunk;
+        }
+      },
+      mergedWriteStream,
+      { end: false }
+    );
   }
 
-  const contentZipBuffer = Buffer.concat(zipBufferArray);
+  mergedWriteStream.end();
+  await new Promise((res) => mergedWriteStream.on("finish", res));
 
-  // Compute SHA-256 checksum
-  const hash = crypto.createHash("sha256");
-  hash.update(contentZipBuffer);
   const computedChecksum = hash.digest("hex");
-
   if (computedChecksum !== receivedChecksum) {
     console.error("Checksum mismatch! File integrity compromised.");
     throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Checksum mismatch.");
   }
 
   // Cleanup chunk files
-  fs.readdirSync(transferDir).forEach((file) => {
-    if (file.startsWith("chunk_")) {
-      fs.unlinkSync(path.join(transferDir, file));
-    }
-  });
+  const files = await fs.promises.readdir(transferDir);
+  await Promise.all(
+    files
+      .filter((f) => f.startsWith("chunk_"))
+      .map((f) => fs.promises.unlink(path.join(transferDir, f)))
+  );
 
   console.log(CHUNKS_MERGED(accession, application));
-  return contentZipBuffer;
+
+  // Read the merged file into memory (you could return a stream or path instead)
+  const finalBuffer = await fs.promises.readFile(mergedPath);
+  await fs.promises.unlink(mergedPath); // optional: clean up merged file
+
+  return finalBuffer;
 };
