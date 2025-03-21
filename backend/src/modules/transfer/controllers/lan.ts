@@ -70,7 +70,6 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   let fileListBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "fileListBuffer"
   )?.buffer;
-  console.log("Getting transfer form buffer");
   const transferFormBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "transferFormBuffer"
   )?.buffer;
@@ -184,11 +183,6 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     },
   });
 
-  // Make checksum of zip buffer
-  const standardTransferHash = crypto.createHash("sha256");
-  standardTransferHash.update(standardTransferZipBuffer);
-  const standardTransferZipChecksum = standardTransferHash.digest("hex");
-
   // Make request to standard transfer
   const {
     message: transferResMessage,
@@ -197,7 +191,6 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   } = await callTransferEndpoint({
     token,
     standardTransferZipBuffer,
-    standardTransferZipChecksum,
     accession,
     application,
   });

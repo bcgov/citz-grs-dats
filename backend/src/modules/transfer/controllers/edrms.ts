@@ -188,11 +188,6 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
     },
   });
 
-  // Make checksum of zip buffer
-  const hash = crypto.createHash("sha256");
-  hash.update(standardTransferZipBuffer);
-  const standardTransferZipChecksum = hash.digest("hex");
-
   // Make request to standard transfer
   const {
     message: transferResMessage,
@@ -201,7 +196,6 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   } = await callTransferEndpoint({
     token,
     standardTransferZipBuffer,
-    standardTransferZipChecksum,
     accession,
     application,
   });

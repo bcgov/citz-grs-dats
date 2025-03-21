@@ -101,13 +101,15 @@ export const handleTransferChunkUpload = async ({
       .filter((f) => f.startsWith("chunk_"))
       .map((f) => fs.promises.unlink(path.join(transferDir, f)))
   );
-  await fs.promises.rmdir(transferDir);
 
   console.log(CHUNKS_MERGED(accession, application));
 
   // Read the merged file into memory (you could return a stream or path instead)
   const finalBuffer = await fs.promises.readFile(mergedPath);
-  await fs.promises.unlink(mergedPath); // optional: clean up merged file
+
+  // Clean up
+  await fs.promises.unlink(mergedPath);
+  await fs.promises.rm(transferDir, { recursive: true, force: true });
 
   return finalBuffer;
 };
