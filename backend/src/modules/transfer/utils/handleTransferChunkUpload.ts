@@ -101,6 +101,7 @@ export const handleTransferChunkUpload = async ({
       .filter((f) => f.startsWith("chunk_"))
       .map((f) => fs.promises.unlink(path.join(transferDir, f)))
   );
+  await fs.promises.rmdir(transferDir);
 
   console.log(CHUNKS_MERGED(accession, application));
 

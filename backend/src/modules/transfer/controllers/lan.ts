@@ -7,7 +7,7 @@ import {
 import { lanTransferBodySchema } from "../schemas";
 import { upload } from "src/modules/s3/utils";
 import { ENV } from "src/config";
-import { formatDate } from "src/utils";
+import { formatDate, formatFileSize } from "src/utils";
 import { createAgreementPDF } from "@/modules/submission-agreement/utils";
 import type { FolderRow } from "@/modules/filelist/utils/excel/worksheets";
 import { updateFileListV2 } from "@/modules/filelist/utils/excel";
@@ -50,22 +50,23 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     chunkBuffer,
   });
 
-  console.log("Returned content zip buffer");
-
   // If not all chunks received yet, return success response to continue upload
   if (!contentZipBuffer) {
-    console.log("Missing content zip buffer");
     const jsonResponse = getStandardResponse({
       message: `Chunk ${
         chunkIndex + 1
       } received. Waiting for remaining chunks.`,
       success: true,
+      data: {
+        chunkSize: formatFileSize(chunkBuffer.length),
+        chunkIndex,
+        totalChunks,
+      },
     });
 
     return res.status(HTTP_STATUS_CODES.ACCEPTED).json(jsonResponse);
   }
 
-  console.log("Getting filelist buffer");
   let fileListBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "fileListBuffer"
   )?.buffer;
@@ -80,8 +81,6 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
       "Missing one or many of fileListBuffer, transferFormBuffer, contentZipBuffer."
     );
 
-  console.log("Creating submission agreement");
-
   // Create submission agreement file
   const subAgreementBuffer = await createAgreementPDF({
     ministrySignature: `${user?.first_name} ${user?.last_name}`,
@@ -90,16 +89,12 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     application,
   });
 
-  console.log("Uploading submission agreement to s3");
-
   // Save submission agreement to s3
   await upload({
     bucketName: S3_BUCKET,
     key: `submission-agreements/${accession}_${application}.pdf`,
     content: subAgreementBuffer,
   });
-
-  console.log("Formatting folder rows");
 
   // Format folder rows
   const folderRows = Object.entries(body.metadataV2.folders).map(
@@ -109,14 +104,10 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     })
   ) as FolderRow[];
 
-  console.log("Formatting file rows");
-
   // Format file rows
   const fileRows = Object.values(
     body.metadataV2.files
   ).flat() as FileMetadataZodType[];
-
-  console.log("Updating file list v2");
 
   // Update File List
   fileListBuffer = await updateFileListV2({
@@ -144,16 +135,12 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     },
   };
 
-  console.log("Getting transfer entry");
-
   // Get original extended metadata
   const transferEntry = await TransferService.getTransferWhere({
     "metadata.admin.accession": accession,
     "metadata.admin.application": application,
   });
   const originalExtendedMetadataJson = transferEntry?.extendedMetadata ?? {};
-
-  console.log("Creating json buffers");
 
   // Metadata files
   const adminJsonBuffer = Buffer.from(
@@ -179,8 +166,6 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
 
   const today = new Date().toISOString().split("T")[0];
 
-  console.log("Creating standard transfer zip");
-
   // Put together zip buffer
   const standardTransferZipBuffer = await createStandardTransferZip({
     contentZipBuffer,
@@ -199,14 +184,10 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     },
   });
 
-  console.log("Checksum of zip buffer");
-
   // Make checksum of zip buffer
   const standardTransferHash = crypto.createHash("sha256");
   standardTransferHash.update(standardTransferZipBuffer);
   const standardTransferZipChecksum = standardTransferHash.digest("hex");
-
-  console.log("Call transfer endpoint");
 
   // Make request to standard transfer
   const {

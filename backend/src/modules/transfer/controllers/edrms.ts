@@ -7,12 +7,16 @@ import {
 import { edrmsTransferBodySchema } from "../schemas";
 import { upload } from "src/modules/s3/utils";
 import { ENV } from "src/config";
-import { formatDate } from "src/utils";
+import { formatDate, formatFileSize } from "src/utils";
 import { createAgreementPDF } from "@/modules/submission-agreement/utils";
 import type { FolderRow } from "@/modules/filelist/utils/excel/worksheets";
 import { createExcelWorkbook } from "@/modules/filelist/utils/excel";
 import type { FileMetadataZodType } from "@/modules/filelist/schemas";
-import { callTransferEndpoint, createStandardTransferZip } from "../utils";
+import {
+  callTransferEndpoint,
+  createStandardTransferZip,
+  handleTransferChunkUpload,
+} from "../utils";
 import crypto from "node:crypto";
 import type { Workbook } from "exceljs";
 import { TransferService } from "../services";
@@ -24,6 +28,46 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   const { getStandardResponse, getZodValidatedBody, user, token, files } = req;
   const body = getZodValidatedBody(edrmsTransferBodySchema); // Validate request body
 
+  const { accession, application } = body.metadata.admin;
+  const chunkIndex = Number.parseInt(body.chunkIndex);
+  const totalChunks = Number.parseInt(body.totalChunks);
+  const receivedChecksum = body.contentChecksum;
+
+  const chunkBuffer = (files as Express.Multer.File[])?.find(
+    (file) => file.fieldname === "contentZipChunk"
+  )?.buffer;
+
+  if (!chunkBuffer) {
+    throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Chunk data missing.");
+  }
+
+  // Process chunk upload and check if file is fully reconstructed
+  const contentZipBuffer = await handleTransferChunkUpload({
+    accession,
+    application,
+    chunkIndex,
+    totalChunks,
+    receivedChecksum,
+    chunkBuffer,
+  });
+
+  // If not all chunks received yet, return success response to continue upload
+  if (!contentZipBuffer) {
+    const jsonResponse = getStandardResponse({
+      message: `Chunk ${
+        chunkIndex + 1
+      } received. Waiting for remaining chunks.`,
+      success: true,
+      data: {
+        chunkSize: formatFileSize(chunkBuffer.length),
+        chunkIndex,
+        totalChunks,
+      },
+    });
+
+    return res.status(HTTP_STATUS_CODES.ACCEPTED).json(jsonResponse);
+  }
+
   const dataportBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "dataportBuffer"
   )?.buffer;
@@ -33,12 +77,6 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   const transferFormBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "transferFormBuffer"
   )?.buffer;
-  const contentZipBuffer = (files as Express.Multer.File[])?.find(
-    (file) => file.fieldname === "contentZipBuffer"
-  )?.buffer;
-
-  const accession = body.metadata.admin.accession;
-  const application = body.metadata.admin.application;
 
   if (
     !dataportBuffer ||
