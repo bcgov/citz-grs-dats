@@ -50,8 +50,11 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     chunkBuffer,
   });
 
+  console.log("Returned content zip buffer");
+
   // If not all chunks received yet, return success response to continue upload
   if (!contentZipBuffer) {
+    console.log("Missing content zip buffer");
     const jsonResponse = getStandardResponse({
       message: `Chunk ${
         chunkIndex + 1
