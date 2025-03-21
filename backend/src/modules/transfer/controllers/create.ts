@@ -8,14 +8,14 @@ import { createTransferBodySchema } from "../schemas";
 import { TransferService } from "src/modules/transfer/services";
 import { download, upload } from "src/modules/s3/utils";
 import { ENV } from "src/config";
-import { streamToBuffer, logs } from "src/utils";
+import { streamToBuffer, logs, formatFileSize } from "src/utils";
 import { addToStandardTransferQueue } from "src/modules/rabbit/utils/queue/transfer";
 import {
   addFileToZipBuffer,
   getFileFromZipBuffer,
   getFilenameByRegex,
   getMetadata,
-  isChecksumValid,
+  handleTransferChunkUpload,
   validateContentMatchesMetadata,
   validateDigitalFileList,
   validateMetadataFiles,
@@ -38,27 +38,49 @@ const { S3_BUCKET } = ENV;
 export const create = errorWrapper(async (req: Request, res: Response) => {
   const { getStandardResponse, getZodValidatedBody, user, file } = req;
   const body = getZodValidatedBody(createTransferBodySchema); // Validate request body
-  let buffer = file?.buffer;
+  const chunkBuffer = file?.buffer;
   let usedSubmissionAgreementfromS3 = false;
 
-  if (!buffer)
-    throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Missing buffer.");
+  const { accession, application } = body;
+  const chunkIndex = Number.parseInt(body.chunkIndex);
+  const totalChunks = Number.parseInt(body.totalChunks);
+  const receivedChecksum = body.contentChecksum;
 
-  const bufferChecksumValid = await isChecksumValid({
-    buffer,
-    checksum: body.checksum,
+  if (!chunkBuffer) {
+    throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Chunk data missing.");
+  }
+
+  // Process chunk upload and check if file is fully reconstructed
+  let contentZipBuffer = await handleTransferChunkUpload({
+    accession,
+    application,
+    chunkIndex,
+    totalChunks,
+    receivedChecksum,
+    chunkBuffer,
   });
 
-  if (!bufferChecksumValid)
-    throw new HttpError(
-      HTTP_STATUS_CODES.BAD_REQUEST,
-      "Checksum of buffer and body.checksum do not match."
-    );
+  // If not all chunks received yet, return success response to continue upload
+  if (!contentZipBuffer) {
+    const jsonResponse = getStandardResponse({
+      message: `Chunk ${
+        chunkIndex + 1
+      } received. Waiting for remaining chunks.`,
+      success: true,
+      data: {
+        chunkSize: formatFileSize(chunkBuffer.length),
+        chunkIndex,
+        totalChunks,
+      },
+    });
+
+    return res.status(HTTP_STATUS_CODES.ACCEPTED).json(jsonResponse);
+  }
 
   const jobID = `job-${Date.now()}`;
 
   let subAgreementPath = await getFilenameByRegex({
-    buffer,
+    buffer: contentZipBuffer,
     directory: "documentation/",
     regex: /^Submission_Agreement/,
   });
@@ -69,7 +91,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
     try {
       subAgreementStream = await download({
         bucketName: S3_BUCKET,
-        key: `submission-agreements/${body.accession}_${body.application}.pdf`,
+        key: `submission-agreements/${accession}_${application}.pdf`,
       });
 
       if (!subAgreementStream) throw new Error("Missing submission agreement.");
@@ -80,36 +102,36 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
       );
     }
 
-    console.log(SUB_AGREEMENT_NOT_FOUND(body.accession, body.application));
+    console.log(SUB_AGREEMENT_NOT_FOUND(accession, application));
 
     const s3SubAgreementBuffer = await streamToBuffer(subAgreementStream);
 
     if (s3SubAgreementBuffer) {
-      console.log(USING_S3_SUB_AGREEMENT(body.accession, body.application));
+      console.log(USING_S3_SUB_AGREEMENT(accession, application));
       usedSubmissionAgreementfromS3 = true;
     }
 
-    const newSubAgreementName = `Submission_Agreement_${body.accession}_${body.application}.pdf`;
+    const newSubAgreementName = `Submission_Agreement_${accession}_${application}.pdf`;
     subAgreementPath = `documentation/${newSubAgreementName}`;
 
     // Add agreement to zip buffer
-    buffer = await addFileToZipBuffer({
-      zipBuffer: buffer,
+    contentZipBuffer = await addFileToZipBuffer({
+      zipBuffer: contentZipBuffer,
       fileBuffer: s3SubAgreementBuffer,
       filePath: subAgreementPath,
     });
   }
 
   // Validate transfer buffer
-  await validateStandardTransferStructure({ buffer });
+  await validateStandardTransferStructure({ buffer: contentZipBuffer });
   await validateMetadataFiles({
-    buffer,
-    accession: body.accession,
-    application: body.application,
+    buffer: contentZipBuffer,
+    accession,
+    application,
   });
 
   const fileListPath = await getFilenameByRegex({
-    buffer,
+    buffer: contentZipBuffer,
     directory: "documentation/",
     regex: /^(Digital_File_List|File\sList)/,
   });
@@ -120,35 +142,38 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
       "File List could not be found in the documentation directory."
     );
 
-  const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath);
+  const fileListBuffer = await getFileFromZipBuffer(
+    contentZipBuffer,
+    fileListPath
+  );
   const submissionAgreementBuffer = await getFileFromZipBuffer(
-    buffer,
+    contentZipBuffer,
     subAgreementPath
   );
 
   await validateDigitalFileList({
     buffer: fileListBuffer,
-    accession: body.accession,
-    application: body.application,
+    accession,
+    application,
   });
   await validateSubmissionAgreement({
     buffer: submissionAgreementBuffer,
-    accession: body.accession,
-    application: body.application,
+    accession,
+    application,
   });
 
-  const metadata = await getMetadata(buffer);
+  const metadata = await getMetadata(contentZipBuffer);
 
-  await validateContentMatchesMetadata({ buffer, metadata });
+  await validateContentMatchesMetadata({ buffer: contentZipBuffer, metadata });
   validateMetadataFoldersMatchesFiles({ metadata });
 
   // Create new checksum incase changes were made to buffer
-  const newChecksum = generateChecksum(buffer);
+  const newChecksum = generateChecksum(contentZipBuffer);
 
   // Save data for transfer to Mongo
   await TransferService.createOrUpdateTransferEntry({
-    accession: body.accession,
-    application: body.application,
+    accession,
+    application,
     jobID,
     checksum: newChecksum,
     status: "Transferring",
@@ -164,8 +189,8 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
   // Save to s3
   const s3Location = await upload({
     bucketName: S3_BUCKET,
-    key: `transfers/TR_${body.accession}_${body.application}.zip`,
-    content: buffer,
+    key: `transfers/TR_${accession}_${application}.zip`,
+    content: contentZipBuffer,
   });
 
   // Add the job ID to the RabbitMQ queue
@@ -175,8 +200,8 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
     data: {
       user: `${user?.first_name} ${user?.last_name}`,
       jobID,
-      accession: body.accession,
-      application: body.application,
+      accession,
+      application,
       fileLocation: s3Location,
       note: "",
     },

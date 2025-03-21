@@ -3,60 +3,86 @@ import { createTransferBodySchema } from "@/modules/transfer/schemas";
 
 // Test suite for createTransferBodySchema
 describe("createTransferBodySchema", () => {
-	// Test case: Validates a correct input
-	it("should validate a valid input", () => {
-		const validData = {
-			buffer: Buffer.from("test"),
-			checksum: "123",
-			application: "TestApplication",
-			accession: "TestAccession",
-		};
+  // Test case: Validates a correct input
+  it("should validate a valid input", () => {
+    const validData = {
+      application: "MyApp",
+      accession: "ACC123",
+      chunkIndex: "0",
+      totalChunks: "3",
+      contentChecksum: "abc123",
+    };
 
-		expect(() => createTransferBodySchema.parse(validData)).not.toThrow();
-	});
+    expect(() => createTransferBodySchema.parse(validData)).not.toThrow();
+  });
 
-	// Test case: Ensures buffer accepts any type
-	it("should validate when buffer is of any type", () => {
-		const validData = {
-			buffer: "SomeString", // Can be any type
-			checksum: "123",
-			application: "TestApplication",
-			accession: "TestAccession",
-		};
+  // Test case: Throws error when required field is missing
+  it("should throw an error when application is missing", () => {
+    const invalidData = {
+      accession: "ACC123",
+      chunkIndex: "0",
+      totalChunks: "3",
+      contentChecksum: "abc123",
+    };
 
-		expect(() => createTransferBodySchema.parse(validData)).not.toThrow();
-	});
+    expect(() => createTransferBodySchema.parse(invalidData)).toThrow(
+      z.ZodError
+    );
+  });
 
-	// Test case: Throws an error when application is missing
-	it("should throw an error when application is missing", () => {
-		const invalidData = {
-			buffer: Buffer.from("test"),
-			checksum: "123",
-			accession: "TestAccession",
-		};
+  // Test case: Throws error when accession is missing
+  it("should throw an error when accession is missing", () => {
+    const invalidData = {
+      application: "MyApp",
+      chunkIndex: "0",
+      totalChunks: "3",
+      contentChecksum: "abc123",
+    };
 
-		expect(() => createTransferBodySchema.parse(invalidData)).toThrow(z.ZodError);
-	});
+    expect(() => createTransferBodySchema.parse(invalidData)).toThrow(
+      z.ZodError
+    );
+  });
 
-	// Test case: Throws an error when accession is missing
-	it("should throw an error when accession is missing", () => {
-		const invalidData = {
-			buffer: Buffer.from("test"),
-			checksum: "123",
-			application: "TestApplication",
-		};
+  // Test case: Throws error when chunkIndex is missing
+  it("should throw an error when chunkIndex is missing", () => {
+    const invalidData = {
+      application: "MyApp",
+      accession: "ACC123",
+      totalChunks: "3",
+      contentChecksum: "abc123",
+    };
 
-		expect(() => createTransferBodySchema.parse(invalidData)).toThrow(z.ZodError);
-	});
+    expect(() => createTransferBodySchema.parse(invalidData)).toThrow(
+      z.ZodError
+    );
+  });
 
-	// Test case: Throws an error when checkusum is missing
-	it("should throw an error when checksum is missing", () => {
-		const invalidData = {
-			buffer: Buffer.from("test"),
-			accession: "TestAccession",
-			application: "TestApplication",
-		};
+  // Test case: Throws error when totalChunks is missing
+  it("should throw an error when totalChunks is missing", () => {
+    const invalidData = {
+      application: "MyApp",
+      accession: "ACC123",
+      chunkIndex: "0",
+      contentChecksum: "abc123",
+    };
 
-		expect(() => createTransferBodySchema.parse(invalidData)).toThrow(z.ZodError);
-	});
+    expect(() => createTransferBodySchema.parse(invalidData)).toThrow(
+      z.ZodError
+    );
+  });
+
+  // Test case: Throws error when contentChecksum is missing
+  it("should throw an error when contentChecksum is missing", () => {
+    const invalidData = {
+      application: "MyApp",
+      accession: "ACC123",
+      chunkIndex: "0",
+      totalChunks: "3",
+    };
+
+    expect(() => createTransferBodySchema.parse(invalidData)).toThrow(
+      z.ZodError
+    );
+  });
 });
