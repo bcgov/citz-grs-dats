@@ -7,7 +7,7 @@ import {
 } from "@bcgov/citz-imb-express-utilities";
 import { logs } from "@/utils";
 
-const UPLOAD_BASE_DIR = path.join(__dirname, "..", "..", "uploads");
+const UPLOAD_BASE_DIR = path.join(__dirname, "..", "uploads");
 
 const {
   TRANSFER: {
