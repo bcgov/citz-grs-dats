@@ -16,6 +16,7 @@ type Props = {
   setCurrentPath:
     | React.Dispatch<React.SetStateAction<string>>
     | ((value: string) => void);
+  accessToken?: string;
 };
 
 export const LanSubmissionAgreementView = ({
@@ -24,7 +25,10 @@ export const LanSubmissionAgreementView = ({
   onNextPress,
   onBackPress,
   setCurrentPath,
+  accessToken,
 }: Props) => {
+  const [api] = useState(window.api); // Preload scripts
+
   const [accept, setAccept] = useState<boolean | null>(null);
   const [showDeclineModal, setShowDeclineModal] = useState<boolean>(false);
 
@@ -79,7 +83,32 @@ export const LanSubmissionAgreementView = ({
     setShowDeclineModal(true);
   };
 
-  const handleConfirmDecline = () => {
+  const handleConfirmDecline = async () => {
+    if (!accessToken) return setCurrentPath("/");
+
+    // Request url
+    const apiUrl = await api.getCurrentApiUrl();
+    const requestUrl = `${apiUrl}/submission-agreement/decline`;
+
+    // Make request
+    try {
+      const response = await fetch(requestUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          accession,
+          application,
+        }),
+      });
+
+      const jsonResponse = await response.json();
+      console.log("Submission agreement decline response:", jsonResponse);
+    } catch (error) {
+      console.error(error);
+    }
+
     setCurrentPath("/");
   };
 

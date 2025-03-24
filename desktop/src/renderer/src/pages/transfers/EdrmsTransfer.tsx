@@ -454,6 +454,7 @@ export const EdrmsTransferPage = () => {
               onNextPress={onNextPress}
               onBackPress={onBackPress}
               setCurrentPath={setCurrentPath}
+              accessToken={accessToken}
             />
           )}
           {currentViewIndex === 5 && (
