@@ -1,11 +1,10 @@
-import { useAppCloseHandler, useNavigateAway } from '@/hooks';
+import { useAppCloseHandler, useNavigate, useNavigateAway } from '@/hooks';
 import { Header } from '@bcgov/design-system-react-components';
 import { Button, Grid2 as Grid } from '@mui/material';
-import { useNavigate } from 'react-router';
 import { SideNav } from '../components';
 
 export const Layout = ({ children }) => {
-	const navigate = useNavigate();
+	const { navigate } = useNavigate();
 
 	const { cancelClose } = useAppCloseHandler();
 
@@ -26,7 +25,7 @@ export const Layout = ({ children }) => {
 			<Grid size={10}>
 				<Header
 					title='Digital Archives Transfer Service'
-					logoLinkElement={<Button onClick={openNavigateAwayModal} />}
+					logoLinkElement={<Button onClick={() => navigate('/')} />}
 				/>
 				{children}
 				<NavigateAwayModal />

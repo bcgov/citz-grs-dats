@@ -9,6 +9,8 @@ function App(): JSX.Element {
 
 	const { showClosePrompt, confirmClose, cancelClose } = useAppCloseHandler();
 
+	const { navigationProvider } = useNavigate();
+
 	return (
 		<VPNMonitor>
 			<AuthProvider>

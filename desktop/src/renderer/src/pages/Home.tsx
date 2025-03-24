@@ -1,3 +1,4 @@
+import { useNavigate } from '@/hooks';
 import { Button } from '@bcgov/design-system-react-components';
 import {
 	ListAlt as ListIcon,
@@ -15,7 +16,6 @@ import { TransferRecordsIcon } from '@renderer/components';
 import HomeDatsWorksAccordion from '@renderer/components/HowDatsWorksAccordion';
 import { useAuth } from '@renderer/utilities';
 import { useEffect, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router';
 
 export const HomePage = () => {
 	const [sso] = useState(window.api.sso); // Preload scripts
@@ -25,7 +25,7 @@ export const HomePage = () => {
 		null,
 	);
 
-	const navigate = useNavigate();
+	const { navigate } = useNavigate();
 
 	const handleLogin = async () => await sso.startLoginProcess();
 

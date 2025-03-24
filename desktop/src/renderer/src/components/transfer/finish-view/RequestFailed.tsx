@@ -1,19 +1,13 @@
+import { useNavigate } from '@/hooks';
 import { Button } from '@bcgov/design-system-react-components';
 import { Link, Stack, Typography } from '@mui/material';
-import { useNavigate } from 'react-router';
 
 type Props = {
-	setCurrentPath?:
-		| React.Dispatch<React.SetStateAction<string>>
-		| ((value: string) => void);
 	handleRetrySubmission: () => void;
 };
 
-export const RequestFailed = ({
-	setCurrentPath,
-	handleRetrySubmission,
-}: Props) => {
-	const navigate = useNavigate();
+export const RequestFailed = ({ handleRetrySubmission }: Props) => {
+	const { navigate } = useNavigate();
 
 	return (
 		<Stack gap={2}>

@@ -1,4 +1,4 @@
-import { useNavigateAway } from '@/hooks';
+import { useNavigate, useNavigateAway } from '@/hooks';
 import {
 	DescriptionOutlined as FileListIcon,
 	HelpOutline as HelpIcon,
@@ -18,7 +18,6 @@ import {
 } from '@mui/material';
 import { useAuth } from '@renderer/utilities';
 import { type ReactNode, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router';
 import { AuthButton } from './AuthButton';
 import { HelpModal } from './HelpModal';
 
@@ -33,8 +32,8 @@ export const SideNav = () => {
 
 	const { accessToken, idToken, isArchivist } = useAuth();
 
-	const navigate = useNavigate();
-	const location = useLocation();
+	const {location, navigate} = useNavigate();
+
 
 	const { NavigateAwayModal } = useNavigateAway();
 

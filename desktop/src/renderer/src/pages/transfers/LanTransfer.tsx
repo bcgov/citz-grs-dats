@@ -1,3 +1,4 @@
+import { useNavigate } from '@/hooks';
 import { Grid2 as Grid, Stack, Typography } from '@mui/material';
 import { LoginRequiredModal, Stepper, Toast } from '@renderer/components';
 import { JustifyChangesModal } from '@renderer/components/transfer';
@@ -8,9 +9,8 @@ import {
 	LanUploadFileListView,
 	LanUploadTransferFormView,
 } from '@renderer/components/transfer/lan-views';
-import { useAuth, useProgress } from '@renderer/utilities';
+import { useAuth } from '@renderer/utilities';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import {
 	getXlsxFileListToastData,
@@ -41,9 +41,8 @@ type FileBufferObj = {
 export const LanTransferPage = () => {
 	const [api] = useState(window.api); // Preload scripts
 
-	const navigate = useNavigate();
+	const { navigate, setCanLoseProgress } = useNavigate();
 	const { idToken, accessToken } = useAuth();
-	const { setProgressMade } = useProgress();
 
 	const handleLogout = async () => await api.sso.logout(idToken);
 
@@ -574,7 +573,7 @@ export const LanTransferPage = () => {
 	};
 
 	useEffect(() => {
-		setProgressMade(!!fileList);
+		setCanLoseProgress(!!fileList);
 		if (fileList) {
 			const filename = fileList.name;
 			const regex = /^(Digital_File_List|File\sList)/;

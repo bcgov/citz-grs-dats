@@ -1,11 +1,11 @@
+import { useNavigate } from '@/hooks';
 import { Button } from '@bcgov/design-system-react-components';
 import { Box, Grid2 as Grid, Stack, Typography, useTheme } from '@mui/material';
-import { useNavigate } from 'react-router';
 
 export const FileListInstructionsPage = () => {
 	const theme = useTheme();
 
-	const navigate = useNavigate();
+	const { navigate } = useNavigate();
 
 	const goToFileListPage = () => navigate('/file-list');
 

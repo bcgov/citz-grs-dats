@@ -1,3 +1,4 @@
+import { useNavigate } from '@/hooks';
 import { Grid2 as Grid, Stack, Typography } from '@mui/material';
 import { Stepper, Toast } from '@renderer/components';
 import {
@@ -9,17 +10,15 @@ import {
 	EdrmsUploadTransferFormView,
 } from '@renderer/components/transfer/edrms-views';
 import { FinishView } from '@renderer/components/transfer/finish-view';
-import { useAuth, useProgress } from '@renderer/utilities';
+import { useAuth } from '@renderer/utilities';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 
 export const EdrmsTransferPage = () => {
 	const [api] = useState(window.api); // Preload scripts
 
-	const navigate = useNavigate();
+	const { navigate, setCanLoseProgress } = useNavigate();
 	const { idToken, accessToken } = useAuth();
-	const { setProgressMade } = useProgress();
 
 	const handleLogout = async () => await api.sso.logout(idToken);
 
@@ -225,7 +224,7 @@ export const EdrmsTransferPage = () => {
 	};
 
 	useEffect(() => {
-		setProgressMade(!!folderPath);
+		setCanLoseProgress(!!folderPath);
 		if (folderPath) {
 			// Check for edrms files when a new folder is chosen
 			parseEdrmsFiles(folderPath);

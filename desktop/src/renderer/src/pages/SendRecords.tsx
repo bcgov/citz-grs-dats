@@ -1,11 +1,11 @@
+import { useNavigate } from '@/hooks';
 import { Button } from '@bcgov/design-system-react-components';
 import { Computer as ComputerIcon, Lan as LanIcon } from '@mui/icons-material';
 import { Grid2 as Grid, Stack, Typography, useTheme } from '@mui/material';
-import { useNavigate } from 'react-router';
 
 export const SendRecordsPage = () => {
 	const theme = useTheme();
-	const navigate = useNavigate();
+	const { navigate } = useNavigate();
 
 	return (
 		<Grid container>

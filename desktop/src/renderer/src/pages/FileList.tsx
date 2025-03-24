@@ -1,6 +1,7 @@
-import { useFolderList } from '@/hooks';
-import { Box, Stack, Typography, Grid2 as Grid } from '@mui/material';
+import { useFolderList, useNavigate } from '@/hooks';
+import { Box, Grid2 as Grid, Stack, Typography } from '@mui/material';
 import { useGridApiRef } from '@mui/x-data-grid';
+import { Instruction, LoginRequiredModal, Toast } from '@renderer/components';
 import {
 	AccAppCheck,
 	ContinueButton,
@@ -10,11 +11,9 @@ import {
 	ReturnToHomeModal,
 	SelectFolderButton,
 } from '@renderer/components/file-list';
+import { useAuth } from '@renderer/utilities';
 import { useCallback, useEffect, useState } from 'react';
-import { LoginRequiredModal, Instruction, Toast } from '@renderer/components';
 import { toast } from 'react-toastify';
-import { useAuth, useProgress } from '@renderer/utilities';
-import { useNavigate } from 'react-router';
 
 export const FileListPage = () => {
 	const [api] = useState(window.api); // Preload scripts
@@ -30,9 +29,7 @@ export const FileListPage = () => {
 	const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
 	const [hasAccApp, setHasAccApp] = useState<boolean | null>(null);
 
-	const { setProgressMade } = useProgress();
-
-	const navigate = useNavigate();
+	const { navigate, setCanLoseProgress } = useNavigate();
 
 	const { idToken, accessToken } = useAuth();
 
@@ -177,7 +174,7 @@ export const FileListPage = () => {
 		const hasFolders = folders.length > 0;
 
 		// Update progress when folders are uploaded.
-		setProgressMade(hasFolders);
+		setCanLoseProgress(hasFolders);
 
 		setAccAppCheckIsEnabled(hasFolders);
 		if (!hasFolders) setHasAccApp(null);
