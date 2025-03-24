@@ -12,9 +12,9 @@ export const RequestLoading = () => {
         }}
       />
       <Typography>
-        We’re processing your request, and sending the records to DATS. This
-        should only take about 30 seconds. Please do not close the application
-        or navigate away.
+        We’re processing your request, and sending the records to DATS. This may
+        take some time, especially for large uploads. Please do not close the
+        application or navigate away.
       </Typography>
       <Typography>
         Once the loading is complete, a success confirmation message will appear

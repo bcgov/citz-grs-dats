@@ -38,6 +38,7 @@ module.exports = {
 		"modules/transfer/utils/validateSubmissionAgreement",
 		"modules/transfer/utils/validateMetadataFoldersMatchesFiles",
 		"modules/transfer/utils/createStandardTransferZip",
+		"modules/transfer/utils/handleTransferChunkUpload",
 		"modules/submission-agreement/assets/",
 		"utils/logs",
 	],

@@ -12,10 +12,13 @@ import {
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import {
+	calculateChecksum,
 	getXlsxFileListToastData,
 	parseJsonFile,
 	type ToastData,
 } from './utils';
+
+const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB --> limitation of OpenShift
 
 type Folder = {
 	id: number;
@@ -697,23 +700,19 @@ export const LanTransferPage = () => {
 		const updatedFolderList: Record<string, unknown> = {};
 		for (const [key, value] of Object.entries(originalFolderList)) {
 			const change = changes.find((c) => c.originalFolderPath === key);
-
 			if (change) {
 				if (!change.deleted) {
-					const newKey = change.newFolderPath ?? key; // Use new path if provided, otherwise keep the old key
+					const newKey = change.newFolderPath ?? key;
 					updatedFolderList[newKey] = value;
 				}
 			} else {
-				updatedFolderList[key] = value; // Keep unchanged keys
+				updatedFolderList[key] = value;
 			}
 		}
 
 		// Prepare metadata V2 for request body
 		const metadataV2 = {
-			admin: {
-				accession,
-				application,
-			},
+			admin: { accession, application },
 			folders: updatedFolderList,
 			files: metadata,
 		};
@@ -723,48 +722,69 @@ export const LanTransferPage = () => {
 		const transferFormBuffer = await api.utils.fileToBuffer(transferForm);
 		const contentBuffer = await api.transfer.createZipBuffer(folderBuffers);
 
-		// Formdata for request
-		const formData = new FormData();
-		formData.append('fileListBuffer', new Blob([fileListBuffer]), 'file.bin');
-		formData.append('fileListFilename', fileList.name);
-		formData.append(
-			'transferFormBuffer',
-			new Blob([transferFormBuffer]),
-			'file.bin',
-		);
-		formData.append('transferFormFilename', transferForm.name);
-		formData.append('contentZipBuffer', new Blob([contentBuffer]), 'file.bin');
-		formData.append(
-			'originalFoldersMetadata',
-			JSON.stringify(originalFolderList),
-		);
-		formData.append('metadataV2', JSON.stringify(metadataV2));
-		formData.append('extendedMetadata', JSON.stringify(extendedMetadata));
-		formData.append('changes', JSON.stringify(changes));
-		formData.append('changesJustification', changesJustification);
+		// Calculate checksum for integrity verification
+		const contentChecksum = await calculateChecksum(contentBuffer);
 
-		// Make request
-		try {
-			console.log('Making lan transfer request.');
-			const response = await fetch(requestUrl, {
-				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-				},
-				body: formData,
-			});
+		// Split contentBuffer into chunks
+		const totalChunks = Math.ceil(contentBuffer.byteLength / CHUNK_SIZE);
 
-			if (!response.ok) setRequestSuccessful(false);
+		for (let index = 0; index < totalChunks; index++) {
+			const start = index * CHUNK_SIZE;
+			const end = Math.min(start + CHUNK_SIZE, contentBuffer.byteLength);
+			const chunkBuffer = contentBuffer.slice(start, end);
 
-			const jsonResponse = await response.json();
-			console.log('Lan transfer response:', jsonResponse);
+			// FormData for request
+			const formData = new FormData();
+			formData.append('fileListBuffer', new Blob([fileListBuffer]), 'file.bin');
+			formData.append('fileListFilename', fileList.name);
+			formData.append(
+				'transferFormBuffer',
+				new Blob([transferFormBuffer]),
+				'file.bin',
+			);
+			formData.append('transferFormFilename', transferForm.name);
+			formData.append('contentZipChunk', new Blob([chunkBuffer]), 'file.bin');
+			formData.append('chunkIndex', index.toString());
+			formData.append('totalChunks', totalChunks.toString());
+			formData.append('contentChecksum', contentChecksum);
+			formData.append(
+				'originalFoldersMetadata',
+				JSON.stringify(originalFolderList),
+			);
+			formData.append('metadataV2', JSON.stringify(metadataV2));
+			formData.append('extendedMetadata', JSON.stringify(extendedMetadata));
+			formData.append('changes', JSON.stringify(changes));
+			formData.append('changesJustification', changesJustification);
 
-			if (jsonResponse.success) setRequestSuccessful(true);
-			else setRequestSuccessful(false);
-		} catch (error) {
-			console.error(error);
-			setRequestSuccessful(false);
+			// Make chunked request
+			try {
+				console.log(`Uploading chunk ${index + 1} of ${totalChunks}`);
+				const response = await fetch(requestUrl, {
+					method: 'POST',
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+					},
+					body: formData,
+				});
+
+				if (!response.ok) {
+					setRequestSuccessful(false);
+					console.log(`Chunk ${index + 1} uploaded successfully.`);
+					return;
+				}
+
+				const jsonResponse = await response.json();
+				console.log('Lan transfer response:', jsonResponse);
+
+				if (jsonResponse.success && index === totalChunks - 1)
+					setRequestSuccessful(true);
+			} catch (error) {
+				console.error(error);
+				setRequestSuccessful(false);
+			}
 		}
+
+		console.log('All chunks uploaded successfully.');
 	};
 
 	// Send to home on completion
@@ -825,7 +845,6 @@ export const LanTransferPage = () => {
 							application={application!}
 							onNextPress={onNextPress}
 							onBackPress={onBackPress}
-							// setCurrentPath={setCurrentPath}
 						/>
 					)}
 					{currentViewIndex === 3 && (
@@ -848,7 +867,6 @@ export const LanTransferPage = () => {
 							application={application!}
 							wasRequestSuccessful={requestSuccessful}
 							onNextPress={handleCompletion}
-							// setCurrentPath={setCurrentPath}
 							handleRetrySubmission={handleRetrySubmission}
 							isLan={true}
 						/>

@@ -1,4 +1,4 @@
-import { useNavigate } from '@/hooks';
+import { useAuth, useNavigate } from '@/hooks';
 import {
 	Button,
 	Radio,
@@ -22,10 +22,12 @@ export const LanSubmissionAgreementView = ({
 	onNextPress,
 	onBackPress,
 }: Props) => {
+	const [api] = useState(window.api);
 	const [accept, setAccept] = useState<boolean | null>(null);
 	const [showDeclineModal, setShowDeclineModal] = useState<boolean>(false);
 
 	const { navigate } = useNavigate();
+	const { accessToken } = useAuth();
 
 	const AgreementBox = () => {
 		return (
@@ -78,7 +80,33 @@ export const LanSubmissionAgreementView = ({
 		setShowDeclineModal(true);
 	};
 
-	const handleConfirmDecline = () => {
+	const handleConfirmDecline = async () => {
+		if (!accessToken) return navigate('/');
+
+		// Request url
+		const apiUrl = await api.getCurrentApiUrl();
+		const requestUrl = `${apiUrl}/submission-agreement/decline`;
+
+		// Make request
+		try {
+			const response = await fetch(requestUrl, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					accession,
+					application,
+				}),
+			});
+
+			const jsonResponse = await response.json();
+			console.log('Submission agreement decline response:', jsonResponse);
+		} catch (error) {
+			console.error(error);
+		}
+
 		navigate('/');
 	};
 

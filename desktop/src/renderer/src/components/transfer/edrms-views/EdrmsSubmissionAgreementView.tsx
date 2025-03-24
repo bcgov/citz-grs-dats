@@ -9,13 +9,14 @@ import { useState } from "react";
 import { DeclineSubAgreementModal } from "../DeclineSubAgreementModal";
 
 type Props = {
-	accession: string;
-	application: string;
-	onNextPress: () => void;
-	onBackPress: () => void;
-	setCurrentPath?:
-		| React.Dispatch<React.SetStateAction<string>>
-		| ((value: string) => void);
+  accession: string;
+  application: string;
+  onNextPress: () => void;
+  onBackPress: () => void;
+  setCurrentPath:
+    | React.Dispatch<React.SetStateAction<string>>
+    | ((value: string) => void);
+  accessToken?: string;
 };
 
 export const EdrmsSubmissionAgreementView = ({
@@ -24,7 +25,10 @@ export const EdrmsSubmissionAgreementView = ({
   onNextPress,
   onBackPress,
   setCurrentPath,
+  accessToken,
 }: Props) => {
+  const [api] = useState(window.api); // Preload scripts
+
   const [accept, setAccept] = useState<boolean | null>(null);
   const [showDeclineModal, setShowDeclineModal] = useState<boolean>(false);
 
@@ -79,8 +83,34 @@ export const EdrmsSubmissionAgreementView = ({
     setShowDeclineModal(true);
   };
 
-  const handleConfirmDecline = () => {
-    if (setCurrentPath) setCurrentPath("/");
+  const handleConfirmDecline = async () => {
+    if (!accessToken) return setCurrentPath("/");
+
+    // Request url
+    const apiUrl = await api.getCurrentApiUrl();
+    const requestUrl = `${apiUrl}/submission-agreement/decline`;
+
+    // Make request
+    try {
+      const response = await fetch(requestUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          accession,
+          application,
+        }),
+      });
+
+      const jsonResponse = await response.json();
+      console.log("Submission agreement decline response:", jsonResponse);
+    } catch (error) {
+      console.error(error);
+    }
+
+    setCurrentPath("/");
   };
 
   return (

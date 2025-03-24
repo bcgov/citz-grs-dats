@@ -8,10 +8,13 @@ import {
 	EdrmsUploadFilelistView,
 	EdrmsUploadFolderView,
 	EdrmsUploadTransferFormView,
-} from '@renderer/components/transfer/edrms-views';
-import { FinishView } from '@renderer/components/transfer/finish-view';
-import { useEffect, useRef, useState } from 'react';
-import { toast } from 'react-toastify';
+} from "@renderer/components/transfer/edrms-views";
+import { FinishView } from "@renderer/components/transfer/finish-view";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
+import { calculateChecksum } from "./utils";
+
+const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB (OpenShift limitation at about 100MB)
 
 export const EdrmsTransferPage = () => {
 	const [api] = useState(window.api); // Preload scripts
@@ -330,58 +333,79 @@ export const EdrmsTransferPage = () => {
 	const handleSendRequest = async () => {
 		if (!dataportFile || !fileList || !transferForm || !accessToken) return;
 
-		// Request url
-		const apiUrl = await api.getCurrentApiUrl();
-		const requestUrl = `${apiUrl}/transfer/edrms`;
+    // Request URL
+    const apiUrl = await api.getCurrentApiUrl();
+    const requestUrl = `${apiUrl}/transfer/edrms`;
 
-		// Prepare file buffers for request body
-		const dataportBuffer = await api.utils.fileToBuffer(dataportFile);
-		const fileListBuffer = await api.utils.fileToBuffer(fileList);
-		const transferFormBuffer = await api.utils.fileToBuffer(transferForm);
-		const contentBuffer = await api.transfer.createZipBuffer(folderBuffers);
+    // Prepare file buffers
+    const dataportBuffer = await api.utils.fileToBuffer(dataportFile);
+    const fileListBuffer = await api.utils.fileToBuffer(fileList);
+    const transferFormBuffer = await api.utils.fileToBuffer(transferForm);
+    const contentBuffer = await api.transfer.createZipBuffer(folderBuffers);
 
-		// Formdata for request
-		const formData = new FormData();
-		formData.append('dataportBuffer', new Blob([dataportBuffer]), 'file.bin');
-		formData.append('dataportFilename', dataportFile.name);
-		formData.append('fileListBuffer', new Blob([fileListBuffer]), 'file.bin');
-		formData.append('fileListFilename', fileList.name);
-		formData.append(
-			'transferFormBuffer',
-			new Blob([transferFormBuffer]),
-			'file.bin',
-		);
-		formData.append('transferFormFilename', transferForm.name);
-		formData.append('contentZipBuffer', new Blob([contentBuffer]), 'file.bin');
-		formData.append('metadata', JSON.stringify(metadata));
-		formData.append(
-			'extendedMetadata',
-			JSON.stringify({ folders: dataportJson }),
-		);
+    // Calculate checksum of full zip
+    const contentChecksum = await calculateChecksum(contentBuffer);
 
-		// Make request
-		try {
-			console.log('Making edrms transfer request.');
-			const response = await fetch(requestUrl, {
-				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-				},
-				body: formData,
-			});
+    // Chunking logic
+    const totalChunks = Math.ceil(contentBuffer.byteLength / CHUNK_SIZE);
 
-			if (!response.ok) setRequestSuccessful(false);
+    for (let index = 0; index < totalChunks; index++) {
+      const start = index * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, contentBuffer.byteLength);
+      const chunkBuffer = contentBuffer.slice(start, end);
 
-			const jsonResponse = await response.json();
-			console.log('Edrms transfer response:', jsonResponse);
+      // Create FormData per chunk
+      const formData = new FormData();
+      formData.append("dataportBuffer", new Blob([dataportBuffer]), "file.bin");
+      formData.append("dataportFilename", dataportFile.name);
+      formData.append("fileListBuffer", new Blob([fileListBuffer]), "file.bin");
+      formData.append("fileListFilename", fileList.name);
+      formData.append(
+        "transferFormBuffer",
+        new Blob([transferFormBuffer]),
+        "file.bin"
+      );
+      formData.append("transferFormFilename", transferForm.name);
+      formData.append("contentZipChunk", new Blob([chunkBuffer]), "file.bin");
+      formData.append("chunkIndex", index.toString());
+      formData.append("totalChunks", totalChunks.toString());
+      formData.append("contentChecksum", contentChecksum);
+      formData.append("metadata", JSON.stringify(metadata));
+      formData.append(
+        "extendedMetadata",
+        JSON.stringify({ folders: dataportJson })
+      );
 
-			if (jsonResponse.success) setRequestSuccessful(true);
-			else setRequestSuccessful(false);
-		} catch (error) {
-			console.error(error);
-			setRequestSuccessful(false);
-		}
-	};
+      // Upload the chunk
+      try {
+        console.log(`Uploading chunk ${index + 1} of ${totalChunks}`);
+        const response = await fetch(requestUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          setRequestSuccessful(false);
+          return;
+        }
+
+        const jsonResponse = await response.json();
+        console.log("EDRMS transfer response:", jsonResponse);
+
+        if (jsonResponse.success && index === totalChunks - 1) {
+          setRequestSuccessful(true);
+        }
+      } catch (error) {
+        console.error("EDRMS transfer error:", error);
+        setRequestSuccessful(false);
+      }
+    }
+
+    console.log("All EDRMS chunks uploaded successfully.");
+  };
 
 	// Send to home on completion
 	const handleCompletion = () => {
@@ -459,7 +483,6 @@ export const EdrmsTransferPage = () => {
 							application={application!}
 							onNextPress={onNextPress}
 							onBackPress={onBackPress}
-							// setCurrentPath={setCurrentPath}
 						/>
 					)}
 					{currentViewIndex === 5 && (
@@ -478,7 +501,6 @@ export const EdrmsTransferPage = () => {
 							application={application!}
 							wasRequestSuccessful={requestSuccessful}
 							onNextPress={handleCompletion}
-							// setCurrentPath={setCurrentPath}
 							handleRetrySubmission={handleRetrySubmission}
 							isLan={false}
 						/>

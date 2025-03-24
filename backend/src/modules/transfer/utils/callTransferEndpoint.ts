@@ -4,12 +4,13 @@ import {
   HttpError,
 } from "@bcgov/citz-imb-express-utilities";
 
+const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
+
 const { INTERNAL_BACKEND_URL } = ENV;
 
 type Props = {
   token: string | undefined;
   standardTransferZipBuffer: Buffer;
-  standardTransferZipChecksum: string;
   accession: string;
   application: string;
 };
@@ -17,7 +18,6 @@ type Props = {
 export const callTransferEndpoint = async ({
   token,
   standardTransferZipBuffer,
-  standardTransferZipChecksum,
   accession,
   application,
 }: Props) => {
@@ -27,26 +27,65 @@ export const callTransferEndpoint = async ({
     Authorization: `Bearer ${token}`,
   };
 
-  // Create form body
-  const formData = new FormData();
-  formData.append("file", new Blob([standardTransferZipBuffer]), "file.bin");
-  formData.append("accession", accession);
-  formData.append("application", application);
-  formData.append("checksum", standardTransferZipChecksum);
+  const hashBuffer = await crypto.subtle.digest(
+    "SHA-256",
+    standardTransferZipBuffer.buffer
+  );
+  const contentChecksum = Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  const totalChunks = Math.ceil(
+    standardTransferZipBuffer.byteLength / CHUNK_SIZE
+  );
 
-  // Make request to /transfer
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers,
-    body: formData,
-  });
-
-  if (!response)
-    throw new HttpError(
-      HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR,
-      "An unexpected error occurred."
+  for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+    const start = chunkIndex * CHUNK_SIZE;
+    const end = Math.min(
+      start + CHUNK_SIZE,
+      standardTransferZipBuffer.byteLength
     );
+    const chunk = standardTransferZipBuffer.slice(start, end);
 
-  const { message, data, success } = await response.json();
-  return { message, data, success };
+    const formData = new FormData();
+    formData.append("file", new Blob([chunk]), "file.bin");
+    formData.append("chunkIndex", chunkIndex.toString());
+    formData.append("totalChunks", totalChunks.toString());
+    formData.append("contentChecksum", contentChecksum);
+    formData.append("accession", accession);
+    formData.append("application", application);
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+
+    if (!response) {
+      throw new HttpError(
+        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR,
+        "An unexpected error occurred."
+      );
+    }
+
+    const jsonResponse = await response.json();
+    const { success, message, data } = jsonResponse;
+
+    if (!success) {
+      throw new HttpError(
+        HTTP_STATUS_CODES.BAD_REQUEST,
+        message || "Transfer failed."
+      );
+    }
+
+    // Only return response after the final chunk is processed
+    if (chunkIndex === totalChunks - 1) {
+      return { success, message, data };
+    }
+  }
+
+  return {
+    success: true,
+    message: "All chunks uploaded successfully.",
+    data: null,
+  };
 };

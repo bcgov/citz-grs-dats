@@ -6,9 +6,11 @@ import { z } from "zod";
 
 // Schema for FormData fields
 export const createTransferBodySchema = z.object({
-  checksum: z.string(),
   application: z.string(),
   accession: z.string(),
+  chunkIndex: z.string(),
+  totalChunks: z.string(),
+  contentChecksum: z.string(),
 });
 
 export const downloadTransferBodySchema = z.object({
@@ -56,6 +58,9 @@ export const lanTransferBodySchema = z.object({
     })
   ),
   changesJustification: z.string(),
+  chunkIndex: z.string(),
+  totalChunks: z.string(),
+  contentChecksum: z.string(),
 });
 
 // TypeScript type inferred from Zod schema
@@ -77,6 +82,9 @@ export const edrmsTransferBodySchema = z.object({
     folders: z.record(folderMetadataZodSchema),
     files: z.record(z.array(fileMetadataZodSchema)),
   }),
+  chunkIndex: z.string(),
+  totalChunks: z.string(),
+  contentChecksum: z.string(),
 });
 
 // TypeScript type inferred from Zod schema

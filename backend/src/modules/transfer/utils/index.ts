@@ -18,3 +18,4 @@ export * from "./validateContentMatchesMetadata";
 export * from "./validateMetadataFoldersMatchesFiles";
 export * from "./createStandardTransferZip";
 export * from "./callTransferEndpoint";
+export * from "./handleTransferChunkUpload";
