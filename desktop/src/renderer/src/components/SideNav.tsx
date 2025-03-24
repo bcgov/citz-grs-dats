@@ -1,4 +1,4 @@
-import { useNavigate, useNavigateAway } from '@/hooks';
+import { useAuth, useNavigate, useNavigateAway } from '@/hooks';
 import {
 	DescriptionOutlined as FileListIcon,
 	HelpOutline as HelpIcon,
@@ -16,7 +16,6 @@ import {
 	Typography,
 	useTheme,
 } from '@mui/material';
-import { useAuth } from '@renderer/utilities';
 import { type ReactNode, useState } from 'react';
 import { AuthButton } from './AuthButton';
 import { HelpModal } from './HelpModal';

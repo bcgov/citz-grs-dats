@@ -1,3 +1,4 @@
+import { useAuth } from "@/hooks";
 import { Button } from "@bcgov/design-system-react-components";
 import { Grid2 as Grid, Stack, TextField, Typography } from "@mui/material";
 import { LoginRequiredModal, Toast } from "@renderer/components";
@@ -6,7 +7,6 @@ import {
   ConfirmReDownloadModal,
   TransfersGrid,
 } from "@renderer/components/view-transfers";
-import { useAuth } from "@renderer/utilities";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 

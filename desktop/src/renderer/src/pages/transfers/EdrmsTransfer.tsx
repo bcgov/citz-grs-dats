@@ -1,4 +1,4 @@
-import { useNavigate } from '@/hooks';
+import { useAuth, useNavigate } from '@/hooks';
 import { Grid2 as Grid, Stack, Typography } from '@mui/material';
 import { Stepper, Toast } from '@renderer/components';
 import {
@@ -10,7 +10,6 @@ import {
 	EdrmsUploadTransferFormView,
 } from '@renderer/components/transfer/edrms-views';
 import { FinishView } from '@renderer/components/transfer/finish-view';
-import { useAuth } from '@renderer/utilities';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 

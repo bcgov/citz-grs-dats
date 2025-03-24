@@ -1,4 +1,4 @@
-import { useNavigate } from '@/hooks';
+import { useAuth, useNavigate } from '@/hooks';
 import { Grid2 as Grid, Stack, Typography } from '@mui/material';
 import { LoginRequiredModal, Stepper, Toast } from '@renderer/components';
 import { JustifyChangesModal } from '@renderer/components/transfer';
@@ -9,7 +9,6 @@ import {
 	LanUploadFileListView,
 	LanUploadTransferFormView,
 } from '@renderer/components/transfer/lan-views';
-import { useAuth } from '@renderer/utilities';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import {

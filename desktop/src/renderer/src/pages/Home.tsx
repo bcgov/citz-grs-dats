@@ -1,4 +1,4 @@
-import { useNavigate } from '@/hooks';
+import { useAuth, useNavigate } from '@/hooks';
 import { Button } from '@bcgov/design-system-react-components';
 import {
 	ListAlt as ListIcon,
@@ -14,7 +14,6 @@ import {
 } from '@mui/material';
 import { TransferRecordsIcon } from '@renderer/components';
 import HomeDatsWorksAccordion from '@renderer/components/HowDatsWorksAccordion';
-import { useAuth } from '@renderer/utilities';
 import { useEffect, useState, type ReactNode } from 'react';
 
 export const HomePage = () => {

@@ -1,4 +1,4 @@
-import { useFolderList, useNavigate } from '@/hooks';
+import { useAuth, useFolderList, useNavigate } from '@/hooks';
 import { Box, Grid2 as Grid, Stack, Typography } from '@mui/material';
 import { useGridApiRef } from '@mui/x-data-grid';
 import { Instruction, LoginRequiredModal, Toast } from '@renderer/components';
@@ -11,7 +11,6 @@ import {
 	ReturnToHomeModal,
 	SelectFolderButton,
 } from '@renderer/components/file-list';
-import { useAuth } from '@renderer/utilities';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
