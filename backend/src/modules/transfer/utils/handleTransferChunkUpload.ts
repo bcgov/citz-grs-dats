@@ -106,7 +106,10 @@ export const handleTransferChunkUpload = async ({
 
   // Read the merged file into memory (you could return a stream or path instead)
   const finalBuffer = await fs.promises.readFile(mergedPath);
-  await fs.promises.unlink(mergedPath); // optional: clean up merged file
+
+  // Clean up
+  await fs.promises.unlink(mergedPath);
+  await fs.promises.rm(transferDir, { recursive: true, force: true });
 
   return finalBuffer;
 };
