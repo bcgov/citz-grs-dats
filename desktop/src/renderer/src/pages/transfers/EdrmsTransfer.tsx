@@ -14,7 +14,7 @@ import { Context } from "../../App";
 import { FinishView } from "@renderer/components/transfer/finish-view";
 import { calculateChecksum } from "./utils";
 
-const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
+const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB (OpenShift limitation at about 100MB)
 
 export const EdrmsTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
