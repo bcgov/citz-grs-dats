@@ -26,13 +26,15 @@ export const NavigateProvider = ({ children }) => {
 	};
 
 	const handleConfirm = () => {
+		setCanLoseProgress(false);
 		setIsModalOpen(false);
-    setCanLoseProgress(false);
 		routerNavigate(navigatePath);
 	};
 
 	return (
-		<NavigateContext.Provider value={{ location, navigate, setCanLoseProgress }}>
+		<NavigateContext.Provider
+			value={{ location, navigate, setCanLoseProgress }}
+		>
 			{children}
 			<NavigateAwayModal
 				open={isModalOpen}
