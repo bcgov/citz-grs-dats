@@ -96,6 +96,7 @@ export const LanSubmissionAgreementView = ({
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           accession,
