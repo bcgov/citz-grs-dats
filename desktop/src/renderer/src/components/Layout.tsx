@@ -1,18 +1,10 @@
-import { useAppCloseHandler, useNavigate, useNavigateAway } from '@/hooks';
+import { useNavigate } from '@/hooks';
 import { Header } from '@bcgov/design-system-react-components';
 import { Button, Grid2 as Grid } from '@mui/material';
 import { SideNav } from '../components';
 
 export const Layout = ({ children }) => {
 	const { navigate } = useNavigate();
-
-	const { cancelClose } = useAppCloseHandler();
-
-	const { NavigateAwayModal, openModal: openNavigateAwayModal } =
-		useNavigateAway({
-			onClose: cancelClose,
-			onConfirm: () => navigate('/'),
-		});
 
 	return (
 		<Grid
@@ -28,7 +20,6 @@ export const Layout = ({ children }) => {
 					logoLinkElement={<Button onClick={() => navigate('/')} />}
 				/>
 				{children}
-				<NavigateAwayModal />
 			</Grid>
 		</Grid>
 	);

@@ -1,4 +1,4 @@
-import { useAuth, useNavigate, useNavigateAway } from '@/hooks';
+import { useAuth, useNavigate,  } from '@/hooks';
 import {
 	DescriptionOutlined as FileListIcon,
 	HelpOutline as HelpIcon,
@@ -32,9 +32,6 @@ export const SideNav = () => {
 	const { accessToken, idToken, isArchivist } = useAuth();
 
 	const {location, navigate} = useNavigate();
-
-
-	const { NavigateAwayModal } = useNavigateAway();
 
 	const NavItem = ({ path, label, icon }: NavItemProps) => {
 		const theme = useTheme();
@@ -154,7 +151,6 @@ export const SideNav = () => {
 					</Stack>
 				</Box>
 			</Drawer>
-			<NavigateAwayModal />
 			<HelpModal
 				open={helpModalOpen}
 				onClose={() => setHelpModalOpen(false)}
