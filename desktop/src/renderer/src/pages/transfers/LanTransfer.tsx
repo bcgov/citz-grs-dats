@@ -840,6 +840,7 @@ export const LanTransferPage = () => {
               onNextPress={onNextPress}
               onBackPress={onBackPress}
               setCurrentPath={setCurrentPath}
+              accessToken={accessToken}
             />
           )}
           {currentViewIndex === 3 && (
