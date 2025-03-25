@@ -2,6 +2,7 @@ import { NavigateAwayModal } from '@renderer/components';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { NavigateContext } from './NavigateContext';
+import { useAuth } from '@/hooks';
 
 export const NavigateProvider = ({ children }) => {
 	const [canLoseProgress, setCanLoseProgress] = useState(false);
@@ -10,8 +11,11 @@ export const NavigateProvider = ({ children }) => {
 
 	const location = useLocation();
 	const routerNavigate = useNavigate();
+	const { accessToken, login } = useAuth();
 
-	const navigate = (path) => {
+	const navigate = async (path) => {
+		if (!accessToken) await login();
+
 		if (canLoseProgress) {
 			setNavigatePath(path);
 			setIsModalOpen(true);

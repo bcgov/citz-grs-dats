@@ -7,7 +7,14 @@ export const AuthProvider = ({ children }) => {
   // Authentication state
   const [accessToken, setAccessToken] = useState<string | undefined>(undefined);
   const [idToken, setIdToken] = useState<string | undefined>(undefined);
-  const [isArchivist, setIsArchivist] = useState<boolean>(false);
+
+  const login = async () => await api.sso.startLoginProcess();
+  const logout = async () => await api.sso.logout();
+
+  const hasRole = (role: string) => {
+    const user = api.sso.getUser(accessToken);
+    return user?.hasRoles([role]) ?? false;
+  };
 
   useEffect(() => {
     // Handle "auth-success" message from main process
@@ -43,13 +50,8 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  useEffect(() => {
-    const user = api.sso.getUser(accessToken);
-    setIsArchivist(user?.hasRoles(['Archivist']) ?? false);
-  }, [accessToken]);
-
   return (
-    <AuthContext.Provider value={{ accessToken, idToken, isArchivist }}>
+    <AuthContext.Provider value={{ accessToken, idToken, hasRole, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
