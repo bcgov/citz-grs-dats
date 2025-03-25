@@ -28,7 +28,7 @@ const pageLinkData: PageLinkProps[] = [
 		desc: 'View transfers sent to the Digital Archives via DATS.',
 		buttonText: 'View transfer status',
 		pageRoute: '/view-transfers',
-		role: 'archivist',
+		role: 'Archivist',
 	},
 ];
 
