@@ -789,6 +789,7 @@ export const LanTransferPage = () => {
 
 	// Send to home on completion
 	const handleCompletion = () => {
+		setCanLoseProgress(false);
 		navigate('/');
 	};
 
