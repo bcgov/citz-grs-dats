@@ -7,4 +7,5 @@ coverage
 desktop/resources/transfers
 .DS_Store
 Test-Environment
-backend/src/modules/transfers/uploads
+*.old
+backend/src/modules/transfer/uploads

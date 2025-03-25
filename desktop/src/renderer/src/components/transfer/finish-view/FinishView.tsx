@@ -1,15 +1,12 @@
-import { RequestSuccess } from "./RequestSuccess";
-import { RequestLoading } from "./RequestLoading";
 import { RequestFailed } from "./RequestFailed";
+import { RequestLoading } from "./RequestLoading";
+import { RequestSuccess } from "./RequestSuccess";
 
 type Props = {
   accession: string;
   application: string;
   wasRequestSuccessful: boolean | null;
   onNextPress: () => void;
-  setCurrentPath:
-    | React.Dispatch<React.SetStateAction<string>>
-    | ((value: string) => void);
   handleRetrySubmission: () => void;
   isLan: boolean;
 };
@@ -19,7 +16,6 @@ export const FinishView = ({
   application,
   wasRequestSuccessful,
   onNextPress,
-  setCurrentPath,
   handleRetrySubmission,
   isLan,
 }: Props) => {
@@ -36,7 +32,6 @@ export const FinishView = ({
       {wasRequestSuccessful === null && <RequestLoading />}
       {wasRequestSuccessful === false && (
         <RequestFailed
-          setCurrentPath={setCurrentPath}
           handleRetrySubmission={handleRetrySubmission}
         />
       )}
