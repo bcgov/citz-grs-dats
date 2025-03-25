@@ -8,3 +8,4 @@ desktop/resources/transfers
 .DS_Store
 Test-Environment
 *.old
+backend/src/modules/transfer/uploads
