@@ -5,7 +5,6 @@ import {
   useReleaseNotes,
 } from '@/hooks';
 import { BrowserRouter } from 'react-router';
-import { ToastContainer } from 'react-toastify';
 import { CloseApplicationModal, Layout } from './components';
 import { Routes } from './routes';
 import { VPNMonitor } from './utilities';
@@ -29,12 +28,6 @@ function App(): JSX.Element {
 							onConfirm={confirmClose}
 						/>
 						<ReleaseNotesModal />
-						<ToastContainer
-							position='bottom-left'
-							autoClose={4000}
-							hideProgressBar
-							pauseOnHover
-						/>
 					</NavigateProvider>
 				</BrowserRouter>
 			</AuthProvider>
