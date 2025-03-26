@@ -325,6 +325,7 @@ export const EdrmsTransferPage = () => {
 				});
 			}
 		} else if (currentViewIndex === 6) {
+			setCanLoseProgress(false);
 			// Open of finish view
 			handleSendRequest();
 		}
