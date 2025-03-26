@@ -1,19 +1,26 @@
+import type {
+  IdirIdentityProvider,
+  SSOUser
+} from '@bcgov/citz-imb-sso-js-core';
 import { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 
 export const AuthProvider = ({ children }) => {
-  const [api] = useState(window.api);
+  const [sso] = useState(window.api.sso);
 
   // Authentication state
   const [accessToken, setAccessToken] = useState<string | undefined>(undefined);
   const [idToken, setIdToken] = useState<string | undefined>(undefined);
+  const [user, setUser] = useState<SSOUser<IdirIdentityProvider> | undefined>(
+		undefined,
+	);
 
-  const login = async () => await api.sso.startLoginProcess();
-  const logout = async () => await api.sso.logout();
+  const login = async () => await sso.startLoginProcess();
+  const logout = async () => await sso.logout(idToken);
 
-  const hasRole = (role: string) => {
-    const user = api.sso.getUser(accessToken);
-    return user?.hasRoles([role]) ?? false;
+  const hasRole = (role: string): boolean => {
+    if (!user) return false;
+    return user.hasRoles([role]);
   };
 
   useEffect(() => {
@@ -50,8 +57,14 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (accessToken) {
+      setUser(sso.getUser(accessToken));
+    }
+  }, [accessToken]);
+
   return (
-    <AuthContext.Provider value={{ accessToken, idToken, hasRole, login, logout }}>
+    <AuthContext.Provider value={{ accessToken, idToken, hasRole, login, logout, user }}>
       {children}
     </AuthContext.Provider>
   );

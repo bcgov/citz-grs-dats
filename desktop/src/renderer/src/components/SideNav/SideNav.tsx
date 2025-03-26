@@ -1,27 +1,13 @@
-import { useAuth } from '@/hooks';
-import {
-	HelpOutline as HelpIcon
-} from '@mui/icons-material';
-import {
-	Box,
-	Divider,
-	Drawer,
-	List,
-	Stack,
-	Typography
-} from '@mui/material';
+import { HelpOutline as HelpIcon } from '@mui/icons-material';
+import { Box, Divider, Drawer, List, Stack, Typography } from '@mui/material';
 import { AuthButton, HelpModal } from '@renderer/components';
 import { useState } from 'react';
-
 import { NavItem } from './NavItem';
 import type { NavItemProps } from './NavItem.d';
 import navItemData from './navItemData';
 
-
 export const SideNav = () => {
 	const [helpModalOpen, setHelpModalOpen] = useState(false);
-
-	const { accessToken, idToken } = useAuth();
 
 	return (
 		<>
@@ -74,10 +60,7 @@ export const SideNav = () => {
 							</Stack>
 						</button>
 						<Divider />
-						<AuthButton
-							accessToken={accessToken}
-							idToken={idToken}
-						/>
+						<AuthButton />
 					</Stack>
 				</Box>
 			</Drawer>
