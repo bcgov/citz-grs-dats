@@ -3,7 +3,6 @@ import { ListItem, Typography, useTheme } from '@mui/material';
 import type { NavItemProps } from './NavItem.d';
 
 export const NavItem = ({ path, label, icon, role }: NavItemProps) => {
-	console.log('props', { path, label, icon, role });
 	const theme = useTheme();
 	const { location, navigate } = useNavigate();
 	const { accessToken, hasRole } = useAuth();
