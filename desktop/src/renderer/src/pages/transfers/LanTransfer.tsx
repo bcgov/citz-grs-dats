@@ -674,6 +674,7 @@ export const LanTransferPage = () => {
 			}
 		} else if (currentViewIndex === 4) {
 			// Open of finish view
+			setCanLoseProgress(false);
 			handleSendRequest();
 		}
 	}, [currentViewIndex]);
