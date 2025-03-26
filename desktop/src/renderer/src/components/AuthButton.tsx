@@ -1,19 +1,9 @@
+import { useAuth } from "@/hooks";
 import { Button } from "@bcgov/design-system-react-components";
 import { Box, Typography } from "@mui/material";
-import { useState } from "react";
 
-type Props = {
-  accessToken: string | undefined;
-  idToken: string | undefined;
-};
-
-export const AuthButton = ({ accessToken, idToken }: Props): JSX.Element => {
-  const [sso] = useState(window.api.sso); // Preload scripts
-
-  const handleLogin = async () => await sso.startLoginProcess();
-  const handleLogout = async () => await sso.logout(idToken);
-
-  const user = sso.getUser(accessToken);
+export const AuthButton = (): JSX.Element => {
+  const { accessToken, login, logout, user } = useAuth();
 
   return (
     <Box sx={{ marginBottom: 2 }}>
@@ -28,7 +18,7 @@ export const AuthButton = ({ accessToken, idToken }: Props): JSX.Element => {
           width: "100%",
           justifyContent: accessToken ? "left" : "center",
         }}
-        onPress={accessToken ? handleLogout : handleLogin}
+        onPress={accessToken ? logout : login}
       >
         {accessToken ? "Logout" : "Login"}
       </Button>

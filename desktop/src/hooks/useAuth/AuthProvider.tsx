@@ -1,13 +1,27 @@
+import type {
+  IdirIdentityProvider,
+  SSOUser
+} from '@bcgov/citz-imb-sso-js-core';
 import { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 
 export const AuthProvider = ({ children }) => {
-  const [api] = useState(window.api);
+  const [sso] = useState(window.api.sso);
 
   // Authentication state
   const [accessToken, setAccessToken] = useState<string | undefined>(undefined);
   const [idToken, setIdToken] = useState<string | undefined>(undefined);
-  const [isArchivist, setIsArchivist] = useState<boolean>(false);
+  const [user, setUser] = useState<SSOUser<IdirIdentityProvider> | undefined>(
+		undefined,
+	);
+
+  const login = async () => await sso.startLoginProcess();
+  const logout = async () => await sso.logout(idToken);
+
+  const hasRole = (role: string): boolean => {
+    if (!user) return false;
+    return user.hasRoles([role]);
+  };
 
   useEffect(() => {
     // Handle "auth-success" message from main process
@@ -44,12 +58,13 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    const user = api.sso.getUser(accessToken);
-    setIsArchivist(user?.hasRoles(['Archivist']) ?? false);
+    if (accessToken) {
+      setUser(sso.getUser(accessToken));
+    }
   }, [accessToken]);
 
   return (
-    <AuthContext.Provider value={{ accessToken, idToken, isArchivist }}>
+    <AuthContext.Provider value={{ accessToken, idToken, hasRole, login, logout, user }}>
       {children}
     </AuthContext.Provider>
   );
