@@ -1,122 +1,113 @@
-param (
-    [string]$FilePath
-)
-
-if (-Not (Test-Path -Path $FilePath -PathType Leaf)) {
-    Write-Output "File does not exist."
-    exit 1
-}
-
-function Get-FileMetadata {
-    param (
-        [string]$Path
-    )
-
-    try {
-        $file = Get-Item -Path $Path | Select-Object *
-    } catch {
-        Write-Error $_
-        exit 1
-    }
-
-    # Extract metadata using Select-Object *
-    foreach ($property in $file.PSObject.Properties) {
-        if ($property.Value -ne $null) {
-            Write-Host "$($property.Name) = $($property.Value)"
-        }
-    }
-}
+[string[]]$FilePaths = $args
 
 function Get-ExtendedFileMetadata {
-    param (
-        [string]$Path
-    )
+  param (
+    [string]$Path
+  )
 
-    $shell = New-Object -ComObject Shell.Application
-    $folder = $shell.Namespace((Get-Item $Path).DirectoryName)
-    $file = $folder.ParseName((Get-Item $Path).Name)
+  # Start with Filepath at the top
+  $metadata = @{ FilePath = $Path }
 
-    $propertyIndex = 0
+  try {
+    $file = Get-Item -Path $Path -ErrorAction Stop
+    $metadata.FileSize = $file.Length
+    $metadata.CreationTime = $file.CreationTimeUtc
+    $metadata.LastWriteTime = $file.LastWriteTimeUtc
+    $metadata.LastAccessTime = $file.LastAccessTimeUtc
 
-    do {
+    # Alternate Data Streams
+    try {
+      $streams = Get-Item -Path $Path -Stream * | Select-Object Stream, Length
+      $metadata.AlternateDataStreams = $streams | ForEach-Object {
+        @{ Stream = $_.Stream; Length = $_.Length }
+      }
+    } catch {
+      $metadata.AlternateDataStreams = @()
+    }
+
+    # File Hashes grouped
+    $hashTypes = @("MD5", "SHA1", "SHA256", "SHA512")
+    $checksums = @{}
+    foreach ($hashType in $hashTypes) {
+      try {
+        $hash = Get-FileHash -Path $Path -Algorithm $hashType
+        $checksums[$hashType] = $hash.Hash
+      } catch {
+        $checksums[$hashType] = "Error"
+      }
+    }
+    $metadata.Checksums = $checksums
+
+    # Digital Signature
+    try {
+      $signature = Get-AuthenticodeSignature -FilePath $Path
+      if ($signature -and $signature.SignerCertificate) {
+        $metadata.Signature = @{
+          Subject = $signature.SignerCertificate.Subject
+          Issuer = $signature.SignerCertificate.Issuer
+          Status = $signature.Status
+        }
+      } else {
+        $metadata.Signature = "Unsigned"
+      }
+    } catch {
+      $metadata.Signature = "Error"
+    }
+
+    # NTFS Extents
+    try {
+      $extents = fsutil file queryExtents $Path 2>$null
+      $metadata.NTFS_Attributes = $extents
+    } catch {
+      $metadata.NTFS_Attributes = "Unavailable"
+    }
+
+    # Extended Shell Metadata
+    try {
+      $shell = New-Object -ComObject Shell.Application
+      $folder = $shell.Namespace((Get-Item $Path).DirectoryName)
+      $parsedFile = $folder.ParseName((Get-Item $Path).Name)
+
+      $propertyIndex = 0
+      $maxProperties = 512
+      $shellProps = @{}
+
+      do {
         $propertyName = $folder.GetDetailsOf($folder.Items, $propertyIndex)
-        $propertyValue = $folder.GetDetailsOf($file, $propertyIndex)
+        $propertyValue = $folder.GetDetailsOf($parsedFile, $propertyIndex)
 
-        if ($propertyName) {
-            if ($propertyValue) {
-                Write-Host "$propertyName = $propertyValue"
-            } else {
-                Write-Host "$propertyName = ~"
-            }
+        if ($propertyName.Trim()) {
+          $shellProps[$propertyName] = $propertyValue
         }
 
         $propertyIndex++
+      } while ($propertyName -and $propertyName.Trim() -ne '' -and $propertyIndex -lt $maxProperties)
 
-    } while ($propertyName)  # Continue while there are properties
-}
-
-function Get-AlternateDataStreams {
-    param (
-        [string]$Path
-    )
-    $streams = Get-Item -Path $Path -Stream * | Select-Object Stream, Length
-    foreach ($stream in $streams) {
-        Write-Host "Stream: $($stream.Stream) - Size: $($stream.Length) bytes"
-    }
-    return $streams
-}
-
-function Get-FileHashMetadata {
-    param (
-        [string]$Path
-    )
-    $hashTypes = @("MD5", "SHA1", "SHA256", "SHA512")
-
-    foreach ($hashType in $hashTypes) {
-        $hash = Get-FileHash -Path $Path -Algorithm $hashType
-        Write-Host "$hashType = $($hash.Hash)"
-    }
-}
-
-function Get-NTFSAttributes {
-    param (
-        [string]$Path
-    )
-    $fsutilOutput = fsutil file queryExtents $Path 2>$null
-    if ($fsutilOutput) {
-        Write-Host "Extents: $fsutilOutput"
-    }
-}
-
-function Get-DigitalSignature {
-    param (
-        [string]$Path
-    )
-    try {
-        $signature = Get-AuthenticodeSignature -FilePath $Path
-        if ($signature -and $signature.SignerCertificate) {
-            Write-Host "Certificate Subject = $($signature.SignerCertificate.Subject)"
-            Write-Host "Certificate Issuer = $($signature.SignerCertificate.Issuer)"
-            Write-Host "Signature Status = $($signature.Status)"
-            return @{
-                Subject = $signature.SignerCertificate.Subject
-                Issuer = $signature.SignerCertificate.Issuer
-                Status = $signature.Status
-            }
-        } else {
-            Write-Host "No digital signature found."
-            return $null
-        }
+      $metadata.ShellProperties = $shellProps
     } catch {
-        Write-Host "Error retrieving digital signature: $_"
-        return $null
+      $metadata.ShellProperties = @{}
     }
+
+    return $metadata
+  } catch {
+    throw $_
+  }
 }
 
-# Retrieve all metadata
-$fileMetadata = Get-FileMetadata -Path $FilePath
-$extendedMetadata = Get-ExtendedFileMetadata -Path $FilePath
-$adsMetadata = Get-AlternateDataStreams -Path $FilePath
-$fileHashes = Get-FileHashMetadata -Path $FilePath
-$ntfsAttributes = Get-NTFSAttributes -Path $FilePath
-$signatureInfo = Get-DigitalSignature -Path $FilePath
+# Batch execution
+foreach ($FilePath in $FilePaths) {
+  if (-Not (Test-Path -Path $FilePath -PathType Leaf)) {
+    $errorObj = @{ Filepath = $FilePath; error = "File does not exist." }
+    Write-Host "ERROR|$FilePath|$(ConvertTo-Json $errorObj -Compress)"
+    continue
+  }
+
+  try {
+    $result = Get-ExtendedFileMetadata -Path $FilePath
+    $json = ConvertTo-Json $result -Compress
+    Write-Host "OK|$FilePath|$json"
+  } catch {
+    $errorObj = @{ Filepath = $FilePath; error = $_.Exception.Message }
+    Write-Host "ERROR|$FilePath|$(ConvertTo-Json $errorObj -Compress)"
+  }
+}

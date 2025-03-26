@@ -1,11 +1,12 @@
 import { promises as fsPromises, type Stats } from "node:fs";
 import path from "node:path";
 import { parentPort } from "node:worker_threads";
-import { calculateChecksum } from "./calculateChecksum";
-import { formatFileSize } from "./formatFileSize";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
-import { getExtendedMetadata } from "./getExtendedMetadata";
+import { calculateChecksum } from "./calculateChecksum";
+import { formatFileSize } from "./formatFileSize";
+import { runWithConcurrencyLimit } from "./runWithConcurrencyLimit";
+import { getExtendedMetadataBatch } from "./getExtendedMetadataBatch";
 
 const execPromise = promisify(exec);
 const { stat, readdir } = fsPromises;
@@ -31,14 +32,22 @@ export const generateMetadataInBatches = async (
   let totalSize = 0;
 
   const files = await readdir(sourceDir);
+  const allBatches: string[][] = [];
+
   for (let i = 0; i < files.length; i += batchSize) {
-    const batch = files.slice(i, i + batchSize);
+    const batch = files
+      .slice(i, i + batchSize)
+      .map((file) => path.join(sourceDir, file));
+    allBatches.push(batch);
+  }
 
-    await Promise.all(
-      batch.map(async (file) => {
-        const filePath = path.join(sourceDir, file);
+  await runWithConcurrencyLimit(
+    allBatches.map((batch) => async () => {
+      const batchMetadata: unknown[] = [];
+      const batchFilePaths: string[] = [];
+
+      for (const filePath of batch) {
         const fileStat: Stats = await stat(filePath);
-
         if (fileStat.isDirectory()) {
           const subMetadata = await generateMetadataInBatches(
             filePath,
@@ -48,7 +57,6 @@ export const generateMetadataInBatches = async (
             batchSize
           );
 
-          // Merge file metadata from subdirectories into the original source key
           metadata[originalSource].push(
             ...subMetadata.metadata[originalSource]
           );
@@ -58,73 +66,82 @@ export const generateMetadataInBatches = async (
           fileCount += subMetadata.fileCount;
           totalSize += subMetadata.totalSize;
         } else {
-          const fileChecksum = await calculateChecksum(filePath);
+          const checksum = await calculateChecksum(filePath);
 
-          // Fetch owner metadata (Windows-only)
           let owner = "";
           if (process.platform === "win32") {
             try {
               const ownerCommand = `powershell.exe -Command "(Get-ACL '${filePath}').Owner"`;
               const { stdout } = await execPromise(ownerCommand);
               owner = stdout.trim() ?? "Not Available";
-            } catch (psError) {
-              console.warn(
-                `Failed to retrieve owner metadata for: ${filePath}`,
-                psError
-              );
+            } catch {
+              owner = "Not Available";
             }
           }
 
-          metadata[originalSource].push({
+          batchMetadata.push({
             filepath: filePath,
             filename: path.relative(originalSource, filePath),
             size: formatFileSize(fileStat.size),
             birthtime: new Date(fileStat.birthtime).toISOString(),
             lastModified: new Date(fileStat.mtime).toISOString(),
             lastAccessed: new Date(fileStat.atime).toISOString(),
-            checksum: fileChecksum,
+            checksum,
             owner,
           });
 
-          if (process.platform === "win32") {
-            try {
-              const extendedMetadataResults = await getExtendedMetadata(filePath, extendedMetadataPowerShellScript);
-              extendedMetadata[originalSource].push(extendedMetadataResults);
-            } catch (error) {
-              console.warn(
-                `<<<<<<Failed to retrieve extended metadata for: ${filePath}`,
-                error,
-              );
-            }
-          }
-
           totalSize += fileStat.size;
-          fileCount += 1;
-          processedFileCount += 1;
-
-          const progressPercentage = Math.round(
-            (processedFileCount / totalFileCount) * 100
-          );
-
-          // Send progress update only if complete or progress is a multiple of 10%
-          if (
-            progressPercentage % 10 === 0 ||
-            processedFileCount === totalFileCount
-          ) {
-            console.log(
-              `Metadata progress of ${originalSource}: ${progressPercentage}`
-            );
-            parentPort?.postMessage({
-              type: "progress",
-              source: originalSource,
-              fileProcessed: filePath,
-              progressPercentage,
-            });
-          }
+          fileCount++;
+          processedFileCount++;
+          batchFilePaths.push(filePath);
         }
-      })
-    );
-  }
+      }
+
+      let extendedBatchResult: Record<string, unknown> = {};
+      if (process.platform === "win32" && batchFilePaths.length > 0) {
+        try {
+          extendedBatchResult = await getExtendedMetadataBatch(
+            batchFilePaths,
+            extendedMetadataPowerShellScript
+          );
+        } catch (error) {
+          console.warn(
+            "Failed to retrieve extended metadata for batch:",
+            error
+          );
+        }
+      }
+
+      metadata[originalSource].push(...batchMetadata);
+      batchFilePaths.forEach((filePath) => {
+        extendedMetadata[originalSource].push(
+          extendedBatchResult[filePath] ?? {
+            FilePath: filePath,
+            error: "No metadata.",
+          }
+        );
+      });
+
+      const progressPercentage = Math.round(
+        (processedFileCount / totalFileCount) * 100
+      );
+      if (
+        progressPercentage % 10 === 0 ||
+        processedFileCount === totalFileCount
+      ) {
+        console.log(
+          `Metadata progress of ${originalSource}: ${progressPercentage}`
+        );
+        parentPort?.postMessage({
+          type: "progress",
+          source: originalSource,
+          fileProcessed: `${batchFilePaths.length} files`,
+          progressPercentage,
+        });
+      }
+    }),
+    3 // concurrency limit
+  );
 
   return { metadata, extendedMetadata, fileCount, totalSize };
 };
