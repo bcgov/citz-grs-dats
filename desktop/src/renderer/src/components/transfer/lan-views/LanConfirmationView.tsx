@@ -79,7 +79,7 @@ export const LanConfirmationView = ({
 
   return (
     <Stack gap={3}>
-      <Stack gap={2}>
+      <Stack gap={3}>
         <Typography variant="h3">Instructions</Typography>
         <Typography>
           Please wait while DATS automatically loads the folders associated with
