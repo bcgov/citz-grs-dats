@@ -166,8 +166,15 @@ ipcMain.handle("get-current-api-url", () => {
   return currentApiUrl;
 });
 
+// Shutdown all worker scripts
 ipcMain.handle("shutdown-workers", () => {
   pool.shutdown();
+});
+
+// Shutdown a specific worker script
+// (eg. When a folder is deleted from a transfer, stop processing it)
+ipcMain.handle("shutdown-worker-by-id", (_event, workerId: string): boolean => {
+  return pool.shutdownWorkerById(workerId);
 });
 
 ipcMain.handle("start-login-process", async () => {
@@ -264,7 +271,7 @@ ipcMain.handle("start-logout-process", async (_, idToken: string) => {
   });
 });
 
-ipcMain.on(
+ipcMain.handle(
   "get-folder-metadata",
   async (event, { filePath }: { filePath: string }) => {
     debug('Beginning "get-folder-metadata" of main process.');
@@ -294,7 +301,7 @@ ipcMain.on(
     };
 
     try {
-      await getFolderMetadata(
+      const workerId = await getFolderMetadata(
         pool,
         filePath,
         is.dev,
@@ -303,14 +310,17 @@ ipcMain.on(
         onEmptyFolder,
         onCompletion
       );
+
+      return { success: true, workerId };
     } catch (error) {
       console.error(`Error in get-folder-metadata: ${error}`);
       onCompletion({ success: false, error });
+      return { success: false, error };
     }
   }
 );
 
-ipcMain.on(
+ipcMain.handle(
   "get-folder-buffer",
   async (event, { filePath }: { filePath: string }) => {
     debug('Beginning "get-folder-buffer" of main process.');
@@ -339,7 +349,7 @@ ipcMain.on(
     };
 
     try {
-      await getFolderBuffer(
+      const workerId = await getFolderBuffer(
         pool,
         filePath,
         is.dev,
@@ -348,9 +358,12 @@ ipcMain.on(
         onEmptyFolder,
         onCompletion
       );
+
+      return { success: true, workerId };
     } catch (error) {
       console.error(`Error in get-folder-buffer: ${error}`);
       onCompletion({ success: false, error });
+      return { success: false, error };
     }
   }
 );

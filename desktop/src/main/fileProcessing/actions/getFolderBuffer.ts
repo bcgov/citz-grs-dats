@@ -35,7 +35,7 @@ export const getFolderBuffer = async (
     buffers?: FileBufferObj[];
     error?: unknown;
   }) => void
-): Promise<void> => {
+): Promise<string | null> => {
   const workerScript = isDev
     ? path.resolve(__dirname, "../es-workers/workers/copyWorker.js")
     : path.join(app.getAppPath(), "../../resources/workers/copyWorker.cjs");
@@ -43,6 +43,8 @@ export const getFolderBuffer = async (
   const workerData: WorkerData = {
     source: filePath,
   };
+
+  const { workerId, promise } = pool.runTask(workerScript, workerData);
 
   try {
     pool.on("progress", (data) => {
@@ -61,9 +63,18 @@ export const getFolderBuffer = async (
       if (data.task === "copy" && onCompletion) onCompletion(data);
     });
 
-    await pool.runTask(workerScript, workerData);
+    promise
+      .then((result) => {
+        console.log(`Worker ${workerId} completed successfully:`, result);
+      })
+      .catch((error) => {
+        console.error(`Worker ${workerId} failed:`, error);
+      });
+
+    return workerId;
   } catch (error) {
     console.error(`[Copy Action] Failed to process folder ${filePath}:`, error);
     if (onCompletion) onCompletion({ success: false, error });
+    return null;
   }
 };
