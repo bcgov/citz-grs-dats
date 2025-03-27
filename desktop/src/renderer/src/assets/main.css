@@ -56,7 +56,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	z-index: 9999; /* Ensures popup is on top of other content */
+	z-index: 900; /* Ensures popup is on top of other content */
 }
 
 .vpn-popup {

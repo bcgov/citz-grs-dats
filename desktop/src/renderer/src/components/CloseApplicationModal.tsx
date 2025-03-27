@@ -51,7 +51,7 @@ const contentStyle = {
 
 export const CloseApplicationModal = ({ open, onClose, onConfirm }: Props) => {
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} style={{ zIndex: "9999" }}>
       <Stack gap={3} sx={modalStyle}>
         <Box sx={headerStyle}>
           <WarningAmberIcon sx={{ color: "#F8BB47", width: "20px" }} />
