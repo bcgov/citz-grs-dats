@@ -74,8 +74,17 @@ interface Window {
     };
 
     workers: {
-      getFolderMetadata: ({ filePath }: { filePath: string }) => Promise<void>;
-      getFolderBuffer: ({ filePath }: { filePath: string }) => Promise<void>;
+      getFolderMetadata: ({ filePath }: { filePath: string }) => Promise<{
+        workerId?: string | null;
+        success: boolean;
+        error?: unknown;
+      }>;
+      getFolderBuffer: ({ filePath }: { filePath: string }) => Promise<{
+        workerId?: string | null;
+        success: boolean;
+        error?: unknown;
+      }>;
+      shutdownById: (id: string) => Promise<void>;
       shutdown: () => Promise<void>;
     };
 

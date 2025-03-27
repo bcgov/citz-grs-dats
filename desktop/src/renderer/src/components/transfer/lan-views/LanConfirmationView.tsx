@@ -28,6 +28,7 @@ type Props = {
   onFolderEdit: (folder: string) => void;
   onNextPress: () => void;
   onBackPress: () => void;
+  handleShutdownWorker: (folder: string) => Promise<void>;
 };
 
 export const LanConfirmationView = ({
@@ -41,10 +42,12 @@ export const LanConfirmationView = ({
   processRowUpdate,
   onBackPress,
   onFolderEdit,
+  handleShutdownWorker,
 }: Props) => {
   const apiRef = useGridApiRef();
 
   const onFolderDelete = (folder: string) => {
+    handleShutdownWorker(folder);
     setFolders((prevRows) => prevRows.filter((row) => row.folder !== folder));
     setMetadata((prevMetadata) => {
       const { [folder]: _, ...remainingMetadata } = prevMetadata; // Remove the deleted folder

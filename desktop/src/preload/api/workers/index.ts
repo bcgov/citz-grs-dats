@@ -6,4 +6,5 @@ export default {
   getFolderMetadata,
   getFolderBuffer,
   shutdown: () => ipcRenderer.invoke("shutdown-workers"),
+  shutdownById: (id: string) => ipcRenderer.invoke("shutdown-worker-by-id", id),
 };

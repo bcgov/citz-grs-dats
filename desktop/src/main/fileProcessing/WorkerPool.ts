@@ -1,11 +1,13 @@
 import { Worker } from "node:worker_threads";
 import { EventEmitter } from "node:events";
+import { randomUUID } from "node:crypto"; // Generates unique IDs
 
 type WorkerData<T = unknown> = {
   [key: string]: T;
 };
 
 type Task<T = unknown, U = unknown> = {
+  workerId: string;
   workerScript: string;
   workerData: WorkerData<T>;
   resolve: (value: U) => void;
@@ -15,78 +17,90 @@ type Task<T = unknown, U = unknown> = {
 export class WorkerPool extends EventEmitter {
   private maxWorkers: number;
   private tasks: Task[];
-  private workers: Set<Worker>;
+  private workers: Map<string, Worker>; // Store workers by ID
 
   constructor(maxWorkers: number) {
     super();
     this.maxWorkers = maxWorkers;
     this.tasks = [];
-    this.workers = new Set();
+    this.workers = new Map();
 
     console.log(`Initializing WorkerPool with up to ${maxWorkers} workers.`);
   }
 
   /**
-   * Queues a task, emits an event, and runs it when a worker is available.
+   * Runs a task and returns its worker ID immediately.
    */
   runTask<T, U>(
     workerScript: string,
     workerData: WorkerData<T>,
     timeout?: number
-  ): Promise<U> {
-    console.log(`Task queued: ${workerScript}`);
-    this.emit("taskQueued", { workerScript, workerData });
+  ): { workerId: string; promise: Promise<U> } {
+    const workerId = randomUUID(); // Generate unique worker ID
 
-    return new Promise<U>((resolve, reject) => {
+    const promise = new Promise<U>((resolve, reject) => {
       let timer: NodeJS.Timeout | undefined;
-
       if (timeout !== undefined) {
         timer = setTimeout(() => {
-          reject(new Error("Task timeout"));
+          reject(new Error(`Task timeout for worker ${workerId}`));
         }, timeout);
       }
 
       const worker = new Worker(workerScript, { workerData });
-      this.workers.add(worker);
+      this.workers.set(workerId, worker);
 
-      console.log(`Starting worker for script: ${workerScript}`);
-      this.emit("taskStarted", { workerScript, workerData });
+      console.log(`Worker started: ${workerId} (${workerScript})`);
+      this.emit("taskStarted", { workerId, workerScript, workerData });
 
       worker.on("message", (message) => {
-        const taskType = workerScript.includes("metadata")
-          ? "metadata"
-          : "copy";
-
         if (message.type === "completion") {
           if (timer) clearTimeout(timer);
 
           if (message.success) {
-            this.emit("completion", { task: taskType, ...message });
-            console.log(`Task completed successfully: ${workerScript}`);
+            this.emit("completion", { workerId, ...message });
+            console.log(`Task completed: ${workerId}`);
             resolve(message as U);
           } else {
             reject(new Error(message.error || "Worker task failed"));
           }
         } else {
-          this.emit(message.type, { task: taskType, ...message });
+          this.emit(message.type, { workerId, ...message });
         }
       });
 
       worker.on("error", (err) => {
         if (timer) clearTimeout(timer);
         console.error(`Worker error: ${err.message}`);
-        this.emit("taskFailed", { workerScript, error: err.message });
+        this.emit("taskFailed", { workerId, error: err.message });
         reject(err);
       });
 
       worker.on("exit", (code) => {
-        this.workers.delete(worker);
+        this.workers.delete(workerId);
         if (code !== 0) {
-          console.error(`Worker exited with code ${code}.`);
+          console.error(`Worker ${workerId} exited with code ${code}.`);
         }
         this.runNext();
       });
     });
+
+    return { workerId, promise }; // Return workerId immediately
+  }
+
+  /**
+   * Cancels a specific worker by its worker ID.
+   */
+  shutdownWorkerById(workerId: string): boolean {
+    const worker = this.workers.get(workerId);
+    if (!worker) {
+      console.warn(`No active worker found with ID: ${workerId}`);
+      return false;
+    }
+
+    console.log(`Shutting down worker: ${workerId}`);
+    worker.terminate();
+    this.workers.delete(workerId);
+    return true;
   }
 
   /**
@@ -106,9 +120,9 @@ export class WorkerPool extends EventEmitter {
     const task = this.tasks.shift();
     if (!task) return;
 
-    console.log(`Starting task from queue: ${task.workerScript}`);
+    console.log(`Starting queued task: ${task.workerScript}`);
     this.runTask(task.workerScript, task.workerData)
-      .then(task.resolve)
+      .promise.then(task.resolve)
       .catch(task.reject);
   }
 
