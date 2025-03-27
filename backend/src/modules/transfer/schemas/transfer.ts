@@ -53,7 +53,7 @@ export const lanTransferBodySchema = z.object({
   changes: z.array(
     z.object({
       originalFolderPath: z.string(),
-      newFolderPath: z.string(),
+      newFolderPath: z.string().optional(),
       deleted: z.boolean(),
     })
   ),
