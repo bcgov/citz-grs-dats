@@ -1,6 +1,6 @@
 import path from "node:path";
 import type { WorkerPool } from "../WorkerPool";
-import { app } from "electron";
+import { app, BrowserWindow } from "electron";
 
 type WorkerData = {
   source: string;
@@ -14,23 +14,13 @@ type WorkerData = {
  * @param workerPool - The WorkerPool instance to manage worker threads.
  * @param filePath - The source folder path to be processed.
  * @param isDev - Is running in the development build (npm run dev).
- * @param onProgress - Callback for progress updates.
- * @param onCompletion - Callback for final completion data.
  * @returns A Promise that resolves when the worker processes complete.
  */
 export const getFolderMetadata = async (
   pool: WorkerPool,
   filePath: string,
   isDev: boolean,
-  onProgress?: (data: { progressPercentage: number; source: string }) => void,
-  onMissingPath?: (data: { path: string }) => void,
-  onEmptyFolder?: (data: { path: string }) => void,
-  onCompletion?: (data: {
-    success: boolean;
-    metadata?: Record<string, unknown>;
-    extendedMetadata?: Record<string, unknown>;
-    error?: unknown;
-  }) => void
+  onFailure: (error: unknown) => void
 ): Promise<string | null> => {
   console.log(`[Metadata Action] Processing folder ${filePath}`);
   const metadataWorkerScript = isDev
@@ -56,25 +46,32 @@ export const getFolderMetadata = async (
 
   try {
     pool.on("progress", (data) => {
-      console.log(`Progress ${data}`);
-      if (data.task === "metadata" && onProgress) onProgress(data);
+      BrowserWindow.getAllWindows().forEach((win) => {
+        win.webContents.send("folder-metadata-progress", data);
+      });
     });
 
     pool.on("missingPath", (data) => {
-      if (data.task === "metadata" && onMissingPath) onMissingPath(data);
+      BrowserWindow.getAllWindows().forEach((win) => {
+        win.webContents.send("folder-metadata-missing-path", data);
+      });
     });
 
     pool.on("emptyFolder", (data) => {
-      if (data.task === "metadata" && onEmptyFolder) onEmptyFolder(data);
+      BrowserWindow.getAllWindows().forEach((win) => {
+        win.webContents.send("folder-metadata-empty-folder", data);
+      });
     });
 
     pool.on("completion", (data) => {
-      if (data.task === "metadata" && onCompletion) onCompletion(data);
+      BrowserWindow.getAllWindows().forEach((win) => {
+        win.webContents.send("folder-metadata-completion", data);
+      });
     });
 
     promise
-      .then((result) => {
-        console.log(`Worker ${workerId} completed successfully:`, result);
+      .then(() => {
+        console.log(`Worker ${workerId} completed successfully.`);
       })
       .catch((error) => {
         console.error(`Worker ${workerId} failed:`, error);
@@ -83,7 +80,7 @@ export const getFolderMetadata = async (
     return workerId;
   } catch (error) {
     console.error(`[Action] Failed to process folder ${filePath}:`, error);
-    if (onCompletion) onCompletion({ success: false, error });
+    onFailure(error);
     return null;
   }
 };
