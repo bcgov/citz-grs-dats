@@ -27,7 +27,7 @@ export const EdrmsUploadFilelistView = ({
 
   return (
     <Stack gap={3}>
-      <Stack gap={2}>
+      <Stack gap={3}>
         <Typography variant="h3">Upload your file list here:</Typography>
         <FileUploadArea
           file={file}

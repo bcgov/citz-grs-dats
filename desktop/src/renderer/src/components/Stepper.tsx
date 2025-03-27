@@ -16,17 +16,21 @@ export const Stepper = ({ items, currentIndex }: Props): JSX.Element => {
             sx={{
               background:
                 currentIndex === index
-                  ? "#5595D9"
+                  ? "#D8EAFD"
                   : currentIndex > index
-                  ? "#D1CFCD"
+                  ? "#EDEBE9"
                   : "#F3F2F1",
               color:
-                currentIndex > index || currentIndex === index
-                  ? "white"
-                  : "#2D2D2D",
-              borderRadius: "10px",
-              paddingX: 1,
-              fontSize: "0.75rem",
+                currentIndex < index || currentIndex === index
+                  ? "#2D2D2D"
+                  : "#9F9D9C",
+              border: `1px solid ${
+                currentIndex > index ? "#D8D8D8" : "#353433"
+              }`,
+              borderRadius: "12px",
+              padding: "2px 12px",
+              fontSize: "12px",
+              fontWeight: 400,
             }}
           >
             {item}

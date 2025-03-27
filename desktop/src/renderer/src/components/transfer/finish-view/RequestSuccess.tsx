@@ -16,7 +16,7 @@ export const RequestSuccess = ({
 }: Props) => {
   return (
     <Stack gap={3}>
-      <Stack gap={2}>
+      <Stack gap={3}>
         <Typography variant="h3">Success!</Typography>
         <Typography>
           You have successfully sent records to the Digital Archives for the
