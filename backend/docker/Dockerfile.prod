@@ -14,7 +14,7 @@ RUN apt-get update && \
     npm run build
 
 # Stage 2: Prod
-FROM node:${NODE_IMAGE_TAG} AS prod
+FROM ghcr.io/bcgov/citz-imb-bullseye-slim:${NODE_IMAGE_TAG} AS prod
 
 WORKDIR /app
 ENV NODE_ENV=production
