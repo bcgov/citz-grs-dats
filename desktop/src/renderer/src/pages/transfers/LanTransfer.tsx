@@ -864,7 +864,7 @@ export const LanTransferPage = () => {
     <Grid container sx={{ paddingBottom: "20px" }}>
       <Grid size={2} />
       <Grid size={8} sx={{ paddingTop: 3 }}>
-        <Stack gap={2}>
+        <Stack gap={3}>
           <Typography variant="h2">Send records from LAN Drive</Typography>
           <Stepper
             items={[

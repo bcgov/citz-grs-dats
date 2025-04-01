@@ -4,7 +4,7 @@ import { formatDate } from "src/utils";
 
 type Change = {
   originalFolderPath: string;
-  newFolderPath?: string;
+  newFolderPath?: string | undefined;
   deleted: boolean;
 };
 

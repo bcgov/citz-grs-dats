@@ -16,6 +16,7 @@ export const SubAgreementScrollBox = ({
       gap={2}
       sx={{
         padding: "16px",
+        marginTop: "8px",
         border: "1px solid var(--sub-agreement-border)",
         maxHeight: `min(${maxHeight}, 100vh)`,
         overflowY: "scroll",

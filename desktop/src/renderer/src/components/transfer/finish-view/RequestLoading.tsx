@@ -2,7 +2,7 @@ import { LinearProgress, Stack, Typography } from "@mui/material";
 
 export const RequestLoading = () => {
   return (
-    <Stack gap={2}>
+    <Stack gap={3}>
       <Typography variant="h3">Sending your records</Typography>
       <LinearProgress
         sx={{
