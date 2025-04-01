@@ -1,9 +1,9 @@
 # Trivial comment to trigger API build :)
-ARG NODE_IMAGE_TAG=22.9
+ARG NODE_IMAGE_TAG=22.8-bullseye-slim
 ARG BACKEND_PORT=3200
 
 # STAGE 1: Build
-FROM ghcr.io/bcgov/citz-imb-bullseye-slim:${NODE_IMAGE_TAG} AS build
+FROM ghcr.io/bcgov/citz-imb-node:${NODE_IMAGE_TAG} AS build
 
 WORKDIR /app
 COPY . .
@@ -14,7 +14,7 @@ RUN apt-get update && \
     npm run build
 
 # Stage 2: Prod
-FROM ghcr.io/bcgov/citz-imb-bullseye-slim:${NODE_IMAGE_TAG} AS prod
+FROM ghcr.io/bcgov/citz-imb-node:${NODE_IMAGE_TAG} AS prod
 
 WORKDIR /app
 ENV NODE_ENV=production
