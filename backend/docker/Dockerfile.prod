@@ -1,9 +1,9 @@
 # Trivial comment to trigger API build :)
-ARG NODE_IMAGE_TAG=22.9
+ARG NODE_IMAGE_TAG=22.8-bullseye-slim
 ARG BACKEND_PORT=3200
 
 # STAGE 1: Build
-FROM ghcr.io/bcgov/citz-imb-bullseye-slim:${NODE_IMAGE_TAG} AS build
+FROM node:${NODE_IMAGE_TAG} AS build
 
 WORKDIR /app
 COPY . .
