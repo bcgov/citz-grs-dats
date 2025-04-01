@@ -29,8 +29,7 @@ COPY ./healthcheck.js ./healthcheck.js
 COPY ./tsconfig.json ./tsconfig.json
 
 # Install fontconfig and any dependencies
-# RUN apt-get update && apt-get install -y fontconfig && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y fontconfig
+RUN apt-get update && apt-get install -y fontconfig && rm -rf /var/lib/apt/lists/*
 
 # Copy custom fonts (if needed)
 COPY src/modules/submission-agreement/assets/* /app/src/modules/submission-agreement/assets/
