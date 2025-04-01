@@ -8,10 +8,9 @@ FROM ghcr.io/bcgov/citz-imb-bullseye-slim:${NODE_IMAGE_TAG} AS build
 WORKDIR /app
 COPY . .
 
-RUN apt-get update && \
-    apt-get install -y curl && \
-    npm i && \
-    npm run build
+RUN npm i && npm run build
+  #  apt-get update && \
+  #  apt-get install -y curl && \
 
 # Stage 2: Prod
 FROM node:${NODE_IMAGE_TAG} AS prod
