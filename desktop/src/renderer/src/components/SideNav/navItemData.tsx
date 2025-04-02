@@ -13,7 +13,7 @@ const navItemData: NavItemProps[] = [
 		icon: <HomeOutlinedIcon sx={{ color: 'var(--sidenav-icon)' }} />,
 	},
 	{
-		path: '/file-list/instructions',
+		path: '/file-list',
 		label: 'Create file list',
 		icon: <FileListIcon sx={{ color: 'var(--sidenav-icon)' }} />,
 		role: 'any',

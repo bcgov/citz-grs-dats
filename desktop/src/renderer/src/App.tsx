@@ -3,11 +3,12 @@ import {
 	NavigateProvider,
 	useAppCloseHandler,
 	useReleaseNotes,
-} from '@/hooks';
-import { BrowserRouter } from 'react-router';
-import { CloseApplicationModal, AppLayout } from './components';
-import { Routes } from './routes';
-import { VPNMonitor } from './utilities';
+} from "@/hooks";
+import { BrowserRouter } from "react-router";
+import { CloseApplicationModal } from "./components";
+import { AppLayout } from "./layouts";
+import { Routes } from "./routes";
+import { VPNMonitor } from "./utilities";
 
 function App(): JSX.Element {
 	const { ReleaseNotesModal } = useReleaseNotes();

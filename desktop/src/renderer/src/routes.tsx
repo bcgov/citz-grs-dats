@@ -1,53 +1,53 @@
-import { Route, Routes as ReactRoutes } from 'react-router';
+import { Route, Routes as ReactRoutes } from "react-router";
 import {
 	EdrmsInstructionsPage,
 	EdrmsTransferPage,
-	FileListInstructionsPage,
+	// FileListInstructionsPage,
 	FileListPage,
 	HomePage,
 	LanInstructionsPage,
 	LanTransferPage,
 	SendRecordsPage,
 	ViewTransfersPage,
-} from './pages';
+} from "./pages";
 
 export const Routes = () => {
 	return (
 		<ReactRoutes>
 			<Route
-				path='/'
+				path="/"
 				element={<HomePage />}
 			/>
 			<Route
-				path='/file-list/instructions'
-				element={<FileListInstructionsPage />}
-			/>
-			<Route
-				path='/file-list'
+				path="/file-list/actions"
 				element={<FileListPage />}
 			/>
 			<Route
-				path='/send-records'
+				path="/file-list"
+				element={<FileListPage />}
+			/>
+			<Route
+				path="/send-records"
 				element={<SendRecordsPage />}
 			/>
 			<Route
-				path='/send-records/lan'
+				path="/send-records/lan"
 				element={<LanTransferPage />}
 			/>
 			<Route
-				path='/send-records/edrms'
+				path="/send-records/edrms"
 				element={<EdrmsTransferPage />}
 			/>
 			<Route
-				path='/send-records/lan/instructions'
+				path="/send-records/lan/instructions"
 				element={<LanInstructionsPage />}
 			/>
 			<Route
-				path='/send-records/edrms/instructions'
+				path="/send-records/edrms/instructions"
 				element={<EdrmsInstructionsPage />}
 			/>
 			<Route
-				path='/view-transfers'
+				path="/view-transfers"
 				element={<ViewTransfersPage />}
 			/>
 		</ReactRoutes>

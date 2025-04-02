@@ -1,6 +1,6 @@
-import { useAuth, useNavigate } from '@/hooks';
-import { ListItem, Typography, useTheme } from '@mui/material';
-import type { NavItemProps } from './NavItem.d';
+import { useAuth, useNavigate } from "@/hooks";
+import { ListItem, Typography, useTheme } from "@mui/material";
+import type { NavItemProps } from "./NavItem.d";
 
 export const NavItem = ({ path, label, icon, role }: NavItemProps) => {
 	const theme = useTheme();
@@ -9,18 +9,22 @@ export const NavItem = ({ path, label, icon, role }: NavItemProps) => {
 
 	let sx = {
 		gap: 1,
-		border: '2px solid transparent',
-		borderRadius: '5px',
-		background: 'none',
-		'&:hover': {
+		border: "2px solid transparent",
+		borderRadius: "5px",
+		background: "none",
+		"&:hover": {
 			background: theme.palette.secondary.dark,
 		},
 	};
 
-	if (path === location.pathname) {
+	// Highlight the current page
+	if (
+		location.pathname === path ||
+		(path !== "/" && location.pathname.startsWith(path))
+	) {
 		sx = {
 			...sx,
-			border: '2px solid var(--sidenav-item-border-current-page)',
+			border: "2px solid var(--sidenav-item-border-current-page)",
 			background: theme.palette.secondary.light,
 		};
 	}
@@ -28,7 +32,7 @@ export const NavItem = ({ path, label, icon, role }: NavItemProps) => {
 	const listItem = (
 		<ListItem
 			sx={sx}
-			component='button'
+			component="button"
 			onClick={() => navigate(path)}
 		>
 			{icon}
@@ -37,7 +41,7 @@ export const NavItem = ({ path, label, icon, role }: NavItemProps) => {
 	);
 
 	if (!role) return listItem;
-  if (accessToken && role === 'any') return listItem;
-  if (accessToken && hasRole(role)) return listItem;
-  return null;
+	if (accessToken && role === "any") return listItem;
+	if (accessToken && hasRole(role)) return listItem;
+	return null;
 };

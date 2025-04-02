@@ -1,4 +1,4 @@
-export * from './Accordion';
+export * from "./Accordion";
 export * from "./AuthButton";
 export * from "./CloseApplicationModal";
 export * from "./DeclineSubAgreementModal";
@@ -7,9 +7,9 @@ export * from "./FileUploadArea";
 export * from "./FolderUploadArea";
 export * from "./HelpModal";
 export * from "./Instruction";
-export * from "./layouts";
 export * from "./LoginRequiredModal";
 export * from "./NavigateAwayModal";
+export * from "./NoteBlock";
 export * from './PageLinkCard';
 export * from "./PreserveIcon";
 export * from "./ReleaseNotesModal";
