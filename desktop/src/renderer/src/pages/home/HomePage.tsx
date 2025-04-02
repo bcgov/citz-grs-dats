@@ -1,5 +1,6 @@
 import { Box, Link, Stack, Typography, useTheme } from "@mui/material";
-import { PageLayout, PageLinkCard } from "@renderer/components";
+import { PageLinkCard } from "@renderer/components";
+import { PageLayout } from "@renderer/layouts";
 import { HowDatsWorks } from "./HowDatsWorks";
 import pageLinkData from "./pageLinkData";
 
