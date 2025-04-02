@@ -1,8 +1,9 @@
 ARG NODE_IMAGE_TAG=22.8-bullseye-slim
-ARG BACKEND_PORT=3200
 
 # STAGE 1: Build
 FROM ghcr.io/bcgov/citz-imb-node:${NODE_IMAGE_TAG} AS build
+
+ARG BACKEND_PORT=3200
 
 WORKDIR /app
 COPY . .
