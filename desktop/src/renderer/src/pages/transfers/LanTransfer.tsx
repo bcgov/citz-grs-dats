@@ -40,6 +40,12 @@ type FileBufferObj = {
   buffer: Buffer;
 };
 
+type RunningWorker = {
+  id?: string | null;
+  type: "metadata" | "buffer";
+  folder: string;
+};
+
 export const LanTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
@@ -60,6 +66,7 @@ export const LanTransferPage = () => {
     null
   );
   const [uploadSuccess, setUploadSuccess] = useState<boolean | null>(null);
+  const [runningWorkers, setRunningWorkers] = useState<RunningWorker[]>([]);
 
   // File list
   const [metadata, setMetadata] = useState<Record<string, unknown>>({});
@@ -158,11 +165,21 @@ export const LanTransferPage = () => {
       } = event.detail;
 
       if (success && newMetadata) {
+        // Store metadata state
         setMetadata((prev) => ({
           ...prev,
           [source]: newMetadata[source],
         }));
         if (newExtendedMetadata) setExtendedMetadata(newExtendedMetadata);
+
+        // Remove the completed worker
+        setRunningWorkers((prev) =>
+          prev.filter(
+            (worker) =>
+              !(worker.folder === source && worker.type === "metadata")
+          )
+        );
+
         console.log(`Successfully processed folder metadata: ${source}`);
       } else {
         console.error(`Failed to process folder metadata: ${source}`, {
@@ -266,10 +283,20 @@ export const LanTransferPage = () => {
       if (success && buffers && buffers.length > 0) {
         const sourceParts = source?.split("\\");
         const parentFolder = sourceParts[sourceParts.length - 1];
+
         setFolderBuffers((prev) => ({
           ...prev,
           [parentFolder ?? source]: buffers,
         }));
+
+        // Remove the completed worker
+        setRunningWorkers((prev) =>
+          prev.filter(
+            (worker) =>
+              !(worker.folder === parentFolder && worker.type === "buffer")
+          )
+        );
+
         console.log(`Successfully processed folder buffer: ${source}`);
       } else {
         console.error(`Failed to process folder buffer: ${source}`, {
@@ -361,9 +388,17 @@ export const LanTransferPage = () => {
 
   const getFolderMetadata = async (filePath: string) => {
     try {
-      await api.workers.getFolderMetadata({
-        filePath,
-      });
+      const response = await api.workers.getFolderMetadata({ filePath });
+
+      if (response.success) {
+        const workerId = response.workerId;
+
+        // Add to runningWorkers
+        setRunningWorkers((prev) => [
+          ...prev,
+          { id: workerId, type: "metadata", folder: filePath },
+        ]);
+      }
     } catch (error) {
       console.error(`Failed to fetch metadata for folder ${filePath}:`, error);
     }
@@ -371,12 +406,37 @@ export const LanTransferPage = () => {
 
   const getFolderBuffer = async (filePath: string) => {
     try {
-      await api.workers.getFolderBuffer({
-        filePath,
-      });
+      const response = await api.workers.getFolderBuffer({ filePath });
+
+      if (response.success) {
+        const workerId = response.workerId;
+
+        // Add to runningWorkers
+        setRunningWorkers((prev) => [
+          ...prev,
+          { id: workerId, type: "buffer", folder: filePath },
+        ]);
+      }
     } catch (error) {
       console.error(`Failed to fetch buffers for folder ${filePath}:`, error);
     }
+  };
+
+  const handleShutdownWorker = async (folder: string) => {
+    const workersToShutdown = runningWorkers.filter(
+      (worker) => worker.folder === folder
+    );
+
+    for (const worker of workersToShutdown) {
+      if (worker.id) {
+        await api.workers.shutdownById(worker.id);
+      }
+    }
+
+    // Remove workers from the running list
+    setRunningWorkers((prev) =>
+      prev.filter((worker) => worker.folder !== folder)
+    );
   };
 
   const processRowUpdate = (newFolder: Folder) => {
@@ -804,7 +864,7 @@ export const LanTransferPage = () => {
     <Grid container sx={{ paddingBottom: "20px" }}>
       <Grid size={2} />
       <Grid size={8} sx={{ paddingTop: 3 }}>
-        <Stack gap={2}>
+        <Stack gap={3}>
           <Typography variant="h2">Send records from LAN Drive</Typography>
           <Stepper
             items={[
@@ -855,6 +915,7 @@ export const LanTransferPage = () => {
               onFolderEdit={handleEditClick}
               onNextPress={handleLanUploadNextPress}
               onBackPress={onBackPress}
+              handleShutdownWorker={handleShutdownWorker}
             />
           )}
           {currentViewIndex === 4 && (

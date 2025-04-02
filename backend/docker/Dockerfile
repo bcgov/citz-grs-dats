@@ -1,7 +1,7 @@
-ARG NODE_IMAGE_TAG=22.8-bullseye-slim
+ARG NODE_IMAGE_TAG=22.9
 ARG BACKEND_PORT=3200
 
-FROM node:${NODE_IMAGE_TAG}
+FROM ghcr.io/bcgov/citz-imb-bullseye-slim:${NODE_IMAGE_TAG}
 
 WORKDIR /app
 

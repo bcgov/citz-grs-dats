@@ -68,7 +68,7 @@
   "dependencies": {
     "@bcgov/bc-sans": "2.1.0",
     "@bcgov/citz-imb-sso-js-core": "1.0.0",
-    "@bcgov/design-system-react-components": "0.4.0",
+    "@bcgov/design-system-react-components": "0.5.1",
     "@electron-toolkit/preload": "3.0.1",
     "@electron-toolkit/utils": "3.0.0",
     "@emotion/react": "11.13.3",

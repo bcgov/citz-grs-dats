@@ -32,12 +32,6 @@ const streamPipeline = promisify(pipeline);
 EventEmitter.defaultMaxListeners = 1000; // Set globally for all EventEmitters
 ipcMain.setMaxListeners(1000); // Explicitly set for ipcMain
 
-type FileBufferObj = {
-  filename: string;
-  path: string;
-  buffer: Buffer;
-};
-
 app.setName("Digital Archives Transfer Service");
 
 const DEBUG = is.dev;
@@ -166,8 +160,15 @@ ipcMain.handle("get-current-api-url", () => {
   return currentApiUrl;
 });
 
+// Shutdown all worker scripts
 ipcMain.handle("shutdown-workers", () => {
   pool.shutdown();
+});
+
+// Shutdown a specific worker script
+// (eg. When a folder is deleted from a transfer, stop processing it)
+ipcMain.handle("shutdown-worker-by-id", (_event, workerId: string): boolean => {
+  return pool.shutdownWorkerById(workerId);
 });
 
 ipcMain.handle("start-login-process", async () => {
@@ -264,93 +265,55 @@ ipcMain.handle("start-logout-process", async (_, idToken: string) => {
   });
 });
 
-ipcMain.on(
+ipcMain.handle(
   "get-folder-metadata",
   async (event, { filePath }: { filePath: string }) => {
     debug('Beginning "get-folder-metadata" of main process.');
 
-    const onProgress = (data: {
-      progressPercentage: number;
-      source: string;
-    }) => {
-      event.sender.send("folder-metadata-progress", data);
-    };
-
-    const onMissingPath = (data: { path: string }) => {
-      event.sender.send("folder-metadata-missing-path", data);
-    };
-
-    const onEmptyFolder = (data: { path: string }) => {
-      event.sender.send("folder-metadata-empty-folder", data);
-    };
-
-    const onCompletion = (data: {
-      success: boolean;
-      metadata?: Record<string, unknown>;
-      error?: unknown;
-    }) => {
-      debug("[main] get-folder-metadata completion", data);
-      event.sender.send("folder-metadata-completion", data);
+    const onFailure = (error: unknown) => {
+      event.sender.send("folder-metadata-completion", {
+        success: false,
+        error,
+      });
     };
 
     try {
-      await getFolderMetadata(
+      const workerId = await getFolderMetadata(
         pool,
         filePath,
         is.dev,
-        onProgress,
-        onMissingPath,
-        onEmptyFolder,
-        onCompletion
+        onFailure
       );
+
+      return { success: true, workerId };
     } catch (error) {
       console.error(`Error in get-folder-metadata: ${error}`);
-      onCompletion({ success: false, error });
+      onFailure(error);
+      return { success: false, error };
     }
   }
 );
 
-ipcMain.on(
+ipcMain.handle(
   "get-folder-buffer",
   async (event, { filePath }: { filePath: string }) => {
     debug('Beginning "get-folder-buffer" of main process.');
 
-    const onProgress = (data: {
-      progressPercentage: number;
-      source: string;
-    }) => {
-      event.sender.send("folder-buffer-progress", data);
-    };
-
-    const onMissingPath = (data: { path: string }) => {
-      event.sender.send("folder-buffer-missing-path", data);
-    };
-
-    const onEmptyFolder = (data: { path: string }) => {
-      event.sender.send("folder-buffer-empty-folder", data);
-    };
-
-    const onCompletion = (data: {
-      success: boolean;
-      buffers?: FileBufferObj[];
-      error?: unknown;
-    }) => {
-      event.sender.send("folder-buffer-completion", data);
+    const onFailure = (error: unknown) => {
+      event.sender.send("folder-buffer-completion", {
+        success: false,
+        error,
+      });
     };
 
     try {
-      await getFolderBuffer(
-        pool,
-        filePath,
-        is.dev,
-        onProgress,
-        onMissingPath,
-        onEmptyFolder,
-        onCompletion
-      );
+      const workerId = await getFolderBuffer(pool, filePath, is.dev, onFailure);
+
+      return { success: true, workerId };
     } catch (error) {
       console.error(`Error in get-folder-buffer: ${error}`);
-      onCompletion({ success: false, error });
+      onFailure(error);
+      return { success: false, error };
     }
   }
 );
