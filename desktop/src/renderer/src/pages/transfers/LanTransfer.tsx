@@ -529,7 +529,7 @@ export const LanTransferPage = () => {
       // Json file
       type JsonFileList = {
         admin: { accession: string; application: string };
-        folders: Record<string, unknown>;
+        folderList: Record<string, unknown>;
       };
       const json = (await parseJsonFile(fileList)) as JsonFileList | null;
 
@@ -549,7 +549,7 @@ export const LanTransferPage = () => {
 
       const accession = json.admin.accession;
       const application = json.admin.application;
-      const folders = json.folders;
+      const folders = json.folderList;
 
       const folderKeys = Object.keys(folders);
       const hasDuplicates = new Set(folderKeys).size !== folderKeys.length;
