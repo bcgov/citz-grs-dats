@@ -16,17 +16,21 @@ export const Stepper = ({ items, currentIndex }: Props): JSX.Element => {
             sx={{
               background:
                 currentIndex === index
-                  ? "#5595D9"
+                  ? "#D8EAFD" // Light blue
                   : currentIndex > index
-                  ? "#D1CFCD"
-                  : "#F3F2F1",
+                  ? "#EDEBE9" // Light gray
+                  : "#F3F2F1", // Lighter gray
               color:
-                currentIndex > index || currentIndex === index
-                  ? "white"
-                  : "#2D2D2D",
-              borderRadius: "10px",
-              paddingX: 1,
-              fontSize: "0.75rem",
+                currentIndex < index || currentIndex === index
+                  ? "#2D2D2D" // Dark gray
+                  : "#9F9D9C", // Gray
+              border: `1px solid ${
+                currentIndex > index ? "#D8D8D8" : "#353433" // Light gray, dark gray
+              }`,
+              borderRadius: "12px",
+              padding: "2px 12px",
+              fontSize: "12px",
+              fontWeight: 400,
             }}
           >
             {item}
@@ -38,7 +42,7 @@ export const Stepper = ({ items, currentIndex }: Props): JSX.Element => {
               sx={{
                 marginLeft: 1,
                 fontSize: "1rem",
-                color: "#9F9D9C",
+                color: "#9F9D9C", // Gray
               }}
             />
           )}

@@ -34,7 +34,7 @@ export const LanUploadFileListView = ({
 
   return (
     <Stack gap={3}>
-      <Stack gap={2}>
+      <Stack gap={3}>
         <Typography variant="h3">
           Upload your digital file list (ARS 662) here:
         </Typography>
