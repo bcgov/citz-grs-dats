@@ -2,13 +2,14 @@
 	"name": "@bcgov/citz-grs-dats",
 	"license": "Apache-2.0",
 	"scripts": {
-		"up": "docker compose up -d",
-		"down": "docker compose down -v --remove-orphans",
-		"prune": "docker compose down --rmi all --volumes && npm run clear-docker-cache",
-		"prune:api": "docker compose down express-api && docker rmi citz-grs-dats-express-api && npm run clear-docker-cache",
+		"authenticate": "node --env-file=.env -e \"const { execSync } = require('child_process'); const username = process.env.GITHUB_USERNAME; const token = process.env.CITZ_IMB_IMAGE_PULL_TOKEN; execSync(`echo ${token} | podman login ghcr.io -u ${username} --password-stdin`, { stdio: 'inherit' }); execSync(`echo ${token} | docker login ghcr.io -u ${username} --password-stdin`, { stdio: 'inherit' });\"",
+		"up": "npm run authenticate && podman compose up -d",
+		"down": "podman compose down -v --remove-orphans",
+		"prune": "podman compose down --rmi all --volumes && npm run clear-podman-cache",
+		"prune:api": "podman rm -f citz-grs-dats-express-api && podman rmi citz-grs-dats-express-api && npm run clear-docker-cache",
 		"rebuild": "npm run prune && npm run up -- --force-recreate",
 		"rebuild:api": "npm run prune:api && npm run up -- express-api",
-		"clear-docker-cache": "docker builder prune -f",
-		"shell:mongo": "docker exec -it mongo bash"
+		"clear-podman-cache": "podman builder prune -f",
+		"shell:mongo": "podman exec -it mongo bash"
 	}
 }
