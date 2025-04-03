@@ -38,12 +38,12 @@ export const TransfersGrid = ({
   const columns: GridColDef<(typeof rows)[number]>[] = [
     {
       field: "accession",
-      headerName: "Accession #",
+      headerName: "Accession",
       flex: 1,
     },
     {
       field: "application",
-      headerName: "Application #",
+      headerName: "Application",
       flex: 1,
     },
     {
