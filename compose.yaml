@@ -6,7 +6,7 @@ services:
     init: true
     restart: on-failure
     healthcheck:
-      test: ["CMD-SHELL", "node", "/app/healthcheck.js"] # Check health endpoint for healthy service.
+      test: ["CMD-SHELL", "node /app/healthcheck.js"] # Check health endpoint for healthy service.
       interval: 30s # Perform the health check every 30 seconds.
       timeout: 10s # Consider the health check a failure if it takes more than 10 seconds.
       retries: 5 # Retry the health check up to 5 times before considering the container unhealthy.
