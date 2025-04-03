@@ -3,7 +3,7 @@ import { Button } from "@bcgov/design-system-react-components";
 import { Box, Stack, Typography } from "@mui/material";
 import { NoteBlock } from "@renderer/components";
 
-export const FileListInstructionsPage = () => {
+export const FileListOverviewPage = () => {
 	const { navigate } = useNavigate();
 
 	const handleStartButton = () => navigate("/file-list/actions");

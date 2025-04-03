@@ -4,6 +4,7 @@ export * from "./AuthButton";
 export * from "./CloseApplicationModal";
 export * from "./DeclineSubAgreementModal";
 export * from "./DownloadIcon";
+export * from "./file-list";
 export * from "./FileUploadArea";
 export * from "./FolderUploadArea";
 export * from "./Grid";

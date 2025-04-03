@@ -1,16 +1,9 @@
 import type { GridColDef } from "@mui/x-data-grid";
-import { AnimatedProgress, GridEditDateCell } from "@renderer/components";
+import { GridEditDateCell } from "@renderer/components";
 import type { FolderRow } from "@renderer/types";
 import type { Dayjs } from "dayjs";
 
 export const columns: GridColDef<FolderRow>[] = [
-	{
-		field: "progress",
-		description: "Folder upload status.",
-		headerName: "Status",
-		width: 100,
-		renderCell: (params) => <AnimatedProgress progress={params.row.progress} />,
-	},
 	{
 		field: "folder",
 		headerName: "Folder path",
