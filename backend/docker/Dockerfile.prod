@@ -1,5 +1,6 @@
 ARG NODE_IMAGE_TAG=22.8-bullseye-slim
 
+# Trigger for ghcr demo
 # STAGE 1: Build
 FROM ghcr.io/bcgov/citz-imb-node:${NODE_IMAGE_TAG} AS build
 
