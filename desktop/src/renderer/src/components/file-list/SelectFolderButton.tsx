@@ -14,7 +14,7 @@ export const SelectFolderButton = ({ onRowChange }): JSX.Element => {
   return (
     <Button
       variant="secondary"
-      style={{ justifyContent: "center", width: "12%" }}
+      style={{ justifyContent: "center", width: "12%", fontSize: "16px" }}
       onPress={handleClick}
     >
       Add Folder(s)

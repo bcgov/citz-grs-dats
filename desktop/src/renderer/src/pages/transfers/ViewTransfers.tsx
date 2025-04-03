@@ -434,7 +434,7 @@ export const ViewTransfersPage = () => {
       <Grid size={8} sx={{ paddingTop: 3 }}>
         <Stack gap={2}>
           <Typography variant="h2">View transfer status</Typography>
-          <Stack direction="row" spacing={1}>
+          <Stack direction="row" spacing={1} sx={{ marginTop: 1 }}>
             <TextField
               sx={{ width: "350px" }}
               size="small"
