@@ -47,6 +47,7 @@ export const LanSubmissionAgreementView = ({
           <b>Do you accept the Submission Agreement? (required)</b> *
         </Typography>
         <RadioGroup
+          aria-label="Accept agreement"
           value={accept === null ? null : accept ? "Yes" : "No"}
           onChange={(value) => setAccept(value === "Yes")}
         >
