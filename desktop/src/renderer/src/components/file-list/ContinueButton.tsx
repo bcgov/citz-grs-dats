@@ -12,7 +12,7 @@ export const ContinueButton = ({ onContinue, isEnabled }): JSX.Element => {
           className="disabled-button"
           variant="primary"
           size="small"
-          style={{ minWidth: "12%", fontSize: "0.9em" }}
+          style={{ minWidth: "12%", fontSize: "16px" }}
           preventFocusOnPress={true}
         >
           Continue

@@ -20,7 +20,7 @@ export const AccAppConfirmation = ({
     !(!!accession && !!application) || accession === "" || application === "";
 
   const textStyles = {
-    fontSize: "0.8em",
+    fontSize: "16px",
     color: !disabled ? "var(--text)" : "var(--text-disabled)",
   };
 
@@ -37,15 +37,18 @@ export const AccAppConfirmation = ({
       </Typography>
       <Box>
         <Typography sx={textStyles}>
-          <b>Accession number:</b> {accession ? accession : "TBD"}
+          <b>Accession:</b> {accession ? accession : "TBD"}
         </Typography>
         <Typography sx={textStyles}>
-          <b>Application number:</b> {application ? application : "TBD"}
+          <b>Application:</b> {application ? application : "TBD"}
         </Typography>
       </Box>
       <FormControlLabel
         sx={{
-          "& .MuiFormControlLabel-label": textStyles,
+          "& .MuiFormControlLabel-label": {
+            fontSize: "14px",
+            color: !disabled ? "var(--text)" : "var(--text-disabled)",
+          },
           color: !disabled ? "var(--text)" : "var(--text-disabled)",
         }}
         required

@@ -253,10 +253,13 @@ export const FileUploadArea = ({
             }}
           >
             <UploadFileIcon />
-            <Typography>Choose a file or drag and drop here</Typography>
+            <Typography sx={{ fontSize: "16px" }}>
+              Choose a file or drag and drop here
+            </Typography>
             <Typography
               sx={{
                 padding: "8px 16px",
+                fontSize: "16px",
                 border:
                   "1px solid var(--file_upload_area-border-browse-button)",
                 borderRadius: "5px",

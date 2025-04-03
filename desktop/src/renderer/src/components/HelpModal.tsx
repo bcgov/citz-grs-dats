@@ -57,8 +57,10 @@ export const HelpModal = ({ open, onClose }: Props) => {
             Need help? Selection from one of the options below.
           </Typography>
 
-          <Stack gap={1}>
-            <Typography variant="h4">Human support</Typography>
+          <Stack>
+            <Typography sx={{ fontSize: "18px", fontWeight: 700 }}>
+              Human support
+            </Typography>
             <Link
               href="https://www2.gov.bc.ca/gov/content/governments/services-for-government/information-management-technology/records-management/records-contacts"
               target="_blank"
@@ -67,8 +69,10 @@ export const HelpModal = ({ open, onClose }: Props) => {
             </Link>
           </Stack>
 
-          <Stack gap={1}>
-            <Typography variant="h4">Self-guided support</Typography>
+          <Stack>
+            <Typography sx={{ fontSize: "18px", fontWeight: 700 }}>
+              Self-guided support
+            </Typography>
             <Typography>
               Check out the{" "}
               <Link
