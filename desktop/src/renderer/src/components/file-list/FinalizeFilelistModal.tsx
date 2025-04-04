@@ -19,16 +19,6 @@ const innerButtonStyle = {
   height: "10%",
 };
 
-const modalStyle = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 650,
-  bgcolor: "background.paper",
-  border: "1px solid var(--modal-border)",
-};
-
 const buttonBoxStyle = {
   display: "flex",
   justifyContent: "right",
@@ -47,9 +37,9 @@ const headerStyle = {
 const contentStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 2,
+  gap: 3,
   height: "fit-content",
-  padding: "8px 24px",
+  padding: "0 24px",
   marginBottom: "24px",
 };
 
@@ -61,6 +51,19 @@ export const FinalizeFilelistModal = ({
 }: Props) => {
   const theme = useTheme();
 
+  const modalStyle = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: hasAccApp ? 800 : 500,
+    bgcolor: "background.paper",
+    border: "1px solid var(--modal-border)",
+    borderRadius: "4px",
+    boxShadow:
+      "0px 25.6px 57.6px 0px #00000038, 0px 4.8px 14.4px 0px #0000002E",
+  };
+
   const submitForm = (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
@@ -70,7 +73,6 @@ export const FinalizeFilelistModal = ({
   const NoteBlock = () => {
     return (
       <Stack
-        gap={2}
         sx={{
           padding: 2,
           background: theme.palette.info.main,
@@ -79,8 +81,8 @@ export const FinalizeFilelistModal = ({
           borderRadius: "5px",
         }}
       >
-        <Typography variant="h4">Note</Typography>
-        <Typography>
+        <Typography sx={{ fontSize: "16px", fontWeight: 700 }}>Note</Typography>
+        <Typography sx={{ fontSize: "16px", color: "var(--text-secondary)" }}>
           DATS will record the above details and they will also appear in the
           file list. If you are transferring Full Retention (FR) records to the
           digital archives, you must add the accession and application numbers
@@ -92,10 +94,12 @@ export const FinalizeFilelistModal = ({
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} disableAutoFocus>
       <Stack gap={3} sx={modalStyle}>
         <Box sx={headerStyle}>
-          <Typography variant="h3">Finalize file list</Typography>
+          <Typography variant="h3" sx={{ color: "var(--text)" }}>
+            Finalize file list
+          </Typography>
         </Box>
 
         <Form
@@ -106,7 +110,7 @@ export const FinalizeFilelistModal = ({
           <Box sx={contentStyle}>
             {hasAccApp && (
               <>
-                <Typography variant="h4">
+                <Typography sx={{ fontSize: "18px", fontWeight: 700 }}>
                   Provide your accession and application numbers
                 </Typography>
                 <Box
@@ -128,7 +132,7 @@ export const FinalizeFilelistModal = ({
                   />
                 </Box>
 
-                <Typography sx={{ fontSize: "0.9em" }}>
+                <Typography sx={{ fontSize: "16px" }}>
                   You can find your accession and application number on your
                   Transfer form (ARS 617).
                 </Typography>
@@ -137,7 +141,7 @@ export const FinalizeFilelistModal = ({
               </>
             )}
 
-            <Typography variant="h4">
+            <Typography sx={{ fontSize: "18px", fontWeight: 700 }}>
               Select a desired output format for your file list
             </Typography>
             <Select

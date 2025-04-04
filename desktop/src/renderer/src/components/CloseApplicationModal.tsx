@@ -10,8 +10,7 @@ type Props = {
 
 const innerButtonStyle = {
   justifyContent: "center",
-  width: "25%",
-  height: "10%",
+  padding: "8px 16px",
 };
 
 const modalStyle = {
@@ -22,12 +21,14 @@ const modalStyle = {
   width: 600,
   bgcolor: "background.paper",
   border: "1px solid var(--modal-border)",
+  borderRadius: "4px",
+  boxShadow: "0px 25.6px 57.6px 0px #00000038, 0px 4.8px 14.4px 0px #0000002E",
 };
 
 const headerStyle = {
   display: "flex",
   flexDirection: "row",
-  gap: 2,
+  gap: 1,
   padding: "16px 24px",
   borderBottom: "1px solid var(--modal-border)",
 };
@@ -51,11 +52,18 @@ const contentStyle = {
 
 export const CloseApplicationModal = ({ open, onClose, onConfirm }: Props) => {
   return (
-    <Modal open={open} onClose={onClose} style={{ zIndex: "9999" }}>
+    <Modal
+      open={open}
+      onClose={onClose}
+      style={{ zIndex: "9999" }}
+      disableAutoFocus
+    >
       <Stack gap={3} sx={modalStyle}>
         <Box sx={headerStyle}>
           <WarningAmberIcon sx={{ color: "#F8BB47", width: "20px" }} />
-          <Typography variant="h3">Close application?</Typography>
+          <Typography variant="h3" sx={{ color: "var(--text)" }}>
+            Close application?
+          </Typography>
         </Box>
 
         <Box sx={contentStyle}>
@@ -67,7 +75,7 @@ export const CloseApplicationModal = ({ open, onClose, onConfirm }: Props) => {
         </Box>
 
         <Box sx={buttonBoxStyle}>
-          <Button variant="primary" style={innerButtonStyle} onPress={onClose}>
+          <Button variant="tertiary" style={innerButtonStyle} onPress={onClose}>
             Keep working
           </Button>
           <Button
