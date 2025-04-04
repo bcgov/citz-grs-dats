@@ -4,6 +4,10 @@
 	height: 65px;
 }
 
+.Mui-checked {
+	color: var(--bcgov-blue) !important;
+}
+
 .MuiDataGrid-columnHeaderTitle {
 	font-weight: 700 !important;
 }

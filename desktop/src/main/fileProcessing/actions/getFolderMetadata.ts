@@ -46,24 +46,28 @@ export const getFolderMetadata = async (
 
   try {
     pool.on("progress", (data) => {
+      if (data.workerId !== workerId) return;
       BrowserWindow.getAllWindows().forEach((win) => {
         win.webContents.send("folder-metadata-progress", data);
       });
     });
 
     pool.on("missingPath", (data) => {
+      if (data.workerId !== workerId) return;
       BrowserWindow.getAllWindows().forEach((win) => {
         win.webContents.send("folder-metadata-missing-path", data);
       });
     });
 
     pool.on("emptyFolder", (data) => {
+      if (data.workerId !== workerId) return;
       BrowserWindow.getAllWindows().forEach((win) => {
         win.webContents.send("folder-metadata-empty-folder", data);
       });
     });
 
     pool.on("completion", (data) => {
+      if (data.workerId !== workerId) return;
       BrowserWindow.getAllWindows().forEach((win) => {
         win.webContents.send("folder-metadata-completion", data);
       });
