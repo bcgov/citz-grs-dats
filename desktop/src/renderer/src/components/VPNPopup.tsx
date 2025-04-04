@@ -13,12 +13,14 @@ const modalStyle = {
   width: 600,
   bgcolor: "background.paper",
   border: "1px solid var(--modal-border)",
+  borderRadius: "4px",
+  boxShadow: "0px 25.6px 57.6px 0px #00000038, 0px 4.8px 14.4px 0px #0000002E",
 };
 
 const headerStyle = {
   display: "flex",
   flexDirection: "row",
-  gap: 2,
+  gap: 1,
   padding: "16px 24px",
   borderBottom: "1px solid var(--modal-border)",
 };
@@ -34,11 +36,13 @@ const contentStyle = {
 
 export const VPNPopup = ({ open }: Props) => {
   return (
-    <Modal open={open}>
-      <Stack gap={2} sx={modalStyle}>
+    <Modal open={open} disableAutoFocus>
+      <Stack gap={3} sx={modalStyle}>
         <Box sx={headerStyle}>
           <WarningAmberIcon sx={{ color: "#F8BB47", width: "20px" }} />
-          <Typography variant="h3">No Network or VPN Connection</Typography>
+          <Typography variant="h3" sx={{ color: "var(--text)" }}>
+            No Network or VPN Connection
+          </Typography>
         </Box>
 
         <Box sx={contentStyle}>
