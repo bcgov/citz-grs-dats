@@ -21,6 +21,9 @@ import {
 } from "./modules";
 import { protectedRoute } from "./modules/auth/middleware";
 import type { Request, Response } from "express";
+import EventEmitter from "node:events";
+
+EventEmitter.defaultMaxListeners = 1000; // Set globally for all EventEmitters, prevents memory leak warning
 
 const { ENVIRONMENT } = ENV;
 
