@@ -66,24 +66,24 @@ export const FileListActionsPage = () => {
 		[submit],
 	);
 
-	useEffect(() => {
-		const allFoldersProcessed = folders.every(
-			(folder) => folder.progress === 100,
-		);
-		const hasFolders = folders.length > 0;
+	// useEffect(() => {
+	// 	const allFoldersProcessed = folders.every(
+	// 		(folder) => folder.progress === 100,
+	// 	);
+	// 	const hasFolders = folders.length > 0;
 
 		// setAccAppCheckIsEnabled(hasFolders);
 		// if (!hasFolders) setHasAccessionApplication(null);
 
 		// Enable continue button when folders are processed.
-		setContinueButtonIsEnabled(
-			allFoldersProcessed && hasFolders && authenticated,
-		);
-	}, [folders, authenticated]);
+		// setContinueButtonIsEnabled(
+		// 	allFoldersProcessed && hasFolders && authenticated,
+		// );
+	// }, [folders, authenticated]);
 
-	useEffect(() => {
-		console.log("folders", folders);
-	}, [folders]);
+	// useEffect(() => {
+	// 	console.log("folders", folders);
+	// }, [folders]);
 
 	return (
 		<Stack gap={2}>
