@@ -17,7 +17,7 @@ export const EdrmsTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
   const { navigate, setCanLoseProgress } = useNavigate();
-  const { idToken, accessToken } = useAuth();
+  const { idToken, accessToken, refresh } = useAuth();
 
   const handleLogout = async () => await api.sso.logout(idToken);
 
@@ -386,11 +386,12 @@ export const EdrmsTransferPage = () => {
       );
 
       try {
+        const tokens = await refresh(); // Get new tokens before request
         console.log(`Uploading chunk ${index + 1} of ${totalChunks}`);
         const response = await fetch(requestUrl, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${tokens?.accessToken}`,
           },
           body: formData,
         });
