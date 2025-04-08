@@ -9,7 +9,7 @@ type Props = {
 
 export const AccAppCheck = ({ hasAccApp, setHasAccApp, enabled }: Props) => {
   const textStyles = {
-    fontSize: "0.8em",
+    fontSize: "16px",
     color: enabled ? "var(--text)" : "var(--text-disabled)",
   };
 
