@@ -1,105 +1,105 @@
 {
-  "name": "dats",
-  "version": "2.0.6",
-  "description": "Digital Archives Transfer Service",
-  "author": "CITZ IMB/CIRMO",
-  "main": "./out/main/index.js",
-  "type": "module",
-  "build": {
-    "extraFiles": [
-      {
-        "from": "out/cjs-workers/workers/copyWorker.cjs",
-        "to": "resources/workers/copyWorker.cjs"
-      },
-      {
-        "from": "out/cjs-workers/workers/metadataWorker.cjs",
-        "to": "resources/workers/metadataWorker.cjs"
-      },
-      {
-        "from": "out/cjs-workers/utilities",
-        "to": "resources/utilities"
-      },
-      {
-        "from": "out/es-workers/scripts/getExtendedMetadata.ps1",
-        "to": "resources/scripts/getExtendedMetadata.ps1"
-      },
-      {
-        "from": "out/es-workers/resources/release_notes.json",
-        "to": "resources/release_notes.json"
-      }
-    ],
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "bcgov",
-        "repo": "citz-grs-dats"
-      }
-    ],
-    "productName": "DATS",
-    "directories": {
-      "buildResources": "resources"
-    },
-    "mac": {
-      "icon": "resources/icon.icns"
-    },
-    "win": {
-      "icon": "resources/icon.ico"
-    },
-    "linux": {
-      "icon": "resources/icon.png"
-    }
-  },
-  "scripts": {
-    "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
-    "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
-    "typecheck": "npm run typecheck:node && npm run typecheck:web",
-    "dev": "electron-vite dev",
-    "build": "npm run typecheck && electron-vite build && npm run build:workers",
-    "build:workers": "vite build --config es.workers.vite.config.ts && vite build --config cjs.workers.vite.config.ts",
-    "postinstall": "electron-builder install-app-deps",
-    "build:unpack": "npm run build && electron-builder --dir",
-    "build:windows-latest": "npm run build && electron-builder --win",
-    "build:macos-latest": "electron-vite build && electron-builder --mac",
-    "build:ubuntu-latest": "electron-vite build && electron-builder --linux",
-    "bump:patch": "node bump-version patch",
-    "bump:minor": "node bump-version minor",
-    "bump:major": "node bump-version major"
-  },
-  "dependencies": {
-    "@bcgov/bc-sans": "2.1.0",
-    "@bcgov/citz-imb-sso-js-core": "1.0.0",
-    "@bcgov/design-system-react-components": "0.5.1",
-    "@electron-toolkit/preload": "3.0.1",
-    "@electron-toolkit/utils": "3.0.0",
-    "@emotion/react": "11.13.3",
-    "@emotion/styled": "11.13.0",
-    "@mui/icons-material": "6.1.6",
-    "@mui/material": "6.1.6",
-    "@mui/x-data-grid": "7.22.1",
-    "@mui/x-date-pickers": "7.22.2",
-    "dayjs": "1.11.13",
-    "electron-cookies": "1.1.0",
-    "electron-updater": "6.3.9",
-    "react-router": "7.4.0",
-    "react-toastify": "11.0.2",
-    "xlsx": "0.18.5",
-    "yazl": "3.3.1"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.9.3",
-    "@electron-toolkit/tsconfig": "1.0.1",
-    "@types/node": "20.14.8",
-    "@types/react": "18.3.3",
-    "@types/react-dom": "18.3.0",
-    "@types/yazl": "2.4.5",
-    "@vitejs/plugin-react": "4.3.1",
-    "electron": "31.0.2",
-    "electron-builder": "24.13.3",
-    "electron-vite": "2.3.0",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "typescript": "5.5.2",
-    "vite": "5.3.1",
-    "vite-plugin-static-copy": "2.2.0"
-  }
+	"name": "dats",
+	"version": "2.0.6",
+	"description": "Digital Archives Transfer Service",
+	"author": "CITZ IMB/CIRMO",
+	"main": "./out/main/index.js",
+	"type": "module",
+	"build": {
+		"extraFiles": [
+			{
+				"from": "out/cjs-workers/workers/copyWorker.cjs",
+				"to": "resources/workers/copyWorker.cjs"
+			},
+			{
+				"from": "out/cjs-workers/workers/metadataWorker.cjs",
+				"to": "resources/workers/metadataWorker.cjs"
+			},
+			{
+				"from": "out/cjs-workers/utilities",
+				"to": "resources/utilities"
+			},
+			{
+				"from": "out/es-workers/scripts/getExtendedMetadata.ps1",
+				"to": "resources/scripts/getExtendedMetadata.ps1"
+			},
+			{
+				"from": "out/es-workers/resources/release_notes.json",
+				"to": "resources/release_notes.json"
+			}
+		],
+		"publish": [
+			{
+				"provider": "github",
+				"owner": "bcgov",
+				"repo": "citz-grs-dats"
+			}
+		],
+		"productName": "DATS",
+		"directories": {
+			"buildResources": "resources"
+		},
+		"mac": {
+			"icon": "resources/icon.icns"
+		},
+		"win": {
+			"icon": "resources/icon.ico"
+		},
+		"linux": {
+			"icon": "resources/icon.png"
+		}
+	},
+	"scripts": {
+		"typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
+		"typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
+		"typecheck": "npm run typecheck:node && npm run typecheck:web",
+		"dev": "electron-vite dev",
+		"build": "npm run typecheck && electron-vite build && npm run build:workers",
+		"build:workers": "vite build --config es.workers.vite.config.ts && vite build --config cjs.workers.vite.config.ts",
+		"postinstall": "electron-builder install-app-deps",
+		"build:unpack": "npm run build && electron-builder --dir",
+		"build:windows-latest": "npm run build && electron-builder --win",
+		"build:macos-latest": "electron-vite build && electron-builder --mac",
+		"build:ubuntu-latest": "electron-vite build && electron-builder --linux",
+		"bump:patch": "node bump-version patch",
+		"bump:minor": "node bump-version minor",
+		"bump:major": "node bump-version major"
+	},
+	"dependencies": {
+		"@bcgov/bc-sans": "2.1.0",
+		"@bcgov/citz-imb-sso-js-core": "1.0.0",
+		"@bcgov/design-system-react-components": "0.5.1",
+		"@electron-toolkit/preload": "3.0.1",
+		"@electron-toolkit/utils": "3.0.0",
+		"@emotion/react": "11.13.3",
+		"@emotion/styled": "11.13.0",
+		"@mui/icons-material": "6.1.6",
+		"@mui/material": "6.1.6",
+		"@mui/x-data-grid": "7.22.1",
+		"@mui/x-date-pickers": "7.22.2",
+		"archiver": "7.0.1",
+		"dayjs": "1.11.13",
+		"electron-cookies": "1.1.0",
+		"electron-updater": "6.3.9",
+		"react-router": "7.4.0",
+		"react-toastify": "11.0.2",
+		"xlsx": "0.18.5"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.3",
+		"@electron-toolkit/tsconfig": "1.0.1",
+		"@types/archiver": "6.0.3",
+		"@types/node": "20.14.8",
+		"@types/react": "18.3.3",
+		"@types/react-dom": "18.3.0",
+		"@vitejs/plugin-react": "4.3.1",
+		"electron": "31.0.2",
+		"electron-builder": "24.13.3",
+		"electron-vite": "2.3.0",
+		"react": "18.3.1",
+		"react-dom": "18.3.1",
+		"typescript": "5.5.2",
+		"vite": "5.3.1",
+		"vite-plugin-static-copy": "2.2.0"
+	}
 }

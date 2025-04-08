@@ -12,9 +12,6 @@ import {
 import { FinishView } from "@renderer/components/transfer/finish-view";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { calculateChecksum } from "./utils";
-
-const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB (OpenShift limitation at about 100MB)
 
 export const EdrmsTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
@@ -338,25 +335,36 @@ export const EdrmsTransferPage = () => {
     const apiUrl = await api.getCurrentApiUrl();
     const requestUrl = `${apiUrl}/transfer/edrms`;
 
-    // Prepare file buffers
+    // Prepare buffers for static files
     const dataportBuffer = await api.utils.fileToBuffer(dataportFile);
     const fileListBuffer = await api.utils.fileToBuffer(fileList);
     const transferFormBuffer = await api.utils.fileToBuffer(transferForm);
-    const contentBuffer = await api.transfer.createZipBuffer(folderBuffers);
 
-    // Calculate checksum of full zip
-    const contentChecksum = await calculateChecksum(contentBuffer);
+    // Normalize and reconstruct buffer structure
+    const reconstructedBuffers: typeof folderBuffers = {};
+    for (const [folder, files] of Object.entries(folderBuffers)) {
+      reconstructedBuffers[folder] = files.map((file) => {
+        const bufferUtils = api.transfer.createBufferUtils();
+        const buffer = bufferUtils.normalize(file.buffer);
 
-    // Chunking logic
-    const totalChunks = Math.ceil(contentBuffer.byteLength / CHUNK_SIZE);
+        return {
+          filename: file.filename,
+          path: file.path,
+          buffer,
+        };
+      });
+    }
+
+    // Generate zipped chunks and checksum
+    const { chunks: zipChunks, checksum: contentChecksum } =
+      await api.transfer.createZippedChunks(reconstructedBuffers);
+
+    const totalChunks = zipChunks.length;
 
     for (let index = 0; index < totalChunks; index++) {
-      const start = index * CHUNK_SIZE;
-      const end = Math.min(start + CHUNK_SIZE, contentBuffer.byteLength);
-      const chunkBuffer = contentBuffer.slice(start, end);
-
-      // Create FormData per chunk
+      const chunk = zipChunks[index];
       const formData = new FormData();
+
       formData.append("dataportBuffer", new Blob([dataportBuffer]), "file.bin");
       formData.append("dataportFilename", dataportFile.name);
       formData.append("fileListBuffer", new Blob([fileListBuffer]), "file.bin");
@@ -367,7 +375,7 @@ export const EdrmsTransferPage = () => {
         "file.bin"
       );
       formData.append("transferFormFilename", transferForm.name);
-      formData.append("contentZipChunk", new Blob([chunkBuffer]), "file.bin");
+      formData.append("contentZipChunk", new Blob([chunk]), "file.bin");
       formData.append("chunkIndex", index.toString());
       formData.append("totalChunks", totalChunks.toString());
       formData.append("contentChecksum", contentChecksum);
@@ -377,7 +385,6 @@ export const EdrmsTransferPage = () => {
         JSON.stringify({ folders: dataportJson })
       );
 
-      // Upload the chunk
       try {
         console.log(`Uploading chunk ${index + 1} of ${totalChunks}`);
         const response = await fetch(requestUrl, {
@@ -389,6 +396,7 @@ export const EdrmsTransferPage = () => {
         });
 
         if (!response.ok) {
+          console.error(`Upload failed for chunk ${index + 1}`);
           setRequestSuccessful(false);
           return;
         }
@@ -402,6 +410,7 @@ export const EdrmsTransferPage = () => {
       } catch (error) {
         console.error("EDRMS transfer error:", error);
         setRequestSuccessful(false);
+        return;
       }
     }
 
