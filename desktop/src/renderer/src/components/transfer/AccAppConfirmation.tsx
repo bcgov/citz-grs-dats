@@ -20,7 +20,7 @@ export const AccAppConfirmation = ({
     !(!!accession && !!application) || accession === "" || application === "";
 
   const textStyles = {
-    fontSize: "0.8em",
+    fontSize: "16px",
     color: !disabled ? "var(--text)" : "var(--text-disabled)",
   };
 
@@ -45,7 +45,10 @@ export const AccAppConfirmation = ({
       </Box>
       <FormControlLabel
         sx={{
-          "& .MuiFormControlLabel-label": textStyles,
+          "& .MuiFormControlLabel-label": {
+            fontSize: "14px",
+            color: !disabled ? "var(--text)" : "var(--text-disabled)",
+          },
           color: !disabled ? "var(--text)" : "var(--text-disabled)",
         }}
         required
