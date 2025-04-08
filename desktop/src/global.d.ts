@@ -34,6 +34,13 @@ interface Window {
         accessToken: string | undefined,
         options: RequestInit = {}
       ) => Promise<[Error, null] | [null, ExtendedResponse]>;
+      refreshTokens: () => Promise<{
+        accessToken: string;
+        refreshToken: string;
+        idToken: string;
+        accessExpiresIn: string;
+        refreshExpiresIn: string;
+      }>;
     };
 
     utils: {

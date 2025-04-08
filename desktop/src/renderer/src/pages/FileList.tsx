@@ -45,7 +45,7 @@ export const FileListPage = () => {
     addPathArrayToFolders,
     removeFolder,
     submit,
-  } = useFolderList({ accessToken });
+  } = useFolderList();
 
   const handleProgress = useCallback(
     (event: CustomEvent<{ source: string; progressPercentage: number }>) => {

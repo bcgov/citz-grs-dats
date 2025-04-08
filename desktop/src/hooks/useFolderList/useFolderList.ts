@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { FolderRow } from "../../renderer/src/components/file-list";
 import { convertArrayToObject } from "./convertArrayToObject";
 
-export const useFolderList = ({ accessToken }) => {
+export const useFolderList = () => {
   const [folders, setFolders] = useState<FolderRow[]>([]);
   const [metaData, setMetaData] = useState<Record<string, unknown>>({});
   const [extendedMetaData, setExtendedMetaData] = useState<
@@ -10,7 +10,7 @@ export const useFolderList = ({ accessToken }) => {
   >({});
   const [pendingPaths, setPendingPaths] = useState<string[]>([]);
   const [workers] = useState(window.api.workers);
-  const { fetchProtectedRoute } = window.api.sso;
+  const { fetchProtectedRoute, refreshTokens } = window.api.sso;
 
   const getFolderMetadata = useCallback(
     async (filePath: string) => {
@@ -112,9 +112,11 @@ export const useFolderList = ({ accessToken }) => {
       };
       const apiUrl = await window.api.getCurrentApiUrl();
 
+      const tokens = await refreshTokens();
+
       const [error, data] = await fetchProtectedRoute(
         `${apiUrl}/filelist`,
-        accessToken,
+        tokens?.accessToken,
         {
           headers: {
             "Content-Type": "application/json",
@@ -137,7 +139,7 @@ export const useFolderList = ({ accessToken }) => {
 
       console.log("finish submit", { error, data, folders, metaData });
     },
-    [accessToken, fetchProtectedRoute, folders, metaData]
+    [fetchProtectedRoute, folders, metaData]
   );
 
   useEffect(() => {
