@@ -90,7 +90,7 @@ export const FileListActionsPage = () => {
 			<Typography variant="h2">Create file list</Typography>
 
 			<Stack gap={2}>
-				<Typography variant="h4">Instructions</Typography>
+				<Typography variant="h3">Instructions</Typography>
 				<Instruction
 					num={1}
 					instruction="Click the “Add folder(s)” button to start adding folders to your file list"
