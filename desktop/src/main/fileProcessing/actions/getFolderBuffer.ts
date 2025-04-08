@@ -33,24 +33,28 @@ export const getFolderBuffer = async (
 
   try {
     pool.on("progress", (data) => {
+      if (data.workerId !== workerId) return;
       BrowserWindow.getAllWindows().forEach((win) => {
         win.webContents.send("folder-buffer-progress", data);
       });
     });
 
     pool.on("missingPath", (data) => {
+      if (data.workerId !== workerId) return;
       BrowserWindow.getAllWindows().forEach((win) => {
         win.webContents.send("folder-buffer-missing-path", data);
       });
     });
 
     pool.on("emptyFolder", (data) => {
+      if (data.workerId !== workerId) return;
       BrowserWindow.getAllWindows().forEach((win) => {
         win.webContents.send("folder-buffer-empty-folder", data);
       });
     });
 
     pool.on("completion", (data) => {
+      if (data.workerId !== workerId) return;
       BrowserWindow.getAllWindows().forEach((win) => {
         win.webContents.send("folder-buffer-completion", data);
       });

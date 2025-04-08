@@ -491,6 +491,7 @@ export const LanTransferPage = () => {
       setApplication(null);
       setFoldersToProcess([]);
       setConfirmAccAppChecked(false);
+      await api.workers.shutdown();
       return;
     }
 

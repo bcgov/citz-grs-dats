@@ -37,10 +37,10 @@ export const AccAppConfirmation = ({
       </Typography>
       <Box>
         <Typography sx={textStyles}>
-          <b>Accession number:</b> {accession ? accession : "TBD"}
+          <b>Accession:</b> {accession ? accession : "TBD"}
         </Typography>
         <Typography sx={textStyles}>
-          <b>Application number:</b> {application ? application : "TBD"}
+          <b>Application:</b> {application ? application : "TBD"}
         </Typography>
       </Box>
       <FormControlLabel
