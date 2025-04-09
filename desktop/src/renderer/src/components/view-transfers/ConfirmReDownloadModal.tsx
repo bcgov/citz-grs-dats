@@ -10,8 +10,7 @@ type Props = {
 
 const innerButtonStyle = {
   justifyContent: "center",
-  width: "fit-content",
-  height: "10%",
+  padding: "8px 16px",
 };
 
 const modalStyle = {
@@ -22,6 +21,8 @@ const modalStyle = {
   width: 500,
   bgcolor: "background.paper",
   border: "1px solid var(--modal-border)",
+  borderRadius: "4px",
+  boxShadow: "0px 25.6px 57.6px 0px #00000038, 0px 4.8px 14.4px 0px #0000002E",
 };
 
 const buttonBoxStyle = {
@@ -43,14 +44,14 @@ const headerStyle = {
 const contentStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 2,
+  gap: 3,
   height: "fit-content",
   padding: "0 24px",
 };
 
 export const ConfirmReDownloadModal = ({ open, onClose, onConfirm }: Props) => {
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} disableAutoFocus>
       <Stack gap={3} sx={modalStyle}>
         <Box sx={headerStyle}>
           <Typography variant="h3">Confirm download</Typography>

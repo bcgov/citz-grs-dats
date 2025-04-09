@@ -14,6 +14,8 @@ const modalStyle = {
   width: 650,
   bgcolor: "background.paper",
   border: "1px solid var(--modal-border)",
+  borderRadius: "4px",
+  boxShadow: "0px 25.6px 57.6px 0px #00000038, 0px 4.8px 14.4px 0px #0000002E",
 };
 
 const headerStyle = {
@@ -34,10 +36,12 @@ const contentStyle = {
 
 export const HelpModal = ({ open, onClose }: Props) => {
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} disableAutoFocus>
       <Stack gap={3} sx={modalStyle}>
         <Box sx={headerStyle}>
-          <Typography variant="h3">Help & resources</Typography>
+          <Typography variant="h3" sx={{ color: "var(--text)" }}>
+            Help & resources
+          </Typography>
           <button
             type="button"
             style={{
@@ -57,8 +61,10 @@ export const HelpModal = ({ open, onClose }: Props) => {
             Need help? Selection from one of the options below.
           </Typography>
 
-          <Stack gap={1}>
-            <Typography variant="h4">Human support</Typography>
+          <Stack>
+            <Typography sx={{ fontSize: "18px", fontWeight: 700 }}>
+              Human support
+            </Typography>
             <Link
               href="https://www2.gov.bc.ca/gov/content/governments/services-for-government/information-management-technology/records-management/records-contacts"
               target="_blank"
@@ -67,8 +73,10 @@ export const HelpModal = ({ open, onClose }: Props) => {
             </Link>
           </Stack>
 
-          <Stack gap={1}>
-            <Typography variant="h4">Self-guided support</Typography>
+          <Stack>
+            <Typography sx={{ fontSize: "18px", fontWeight: 700 }}>
+              Self-guided support
+            </Typography>
             <Typography>
               Check out the{" "}
               <Link
