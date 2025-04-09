@@ -27,8 +27,10 @@ export const Toast = ({
       <Box sx={{ width: "20px" }}>
         {data.success ? <ToastSuccessIcon /> : <ToastErrorIcon />}
       </Box>
-      <Stack gap={1}>
-        <Typography variant="h4">{data.title}</Typography>
+      <Stack>
+        <Typography sx={{ fontSize: "16px", fontWeight: 700 }}>
+          {data.title}
+        </Typography>
         <Typography>{data.message}</Typography>
       </Stack>
     </Stack>
