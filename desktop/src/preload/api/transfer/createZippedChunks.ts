@@ -3,6 +3,12 @@ import path from "node:path";
 import { PassThrough, Readable } from "node:stream";
 import { createChecksumHasher } from "./createChecksumHasher";
 
+type FileBufferObj = {
+  filename: string;
+  path: string;
+  buffer: Buffer;
+};
+
 const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
 
 export const createZippedChunks = async (
