@@ -34,6 +34,13 @@ interface Window {
         accessToken: string | undefined,
         options: RequestInit = {}
       ) => Promise<[Error, null] | [null, ExtendedResponse]>;
+      refreshTokens: () => Promise<{
+        accessToken: string;
+        refreshToken: string;
+        idToken: string;
+        accessExpiresIn: string;
+        refreshExpiresIn: string;
+      }>;
     };
 
     utils: {
@@ -51,9 +58,18 @@ interface Window {
         folders: string[];
         foldersMetadata: Record<string, unknown>;
       }>;
-      createZipBuffer: (
+      createZippedChunks: (
         folders: Record<string, FileBufferObj[]>
-      ) => Promise<Buffer>;
+      ) => Readable;
+      createChecksumHasher: () => {
+        update: (chunk: Uint8Array | Buffer) => void;
+        digest: () => string;
+      };
+      createBufferUtils: () => {
+        from: (data: ArrayBuffer | Uint8Array | number[]) => Buffer;
+        isBuffer: (value: unknown) => value is Buffer;
+        normalize: (input: unknown) => Buffer;
+      };
       accessionExists: (accession?: string) => boolean;
       isAccessionValid: (accession?: string) => boolean;
       applicationExists: (application?: string) => boolean;

@@ -8,4 +8,5 @@ export default {
   startLoginProcess: () => ipcRenderer.invoke("start-login-process"),
   logout: (idToken: string | undefined) =>
     ipcRenderer.invoke("start-logout-process", idToken),
-}
+  refreshTokens: () => ipcRenderer.invoke("refresh-tokens"),
+};

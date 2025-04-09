@@ -346,6 +346,18 @@ const clearAuthState = () => {
   });
 };
 
+ipcMain.handle("refresh-tokens", async () => {
+  await refreshTokens();
+  scheduleRefreshTokens(); // Reset the timer after manual refresh
+  return {
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    idToken: tokens.idToken,
+    accessExpiresIn: tokens.accessExpiresIn,
+    refreshExpiresIn: tokens.refreshExpiresIn,
+  };
+});
+
 const scheduleRefreshTokens = () => {
   debug("Scheduling token refresh.");
 

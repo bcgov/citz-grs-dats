@@ -12,13 +12,10 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import {
-  calculateChecksum,
   getXlsxFileListToastData,
   parseJsonFile,
   type ToastData,
 } from "./utils";
-
-const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB --> limitation of OpenShift
 
 type Folder = {
   id: number;
@@ -50,7 +47,7 @@ export const LanTransferPage = () => {
   const [api] = useState(window.api); // Preload scripts
 
   const { navigate, setCanLoseProgress } = useNavigate();
-  const { idToken, accessToken } = useAuth();
+  const { idToken, accessToken, refresh } = useAuth();
 
   const handleLogout = async () => await api.sso.logout(idToken);
 
@@ -779,24 +776,34 @@ export const LanTransferPage = () => {
       files: metadata,
     };
 
-    // Prepare file buffers for request body
+    // Read static buffers
     const fileListBuffer = await api.utils.fileToBuffer(fileList);
     const transferFormBuffer = await api.utils.fileToBuffer(transferForm);
-    const contentBuffer = await api.transfer.createZipBuffer(folderBuffers);
 
-    // Calculate checksum for integrity verification
-    const contentChecksum = await calculateChecksum(contentBuffer);
+    // Normalize and reconstruct buffer structure
+    const reconstructedBuffers: typeof folderBuffers = {};
+    for (const [folder, files] of Object.entries(folderBuffers)) {
+      reconstructedBuffers[folder] = files.map((file) => {
+        const bufferUtils = api.transfer.createBufferUtils();
+        const buffer = bufferUtils.normalize(file.buffer);
 
-    // Split contentBuffer into chunks
-    const totalChunks = Math.ceil(contentBuffer.byteLength / CHUNK_SIZE);
+        return {
+          filename: file.filename,
+          path: file.path,
+          buffer,
+        };
+      });
+    }
 
-    for (let index = 0; index < totalChunks; index++) {
-      const start = index * CHUNK_SIZE;
-      const end = Math.min(start + CHUNK_SIZE, contentBuffer.byteLength);
-      const chunkBuffer = contentBuffer.slice(start, end);
+    // Generate zipped chunks and checksum
+    const { chunks: zipChunks, checksum: contentChecksum } =
+      await api.transfer.createZippedChunks(reconstructedBuffers);
+    const totalChunks = zipChunks.length;
 
-      // FormData for request
+    for (let i = 0; i < totalChunks; i++) {
+      const chunk = zipChunks[i];
       const formData = new FormData();
+
       formData.append("fileListBuffer", new Blob([fileListBuffer]), "file.bin");
       formData.append("fileListFilename", fileList.name);
       formData.append(
@@ -805,8 +812,8 @@ export const LanTransferPage = () => {
         "file.bin"
       );
       formData.append("transferFormFilename", transferForm.name);
-      formData.append("contentZipChunk", new Blob([chunkBuffer]), "file.bin");
-      formData.append("chunkIndex", index.toString());
+      formData.append("contentZipChunk", new Blob([chunk]), "file.bin");
+      formData.append("chunkIndex", i.toString());
       formData.append("totalChunks", totalChunks.toString());
       formData.append("contentChecksum", contentChecksum);
       formData.append(
@@ -818,31 +825,31 @@ export const LanTransferPage = () => {
       formData.append("changes", JSON.stringify(changes));
       formData.append("changesJustification", changesJustification);
 
-      // Make chunked request
       try {
-        console.log(`Uploading chunk ${index + 1} of ${totalChunks}`);
+        const tokens = await refresh(); // Get new tokens before request
+        console.log(`Uploading chunk ${i + 1} of ${totalChunks}`);
         const response = await fetch(requestUrl, {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${tokens?.accessToken}` },
           body: formData,
         });
 
         if (!response.ok) {
+          console.error(`Upload failed for chunk ${i + 1}`);
           setRequestSuccessful(false);
-          console.log(`Chunk ${index + 1} uploaded successfully.`);
           return;
         }
 
         const jsonResponse = await response.json();
         console.log("Lan transfer response:", jsonResponse);
 
-        if (jsonResponse.success && index === totalChunks - 1)
+        if (jsonResponse.success && i === totalChunks - 1) {
           setRequestSuccessful(true);
+        }
       } catch (error) {
-        console.error(error);
+        console.error("Lan transfer error:", error);
         setRequestSuccessful(false);
+        return;
       }
     }
 
