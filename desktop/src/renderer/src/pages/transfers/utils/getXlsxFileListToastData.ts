@@ -40,7 +40,7 @@ export const getXlsxFileListToastData = (msg: string): ToastData => {
       success: false,
       title: "Invalid accession and/or application number",
       message:
-        "Your file list (ARS 662) has an invalid accession and/or application number. Please make sure to only use numbers (with the exception of a dash in the accession number). Please update this information in the ‘Cover Page’ tab of the file list and save it, then try uploading the file again.",
+        "Your file list (ARS 662) has an invalid accession and/or application number. Please make sure to only use numbers or dashes. Please update this information in the ‘Cover Page’ tab of the file list and save it, then try uploading the file again.",
     };
 
   if (msg === 'Missing on or more of ["COVER PAGE", "FILE LIST"].')
