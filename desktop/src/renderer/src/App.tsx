@@ -4,7 +4,7 @@ import {
 	useAppCloseHandler,
 	useReleaseNotes,
 } from "@/hooks";
-import { BrowserRouter } from "react-router";
+import { HashRouter } from "react-router";
 import { CloseApplicationModal } from "./components";
 import { AppLayout } from "./layouts";
 import { Routes } from "./routes";
@@ -19,14 +19,14 @@ function App(): JSX.Element {
 		<>
 			<VPNMonitor>
 				<AuthProvider>
-					<BrowserRouter>
+					<HashRouter>
 						<NavigateProvider>
 							<AppLayout>
 								<Routes />
 							</AppLayout>
 							<ReleaseNotesModal />
 						</NavigateProvider>
-					</BrowserRouter>
+					</HashRouter>
 				</AuthProvider>
 			</VPNMonitor>
 			<CloseApplicationModal

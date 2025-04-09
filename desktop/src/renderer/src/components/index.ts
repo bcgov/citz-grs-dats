@@ -2,7 +2,6 @@ export * from "./Accordion";
 export * from "./AnimatedProgress";
 export * from "./AuthButton";
 export * from "./CloseApplicationModal";
-export * from "./DeclineSubAgreementModal";
 export * from "./DownloadIcon";
 export * from "./file-list";
 export * from "./FileUploadArea";
@@ -22,3 +21,4 @@ export * from "./SubAgreementScrollBox";
 export * from "./Toast";
 export * from "./TransferRecordsIcon";
 export * from "./VPNPopup";
+
