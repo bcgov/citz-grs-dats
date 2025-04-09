@@ -10,8 +10,7 @@ type Props = {
 
 const innerButtonStyle = {
   justifyContent: "center",
-  width: "fit-content",
-  height: "10%",
+  padding: "8px 16px",
 };
 
 const modalStyle = {
@@ -22,6 +21,8 @@ const modalStyle = {
   width: 600,
   bgcolor: "background.paper",
   border: "1px solid var(--modal-border)",
+  borderRadius: "4px",
+  boxShadow: "0px 25.6px 57.6px 0px #00000038, 0px 4.8px 14.4px 0px #0000002E",
 };
 
 const buttonBoxStyle = {
@@ -49,12 +50,14 @@ const contentStyle = {
 
 export const LoginRequiredModal = ({ open, onClose, onConfirm }: Props) => {
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} disableAutoFocus>
       <Stack gap={3} sx={modalStyle}>
         <Box sx={headerStyle}>
           <Stack direction="row" spacing={1}>
             <WarningIcon sx={{ color: "var(--warning)", width: "20px" }} />
-            <Typography variant="h3">You're logged out</Typography>
+            <Typography variant="h3" sx={{ color: "var(--text)" }}>
+              You're logged out
+            </Typography>
           </Stack>
         </Box>
 
