@@ -5,8 +5,6 @@ import { ENV } from "./config";
 import { handleTermination, logs } from "./utils";
 import { TransferModel } from "./modules/transfer/entities";
 
-// Trigger build for new image reg. test
-
 const { PORT, MONGO_USER, MONGO_PASSWORD, MONGO_DATABASE_NAME, MONGO_HOST } =
   ENV;
 const {

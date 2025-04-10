@@ -1,7 +1,10 @@
-import yauzl from "yauzl";
-import yazl from "yazl";
+import archiver from "archiver";
+import unzipper from "unzipper";
+import { PassThrough } from "node:stream";
 import { createBagitFiles } from "./createBagitFiles";
 import type { TransferZod } from "../entities";
+
+const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
 
 type Props = {
   folderContent: string[];
@@ -23,81 +26,83 @@ export const createPSP = async ({
     folders: folderContent,
   });
 
-  const outputZip = new yazl.ZipFile();
-  const chunks: Buffer[] = [];
+  const allowedFolders = new Set(
+    folderContent.map((folder) => {
+      const folderNameParts = folder.replaceAll("\\", "/").split("/");
+      const folderName = folderNameParts[folderNameParts.length - 1];
+      return `content/${folderName}/`;
+    })
+  );
 
-  await new Promise<void>((resolve, reject) => {
-    yauzl.fromBuffer(buffer, { lazyEntries: true }, (err, zipFile) => {
-      if (err) return reject(err);
+  const zip = archiver("zip", { zlib: { level: 9 } });
+  const zipOutput = new PassThrough();
+  zip.pipe(zipOutput);
 
-      const allowedFolders = new Set(
-        folderContent.map((folder) => {
-          const folderNameParts = folder.replaceAll("\\", "/").split("/");
-          const folderName = folderNameParts[folderNameParts.length - 1];
-          return `content/${folderName}/`;
-        })
+  const directory = await unzipper.Open.buffer(buffer);
+
+  for (const entry of directory.files) {
+    const entryPath = entry.path;
+
+    if (
+      entryPath.startsWith("metadata/") ||
+      entryPath.startsWith("documentation/")
+    ) {
+      zip.append(entry.stream(), { name: entryPath });
+    } else if (entryPath.startsWith("content/")) {
+      const folderMatch = Array.from(allowedFolders).some((folder) =>
+        entryPath.startsWith(folder)
       );
 
-      zipFile.readEntry();
-      zipFile.on("entry", (entry) => {
-        const entryPath = entry.fileName;
+      if (folderMatch && !entryPath.endsWith("/")) {
+        const relativePath = entryPath.replace("content/", "data/");
+        zip.append(entry.stream(), { name: relativePath });
+      }
+    }
+  }
 
-        if (
-          entryPath.startsWith("metadata/") ||
-          entryPath.startsWith("documentation/")
-        ) {
-          zipFile.openReadStream(entry, (err, readStream) => {
-            if (err) return reject(err);
-            const newPath = entryPath;
-            const entryChunks: Buffer[] = [];
-            readStream.on("data", (chunk) => entryChunks.push(chunk));
-            readStream.on("end", () => {
-              const fileBuffer = Buffer.concat(entryChunks);
-              outputZip.addBuffer(fileBuffer, newPath);
-              zipFile.readEntry();
-            });
-          });
-        } else if (entryPath.startsWith("content/")) {
-          const relativePath = entryPath.replace("content/", "data/");
+  zip.append(bagitFiles.bagit, { name: "bagit.txt" });
+  zip.append(bagitFiles.manifest, { name: "manifest-sha256.txt" });
+  zip.finalize();
 
-          // Check if the entryPath belongs to an allowed folder or its subdirectory
-          const folderMatch = Array.from(allowedFolders).some((folder) =>
-            entryPath.startsWith(folder)
-          );
+  const bufferQueue: Buffer[] = [];
+  let bufferedSize = 0;
+  const chunkBuffers: Buffer[] = [];
 
-          if (folderMatch && !relativePath.endsWith("/")) {
-            // Ensure it's a file, not a directory
-            zipFile.openReadStream(entry, (err, readStream) => {
-              if (err) return reject(err);
-              const entryChunks: Buffer[] = [];
-              readStream.on("data", (chunk) => entryChunks.push(chunk));
-              readStream.on("end", () => {
-                const fileBuffer = Buffer.concat(entryChunks);
-                outputZip.addBuffer(fileBuffer, relativePath);
-                zipFile.readEntry();
-              });
-            });
-          } else if (!folderMatch) {
-            zipFile.readEntry(); // Skip directories or files not in allowed folders
+  return new Promise((resolve, reject) => {
+    zipOutput.on("data", (chunk: Buffer) => {
+      bufferQueue.push(chunk);
+      bufferedSize += chunk.length;
+
+      while (bufferedSize >= CHUNK_SIZE) {
+        let chunkSize = 0;
+        const buffersToConcat: Buffer[] = [];
+
+        while (bufferQueue.length && chunkSize < CHUNK_SIZE) {
+          const next = bufferQueue[0];
+          const remaining = CHUNK_SIZE - chunkSize;
+
+          if (next.length <= remaining) {
+            chunkSize += next.length;
+            buffersToConcat.push(bufferQueue.shift()!);
           } else {
-            zipFile.readEntry(); // Skip directories
+            buffersToConcat.push(next.slice(0, remaining));
+            bufferQueue[0] = next.slice(remaining);
+            chunkSize += remaining;
           }
-        } else {
-          zipFile.readEntry();
         }
-      });
 
-      zipFile.on("end", () => {
-        outputZip.addBuffer(bagitFiles.bagit, "bagit.txt");
-        outputZip.addBuffer(bagitFiles.manifest, "manifest-sha256.txt");
-        outputZip.end();
-        resolve();
-      });
+        chunkBuffers.push(Buffer.concat(buffersToConcat, chunkSize));
+        bufferedSize -= chunkSize;
+      }
     });
+
+    zipOutput.on("end", () => {
+      if (bufferQueue.length > 0) {
+        chunkBuffers.push(Buffer.concat(bufferQueue, bufferedSize));
+      }
+      resolve(Buffer.concat(chunkBuffers));
+    });
+
+    zipOutput.on("error", (err) => reject(err));
   });
-
-  outputZip.outputStream.on("data", (chunk) => chunks.push(chunk));
-  await new Promise((resolve) => outputZip.outputStream.on("end", resolve));
-
-  return Buffer.concat(chunks);
 };
