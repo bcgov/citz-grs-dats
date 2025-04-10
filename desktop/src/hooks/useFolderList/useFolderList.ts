@@ -16,7 +16,7 @@ export const useFolderList = () => {
   >({});
   const [pendingPaths, setPendingPaths] = useState<string[]>([]);
   const [workers] = useState(window.api.workers);
-  const { fetchProtectedRoute } = window.api.sso;
+  const { fetchProtectedRoute, refreshTokens } = window.api.sso;
 
   const handleProgress = useCallback(
     (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
@@ -163,9 +163,11 @@ export const useFolderList = () => {
       };
       const apiUrl = await window.api.getCurrentApiUrl();
 
+      const tokens = await refreshTokens();
+
       const [error, data] = await fetchProtectedRoute(
         `${apiUrl}/filelist`,
-        accessToken,
+        tokens?.accessToken,
         {
           headers: {
             "Content-Type": "application/json",
@@ -188,7 +190,7 @@ export const useFolderList = () => {
 
       console.log("finish submit", { error, data, folders, metaData });
     },
-    [accessToken, fetchProtectedRoute, folders, metaData]
+    [fetchProtectedRoute, folders, metaData]
   );
 
   useEffect(() => {
