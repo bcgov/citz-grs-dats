@@ -6,5 +6,6 @@
   "2.0.5": "Fix for release notes workflow in development",
   "2.0.6": "Declining a submission agreement now sends and email to GIM@gov.bc.ca.,Transfer requests made to the DATS API now chunk the content into smaller pieces to avoid memory limit issues in OpenShift.",
   "2.0.7": "Minor UI changes.,Fix a bug that prevented submitting of LAN transfers.",
-  "2.0.8": "Fixed pages not rendering correctly."
+  "2.0.8": "Fixed pages not rendering correctly.",
+  "2.0.9": "Fixed issues uploading large files that gave the error Buffer"
 }
