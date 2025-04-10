@@ -1,5 +1,6 @@
-import yauzl from "yauzl";
-import yazl from "yazl";
+import archiver from "archiver";
+import unzipper from "unzipper";
+import { PassThrough } from "node:stream";
 
 // Define the Props type
 type Props = {
@@ -8,64 +9,87 @@ type Props = {
   metadata: Record<string, Buffer | null>;
 };
 
-// Utility function to extract content from a zip buffer and add it to another zip
-const extractZip = async (zipBuffer: Buffer, zip: yazl.ZipFile) => {
-  return new Promise<void>((resolve, reject) => {
-    yauzl.fromBuffer(zipBuffer, { lazyEntries: true }, (err, zipFile) => {
-      if (err) return reject(err);
-      zipFile.readEntry();
+const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
 
-      zipFile.on("entry", (entry) => {
-        if (entry.fileName.endsWith("/")) {
-          zipFile.readEntry();
-        } else {
-          zipFile.openReadStream(entry, (err, readStream) => {
-            if (err) return reject(err);
-            const chunks: Buffer[] = [];
-            readStream?.on("data", (chunk) => chunks.push(chunk));
-            readStream?.on("end", () => {
-              zip.addBuffer(Buffer.concat(chunks), `content/${entry.fileName}`);
-              zipFile.readEntry();
-            });
-          });
-        }
-      });
+// Extract zip contents using unzipper and re-add to archive
+const extractZipToArchive = async (
+  zipBuffer: Buffer,
+  archive: archiver.Archiver
+) => {
+  const directory = await unzipper.Open.buffer(zipBuffer);
 
-      zipFile.on("end", resolve);
-      zipFile.on("error", reject);
-    });
-  });
+  for (const file of directory.files) {
+    if (file.type === "File") {
+      const stream = file.stream();
+      archive.append(stream, { name: `content/${file.path}` });
+    }
+  }
 };
 
-// Function to create the standard transfer zip
+// Create archive in-memory using chunked streaming
 export const createStandardTransferZip = async ({
   contentZipBuffer,
   documentation,
   metadata,
 }: Props): Promise<Buffer> => {
-  const zip = new yazl.ZipFile();
+  const archive = archiver("zip", { zlib: { level: 9 } });
+  const zipOutput = new PassThrough();
+  archive.pipe(zipOutput);
 
-  // Extract content zip into 'content' directory
-  await extractZip(contentZipBuffer, zip);
+  // Extract content zip entries into new zip under 'content/'
+  await extractZipToArchive(contentZipBuffer, archive);
 
   // Add documentation files
-  Object.entries(documentation).forEach(([filename, buffer]) => {
-    if (!buffer) return;
-    zip.addBuffer(buffer, `documentation/${filename}`);
-  });
+  for (const [filename, buffer] of Object.entries(documentation)) {
+    if (buffer) archive.append(buffer, { name: `documentation/${filename}` });
+  }
 
   // Add metadata files
-  Object.entries(metadata).forEach(([filename, buffer]) => {
-    if (!buffer) return;
-    zip.addBuffer(buffer, `metadata/${filename}`);
-  });
+  for (const [filename, buffer] of Object.entries(metadata)) {
+    if (buffer) archive.append(buffer, { name: `metadata/${filename}` });
+  }
 
-  // Finalize zip and return buffer
+  archive.finalize();
+
+  const chunkBuffers: Buffer[] = [];
+  const bufferQueue: Buffer[] = [];
+  let bufferedSize = 0;
+
   return new Promise((resolve, reject) => {
-    const buffers: Buffer[] = [];
-    zip.outputStream.on("data", (chunk) => buffers.push(chunk));
-    zip.outputStream.on("end", () => resolve(Buffer.concat(buffers)));
-    zip.outputStream.on("error", reject);
-    zip.end();
+    zipOutput.on("data", (chunk: Buffer) => {
+      bufferQueue.push(chunk);
+      bufferedSize += chunk.length;
+
+      while (bufferedSize >= CHUNK_SIZE) {
+        let chunkSize = 0;
+        const buffersToConcat: Buffer[] = [];
+
+        while (bufferQueue.length && chunkSize < CHUNK_SIZE) {
+          const next = bufferQueue[0];
+          const remaining = CHUNK_SIZE - chunkSize;
+
+          if (next.length <= remaining) {
+            chunkSize += next.length;
+            buffersToConcat.push(bufferQueue.shift()!);
+          } else {
+            buffersToConcat.push(next.slice(0, remaining));
+            bufferQueue[0] = next.slice(remaining);
+            chunkSize += remaining;
+          }
+        }
+
+        chunkBuffers.push(Buffer.concat(buffersToConcat, chunkSize));
+        bufferedSize -= chunkSize;
+      }
+    });
+
+    zipOutput.on("end", () => {
+      if (bufferQueue.length > 0) {
+        chunkBuffers.push(Buffer.concat(bufferQueue, bufferedSize));
+      }
+      resolve(Buffer.concat(chunkBuffers));
+    });
+
+    zipOutput.on("error", (err) => reject(err));
   });
 };
