@@ -4,7 +4,7 @@ import {
   TooltipTrigger,
 } from "@bcgov/design-system-react-components";
 
-export const ContinueButton = ({ onContinue, isEnabled }): JSX.Element => {
+export const ContinueButton = ({ onClick, isEnabled }): JSX.Element => {
   const ContDisabled = () => {
     return (
       <TooltipTrigger delay={0}>
@@ -30,7 +30,7 @@ export const ContinueButton = ({ onContinue, isEnabled }): JSX.Element => {
       <Button
         variant="primary"
         style={{ justifyContent: "center", minWidth: "12%", fontSize: "0.9em" }}
-        onPress={onContinue}
+        onPress={onClick}
       >
         Continue
       </Button>

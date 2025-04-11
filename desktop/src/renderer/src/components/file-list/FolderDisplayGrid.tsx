@@ -19,21 +19,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { SelectFolderButton } from "./SelectFolderButton";
 
 export type FolderDisplayGridProps = {
-	// apiRef: ReturnType<typeof useGridApiRef>;
 	columns: GridColDef<FolderRow>[];
-	// onFolderDelete: (folder: string) => Promise<void> | void;
-	// processRowUpdate: (newRow: FolderRow) => FolderRow;
-	// rows: FolderRow[];
+	onContinue: (boolean: boolean) => void;
 };
 
 export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
-	const {
-		// apiRef,
-		columns: columnProps,
-		// onFolderDelete,
-		// processRowUpdate,
-		// rows,
-	} = props;
+	const { columns: columnProps, onContinue } = props;
 
 	const [hasAccessionApplication, setHasAccessionApplication] = useState<
 		boolean | null
@@ -136,19 +127,17 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 		[setFolders],
 	);
 
-	const handleOpenContinueModel = useCallback(() => {
-		let isOpen = true;
-
-		if (!continueButtonIsEnabled) isOpen = false;
-
-		setFinalizeModalIsOpen(isOpen);
-	}, [continueButtonIsEnabled]);
+	const handleContinueButtonClick = () => onContinue(true);
 
 	useEffect(() => {
 		if (folders.length === 0) {
 			setHasAccessionApplication(null);
+			setContinueButtonIsEnabled(false);
 		} else {
-			
+			// Enable Continue Button if all folders have been processed
+			setContinueButtonIsEnabled(
+				folders.every((folder) => folder.progress === 100),
+			);
 		}
 	}, [folders]);
 
@@ -188,7 +177,7 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 			/>
 			<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
 				<ContinueButton
-					onContinue={handleOpenContinueModel}
+					onClick={handleContinueButtonClick}
 					isEnabled={continueButtonIsEnabled}
 				/>
 			</Box>

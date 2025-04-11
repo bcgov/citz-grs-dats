@@ -1,48 +1,30 @@
-import { useAuth, useFolderList, useNavigate } from "@/hooks";
-import { Box, Stack, Typography } from "@mui/material";
+import { useFolderList, useNavigate } from "@/hooks";
+import { Stack, Typography } from "@mui/material";
 import { Instruction, Toast } from "@renderer/components";
 import {
-	AccessionApplicationChecker,
-	ContinueButton,
 	FinalizeFilelistModal,
 	FolderDisplayGrid,
 	ReturnToHomeModal,
 } from "@renderer/components/file-list";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { columns } from "./columns";
 
 export const FileListActionsPage = () => {
 	const columnsMemo = useMemo(() => columns || [], [columns]);
 
-
-	const [accAppCheckIsEnabled, setAccAppCheckIsEnabled] =
-		useState<boolean>(false);
 	const [finalizeModalIsOpen, setFinalizeModalIsOpen] =
 		useState<boolean>(false);
 	const [returnHomeModalIsOpen, setReturnHomeModalIsOpen] =
 		useState<boolean>(false);
-	// const [hasAccessionApplication, setHasAccessionApplication] = useState<
-	// 	boolean | null
-	// >(null);
 
 	const { navigate } = useNavigate();
 
-	const { accessToken } = useAuth();
+	const { submit } = useFolderList();
 
-	const authenticated = !!accessToken;
+	const handleFinalizeModalClose = () => setFinalizeModalIsOpen(false);
 
-	const { folders, submit } = useFolderList();
-
-
-
-	const handleFinalizeModalClose = useCallback(() => {
-		setFinalizeModalIsOpen(false);
-	}, []);
-
-	const handleReturnHomeModalClose = useCallback(() => {
-		setReturnHomeModalIsOpen(false);
-	}, []);
+	const handleReturnHomeModalClose = () => setReturnHomeModalIsOpen(false);
 
 	const handleFormSubmit = useCallback(
 		async (formData) => {
@@ -66,29 +48,9 @@ export const FileListActionsPage = () => {
 		[submit],
 	);
 
-	// useEffect(() => {
-	// 	const allFoldersProcessed = folders.every(
-	// 		(folder) => folder.progress === 100,
-	// 	);
-	// 	const hasFolders = folders.length > 0;
-
-		// setAccAppCheckIsEnabled(hasFolders);
-		// if (!hasFolders) setHasAccessionApplication(null);
-
-		// Enable continue button when folders are processed.
-		// setContinueButtonIsEnabled(
-		// 	allFoldersProcessed && hasFolders && authenticated,
-		// );
-	// }, [folders, authenticated]);
-
-	// useEffect(() => {
-	// 	console.log("folders", folders);
-	// }, [folders]);
-
 	return (
 		<Stack gap={2}>
 			<Typography variant="h2">Create file list</Typography>
-
 			<Stack gap={2}>
 				<Typography variant="h3">Instructions</Typography>
 				<Instruction
@@ -108,9 +70,10 @@ export const FileListActionsPage = () => {
 					required={false}
 				/>
 			</Stack>
-
-			<FolderDisplayGrid columns={columnsMemo} />
-
+			<FolderDisplayGrid
+				columns={columnsMemo}
+				onContinue={setFinalizeModalIsOpen}
+			/>
 			<FinalizeFilelistModal
 				open={finalizeModalIsOpen}
 				onClose={handleFinalizeModalClose}
