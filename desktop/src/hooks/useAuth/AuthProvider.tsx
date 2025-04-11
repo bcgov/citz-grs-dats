@@ -74,6 +74,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (accessToken) {
       setUser(sso.getUser(accessToken));
+    } else {
+      setUser(undefined);
     }
   }, [accessToken]);
 

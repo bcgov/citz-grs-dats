@@ -7,33 +7,41 @@ export const NavItem = ({ path, label, icon, role }: NavItemProps) => {
   const { location, navigate } = useNavigate();
   const { accessToken, hasRole } = useAuth();
 
-  let sx = {
-    gap: 1,
-    border: "2px solid transparent",
-    borderRadius: "5px",
-    background: "none",
-    "&:hover": {
-      background: theme.palette.secondary.dark,
-    },
-  };
+	let sx = {
+		gap: 1,
+		border: "2px solid transparent",
+		borderRadius: "5px",
+		background: "none",
+		"&:hover": {
+			background: theme.palette.secondary.dark,
+		},
+	};
 
-  if (path === location.pathname) {
-    sx = {
-      ...sx,
-      border: "2px solid var(--sidenav-item-border-current-page)",
-      background: theme.palette.secondary.light,
-    };
-  }
+	// Highlight the current page
+	if (
+		location.pathname === path ||
+		(path !== "/" && location.pathname.startsWith(path))
+	) {
+		sx = {
+			...sx,
+			border: "2px solid var(--sidenav-item-border-current-page)",
+			background: theme.palette.secondary.light,
+		};
+	}
 
-  const listItem = (
-    <ListItem sx={sx} component="button" onClick={() => navigate(path)}>
-      {icon}
-      <Typography sx={{ fontSize: "16px" }}>{label}</Typography>
-    </ListItem>
-  );
+	const listItem = (
+		<ListItem
+			sx={sx}
+			component="button"
+			onClick={() => navigate(path)}
+		>
+			{icon}
+			<Typography>{label}</Typography>
+		</ListItem>
+	);
 
-  if (!role) return listItem;
-  if (accessToken && role === "any") return listItem;
-  if (accessToken && hasRole(role)) return listItem;
-  return null;
+	if (!role) return listItem;
+	if (accessToken && role === "any") return listItem;
+	if (accessToken && hasRole(role)) return listItem;
+	return null;
 };

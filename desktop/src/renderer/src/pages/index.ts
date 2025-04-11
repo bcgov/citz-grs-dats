@@ -1,5 +1,4 @@
-export * from "./FileList";
-export * from "./FileListInstructions";
-export * from "./SendRecords";
+export * from "./fileList";
 export * from "./home";
+export * from "./SendRecords";
 export * from "./transfers";

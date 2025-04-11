@@ -13,7 +13,7 @@ const pageLinkData: PageLinkProps[] = [
 		icon: <ListIcon />,
 		desc: 'Use DATS to create a Digital File List (ARS 662). A digital file list is required to transfer records to the Digital Archives from a LAN drive.',
 		buttonText: 'Create file list',
-		pageRoute: '/file-list/instructions',
+		pageRoute: '/file-list',
 	},
 	{
 		title: 'Transfer records',
