@@ -9,19 +9,22 @@ export const NavItem = ({ path, label, icon, role }: NavItemProps) => {
 
   let sx = {
     gap: 1,
-    border: "2px solid transparent",
-    borderRadius: "5px",
+    marginTop: path === "/" ? 0 : "8px",
+    padding: "8px 16px",
+    borderRadius: "4px",
+    border: "none",
     background: "none",
     "&:hover": {
       background: theme.palette.secondary.dark,
     },
   };
 
-  if (path === location.pathname) {
+  if (
+    path === "/" ? location.pathname === "/" : location.pathname.includes(path)
+  ) {
     sx = {
       ...sx,
-      border: "2px solid var(--sidenav-item-border-current-page)",
-      background: theme.palette.secondary.light,
+      background: "#F1F8FE",
     };
   }
 
