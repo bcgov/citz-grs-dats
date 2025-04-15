@@ -116,7 +116,8 @@ export const ViewTransfersPage = () => {
         data: {
           success: true,
           title: "File deleted",
-          message: "The file has been deleted successfully.",
+          message:
+            "The file has been deleted successfully. A stub will remain in DATS to prevent duplicate transfers. See ARIS for the official status.",
         },
       });
     } else if (deleteSuccess === false) {
