@@ -1,17 +1,11 @@
 import {
   DescriptionOutlined as FileListIcon,
-  HomeOutlined as HomeOutlinedIcon,
   DriveFileMoveOutlined as SendRecordsIcon,
   AnalyticsOutlined as ViewStatusIcon,
 } from "@mui/icons-material";
 import type { NavItemProps } from "./NavItem.d";
 
 const navItemData: NavItemProps[] = [
-  {
-    path: "/",
-    label: "Home",
-    icon: <HomeOutlinedIcon sx={{ color: "var(--text-secondary)" }} />,
-  },
   {
     path: "/file-list/instructions",
     label: "Create file list",
