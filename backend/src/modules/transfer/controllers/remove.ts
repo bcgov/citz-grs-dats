@@ -23,7 +23,11 @@ export const remove = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // Delete from mongo
-  await TransferService.deleteTransferEntry(body.accession, body.application);
+  await TransferService.softDeleteTransferEntry(
+    body.accession,
+    body.application,
+    user?.display_name ?? ""
+  );
   await FileListService.deleteFileListByAccApp(
     body.accession,
     body.application
