@@ -14,6 +14,7 @@ export const TRANSFER_STATUSES = [
   "Downloaded",
   "Downloaded & Preserved",
   "Preserved",
+  "Processed",
 ] as const;
 
 // Mongoose Schema
@@ -54,10 +55,12 @@ const transferSchema = new Schema({
       },
       { _id: false }
     ),
-    required: true,
+    required: false,
   },
   extendedMetadata: { type: Map, of: Schema.Types.Mixed, required: false },
   transferDate: { type: String, required: false },
+  processedBy: { type: String, required: false },
+  processedDate: { type: String, required: false },
 });
 
 transferSchema.index({
@@ -85,13 +88,17 @@ export const transferZodSchema = z.object({
   status: z.enum(TRANSFER_STATUSES),
   jobID: z.union([z.string(), z.null()]).optional(),
   checksum: z.union([z.string(), z.null()]).optional(),
-  metadata: z.object({
-    admin: adminMetadataZodSchema,
-    folders: z.record(folderMetadataZodSchema),
-    files: z.record(z.array(fileMetadataZodSchema)),
-  }),
+  metadata: z
+    .object({
+      admin: adminMetadataZodSchema,
+      folders: z.record(folderMetadataZodSchema),
+      files: z.record(z.array(fileMetadataZodSchema)),
+    })
+    .optional(),
   extendedMetadata: z.record(z.any()).optional(),
   transferDate: z.string().optional(),
+  processedBy: z.string().optional(),
+  processedDate: z.string().optional(),
 });
 
 // TypeScript Types
