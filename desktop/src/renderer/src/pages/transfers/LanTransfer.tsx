@@ -1,7 +1,11 @@
 import { useAuth, useNavigate } from "@/hooks";
 import { Grid2 as Grid, Stack, Typography } from "@mui/material";
 import { LoginRequiredModal, Stepper, Toast } from "@renderer/components";
-import { JustifyChangesModal } from "@renderer/components/transfer";
+import {
+  JustifyChangesModal,
+  TransferAlreadyProcessedModal,
+  TransferAlreadySentModal,
+} from "@renderer/components/transfer";
 import { FinishView } from "@renderer/components/transfer/finish-view";
 import {
   LanConfirmationView,
@@ -57,6 +61,12 @@ export const LanTransferPage = () => {
     undefined
   );
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
+  const [
+    showTransferAlreadyProcessedModal,
+    setShowTransferAlreadyProcessedModal,
+  ] = useState(false);
+  const [showTransferAlreadySentModal, setShowTransferAlreadySentModal] =
+    useState(false);
 
   // Request to send transfer
   const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(
@@ -737,6 +747,59 @@ export const LanTransferPage = () => {
     }
   }, [currentViewIndex]);
 
+  const checkForExistingTransfer = async () => {
+    if (!accessToken) return;
+
+    // Request url
+    const apiUrl = await api.getCurrentApiUrl();
+    const requestUrl = `${apiUrl}/transfer`;
+
+    // Make request
+    try {
+      console.log("Making get transfers request.");
+      const response = await fetch(requestUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) return;
+      const jsonResponse = await response.json();
+
+      if (jsonResponse.success) {
+        const transfers = jsonResponse.data.transfers;
+        const transferExists = transfers.some(
+          (t) =>
+            t.metadata.admin.accession === accession &&
+            t.metadata.admin.application === application
+        );
+
+        if (transferExists) {
+          const existingTransfer = transfers.find(
+            (t) =>
+              t.metadata.admin.accession === accession &&
+              t.metadata.admin.application === application
+          );
+
+          if (existingTransfer.status === "Transfer deleted") {
+            // User cannot continue
+            setShowTransferAlreadyProcessedModal(true);
+            setConfirmAccAppChecked(false);
+          } else {
+            // User can re-submit transfer
+            setShowTransferAlreadySentModal(true);
+            setConfirmAccAppChecked(false);
+          }
+        } else {
+          onNextPress();
+        }
+      } else return;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // Ask for justification of changes if any folder paths changed or deleted
   const handleLanUploadNextPress = () => {
     if (changes.length > 0) {
@@ -746,6 +809,16 @@ export const LanTransferPage = () => {
       // Prompt use to login
       setShowLoginRequiredModal(true);
     } else onNextPress();
+  };
+
+  // Check if transfer exists
+  const handleFileListUploadNextPress = () => {
+    if (!accessToken) {
+      // Prompt use to login
+      setShowLoginRequiredModal(true);
+    } else {
+      checkForExistingTransfer();
+    }
   };
 
   const handleSendRequest = async () => {
@@ -892,7 +965,7 @@ export const LanTransferPage = () => {
               application={application}
               confirmChecked={confirmAccAppChecked}
               setConfirmChecked={setConfirmAccAppChecked}
-              onNextPress={onNextPress}
+              onNextPress={handleFileListUploadNextPress}
             />
           )}
           {currentViewIndex === 1 && (
@@ -955,6 +1028,22 @@ export const LanTransferPage = () => {
             onConfirm={() => {
               setShowLoginRequiredModal(false);
               api.sso.startLoginProcess();
+            }}
+          />
+          <TransferAlreadyProcessedModal
+            open={showTransferAlreadyProcessedModal}
+            onClose={() => setShowTransferAlreadyProcessedModal(false)}
+            accession={accession!}
+            application={application!}
+          />
+          <TransferAlreadySentModal
+            open={showTransferAlreadySentModal}
+            onClose={() => setShowTransferAlreadySentModal(false)}
+            accession={accession!}
+            application={application!}
+            onConfirm={() => {
+              setShowTransferAlreadySentModal(false);
+              onNextPress();
             }}
           />
         </Stack>

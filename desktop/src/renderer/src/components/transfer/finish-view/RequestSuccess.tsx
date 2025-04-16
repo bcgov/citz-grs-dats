@@ -24,10 +24,10 @@ export const RequestSuccess = ({
         </Typography>
         <Stack direction="row" gap={4}>
           <Typography>
-            <b>Accession #:</b> {accession}
+            <b>Accession:</b> {accession}
           </Typography>
           <Typography>
-            <b>Application #:</b> {application}
+            <b>Application:</b> {application}
           </Typography>
         </Stack>
         <Stack>

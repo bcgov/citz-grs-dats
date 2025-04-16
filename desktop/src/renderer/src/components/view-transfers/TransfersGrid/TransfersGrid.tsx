@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Tooltip } from "@mui/material";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { DeleteCell } from "./DeleteCell";
 import { DownloadCell } from "./DownloadCell";
@@ -10,6 +10,8 @@ export type Row = {
   application: string;
   status: string;
   transferDate: string;
+  processedBy?: string;
+  processedOn?: string;
 };
 
 type Props = {
@@ -27,6 +29,20 @@ type Props = {
     accession: string,
     application: string
   ) => Promise<void> | void;
+};
+
+export const formatDateToYMD = (dateString: string): string => {
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("Invalid date string");
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // months are 0-indexed
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}/${month}/${day}`;
 };
 
 export const TransfersGrid = ({
@@ -50,6 +66,28 @@ export const TransfersGrid = ({
       field: "status",
       headerName: "Status",
       flex: 1,
+      renderCell: (params) => {
+        if (params.row.status === "Transfer deleted") {
+          return (
+            <Tooltip
+              title={
+                <div>
+                  <p>
+                    Date deleted:{" "}
+                    {formatDateToYMD(
+                      params.row.processedOn ?? new Date().toDateString()
+                    )}
+                  </p>
+                  <p>Deleted by: {params.row.processedBy ?? "You"}</p>
+                </div>
+              }
+            >
+              <p>{params.row.status}</p>
+            </Tooltip>
+          );
+        }
+        return params.row.status;
+      },
     },
     {
       field: "transferDate",
@@ -73,6 +111,7 @@ export const TransfersGrid = ({
           preserved={["Preserved", "Downloaded & Preserved"].includes(
             params.row.status
           )}
+          processed={params.row.status === "Transfer deleted"}
         />
       ),
     },
@@ -89,6 +128,7 @@ export const TransfersGrid = ({
             "Downloaded",
             "Downloaded & Preserved",
           ].includes(params.row.status)}
+          processed={params.row.status === "Transfer deleted"}
         />
       ),
     },
@@ -103,7 +143,7 @@ export const TransfersGrid = ({
           disable={
             !["Downloaded", "Downloaded & Preserved", "Preserved"].includes(
               params.row.status
-            )
+            ) || params.row.status === "Transfer deleted"
           }
           onTransferDelete={onTransferDelete}
         />
