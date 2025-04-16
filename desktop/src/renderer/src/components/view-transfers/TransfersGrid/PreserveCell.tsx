@@ -14,12 +14,14 @@ type Props = {
     application: string
   ) => Promise<void> | void;
   preserved: boolean;
+  processed: boolean;
 };
 
 export const PreserveCell = ({
   params,
   onTransferPreserve,
   preserved,
+  processed,
 }: Props) => {
   return (
     <Tooltip
@@ -34,6 +36,7 @@ export const PreserveCell = ({
     >
       <IconButton
         color="error"
+        disabled={processed}
         disableFocusRipple
         disableRipple
         onClick={() =>
@@ -42,9 +45,13 @@ export const PreserveCell = ({
         aria-label="preserve to libsafe"
       >
         {preserved ? (
-          <DoneIcon sx={{ color: "var(--icon)" }} />
+          <DoneIcon
+            sx={{ color: processed ? "var(--icon-disabled)" : "var(--icon)" }}
+          />
         ) : (
-          <PreserveIcon />
+          <PreserveIcon
+            color={processed ? "var(--icon-disabled)" : "var(--icon)"}
+          />
         )}
       </IconButton>
     </Tooltip>

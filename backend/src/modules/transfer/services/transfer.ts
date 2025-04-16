@@ -180,6 +180,7 @@ export const TransferService = {
             "Downloaded",
             "Preserved",
             "Downloaded & Preserved",
+            "Transfer deleted",
           ],
         },
       })
@@ -319,7 +320,7 @@ export const TransferService = {
         },
         {
           $set: {
-            status: "Processed",
+            status: "Transfer deleted",
             jobID: "",
             checksum: "",
             "metadata.folders": {},

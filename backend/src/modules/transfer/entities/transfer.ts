@@ -14,7 +14,7 @@ export const TRANSFER_STATUSES = [
   "Downloaded",
   "Downloaded & Preserved",
   "Preserved",
-  "Processed",
+  "Transfer deleted",
 ] as const;
 
 // Mongoose Schema
