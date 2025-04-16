@@ -2,7 +2,7 @@ import type { TransferZod } from "@/modules/transfer/entities";
 import type { FileMetadataZodType } from "@/modules/filelist/schemas";
 
 type Props = {
-  files: TransferZod["metadata"]["files"];
+  files: NonNullable<TransferZod["metadata"]>["files"];
   folders: string[]; // The folder names to include
 };
 
