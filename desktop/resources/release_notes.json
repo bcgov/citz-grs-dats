@@ -8,5 +8,6 @@
   "2.0.7": "Minor UI changes.,Fix a bug that prevented submitting of LAN transfers.",
   "2.0.8": "Fixed pages not rendering correctly.",
   "2.0.9": "Fixed issues uploading large files that gave the error Buffer",
-  "2.0.10": "Changed application icon."
+  "2.0.10": "Changed application icon.",
+  "2.0.11": "Updated side navigation styles."
 }

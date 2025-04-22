@@ -10,9 +10,9 @@ type Props = {
   folderContent: string[];
   buffer: Buffer; // Standard transfer zip
   metadata: {
-    admin: TransferZod["metadata"]["admin"];
-    folders: TransferZod["metadata"]["folders"];
-    files: TransferZod["metadata"]["files"];
+    admin: NonNullable<TransferZod["metadata"]>["admin"];
+    folders: NonNullable<TransferZod["metadata"]>["folders"];
+    files: NonNullable<TransferZod["metadata"]>["files"];
   };
 };
 
