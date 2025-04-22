@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks";
-import { Button } from "@bcgov/design-system-react-components";
+import { Button, Switch } from "@bcgov/design-system-react-components";
 import { Grid2 as Grid, Stack, TextField, Typography } from "@mui/material";
 import { LoginRequiredModal, Toast } from "@renderer/components";
 import {
@@ -16,6 +16,8 @@ type Transfer = {
   application: string;
   status: string;
   transferDate: string; // Format YYYY/MM/DD
+  processedBy?: string;
+  processedOn?: string;
 };
 
 export const ViewTransfersPage = () => {
@@ -31,6 +33,7 @@ export const ViewTransfersPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [filteredTransfers, setFilteredTransfers] = useState<Transfer[]>([]);
+  const [deletedTransfersOnly, setDeletedTransfersOnly] = useState(false);
 
   // Modals
   const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
@@ -116,7 +119,8 @@ export const ViewTransfersPage = () => {
         data: {
           success: true,
           title: "File deleted",
-          message: "The file has been deleted successfully.",
+          message:
+            "The file has been deleted successfully. A stub will remain in DATS to prevent duplicate transfers. See ARIS for the official status.",
         },
       });
     } else if (deleteSuccess === false) {
@@ -209,6 +213,8 @@ export const ViewTransfersPage = () => {
               application: t.metadata.admin.application,
               status: t.status,
               transferDate: t.transferDate,
+              processedBy: t.processedBy,
+              processedOn: t.processedOn,
             };
           }
         );
@@ -252,11 +258,15 @@ export const ViewTransfersPage = () => {
 
         // Update state
         setTransfers((prev) => {
-          return prev.filter(
-            (t) =>
-              t.accession !== deleteAccession &&
-              t.application !== deleteApplication
-          );
+          return prev.map((t) => {
+            if (
+              t.accession === deleteAccession &&
+              t.application === deleteApplication
+            ) {
+              t.status = "Transfer deleted";
+            }
+            return t;
+          });
         });
       } else return setDeleteSuccess(false);
     } catch (error) {
@@ -416,12 +426,26 @@ export const ViewTransfersPage = () => {
         transferDate.includes(searchQuery)
     );
 
-    setFilteredTransfers(filtered);
+    if (deletedTransfersOnly)
+      setFilteredTransfers(
+        filtered.filter((t) => t.status === "Transfer deleted")
+      );
+    else
+      setFilteredTransfers(
+        filtered.filter((t) => t.status !== "Transfer deleted")
+      );
   };
 
   useEffect(() => {
-    setFilteredTransfers(transfers);
-  }, [transfers]);
+    if (deletedTransfersOnly)
+      setFilteredTransfers(
+        transfers.filter((t) => t.status === "Transfer deleted")
+      );
+    else
+      setFilteredTransfers(
+        transfers.filter((t) => t.status !== "Transfer deleted")
+      );
+  }, [transfers, deletedTransfersOnly]);
 
   useEffect(() => {
     // Fetch transfers on mount
@@ -434,16 +458,29 @@ export const ViewTransfersPage = () => {
       <Grid size={8} sx={{ paddingTop: 3 }}>
         <Stack gap={2}>
           <Typography variant="h2">View transfer status</Typography>
-          <Stack direction="row" spacing={1} sx={{ marginTop: 1 }}>
-            <TextField
-              sx={{ width: "350px" }}
-              size="small"
-              placeholder="Search within"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Button onPress={handleSearch}>Search</Button>
-          </Stack>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <Stack direction="row" spacing={1} sx={{ marginTop: 1 }}>
+              <TextField
+                sx={{ width: "350px" }}
+                size="small"
+                placeholder="Search within"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Button onPress={handleSearch}>Search</Button>
+            </Stack>
+            <Switch
+              isSelected={deletedTransfersOnly}
+              onChange={setDeletedTransfersOnly}
+            >
+              Deleted transfers only
+            </Switch>
+          </div>
           <TransfersGrid
             rows={filteredTransfers}
             onTransferDelete={handleTransferDelete}

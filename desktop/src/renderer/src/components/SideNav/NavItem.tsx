@@ -7,27 +7,26 @@ export const NavItem = ({ path, label, icon, role }: NavItemProps) => {
   const { location, navigate } = useNavigate();
   const { accessToken, hasRole } = useAuth();
 
-	let sx = {
-		gap: 1,
-		border: "2px solid transparent",
-		borderRadius: "5px",
-		background: "none",
-		"&:hover": {
-			background: theme.palette.secondary.dark,
-		},
-	};
+  let sx = {
+    gap: 1,
+    marginTop: path === "/" ? 0 : "8px",
+    padding: "8px 16px",
+    borderRadius: "4px",
+    border: "none",
+    background: "none",
+    "&:hover": {
+      background: theme.palette.secondary.dark,
+    },
+  };
 
-	// Highlight the current page
-	if (
-		location.pathname === path ||
-		(path !== "/" && location.pathname.startsWith(path))
-	) {
-		sx = {
-			...sx,
-			border: "2px solid var(--sidenav-item-border-current-page)",
-			background: theme.palette.secondary.light,
-		};
-	}
+  if (
+    path === "/" ? location.pathname === "/" : location.pathname.includes(path)
+  ) {
+    sx = {
+      ...sx,
+      background: "#F1F8FE",
+    };
+  }
 
 	const listItem = (
 		<ListItem
