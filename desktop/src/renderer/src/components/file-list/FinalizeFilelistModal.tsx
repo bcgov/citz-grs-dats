@@ -10,7 +10,7 @@ type Props = {
 	open: boolean;
 	onClose: () => void;
 	onSubmit: (data: Record<string, FormDataEntryValue>) => void;
-	hasAccessionApplication: boolean;
+	hasAccessionApplication: boolean | null;
 };
 
 const innerButtonStyle = {

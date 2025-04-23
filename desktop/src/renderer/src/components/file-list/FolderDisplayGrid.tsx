@@ -21,14 +21,15 @@ import { SelectFolderButton } from "./SelectFolderButton";
 export type FolderDisplayGridProps = {
 	columns: GridColDef<FolderRow>[];
 	onContinue: (boolean: boolean) => void;
+	hasAccessionApplication: boolean | null;
+	setHasAccessionApplication: React.Dispatch<
+		React.SetStateAction<boolean | null>
+	>;
 };
 
 export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
-	const { columns: columnProps, onContinue } = props;
+	const { columns: columnProps, onContinue, hasAccessionApplication, setHasAccessionApplication } = props;
 
-	const [hasAccessionApplication, setHasAccessionApplication] = useState<
-		boolean | null
-	>(null);
 	const [continueButtonIsEnabled, setContinueButtonIsEnabled] =
 		useState<boolean>(false);
 

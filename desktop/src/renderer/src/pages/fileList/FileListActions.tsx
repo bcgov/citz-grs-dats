@@ -11,6 +11,9 @@ import { toast } from "react-toastify";
 import { columns } from "./columns";
 
 export const FileListActionsPage = () => {
+		const [hasAccessionApplication, setHasAccessionApplication] = useState<
+			boolean | null
+		>(null);
 	const columnsMemo = useMemo(() => columns || [], [columns]);
 
 	const [finalizeModalIsOpen, setFinalizeModalIsOpen] =
@@ -73,12 +76,14 @@ export const FileListActionsPage = () => {
 			<FolderDisplayGrid
 				columns={columnsMemo}
 				onContinue={setFinalizeModalIsOpen}
+				hasAccessionApplication={hasAccessionApplication}
+				setHasAccessionApplication={setHasAccessionApplication}
 			/>
 			<FinalizeFilelistModal
 				open={finalizeModalIsOpen}
 				onClose={handleFinalizeModalClose}
 				onSubmit={handleFormSubmit}
-				hasAccessionApplication={false}
+				hasAccessionApplication={hasAccessionApplication}
 			/>
 			<ReturnToHomeModal
 				open={returnHomeModalIsOpen}
