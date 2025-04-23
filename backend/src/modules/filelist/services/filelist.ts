@@ -1,7 +1,7 @@
 import type { SSOUser } from "@bcgov/citz-imb-sso-js-core";
 import { FileListModel } from "../entities";
 import type { FileListMongoose } from "../entities";
-import { logs } from "src/utils";
+import { decodeKeysBase64, encodeKeysBase64, logs } from "src/utils";
 
 const {
   FILELIST: {
@@ -54,10 +54,10 @@ export const FileListService = {
               email: user?.email ?? "N/A",
             },
           },
-          folders,
-          files,
+          folders: encodeKeysBase64(folders),
+          files: encodeKeysBase64(files),
         },
-        extendedMetadata: new Map(Object.entries(extendedMetadata)),
+        extendedMetadata: encodeKeysBase64(extendedMetadata),
       };
 
       // Insert the document into the database
@@ -82,6 +82,14 @@ export const FileListService = {
   async getFileListByJobID(jobID: string) {
     try {
       const document = await FileListModel.findOne({ jobID }).lean().exec();
+
+      if (document?.metadata?.folders)
+        document.metadata.folders = decodeKeysBase64(document.metadata.folders);
+      if (document?.metadata?.files)
+        document.metadata.files = decodeKeysBase64(document.metadata.files);
+      if (document?.extendedMetadata)
+        document.extendedMetadata = decodeKeysBase64(document.extendedMetadata);
+
       return document;
     } catch (error) {
       console.error(ERROR_RETRIEVING_ENTRY_BY_JOBID(jobID), error);
