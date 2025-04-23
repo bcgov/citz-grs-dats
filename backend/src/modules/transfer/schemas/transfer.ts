@@ -38,7 +38,6 @@ export type RemoveTransferBody = z.infer<typeof removeTransferBodySchema>;
 export const lanTransferBodySchema = z.object({
   fileListFilename: z.string(),
   transferFormFilename: z.string(),
-  originalFoldersMetadata: z.record(folderMetadataZodSchema),
   metadataV2: z.object({
     admin: z
       .object({

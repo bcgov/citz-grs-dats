@@ -816,10 +816,6 @@ export const LanTransferPage = () => {
       formData.append("chunkIndex", i.toString());
       formData.append("totalChunks", totalChunks.toString());
       formData.append("contentChecksum", contentChecksum);
-      formData.append(
-        "originalFoldersMetadata",
-        JSON.stringify(originalFolderList)
-      );
       formData.append("metadataV2", JSON.stringify(metadataV2));
       formData.append("extendedMetadata", JSON.stringify(extendedMetadata));
       formData.append("changes", JSON.stringify(changes));

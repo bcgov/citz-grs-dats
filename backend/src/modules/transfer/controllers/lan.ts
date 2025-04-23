@@ -7,7 +7,7 @@ import {
 import { lanTransferBodySchema } from "../schemas";
 import { upload } from "src/modules/s3/utils";
 import { ENV } from "src/config";
-import { formatDate, formatFileSize } from "src/utils";
+import { decodeKeysBase64, formatDate, formatFileSize } from "src/utils";
 import { createAgreementPDF } from "@/modules/submission-agreement/utils";
 import type { FolderRow } from "@/modules/filelist/utils/excel/worksheets";
 import { updateFileListV2 } from "@/modules/filelist/utils/excel";
@@ -17,7 +17,6 @@ import {
   createStandardTransferZip,
   handleTransferChunkUpload,
 } from "../utils";
-import crypto from "node:crypto";
 import { TransferService } from "../services";
 
 const { S3_BUCKET } = ENV;
@@ -26,6 +25,10 @@ const { S3_BUCKET } = ENV;
 export const lan = errorWrapper(async (req: Request, res: Response) => {
   const { getStandardResponse, getZodValidatedBody, user, token, files } = req;
   const body = getZodValidatedBody(lanTransferBodySchema); // Validate request body
+
+  const metadataV2Folders = decodeKeysBase64(body.metadataV2.folders);
+  const metadataV2Files = decodeKeysBase64(body.metadataV2.files);
+  const extendedMetadata = decodeKeysBase64(body.extendedMetadata);
 
   const { accession, application } = body.metadataV2.admin;
   const chunkIndex = Number.parseInt(body.chunkIndex);
@@ -96,7 +99,7 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // Format folder rows
-  const folderRows = Object.entries(body.metadataV2.folders).map(
+  const folderRows = Object.entries(metadataV2Folders).map(
     ([folder, metadata]) => ({
       folder, // Add the key as the "folder" property
       ...(metadata as unknown[]), // Spread the properties of the metadata
@@ -105,7 +108,7 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
 
   // Format file rows
   const fileRows = Object.values(
-    body.metadataV2.files
+    metadataV2Files
   ).flat() as FileMetadataZodType[];
 
   // Update File List
@@ -147,15 +150,12 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     "utf-8"
   );
   const foldersJsonBuffer = Buffer.from(
-    JSON.stringify(body.metadataV2.folders),
+    JSON.stringify(metadataV2Folders),
     "utf-8"
   );
-  const filesJsonBuffer = Buffer.from(
-    JSON.stringify(body.metadataV2.files),
-    "utf-8"
-  );
+  const filesJsonBuffer = Buffer.from(JSON.stringify(metadataV2Files), "utf-8");
   const extendedMetadataJsonBuffer = Buffer.from(
-    JSON.stringify(body.extendedMetadata),
+    JSON.stringify(extendedMetadata),
     "utf-8"
   );
   const originalExtendedMetadataJsonBuffer = Buffer.from(
