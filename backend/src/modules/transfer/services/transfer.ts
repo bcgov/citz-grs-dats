@@ -197,6 +197,7 @@ export const TransferService = {
             "Downloaded",
             "Preserved",
             "Downloaded & Preserved",
+            "Transfer deleted",
           ],
         },
       })
@@ -312,6 +313,51 @@ export const TransferService = {
       }
 
       return deletedDocument;
+    } catch (error) {
+      console.error(ERROR_DELETING_ENTRY, error);
+      throw new Error(
+        `Failed to delete Transfer entry: ${
+          error instanceof Error ? error.message : error
+        }`
+      );
+    }
+  },
+
+  async softDeleteTransferEntry(
+    accession: string,
+    application: string,
+    processedBy: string
+  ) {
+    try {
+      // Find and delete the document in one atomic operation
+      const updatedDocument = await TransferModel.findOneAndUpdate(
+        {
+          "metadata.admin.application": String(application),
+          "metadata.admin.accession": String(accession),
+        },
+        {
+          $set: {
+            status: "Transfer deleted",
+            jobID: "",
+            checksum: "",
+            "metadata.folders": {},
+            "metadata.files": {},
+            extendedMetadata: {},
+            processedBy,
+            processedDate: new Date().toDateString(),
+          },
+        },
+        { new: true, runValidators: true }
+      );
+
+      // Throw error if no document was found
+      if (!updatedDocument) {
+        throw new Error(
+          `Transfer entry not found with accession: ${accession}, application: ${application}.`
+        );
+      }
+
+      return updatedDocument;
     } catch (error) {
       console.error(ERROR_DELETING_ENTRY, error);
       throw new Error(

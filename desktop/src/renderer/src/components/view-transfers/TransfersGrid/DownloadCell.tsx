@@ -15,12 +15,14 @@ type Props = {
     previouslyDownloaded: boolean
   ) => Promise<void> | void;
   previouslyDownloaded: boolean;
+  processed: boolean;
 };
 
 export const DownloadCell = ({
   params,
   onTransferDownload,
   previouslyDownloaded,
+  processed,
 }: Props) => {
   return (
     <Tooltip
@@ -35,6 +37,7 @@ export const DownloadCell = ({
     >
       <IconButton
         color="error"
+        disabled={processed}
         disableFocusRipple
         disableRipple
         onClick={() =>
@@ -47,9 +50,13 @@ export const DownloadCell = ({
         aria-label="download"
       >
         {previouslyDownloaded ? (
-          <DoneIcon sx={{ color: "var(--icon)" }} />
+          <DoneIcon
+            sx={{ color: processed ? "var(--icon-disabled)" : "var(--icon)" }}
+          />
         ) : (
-          <DownloadIcon />
+          <DownloadIcon
+            color={processed ? "var(--icon-disabled)" : "var(--icon)"}
+          />
         )}
       </IconButton>
     </Tooltip>

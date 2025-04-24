@@ -74,7 +74,9 @@ export const queueConsumer = async (
 
   // Process transfer
   const pspContent = sortPSPContent(
-    metadata.folders as unknown as TransferZod["metadata"]["folders"]
+    metadata.folders as unknown as NonNullable<
+      TransferZod["metadata"]
+    >["folders"]
   );
   const pspBuffers: {
     buffer: Buffer;
@@ -87,9 +89,9 @@ export const queueConsumer = async (
       folderContent: psp.content,
       buffer,
       metadata: metadata as unknown as {
-        admin: TransferZod["metadata"]["admin"];
-        folders: TransferZod["metadata"]["folders"];
-        files: TransferZod["metadata"]["files"];
+        admin: NonNullable<TransferZod["metadata"]>["admin"];
+        folders: NonNullable<TransferZod["metadata"]>["folders"];
+        files: NonNullable<TransferZod["metadata"]>["files"];
       },
     });
     pspBuffers.push({
