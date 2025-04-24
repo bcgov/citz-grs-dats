@@ -58,8 +58,12 @@ export const parseXlsxFileList = (
             folders.push(folderName);
 
             foldersMetadata[folderName] = {
-              schedule: fileList[`B${rowIndex}`]?.v ?? null,
-              classification: fileList[`C${rowIndex}`]?.v ?? null,
+              schedule: fileList[`B${rowIndex}`]?.v
+                ? `${fileList[`B${rowIndex}`]?.v}`
+                : null,
+              classification: fileList[`C${rowIndex}`]?.v
+                ? `${fileList[`C${rowIndex}`]?.v}`
+                : null,
               file: fileList[`D${rowIndex}`]?.v ?? null,
               opr: fileList[`E${rowIndex}`]?.v === "Y",
               startDate: fileList[`F${rowIndex}`]?.v ?? null,

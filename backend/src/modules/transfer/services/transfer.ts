@@ -1,7 +1,7 @@
 import type { SSOUser } from "@bcgov/citz-imb-sso-js-core";
 import { TransferModel } from "../entities";
 import type { TRANSFER_STATUSES, TransferMongoose } from "../entities";
-import { logs } from "src/utils";
+import { decodeKeysBase64, encodeKeysBase64, logs } from "src/utils";
 
 const {
   TRANSFER: {
@@ -65,10 +65,10 @@ export const TransferService = {
               email: user?.email ?? "",
             },
           },
-          folders,
-          files,
+          folders: encodeKeysBase64(folders),
+          files: encodeKeysBase64(files),
         },
-        extendedMetadata: new Map(Object.entries(extendedMetadata)),
+        extendedMetadata: encodeKeysBase64(extendedMetadata),
       };
 
       // Insert the document into the database
@@ -115,10 +115,10 @@ export const TransferService = {
               email: user?.email ?? "",
             },
           },
-          folders,
-          files,
+          folders: encodeKeysBase64(folders),
+          files: encodeKeysBase64(files),
         },
-        extendedMetadata: extendedMetadata as unknown as Map<string, unknown>,
+        extendedMetadata: encodeKeysBase64(extendedMetadata),
       };
 
       // Find an existing entry by `application` and `accession`
@@ -155,6 +155,23 @@ export const TransferService = {
   async getTransferWhere(where: Record<string, unknown>) {
     try {
       const transferDocument = await TransferModel.findOne(where).lean().exec();
+
+      if (transferDocument?.metadata?.folders) {
+        transferDocument.metadata.folders = decodeKeysBase64(
+          transferDocument.metadata.folders
+        );
+      }
+      if (transferDocument?.metadata?.files) {
+        transferDocument.metadata.files = decodeKeysBase64(
+          transferDocument.metadata.files
+        );
+      }
+      if (transferDocument?.extendedMetadata) {
+        transferDocument.extendedMetadata = decodeKeysBase64(
+          transferDocument.extendedMetadata
+        );
+      }
+
       return transferDocument;
     } catch (error) {
       console.error(ERROR_IN_GET_TRANSFER_WHERE, error);
@@ -224,12 +241,12 @@ export const TransferService = {
 
       // Update folders if provided
       if (updates.folders) {
-        updateFields["metadata.folders"] = updates.folders;
+        updateFields["metadata.folders"] = encodeKeysBase64(updates.folders);
       }
 
       // Update files if provided
       if (updates.files) {
-        updateFields["metadata.files"] = updates.files;
+        updateFields["metadata.files"] = encodeKeysBase64(updates.files);
       }
 
       // Update other top-level fields

@@ -10,6 +10,7 @@ import {
   preserve,
 } from "./controllers";
 import multer from "multer";
+import { encodeKeysBase64AsObject } from "@/utils";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -43,12 +44,17 @@ router.post(
   upload.any(),
   ((req: Request, res: Response, next: NextFunction) => {
     try {
-      req.body.originalFoldersMetadata = JSON.parse(
-        req.body.originalFoldersMetadata || "{}"
-      );
-      req.body.metadataV2 = JSON.parse(req.body.metadataV2 || "{}");
-      req.body.extendedMetadata = JSON.parse(req.body.extendedMetadata || "{}");
-      req.body.changes = JSON.parse(req.body.changes || "[]");
+      const metadataV2 = JSON.parse(req.body.metadataV2 || "{}");
+      let extendedMetadata = JSON.parse(req.body.extendedMetadata || "{}");
+      const changes = JSON.parse(req.body.changes || "[]");
+
+      metadataV2.folders = encodeKeysBase64AsObject(metadataV2.folders);
+      metadataV2.files = encodeKeysBase64AsObject(metadataV2.files);
+      extendedMetadata = encodeKeysBase64AsObject(extendedMetadata);
+
+      req.body.metadataV2 = metadataV2;
+      req.body.extendedMetadata = extendedMetadata;
+      req.body.changes = changes;
       next();
     } catch (error) {
       return res
@@ -66,8 +72,15 @@ router.post(
   upload.any(),
   ((req: Request, res: Response, next: NextFunction) => {
     try {
-      req.body.metadata = JSON.parse(req.body.metadata || "{}");
-      req.body.extendedMetadata = JSON.parse(req.body.extendedMetadata || "{}");
+      const metadata = JSON.parse(req.body.metadata || "{}");
+      let extendedMetadata = JSON.parse(req.body.extendedMetadata || "{}");
+
+      metadata.folders = encodeKeysBase64AsObject(metadata.folders);
+      metadata.files = encodeKeysBase64AsObject(metadata.files);
+      extendedMetadata = encodeKeysBase64AsObject(extendedMetadata);
+
+      req.body.metadata = metadata;
+      req.body.extendedMetadata = extendedMetadata;
       next();
     } catch (error) {
       return res

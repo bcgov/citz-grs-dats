@@ -7,7 +7,7 @@ import {
 import { edrmsTransferBodySchema } from "../schemas";
 import { upload } from "src/modules/s3/utils";
 import { ENV } from "src/config";
-import { formatDate, formatFileSize } from "src/utils";
+import { decodeKeysBase64, formatDate, formatFileSize } from "src/utils";
 import { createAgreementPDF } from "@/modules/submission-agreement/utils";
 import type { FolderRow } from "@/modules/filelist/utils/excel/worksheets";
 import { createExcelWorkbook } from "@/modules/filelist/utils/excel";
@@ -17,7 +17,6 @@ import {
   createStandardTransferZip,
   handleTransferChunkUpload,
 } from "../utils";
-import crypto from "node:crypto";
 import type { Workbook } from "exceljs";
 import { TransferService } from "../services";
 
@@ -27,6 +26,11 @@ const { S3_BUCKET } = ENV;
 export const edrms = errorWrapper(async (req: Request, res: Response) => {
   const { getStandardResponse, getZodValidatedBody, user, token, files } = req;
   const body = getZodValidatedBody(edrmsTransferBodySchema); // Validate request body
+
+  const metadata = body.metadata;
+  metadata.folders = decodeKeysBase64(metadata.folders);
+  metadata.files = decodeKeysBase64(metadata.files);
+  const extendedMetadata = decodeKeysBase64(body.extendedMetadata);
 
   const { accession, application } = body.metadata.admin;
   const chunkIndex = Number.parseInt(body.chunkIndex);
@@ -92,11 +96,11 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   // Save data for transfer
   await TransferService.createOrUpdateTransferEntry({
     user,
-    application: body.metadata?.admin?.application,
-    accession: body.metadata?.admin?.accession,
-    folders: body.metadata.folders,
-    files: body.metadata.files,
-    extendedMetadata: body.extendedMetadata,
+    application: metadata.admin?.application,
+    accession: metadata.admin?.accession,
+    folders: metadata.folders,
+    files: metadata.files,
+    extendedMetadata,
   });
 
   // Create submission agreement file
@@ -115,7 +119,7 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // Format folder rows
-  const folderRows = Object.entries(body.metadata.folders).map(
+  const folderRows = Object.entries(metadata.folders).map(
     ([folder, metadata]) => ({
       folder, // Add the key as the "folder" property
       ...(metadata as unknown[]), // Spread the properties of the metadata
@@ -124,7 +128,7 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
 
   // Format file rows
   const fileRows = Object.values(
-    body.metadata.files
+    metadata.files
   ).flat() as FileMetadataZodType[];
 
   // Create Digital File List
@@ -145,7 +149,7 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
 
   // Add submitted by info to admin metadata
   const updatedAdminMetadata = {
-    ...body.metadata.admin,
+    ...metadata.admin,
     submittedBy: {
       name: user?.display_name ?? "",
       email: user?.email ?? "",
@@ -158,15 +162,12 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
     "utf-8"
   );
   const foldersJsonBuffer = Buffer.from(
-    JSON.stringify(body.metadata.folders),
+    JSON.stringify(metadata.folders),
     "utf-8"
   );
-  const filesJsonBuffer = Buffer.from(
-    JSON.stringify(body.metadata.files),
-    "utf-8"
-  );
+  const filesJsonBuffer = Buffer.from(JSON.stringify(metadata.files), "utf-8");
   const extendedMetadataJsonBuffer = Buffer.from(
-    JSON.stringify(body.extendedMetadata),
+    JSON.stringify(extendedMetadata),
     "utf-8"
   );
 
