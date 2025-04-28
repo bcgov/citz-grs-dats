@@ -13,28 +13,40 @@ import {
 	AccessionApplicationChecker,
 	AnimatedProgress,
 	ContinueButton,
+	FinalizeFilelistModal,
+	Toast,
 } from "@renderer/components";
 import type { FolderRow } from "@renderer/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 import { SelectFolderButton } from "./SelectFolderButton";
 
 export type FolderDisplayGridProps = {
 	columns: GridColDef<FolderRow>[];
-	onContinue: (boolean: boolean) => void;
-	hasAccessionApplication: boolean | null;
-	setHasAccessionApplication: React.Dispatch<
-		React.SetStateAction<boolean | null>
-	>;
+	onComplete: () => void;
 };
 
 export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
-	const { columns: columnProps, onContinue, hasAccessionApplication, setHasAccessionApplication } = props;
+	const { columns: columnProps, onComplete } = props;
+
+	const [finalizeModalIsOpen, setFinalizeModalIsOpen] =
+		useState<boolean>(false);
 
 	const [continueButtonIsEnabled, setContinueButtonIsEnabled] =
 		useState<boolean>(false);
 
-	const { addPathArrayToFolders, apiRef, folders, removeFolder, setFolders } =
-		useFolderList();
+	const [hasAccessionApplication, setHasAccessionApplication] = useState<
+		boolean | null
+	>(null);
+
+	const {
+		addPathArrayToFolders,
+		apiRef,
+		folders,
+		removeFolder,
+		setFolders,
+		submit,
+	} = useFolderList();
 
 	const columns = useMemo(() => {
 		return [
@@ -77,6 +89,30 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 			},
 		] as GridColDef<FolderRow>[];
 	}, [columnProps]);
+
+	const handleFinalizeModalClose = () => setFinalizeModalIsOpen(false);
+
+	const handleFormSubmit = useCallback(
+		async (formData) => {
+			try {
+				await submit(formData);
+				setFinalizeModalIsOpen(false);
+				onComplete();
+			} catch (error) {
+				console.error(error);
+				setFinalizeModalIsOpen(false);
+				toast.error(Toast, {
+					data: {
+						success: false,
+						title: "Submission failed",
+						message:
+							"We were unable to fulfill your request to create a file list. Please try again.",
+					},
+				});
+			}
+		},
+		[submit],
+	);
 
 	const handleCellKeyDown = (
 		params: GridCellParams,
@@ -128,7 +164,7 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 		[setFolders],
 	);
 
-	const handleContinueButtonClick = () => onContinue(true);
+	const handleContinueButtonClick = () => setFinalizeModalIsOpen(true);
 
 	useEffect(() => {
 		if (folders.length === 0) {
@@ -182,6 +218,12 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 					isEnabled={continueButtonIsEnabled}
 				/>
 			</Box>
+			<FinalizeFilelistModal
+				open={finalizeModalIsOpen}
+				onClose={handleFinalizeModalClose}
+				onSubmit={handleFormSubmit}
+				hasAccessionApplication={hasAccessionApplication}
+			/>
 		</>
 	);
 };

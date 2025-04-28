@@ -1,55 +1,26 @@
-import { useFolderList, useNavigate } from "@/hooks";
+import { useNavigate } from "@/hooks";
 import { Stack, Typography } from "@mui/material";
-import { Instruction, Toast } from "@renderer/components";
 import {
-	FinalizeFilelistModal,
 	FolderDisplayGrid,
+	Instruction,
 	ReturnToHomeModal,
-} from "@renderer/components/file-list";
-import { useCallback, useMemo, useState } from "react";
-import { toast } from "react-toastify";
+} from "@renderer/components";
+import { useMemo, useState } from "react";
 import { columns } from "./columns";
 
 export const FileListActionsPage = () => {
-		const [hasAccessionApplication, setHasAccessionApplication] = useState<
-			boolean | null
-		>(null);
 	const columnsMemo = useMemo(() => columns || [], [columns]);
 
-	const [finalizeModalIsOpen, setFinalizeModalIsOpen] =
-		useState<boolean>(false);
 	const [returnHomeModalIsOpen, setReturnHomeModalIsOpen] =
 		useState<boolean>(false);
 
 	const { navigate } = useNavigate();
 
-	const { submit } = useFolderList();
-
-	const handleFinalizeModalClose = () => setFinalizeModalIsOpen(false);
-
 	const handleReturnHomeModalClose = () => setReturnHomeModalIsOpen(false);
 
-	const handleFormSubmit = useCallback(
-		async (formData) => {
-			try {
-				await submit(formData);
-				setFinalizeModalIsOpen(false);
-				setReturnHomeModalIsOpen(true);
-			} catch (error) {
-				console.error(error);
-				setFinalizeModalIsOpen(false);
-				toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Submission failed",
-						message:
-							"We were unable to fulfill your request to create a file list. Please try again.",
-					},
-				});
-			}
-		},
-		[submit],
-	);
+	const handleCompletion = () => {
+		setReturnHomeModalIsOpen(true);
+	};
 
 	return (
 		<Stack gap={2}>
@@ -73,18 +44,7 @@ export const FileListActionsPage = () => {
 					required={false}
 				/>
 			</Stack>
-			<FolderDisplayGrid
-				columns={columnsMemo}
-				onContinue={setFinalizeModalIsOpen}
-				hasAccessionApplication={hasAccessionApplication}
-				setHasAccessionApplication={setHasAccessionApplication}
-			/>
-			<FinalizeFilelistModal
-				open={finalizeModalIsOpen}
-				onClose={handleFinalizeModalClose}
-				onSubmit={handleFormSubmit}
-				hasAccessionApplication={hasAccessionApplication}
-			/>
+			<FolderDisplayGrid columns={columnsMemo} onComplete={handleCompletion} />
 			<ReturnToHomeModal
 				open={returnHomeModalIsOpen}
 				onClose={handleReturnHomeModalClose}
