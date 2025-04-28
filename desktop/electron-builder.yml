@@ -13,11 +13,14 @@ asarUnpack:
   - resources/**
 win:
   executableName: desktop
+  requestedExecutionLevel: requireAdministrator
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  perMachine: true
+  allowElevation: true
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
