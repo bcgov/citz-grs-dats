@@ -1,6 +1,9 @@
 import archiver from "archiver";
 import unzipper from "unzipper";
 import { PassThrough } from "node:stream";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 // Define the Props type
 type Props = {
@@ -8,8 +11,6 @@ type Props = {
   documentation: Record<string, Buffer | null>;
   metadata: Record<string, Buffer | null>;
 };
-
-const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
 
 // Extract zip contents using unzipper and re-add to archive
 const extractZipToArchive = async (
@@ -32,6 +33,7 @@ export const createStandardTransferZip = async ({
   documentation,
   metadata,
 }: Props): Promise<Buffer> => {
+  console.log("Creating standard transfer zip...");
   const archive = archiver("zip", { zlib: { level: 9 } });
   const zipOutput = new PassThrough();
   archive.pipe(zipOutput);
@@ -51,45 +53,31 @@ export const createStandardTransferZip = async ({
 
   archive.finalize();
 
-  const chunkBuffers: Buffer[] = [];
-  const bufferQueue: Buffer[] = [];
-  let bufferedSize = 0;
+  const tempFilePath = path.join(os.tmpdir(), `temp-zip-${Date.now()}.zip`);
+  const writeStream = fs.createWriteStream(tempFilePath);
 
   return new Promise((resolve, reject) => {
-    zipOutput.on("data", (chunk: Buffer) => {
-      bufferQueue.push(chunk);
-      bufferedSize += chunk.length;
+    zipOutput.pipe(writeStream);
 
-      while (bufferedSize >= CHUNK_SIZE) {
-        let chunkSize = 0;
-        const buffersToConcat: Buffer[] = [];
-
-        while (bufferQueue.length && chunkSize < CHUNK_SIZE) {
-          const next = bufferQueue[0];
-          const remaining = CHUNK_SIZE - chunkSize;
-
-          if (next.length <= remaining) {
-            chunkSize += next.length;
-            buffersToConcat.push(bufferQueue.shift()!);
-          } else {
-            buffersToConcat.push(next.slice(0, remaining));
-            bufferQueue[0] = next.slice(remaining);
-            chunkSize += remaining;
-          }
+    writeStream.on("finish", () => {
+      fs.readFile(tempFilePath, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          fs.unlink(tempFilePath, () => {}); // Clean up temp file
+          resolve(data);
         }
-
-        chunkBuffers.push(Buffer.concat(buffersToConcat, chunkSize));
-        bufferedSize -= chunkSize;
-      }
+      });
     });
 
-    zipOutput.on("end", () => {
-      if (bufferQueue.length > 0) {
-        chunkBuffers.push(Buffer.concat(bufferQueue, bufferedSize));
-      }
-      resolve(Buffer.concat(chunkBuffers));
+    writeStream.on("error", (err) => {
+      fs.unlink(tempFilePath, () => {}); // Clean up temp file on error
+      reject(err);
     });
 
-    zipOutput.on("error", (err) => reject(err));
+    zipOutput.on("error", (err) => {
+      fs.unlink(tempFilePath, () => {}); // Clean up temp file on error
+      reject(err);
+    });
   });
 };
