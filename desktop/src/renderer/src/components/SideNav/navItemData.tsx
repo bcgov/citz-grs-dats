@@ -7,7 +7,7 @@ import type { NavItemProps } from "./NavItem.d";
 
 const navItemData: NavItemProps[] = [
   {
-    path: "/file-list/instructions",
+    path: "/file-list",
     label: "Create file list",
     icon: <FileListIcon sx={{ color: "var(--text-secondary)" }} />,
     role: "any",

@@ -28,15 +28,19 @@ export const NavItem = ({ path, label, icon, role }: NavItemProps) => {
     };
   }
 
-  const listItem = (
-    <ListItem sx={sx} component="button" onClick={() => navigate(path)}>
-      {icon}
-      <Typography sx={{ fontSize: "16px" }}>{label}</Typography>
-    </ListItem>
-  );
+	const listItem = (
+		<ListItem
+			sx={sx}
+			component="button"
+			onClick={() => navigate(path)}
+		>
+			{icon}
+			<Typography>{label}</Typography>
+		</ListItem>
+	);
 
-  if (!role) return listItem;
-  if (accessToken && role === "any") return listItem;
-  if (accessToken && hasRole(role)) return listItem;
-  return null;
+	if (!role) return listItem;
+	if (accessToken && role === "any") return listItem;
+	if (accessToken && hasRole(role)) return listItem;
+	return null;
 };

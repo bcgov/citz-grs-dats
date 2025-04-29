@@ -1,15 +1,18 @@
 export * from "./Accordion";
+export * from "./AnimatedProgress";
 export * from "./AuthButton";
 export * from "./CloseApplicationModal";
 export * from "./DownloadIcon";
+export * from "./file-list";
 export * from "./FileUploadArea";
 export * from "./FolderUploadArea";
+export * from "./Grid";
 export * from "./HelpModal";
 export * from "./Instruction";
-export * from "./Layout";
 export * from "./LoginRequiredModal";
 export * from "./NavigateAwayModal";
-export * from "./PageLinkCard";
+export * from "./NoteBlock";
+export * from './PageLinkCard';
 export * from "./PreserveIcon";
 export * from "./ReleaseNotesModal";
 export * from "./SideNav";
@@ -18,3 +21,4 @@ export * from "./SubAgreementScrollBox";
 export * from "./Toast";
 export * from "./TransferRecordsIcon";
 export * from "./VPNPopup";
+
