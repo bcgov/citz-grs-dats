@@ -57,6 +57,18 @@ export const parseXlsxFileList = (
 
             folders.push(folderName);
 
+            const formatDate = (value: string | number | null) => {
+              if (typeof value === "number") {
+                // Excel serial date to JavaScript Date
+                const excelEpoch = new Date(1899, 11, 30); // Excel epoch starts on 1899-12-30
+                const jsDate = new Date(
+                  excelEpoch.getTime() + value * 86400000
+                ); // Add days in milliseconds
+                return jsDate.toISOString().split("T")[0]; // Format as yyyy-mm-dd
+              }
+              return value;
+            };
+
             foldersMetadata[folderName] = {
               schedule: fileList[`B${rowIndex}`]?.v
                 ? `${fileList[`B${rowIndex}`]?.v}`
@@ -64,12 +76,22 @@ export const parseXlsxFileList = (
               classification: fileList[`C${rowIndex}`]?.v
                 ? `${fileList[`C${rowIndex}`]?.v}`
                 : null,
-              file: fileList[`D${rowIndex}`]?.v ?? null,
+              file: fileList[`D${rowIndex}`]?.v
+                ? `${fileList[`D${rowIndex}`]?.v}`
+                : null,
               opr: fileList[`E${rowIndex}`]?.v === "Y",
-              startDate: fileList[`F${rowIndex}`]?.v ?? null,
-              endDate: fileList[`G${rowIndex}`]?.v ?? null,
-              soDate: fileList[`H${rowIndex}`]?.v ?? null,
-              fdDate: fileList[`I${rowIndex}`]?.v ?? null,
+              startDate: fileList[`F${rowIndex}`]?.v
+                ? formatDate(fileList[`F${rowIndex}`]?.v)
+                : null,
+              endDate: fileList[`G${rowIndex}`]?.v
+                ? formatDate(fileList[`G${rowIndex}`]?.v)
+                : null,
+              soDate: fileList[`H${rowIndex}`]?.v
+                ? formatDate(fileList[`H${rowIndex}`]?.v)
+                : null,
+              fdDate: fileList[`I${rowIndex}`]?.v
+                ? formatDate(fileList[`I${rowIndex}`]?.v)
+                : null,
             };
 
             rowIndex++;
