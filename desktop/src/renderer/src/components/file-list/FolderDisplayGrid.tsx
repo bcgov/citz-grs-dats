@@ -1,285 +1,229 @@
-import {
-  DataGrid,
-  type GridColDef,
-  useGridApiContext,
-  type GridRenderEditCellParams,
-  type useGridApiRef,
-  type GridCellParams,
-  type MuiEvent,
-} from "@mui/x-data-grid";
+import { useFolderList } from "@/hooks";
 import { DeleteOutline as DeleteIcon } from "@mui/icons-material";
+import { Box, IconButton, Tooltip } from "@mui/material";
 import {
-  IconButton,
-  Tooltip,
-  InputBase,
-  type InputBaseProps,
-  Box,
-} from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+	DataGrid,
+	type GridCellParams,
+	type GridColDef,
+	type MuiEvent,
+} from "@mui/x-data-grid";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import type { Dayjs } from "dayjs";
-import { styled } from "@mui/material/styles";
-import { AnimatedProgress } from "./AnimatedProgress";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import {
+	AccessionApplicationChecker,
+	AnimatedProgress,
+	ContinueButton,
+	FinalizeFilelistModal,
+	Toast,
+} from "@renderer/components";
+import type { FolderRow } from "@renderer/types";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import { SelectFolderButton } from "./SelectFolderButton";
 
-export type FolderRow = {
-  id: number;
-  folder: string;
-  schedule: string;
-  classification: string;
-  file: string;
-  opr: boolean;
-  startDate: Dayjs | null;
-  endDate: Dayjs | null;
-  soDate: Dayjs | null;
-  fdDate: Dayjs | null;
-  progress: number;
+export type FolderDisplayGridProps = {
+	columns: GridColDef<FolderRow>[];
+	onComplete: () => void;
 };
 
-const GridEditDateInput = styled(InputBase)({
-  fontSize: "inherit",
-  padding: "0 9px",
-});
+export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
+	const { columns: columnProps, onComplete } = props;
 
-const WrappedGridEditDateInput = (props) => {
-  const { InputProps, focused, ...other } = props;
-  return (
-    <GridEditDateInput
-      fullWidth
-      {...InputProps}
-      {...(other as InputBaseProps)}
-    />
-  );
-};
+	const [finalizeModalIsOpen, setFinalizeModalIsOpen] =
+		useState<boolean>(false);
 
-const GridEditDateCell = ({
-  id,
-  field,
-  value,
-}: GridRenderEditCellParams<FolderRow, Dayjs | null, string>) => {
-  const apiRef = useGridApiContext();
+	const [continueButtonIsEnabled, setContinueButtonIsEnabled] =
+		useState<boolean>(false);
 
-  const handleChange = (newValue: Dayjs | null) => {
-    apiRef.current.setEditCellValue({ id, field, value: newValue });
-  };
+	const [hasAccessionApplication, setHasAccessionApplication] = useState<
+		boolean | null
+	>(null);
 
-  return (
-    <DatePicker
-      value={value}
-      onChange={handleChange}
-      format="YYYY/MM/DD"
-      slots={{ textField: WrappedGridEditDateInput }}
-    />
-  );
-};
+	const {
+		addPathArrayToFolders,
+		apiRef,
+		folders,
+		removeFolder,
+		setFolders,
+		submit,
+	} = useFolderList();
 
-type Props = {
-  rows: FolderRow[];
-  onFolderDelete: (folder: string) => Promise<void> | void;
-  processRowUpdate: (newRow: FolderRow) => FolderRow;
-  apiRef: ReturnType<typeof useGridApiRef>;
-};
+	const columns = useMemo(() => {
+		return [
+			{
+				field: "progress",
+				description: "Folder upload status.",
+				headerName: "Status",
+				width: 100,
+				renderCell: (params) => (
+					<AnimatedProgress progress={params.row.progress} />
+				),
+			},
+			...columnProps,
+			{
+				field: "delete",
+				headerName: "Delete",
+				description: "Remove folder from file list.",
+				width: 100,
+				renderCell: (params) => (
+					<Box
+						sx={{
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+							width: "100%",
+							height: "100%",
+						}}
+					>
+						<Tooltip title="Delete folder.">
+							<IconButton
+								sx={{ color: "black" }}
+								onClick={() => removeFolder(params.row.folder)}
+								aria-label="delete"
+							>
+								<DeleteIcon />
+							</IconButton>
+						</Tooltip>
+					</Box>
+				),
+			},
+		] as GridColDef<FolderRow>[];
+	}, [columnProps]);
 
-export const FolderDisplayGrid = ({
-  rows,
-  onFolderDelete,
-  processRowUpdate,
-  apiRef,
-}: Props) => {
-  const columns: GridColDef<(typeof rows)[number]>[] = [
-    {
-      field: "progress",
-      description: "Folder upload status.",
-      headerName: "Status",
-      width: 100,
-      renderCell: (params) => (
-        <AnimatedProgress progress={params.row.progress} />
-      ),
-    },
-    {
-      field: "folder",
-      headerName: "Folder path",
-      width: 200,
-      description: "Network path to the folder.",
-    },
-    {
-      field: "schedule",
-      headerName: "Schedule",
-      description: "Information Schedule number (e.g. 100001 for ARCS).",
-      width: 110,
-      editable: true,
-    },
-    {
-      field: "classification",
-      headerName: "Classification",
-      description:
-        "Classification number (e.g. 201-40 for Cabinet Submissions).",
-      width: 150,
-      editable: true,
-    },
-    {
-      field: "file",
-      headerName: "File ID",
-      description:
-        "File identifier to link multiple folders, if used (e.g. PEP for Provincial Emergency Program).",
-      width: 90,
-      editable: true,
-    },
-    {
-      field: "opr",
-      headerName: "OPR",
-      type: "boolean",
-      description:
-        "Office of Primary Responsibility. Check the box if your office maintains the official copy of the records.",
-      width: 60,
-      editable: true,
-    },
-    {
-      field: "startDate",
-      headerName: "Start Date",
-      description: "Date the file was opened.",
-      width: 145,
-      editable: true,
-      renderEditCell: (params) => <GridEditDateCell {...params} />,
-      valueFormatter: (value) => {
-        if (value) {
-          return (value as Dayjs).format("YYYY/MM/DD");
-        }
-        return "";
-      },
-    },
-    {
-      field: "endDate",
-      headerName: "End Date",
-      description: "Date the file was closed.",
-      width: 145,
-      editable: true,
-      renderEditCell: (params) => <GridEditDateCell {...params} />,
-      valueFormatter: (value) => {
-        if (value) {
-          return (value as Dayjs).format("YYYY/MM/DD");
-        }
-        return "";
-      },
-    },
-    {
-      field: "soDate",
-      headerName: "SO Date",
-      description:
-        "Date the file became Superseded or Obsolete (SO), if applicable.",
-      width: 145,
-      editable: true,
-      renderEditCell: (params) => <GridEditDateCell {...params} />,
-      valueFormatter: (value) => {
-        if (value) {
-          return (value as Dayjs).format("YYYY/MM/DD");
-        }
-        return "";
-      },
-    },
-    {
-      field: "fdDate",
-      headerName: "FD Date",
-      description: "Date the file was eligible for Final Disposition (FD).",
-      width: 145,
-      editable: true,
-      renderEditCell: (params) => <GridEditDateCell {...params} />,
-      valueFormatter: (value) => {
-        if (value) {
-          return (value as Dayjs).format("YYYY/MM/DD");
-        }
-        return "";
-      },
-    },
-    {
-      field: "delete",
-      headerName: "Delete",
-      description: "Remove folder from file list.",
-      width: 100,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          <Tooltip title="Delete folder.">
-            <IconButton
-              sx={{ color: "black" }}
-              onClick={() => onFolderDelete(params.row.folder)}
-              aria-label="delete"
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      ),
-    },
-  ];
+	const handleFinalizeModalClose = () => setFinalizeModalIsOpen(false);
 
-  const handleCellKeyDown = (
-    params: GridCellParams,
-    event: MuiEvent<React.KeyboardEvent>
-  ) => {
-    if (event.key === "ArrowDown") {
-      const { id, field, value, isEditable } = params;
+	const handleFormSubmit = useCallback(
+		async (formData) => {
+			try {
+				await submit(formData);
+				setFinalizeModalIsOpen(false);
+				onComplete();
+			} catch (error) {
+				console.error(error);
+				setFinalizeModalIsOpen(false);
+				toast.error(Toast, {
+					data: {
+						success: false,
+						title: "Submission failed",
+						message:
+							"We were unable to fulfill your request to create a file list. Please try again.",
+					},
+				});
+			}
+		},
+		[submit],
+	);
 
-      if (!value || !isEditable) return;
+	const handleCellKeyDown = (
+		params: GridCellParams,
+		event: MuiEvent<React.KeyboardEvent>,
+	) => {
+		if (event.key === "ArrowDown") {
+			const { id, field, value, isEditable } = params;
 
-      const currentRowIndex = Number(id);
+			if (!value || !isEditable) return;
 
-      // Iterate through all rows below the current one
-      for (let i = currentRowIndex + 1; i < rows.length; i++) {
-        const targetValue = apiRef.current.getCellValue(i, field);
+			const currentFolderIndex = Number(id);
 
-        if (
-          targetValue === undefined ||
-          targetValue === null ||
-          targetValue === ""
-        ) {
-          const isRowInEditMode = apiRef.current.getRowMode(i) === "edit";
-          if (!isRowInEditMode) apiRef.current.startRowEditMode({ id: i });
+			// Iterate through all rows below the current one
+			for (let i = currentFolderIndex + 1; i < folders.length; i++) {
+				const targetValue = apiRef.current.getCellValue(i, field);
 
-          apiRef.current.setEditCellValue({ id: i, field, value });
-        } else {
-          break; // Stop when a non-empty row is found
-        }
-      }
+				if (
+					targetValue === undefined ||
+					targetValue === null ||
+					targetValue === ""
+				) {
+					const isRowInEditMode = apiRef.current.getRowMode(i) === "edit";
+					if (!isRowInEditMode) apiRef.current.startRowEditMode({ id: i });
 
-      event.stopPropagation(); // Prevent default handling of the ArrowDown key
-    }
-  };
+					apiRef.current.setEditCellValue({ id: i, field, value });
+				} else {
+					break; // Stop when a non-empty row is found
+				}
+			}
 
-  const handleCellClick = (params: GridCellParams) => {
-    if (!params.colDef.editable) return; // Ensure only editable fields trigger edit mode
-    apiRef.current.startRowEditMode({ id: params.id });
-  };
+			event.stopPropagation(); // Prevent default handling of the ArrowDown key
+		}
+	};
 
-  return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box sx={{ width: "100%" }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          apiRef={apiRef}
-          disableRowSelectionOnClick
-          disableColumnFilter
-          disableColumnMenu
-          editMode="row"
-          hideFooter
-          processRowUpdate={processRowUpdate}
-          onCellKeyDown={handleCellKeyDown}
-          onCellClick={handleCellClick}
-          sx={{
-            "& .MuiDataGrid-cell:focus-within": {
-              border: "3px solid #2E5DD7", // Cell focus
-            },
-          }}
-        />
-      </Box>
-    </LocalizationProvider>
-  );
+	const handleCellClick = (params: GridCellParams) => {
+		if (!params.colDef.editable) return; // Ensure only editable fields trigger edit mode
+		apiRef.current.startRowEditMode({ id: params.id });
+	};
+
+	const handleRowUpdate = useCallback(
+		(newFolder: FolderRow) => {
+			setFolders((prevFolderList) =>
+				prevFolderList.map((folder) =>
+					folder.id === newFolder.id ? newFolder : folder,
+				),
+			);
+			return newFolder;
+		},
+		[setFolders],
+	);
+
+	const handleContinueButtonClick = () => setFinalizeModalIsOpen(true);
+
+	useEffect(() => {
+		if (folders.length === 0) {
+			setHasAccessionApplication(null);
+			setContinueButtonIsEnabled(false);
+		} else {
+			// Enable Continue Button if all folders have been processed
+			setContinueButtonIsEnabled(
+				folders.every((folder) => folder.progress === 100),
+			);
+		}
+	}, [folders]);
+
+	return (
+		<>
+			<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+				<SelectFolderButton
+					onRowChange={(inputPaths) => addPathArrayToFolders(inputPaths)}
+				/>
+			</Box>
+			<LocalizationProvider dateAdapter={AdapterDayjs}>
+				<Box sx={{ width: "100%" }}>
+					<DataGrid
+						rows={folders}
+						columns={columns}
+						apiRef={apiRef}
+						disableRowSelectionOnClick
+						disableColumnFilter
+						disableColumnMenu
+						editMode="row"
+						hideFooter
+						processRowUpdate={handleRowUpdate}
+						onCellKeyDown={handleCellKeyDown}
+						onCellClick={handleCellClick}
+						sx={{
+							"& .MuiDataGrid-cell:focus-within": {
+								border: "3px solid #2E5DD7", // Cell focus
+							},
+						}}
+					/>
+				</Box>
+			</LocalizationProvider>
+			<AccessionApplicationChecker
+				hasAccessionApplication={hasAccessionApplication}
+				setAccessionApplication={setHasAccessionApplication}
+				enabled={folders.length > 0}
+			/>
+			<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+				<ContinueButton
+					onClick={handleContinueButtonClick}
+					isEnabled={continueButtonIsEnabled}
+				/>
+			</Box>
+			<FinalizeFilelistModal
+				open={finalizeModalIsOpen}
+				onClose={handleFinalizeModalClose}
+				onSubmit={handleFormSubmit}
+				hasAccessionApplication={hasAccessionApplication}
+			/>
+		</>
+	);
 };

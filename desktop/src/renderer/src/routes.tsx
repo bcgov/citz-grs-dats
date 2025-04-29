@@ -2,7 +2,7 @@ import { Route, Routes as ReactRoutes } from "react-router";
 import {
 	EdrmsInstructionsPage,
 	EdrmsTransferPage,
-	FileListInstructionsPage,
+	// FileListInstructionsPage,
 	FileListPage,
 	HomePage,
 	LanInstructionsPage,
@@ -19,8 +19,8 @@ export const Routes = () => {
 				element={<HomePage />}
 			/>
 			<Route
-				path="/file-list/instructions"
-				element={<FileListInstructionsPage />}
+				path="/file-list/actions"
+				element={<FileListPage />}
 			/>
 			<Route
 				path="/file-list"

@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import type { FolderRow } from "../../renderer/src/components/file-list";
+import type { FolderRow } from "@renderer/types";
 import { convertArrayToObject } from "./convertArrayToObject";
+import { useAuth, useNavigate } from "@/hooks";
+import { useGridApiRef } from "@mui/x-data-grid";
 
 export const useFolderList = () => {
+  const { accessToken } = useAuth();
+  const apiRef = useGridApiRef();
+  const { setCanLoseProgress } = useNavigate();
+
   const [folders, setFolders] = useState<FolderRow[]>([]);
   const [metaData, setMetaData] = useState<Record<string, unknown>>({});
   const [extendedMetaData, setExtendedMetaData] = useState<
@@ -11,6 +17,51 @@ export const useFolderList = () => {
   const [pendingPaths, setPendingPaths] = useState<string[]>([]);
   const [workers] = useState(window.api.workers);
   const { fetchProtectedRoute, refreshTokens } = window.api.sso;
+
+  const handleProgress = useCallback(
+    (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
+      const { source, progressPercentage } = event.detail;
+      setFolders((prevFolderList) =>
+        prevFolderList.map((folder) =>
+          folder.folder === source
+            ? { ...folder, progress: progressPercentage }
+            : folder,
+        ),
+      );
+    },
+    [setFolders],
+  );
+
+  const handleCompletion = useCallback(
+    (
+      event: CustomEvent<{
+        source: string;
+        success: boolean;
+        metadata?: Record<string, unknown>;
+        extendedMetadata?: Record<string, unknown>;
+        error?: unknown;
+      }>,
+    ) => {
+      const {
+        source,
+        success,
+        metadata: newMetadata,
+        extendedMetadata: newExtendedMetadata,
+      } = event.detail;
+
+      if (success && newMetadata) {
+        setMetaData((prev) => ({
+          ...prev,
+          [source]: newMetadata[source],
+        }));
+        if (newExtendedMetadata) setExtendedMetaData(newExtendedMetadata);
+        console.info(`Successfully processed folder: ${source}`);
+      } else {
+        console.error(`Failed to process folder: ${source}`);
+      }
+    },
+    [setMetaData, setExtendedMetaData],
+  );
 
   const getFolderMetadata = useCallback(
     async (filePath: string) => {
@@ -29,7 +80,7 @@ export const useFolderList = () => {
   );
 
   const addPathArrayToFolders = useCallback(
-    (inputPaths: string[], apiRef) => {
+    (inputPaths: string[]) => {
       const newFolderList: FolderRow[] = [...folders];
       let index = folders.length; // Start IDs based on the current rows
       const pathsToProcess: string[] = [];
@@ -143,6 +194,29 @@ export const useFolderList = () => {
   );
 
   useEffect(() => {
+    window.addEventListener(
+      "folder-metadata-progress",
+      handleProgress as EventListener,
+    );
+    window.addEventListener(
+      "folder-metadata-completion",
+      handleCompletion as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "folder-metadata-progress",
+        handleProgress as EventListener,
+      );
+      window.removeEventListener(
+        "folder-metadata-completion",
+        handleCompletion as EventListener,
+      );
+    }
+  }, [handleProgress])
+
+
+  useEffect(() => {
     // Process pending paths for metadata
     if (pendingPaths.length > 0) {
       const pathsToProcess = [...pendingPaths];
@@ -159,18 +233,24 @@ export const useFolderList = () => {
     }
   }, [pendingPaths, getFolderMetadata]);
 
+  useEffect(() => {
+    // Set the canLoseProgress state based on the folder list
+    setCanLoseProgress(folders.length > 0);
+  }, [folders, setCanLoseProgress]);
+
   return {
-    folders,
-    setFolders,
-    metaData,
-    setMetaData,
-    extendedMetaData,
-    setExtendedMetaData,
-    getFolderMetadata,
     addPathArrayToFolders,
+    apiRef,
+    folders,
+    extendedMetaData,
+    getFolderMetadata,
+    metaData,
     pendingPaths,
-    setPendingPaths,
     removeFolder,
+    setExtendedMetaData,
+    setFolders,
+    setMetaData,
+    setPendingPaths,
     submit,
   };
 };
