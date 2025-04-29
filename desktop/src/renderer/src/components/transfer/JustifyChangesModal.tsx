@@ -19,7 +19,7 @@ const modalStyle = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 500,
+  width: 550,
   bgcolor: "background.paper",
   border: "1px solid var(--modal-border)",
   borderRadius: "4px",
@@ -77,10 +77,14 @@ export const JustifyChangesModal = ({
             style={{
               padding: "8px 12px",
               border: "1px solid var(--modal-border)",
+              fontFamily: "BC Sans",
+              fontSize: "16px",
+              lineHeight: "27px",
+              borderRadius: "4px",
             }}
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
-            minRows={7}
+            minRows={5}
             placeholder={`• The folder name changed slightly during a LAN drive clean-up
 • The folder location changed during a LAN drive clean-up
 • The folder is active again due to an audit, FOI request, legal case, etc.`}
