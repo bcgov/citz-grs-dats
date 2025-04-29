@@ -12,6 +12,9 @@ COPY . .
 
 RUN npm i --verbose
 
+RUN mkdir -p /app/modules/transfer/uploads
+RUN chmod -R 777 /app/modules/transfer/uploads
+
 EXPOSE ${BACKEND_PORT}
 
 CMD ["npm", "run", "dev"]
