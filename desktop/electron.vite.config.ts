@@ -13,9 +13,8 @@ export default defineConfig({
     resolve: {
       alias: {
         "@": resolve("src"),
-        "@hooks": resolve("src/renderer/src/hooks"),
-        "@preload": resolve("src/preload/src"),
-        "@renderer": resolve("src/renderer/src"),
+        "@preload": resolve("src/preload"),
+        "@renderer": resolve("src/renderer"),
       },
     },
     plugins: [react()],

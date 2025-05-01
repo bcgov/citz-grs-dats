@@ -19,7 +19,7 @@
 				"src/preload/*"
 			],
 			"@renderer/*": [
-				"src/renderer/src/*"
+				"src/renderer/*"
 			]
 		}
 	},
