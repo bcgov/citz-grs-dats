@@ -10,12 +10,10 @@
 		"types": [
 			"electron-vite/node"
 		],
+		"baseUrl": "./",
 		"paths": {
 			"@/*": [
 				"src/*"
-			],
-			"@hooks/*": [
-				"src/renderer/src/hooks/*"
 			],
 			"@preload/*": [
 				"src/preload/*"
