@@ -15,11 +15,20 @@
 		"jsx": "react-jsx",
 		"baseUrl": ".",
 		"paths": {
-			"@renderer/*": ["src/renderer/src/*"],
-			"src/*": ["src/*"],
-			"@/*": ["src/*"],
-			"@hooks/*": ["src/hooks/*"],
-			"@preload/*": ["src/preload/*"],
+			"@renderer/*": [
+				"src/renderer/src/*"
+			],
+			"@hooks/*": [
+				"src/hooks/*"
+			],
+			"@preload/*": [
+				"src/preload/*"
+			]
 		}
-	}
+	},
+	"exclude": [
+		"node_modules",
+		"dist",
+		"build"
+	]
 }
