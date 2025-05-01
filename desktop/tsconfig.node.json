@@ -9,7 +9,21 @@
 		"composite": true,
 		"types": [
 			"electron-vite/node"
-		]
+		],
+		"paths": {
+			"@/*": [
+				"src/*"
+			],
+			"@hooks/*": [
+				"src/renderer/src/hooks/*"
+			],
+			"@preload/*": [
+				"src/preload/*"
+			],
+			"@renderer/*": [
+				"src/renderer/src/*"
+			]
+		}
 	},
 	"exclude": [
 		"node_modules",

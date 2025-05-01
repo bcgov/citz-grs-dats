@@ -9,8 +9,17 @@
     "skipLibCheck": true,
     "baseUrl": "./",
     "paths": {
-      "@shared/*": [
-        "src/shared/*"
+      "@/*": [
+        "src/*"
+      ],
+      "@hooks/*": [
+        "src/renderer/src/hooks/*"
+      ],
+      "@preload/*": [
+        "src/preload/*"
+      ],
+      "@renderer/*": [
+        "src/renderer/src/*"
       ]
     }
   },
