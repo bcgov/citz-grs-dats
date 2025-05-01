@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import type { FolderRow } from "@renderer/types";
-import { convertArrayToObject } from "./convertArrayToObject";
-import { useAuth, useNavigate } from "@/hooks";
+import { useNavigate } from "@/hooks";
 import { useGridApiRef } from "@mui/x-data-grid";
+import type { FolderRow } from "@renderer/types";
+import { useCallback, useEffect, useState } from "react";
+import { convertArrayToObject } from "./convertArrayToObject";
 
 export const useFolderList = () => {
-  const { accessToken } = useAuth();
   const apiRef = useGridApiRef();
   const { setCanLoseProgress } = useNavigate();
 

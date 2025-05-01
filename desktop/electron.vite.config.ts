@@ -12,10 +12,10 @@ export default defineConfig({
   renderer: {
     resolve: {
       alias: {
-        "@renderer": resolve("src/renderer/src"),
-        "@preload": resolve("src/preload/src"),
-        "@hooks": resolve("src/hooks"),
         "@": resolve("src"),
+        "@hooks": resolve("src/renderer/src/hooks"),
+        "@preload": resolve("src/preload/src"),
+        "@renderer": resolve("src/renderer/src"),
       },
     },
     plugins: [react()],

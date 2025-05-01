@@ -1,4 +1,4 @@
-import type { FolderRow } from "@renderer/components/file-list";
+import type { FolderRow } from "@renderer/types";
 
 export const convertArrayToObject = (array: FolderRow[]) => {
   return array.reduce((acc, item) => {
