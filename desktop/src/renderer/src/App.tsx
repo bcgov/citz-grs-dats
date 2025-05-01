@@ -3,7 +3,7 @@ import {
 	NavigateProvider,
 	useAppCloseHandler,
 	useReleaseNotes,
-} from "@/hooks";
+} from "@renderer/hooks";
 import { HashRouter } from "react-router";
 import { CloseApplicationModal } from "./components";
 import { AppLayout } from "./layouts";

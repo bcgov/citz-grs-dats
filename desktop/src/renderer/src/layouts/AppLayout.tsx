@@ -1,4 +1,4 @@
-import { useNavigate } from "@/hooks";
+import { useNavigate } from "@renderer/hooks";
 import { Header } from "@bcgov/design-system-react-components";
 import { Button, Grid2 as Grid } from "@mui/material";
 import { ToastContainer } from "react-toastify";
@@ -8,10 +8,7 @@ export const AppLayout = ({ children }) => {
 	const { navigate } = useNavigate();
 
 	return (
-		<Grid
-			container
-			sx={{ height: "100vh" }}
-		>
+		<Grid container sx={{ height: "100vh" }}>
 			<Grid size={2}>
 				<SideNav />
 			</Grid>

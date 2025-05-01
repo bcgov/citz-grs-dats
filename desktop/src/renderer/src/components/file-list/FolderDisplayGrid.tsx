@@ -1,12 +1,6 @@
-import { useFolderList } from "@/hooks";
 import { DeleteOutline as DeleteIcon } from "@mui/icons-material";
 import { Box, IconButton, Tooltip } from "@mui/material";
-import {
-	DataGrid,
-	type GridCellParams,
-	type GridColDef,
-	type MuiEvent,
-} from "@mui/x-data-grid";
+import { DataGrid, type GridCellParams, type GridColDef, type MuiEvent } from "@mui/x-data-grid";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import {
@@ -16,6 +10,7 @@ import {
 	FinalizeFilelistModal,
 	Toast,
 } from "@renderer/components";
+import { useFolderList } from "@renderer/hooks";
 import type { FolderRow } from "@renderer/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
@@ -29,24 +24,14 @@ export type FolderDisplayGridProps = {
 export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 	const { columns: columnProps, onComplete } = props;
 
-	const [finalizeModalIsOpen, setFinalizeModalIsOpen] =
-		useState<boolean>(false);
+	const [finalizeModalIsOpen, setFinalizeModalIsOpen] = useState<boolean>(false);
 
-	const [continueButtonIsEnabled, setContinueButtonIsEnabled] =
-		useState<boolean>(false);
+	const [continueButtonIsEnabled, setContinueButtonIsEnabled] = useState<boolean>(false);
 
-	const [hasAccessionApplication, setHasAccessionApplication] = useState<
-		boolean | null
-	>(null);
+	const [hasAccessionApplication, setHasAccessionApplication] = useState<boolean | null>(null);
 
-	const {
-		addPathArrayToFolders,
-		apiRef,
-		folders,
-		removeFolder,
-		setFolders,
-		submit,
-	} = useFolderList();
+	const { addPathArrayToFolders, apiRef, folders, removeFolder, setFolders, submit } =
+		useFolderList();
 
 	const columns = useMemo(() => {
 		return [
@@ -55,9 +40,7 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 				description: "Folder upload status.",
 				headerName: "Status",
 				width: 100,
-				renderCell: (params) => (
-					<AnimatedProgress progress={params.row.progress} />
-				),
+				renderCell: (params) => <AnimatedProgress progress={params.row.progress} />,
 			},
 			...columnProps,
 			{
@@ -114,10 +97,7 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 		[submit],
 	);
 
-	const handleCellKeyDown = (
-		params: GridCellParams,
-		event: MuiEvent<React.KeyboardEvent>,
-	) => {
+	const handleCellKeyDown = (params: GridCellParams, event: MuiEvent<React.KeyboardEvent>) => {
 		if (event.key === "ArrowDown") {
 			const { id, field, value, isEditable } = params;
 
@@ -129,11 +109,7 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 			for (let i = currentFolderIndex + 1; i < folders.length; i++) {
 				const targetValue = apiRef.current.getCellValue(i, field);
 
-				if (
-					targetValue === undefined ||
-					targetValue === null ||
-					targetValue === ""
-				) {
+				if (targetValue === undefined || targetValue === null || targetValue === "") {
 					const isRowInEditMode = apiRef.current.getRowMode(i) === "edit";
 					if (!isRowInEditMode) apiRef.current.startRowEditMode({ id: i });
 
@@ -155,9 +131,7 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 	const handleRowUpdate = useCallback(
 		(newFolder: FolderRow) => {
 			setFolders((prevFolderList) =>
-				prevFolderList.map((folder) =>
-					folder.id === newFolder.id ? newFolder : folder,
-				),
+				prevFolderList.map((folder) => (folder.id === newFolder.id ? newFolder : folder)),
 			);
 			return newFolder;
 		},
@@ -172,18 +146,14 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 			setContinueButtonIsEnabled(false);
 		} else {
 			// Enable Continue Button if all folders have been processed
-			setContinueButtonIsEnabled(
-				folders.every((folder) => folder.progress === 100),
-			);
+			setContinueButtonIsEnabled(folders.every((folder) => folder.progress === 100));
 		}
 	}, [folders]);
 
 	return (
 		<>
 			<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-				<SelectFolderButton
-					onRowChange={(inputPaths) => addPathArrayToFolders(inputPaths)}
-				/>
+				<SelectFolderButton onRowChange={(inputPaths) => addPathArrayToFolders(inputPaths)} />
 			</Box>
 			<LocalizationProvider dateAdapter={AdapterDayjs}>
 				<Box sx={{ width: "100%" }}>
@@ -213,10 +183,7 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 				enabled={folders.length > 0}
 			/>
 			<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-				<ContinueButton
-					onClick={handleContinueButtonClick}
-					isEnabled={continueButtonIsEnabled}
-				/>
+				<ContinueButton onClick={handleContinueButtonClick} isEnabled={continueButtonIsEnabled} />
 			</Box>
 			<FinalizeFilelistModal
 				open={finalizeModalIsOpen}

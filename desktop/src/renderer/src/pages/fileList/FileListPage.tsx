@@ -1,4 +1,4 @@
-import { useNavigate } from "@/hooks";
+import { useNavigate } from "@renderer/hooks";
 import { PageLayout } from "@renderer/layouts";
 import { FileListActionsPage } from "./FileListActions";
 import { FileListOverviewPage } from "./FileListOverview";

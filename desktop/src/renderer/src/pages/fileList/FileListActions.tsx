@@ -1,18 +1,13 @@
-import { useNavigate } from "@/hooks";
+import { useNavigate } from "@renderer/hooks";
 import { Stack, Typography } from "@mui/material";
-import {
-	FolderDisplayGrid,
-	Instruction,
-	ReturnToHomeModal,
-} from "@renderer/components";
+import { FolderDisplayGrid, Instruction, ReturnToHomeModal } from "@renderer/components";
 import { useMemo, useState } from "react";
 import { columns } from "./columns";
 
 export const FileListActionsPage = () => {
 	const columnsMemo = useMemo(() => columns || [], [columns]);
 
-	const [returnHomeModalIsOpen, setReturnHomeModalIsOpen] =
-		useState<boolean>(false);
+	const [returnHomeModalIsOpen, setReturnHomeModalIsOpen] = useState<boolean>(false);
 
 	const { navigate } = useNavigate();
 
