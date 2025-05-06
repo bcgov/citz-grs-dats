@@ -8,99 +8,86 @@ import {
   HTTP_STATUS_CODES,
 } from "@bcgov/citz-imb-express-utilities";
 import { Buffer } from "node:buffer";
-import yauzl from "yauzl";
+import unzipper from "unzipper";
 import { adminMetadataZodSchema } from "../entities";
+import type { Readable } from "node:stream";
+import { writeStreamToTempFile } from "@/utils";
+import fs from "node:fs";
 
 const foldersSchema = z.record(folderMetadataZodSchema);
 const filesSchema = z.record(z.array(fileMetadataZodSchema));
 const adminSchema = adminMetadataZodSchema;
 
 type Data = {
-  buffer: Buffer; // Zip of standard transfer
+  stream: Readable; // Zip of standard transfer
   accession: string;
   application: string;
 };
 
-const extractFileFromZip = (
-  zipBuffer: Buffer,
+const extractFileFromZip = async (
+  zipStream: Readable,
   filePath: string
 ): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    yauzl.fromBuffer(zipBuffer, { lazyEntries: true }, (err, zipFile) => {
-      if (err) return reject(err);
-      if (!zipFile)
-        return reject(
-          new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Invalid zip file.")
-        );
+  try {
+    const zipEntries = zipStream.pipe(unzipper.Parse({ forceStream: true }));
 
-      let fileFound = false;
-
-      zipFile.on("entry", (entry) => {
-        if (entry.fileName === filePath) {
-          fileFound = true;
-          zipFile.openReadStream(entry, (err, readStream) => {
-            if (err) {
-              zipFile.close();
-              return reject(err);
-            }
-            const chunks: Buffer[] = [];
-            readStream.on("data", (chunk) => chunks.push(chunk));
-            readStream.on("end", () => {
-              zipFile.close();
-              resolve(Buffer.concat(chunks).toString("utf-8"));
-            });
+    for await (const entry of zipEntries) {
+      if (entry.path === filePath) {
+        // Return file content as a string
+        const chunks: Buffer[] = [];
+        entry.on("data", (chunk: Buffer) => {
+          chunks.push(chunk);
+        });
+        return new Promise((resolve, reject) => {
+          entry.on("end", () => {
+            const fileContent = Buffer.concat(chunks).toString("utf-8");
+            resolve(fileContent);
           });
-        } else {
-          zipFile.readEntry();
-        }
-      });
+          entry.on("error", (err: Error) => {
+            reject(err);
+          });
+        });
+      }
 
-      zipFile.on("end", () => {
-        if (!fileFound) {
-          zipFile.close();
-          reject(
-            new HttpError(
-              HTTP_STATUS_CODES.BAD_REQUEST,
-              `File ${filePath} not found in the zip.`
-            )
-          );
-        }
-      });
+      entry.autodrain();
+    }
+  } catch (err) {
+    console.error("Error during zip processing:", err);
+    throw err;
+  }
 
-      zipFile.readEntry();
-    });
-  });
+  // If the file is not found, throw an error
+  throw new Error(`File "${filePath}" not found in the zip archive.`);
 };
 
 export const validateMetadataFiles = async ({
-  buffer,
+  stream,
   accession,
   application,
 }: Data): Promise<void> => {
-  // Check for "metadata/" folder indirectly by looking for its required files
-  const requiredFiles = [
-    "metadata/admin.json",
-    "metadata/files.json",
-    "metadata/folders.json",
-  ];
+  console.log("Validating metadata files...");
+
+  const tempStreamPath = await writeStreamToTempFile(stream);
+
+  // Clone the content zip stream for validation
+  const stream1 = fs.createReadStream(tempStreamPath);
+  const stream2 = fs.createReadStream(tempStreamPath);
+  const stream3 = fs.createReadStream(tempStreamPath);
+
   const extractedFiles: Record<string, string> = {};
 
-  for (const file of requiredFiles) {
-    try {
-      extractedFiles[file] = await extractFileFromZip(buffer, file);
-    } catch (err) {
-      if (
-        err instanceof HttpError &&
-        err.statusCode === HTTP_STATUS_CODES.BAD_REQUEST
-      ) {
-        throw new HttpError(
-          HTTP_STATUS_CODES.BAD_REQUEST,
-          `The zip file is missing required file: ${file}`
-        );
-      }
-      throw err;
-    }
-  }
+  extractedFiles["metadata/admin.json"] = await extractFileFromZip(
+    stream1,
+    "metadata/admin.json"
+  );
+  extractedFiles["metadata/files.json"] = await extractFileFromZip(
+    stream2,
+    "metadata/files.json"
+  );
+  extractedFiles["metadata/folders.json"] = await extractFileFromZip(
+    stream3,
+    "metadata/folders.json"
+  );
 
   // Parse and validate each file
   try {

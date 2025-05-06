@@ -29,7 +29,7 @@ export const callTransferEndpoint = async ({
 
   const hashBuffer = await crypto.subtle.digest(
     "SHA-256",
-    standardTransferZipBuffer.buffer
+    new Uint8Array(standardTransferZipBuffer.buffer)
   );
   const contentChecksum = Array.from(new Uint8Array(hashBuffer))
     .map((b) => b.toString(16).padStart(2, "0"))

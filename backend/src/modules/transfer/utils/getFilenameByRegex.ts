@@ -1,47 +1,39 @@
-import yauzl from "yauzl";
+import type { Readable } from "node:stream";
+import unzipper from "unzipper";
 
 type Props = {
-	buffer: Buffer;
-	directory: string;
-	regex: RegExp;
+  stream: Readable;
+  directory: string;
+  regex: RegExp;
 };
 
 export const getFilenameByRegex = async ({
-	buffer,
-	directory,
-	regex,
+  stream,
+  directory,
+  regex,
 }: Props): Promise<string | null> => {
-	return new Promise((resolve, reject) => {
-		yauzl.fromBuffer(buffer, { lazyEntries: true }, (err, zipFile) => {
-			if (err) return reject(err);
+  let matchedFilename: string | null = null;
 
-			if (!zipFile) return reject(new Error("Invalid zip file"));
+  try {
+    const zipEntries = stream.pipe(unzipper.Parse({ forceStream: true }));
 
-			let matchedFilename: string | null = null;
+    for await (const entry of zipEntries) {
+      if (entry.type === "File" && entry.path.startsWith(directory)) {
+        const relativeFilename = entry.path.slice(directory.length);
+        if (regex.test(relativeFilename)) {
+          matchedFilename = relativeFilename;
+          // Ensure we consume the rest of the stream to prevent hang
+          entry.autodrain();
+          break;
+        }
+      }
+      // Always drain even if it's not a file or doesn't match
+      entry.autodrain();
+    }
+  } catch (err) {
+    console.error("Error during regex extraction:", err);
+    throw err;
+  }
 
-			zipFile.readEntry();
-
-			zipFile.on("entry", (entry) => {
-				const isInDirectory = entry.fileName.startsWith(directory);
-				if (isInDirectory) {
-					const relativeFilename = entry.fileName.slice(directory.length);
-					if (regex.test(relativeFilename)) {
-						matchedFilename = relativeFilename;
-						zipFile.close();
-						resolve(matchedFilename); // Immediately resolve when a match is found
-						return;
-					}
-				}
-				zipFile.readEntry();
-			});
-
-			zipFile.on("end", () => {
-				resolve(matchedFilename);
-			});
-
-			zipFile.on("error", (zipErr) => {
-				reject(zipErr);
-			});
-		});
-	});
+  return matchedFilename;
 };

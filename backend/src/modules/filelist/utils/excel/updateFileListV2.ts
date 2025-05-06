@@ -2,6 +2,7 @@ import type { LanTransferBody } from "@/modules/transfer/schemas";
 import ExcelJS from "exceljs";
 import { type FolderRow, setupFolderListV2, setupMetadata } from "./worksheets";
 import type { FileMetadataZodType } from "../../schemas";
+import { PassThrough, type Readable } from "node:stream";
 
 type Props = {
   folders: FolderRow[];
@@ -15,7 +16,7 @@ export const updateFileListV2 = async ({
   changes,
   files,
   fileListBuffer,
-}: Props): Promise<Buffer> => {
+}: Props): Promise<Readable> => {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(fileListBuffer as unknown as ExcelJS.Buffer);
 
@@ -47,6 +48,9 @@ export const updateFileListV2 = async ({
   });
   setupMetadata({ worksheet: metadataV2Worksheet, files });
 
-  const buffer = await workbook.xlsx.writeBuffer();
-  return buffer as unknown as Buffer;
+  const stream = new PassThrough();
+  await workbook.xlsx.write(stream);
+  stream.end();
+
+  return stream;
 };

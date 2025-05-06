@@ -7,6 +7,7 @@ import {
   HttpError,
 } from "@bcgov/citz-imb-express-utilities";
 import { logs } from "@/utils";
+import type { Readable } from "node:stream";
 
 const UPLOAD_BASE_DIR = path.join(__dirname, "..", "uploads");
 
@@ -30,7 +31,7 @@ export const handleTransferChunkUpload = async ({
   totalChunks: number;
   receivedChecksum: string;
   chunkBuffer: Buffer;
-}): Promise<Buffer | null> => {
+}): Promise<Readable | null> => {
   if (
     Number.isNaN(chunkIndex) ||
     Number.isNaN(totalChunks) ||
@@ -105,10 +106,10 @@ export const handleTransferChunkUpload = async ({
   console.log(CHUNKS_MERGED(accession, application));
 
   // Read the merged file back into memory as a buffer
-  const mergedBuffer = await fs.promises.readFile(mergedPath);
+  const mergedReadStream = fs.createReadStream(mergedPath);
 
   // Cleanup the temporary directory
   await fs.promises.rm(transferDir, { recursive: true, force: true });
 
-  return mergedBuffer;
+  return mergedReadStream;
 };

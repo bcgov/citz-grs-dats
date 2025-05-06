@@ -18,6 +18,7 @@ import {
   handleTransferChunkUpload,
 } from "../utils";
 import { TransferService } from "../services";
+import { Readable } from "node:stream";
 
 const { S3_BUCKET } = ENV;
 
@@ -44,7 +45,7 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   }
 
   // Process chunk upload and check if file is fully reconstructed
-  const contentZipBuffer = await handleTransferChunkUpload({
+  const contentZipStream = await handleTransferChunkUpload({
     accession,
     application,
     chunkIndex,
@@ -54,7 +55,7 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // If not all chunks received yet, return success response to continue upload
-  if (!contentZipBuffer) {
+  if (!contentZipStream) {
     const jsonResponse = getStandardResponse({
       message: `Chunk ${
         chunkIndex + 1
@@ -70,14 +71,14 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     return res.status(HTTP_STATUS_CODES.ACCEPTED).json(jsonResponse);
   }
 
-  let fileListBuffer = (files as Express.Multer.File[])?.find(
+  const fileListBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "fileListBuffer"
   )?.buffer;
   const transferFormBuffer = (files as Express.Multer.File[])?.find(
     (file) => file.fieldname === "transferFormBuffer"
   )?.buffer;
 
-  if (!fileListBuffer || !transferFormBuffer || !contentZipBuffer)
+  if (!fileListBuffer || !transferFormBuffer || !contentZipStream)
     throw new HttpError(
       HTTP_STATUS_CODES.BAD_REQUEST,
       "Missing one or many of fileListBuffer, transferFormBuffer, contentZipBuffer."
@@ -112,7 +113,7 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   ).flat() as FileMetadataZodType[];
 
   // Update File List
-  fileListBuffer = await updateFileListV2({
+  const fileListStream = await updateFileListV2({
     folders: folderRows,
     files: fileRows,
     changes: body.changes,
@@ -120,11 +121,10 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // Notes text
-  const notesBuffer =
+  const notesStream =
     body.changesJustification !== ""
-      ? Buffer.from(
-          `Justification for changes to the file list: ${body.changesJustification}`,
-          "utf-8"
+      ? Readable.from(
+          `Justification for changes to the file list: ${body.changesJustification}`
         )
       : null;
 
@@ -145,41 +145,33 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
   const originalExtendedMetadataJson = transferEntry?.extendedMetadata ?? {};
 
   // Metadata files
-  const adminJsonBuffer = Buffer.from(
-    JSON.stringify(updatedAdminMetadata),
-    "utf-8"
+  const adminJsonStream = Readable.from(JSON.stringify(updatedAdminMetadata));
+  const foldersJsonStream = Readable.from(JSON.stringify(metadataV2Folders));
+  const filesJsonStream = Readable.from(JSON.stringify(metadataV2Files));
+  const extendedMetadataJsonStream = Readable.from(
+    JSON.stringify(extendedMetadata)
   );
-  const foldersJsonBuffer = Buffer.from(
-    JSON.stringify(metadataV2Folders),
-    "utf-8"
-  );
-  const filesJsonBuffer = Buffer.from(JSON.stringify(metadataV2Files), "utf-8");
-  const extendedMetadataJsonBuffer = Buffer.from(
-    JSON.stringify(extendedMetadata),
-    "utf-8"
-  );
-  const originalExtendedMetadataJsonBuffer = Buffer.from(
-    JSON.stringify(originalExtendedMetadataJson),
-    "utf-8"
+  const originalExtendedMetadataJsonStream = Readable.from(
+    JSON.stringify(originalExtendedMetadataJson)
   );
 
   const today = new Date().toISOString().split("T")[0];
 
   // Put together zip buffer
   const standardTransferZipBuffer = await createStandardTransferZip({
-    contentZipBuffer,
+    contentZipStream,
     documentation: {
-      [body.fileListFilename]: fileListBuffer,
+      [body.fileListFilename]: fileListStream,
       [body.transferFormFilename]: transferFormBuffer,
       "Submission_Agreement.pdf": subAgreementBuffer,
     },
     metadata: {
-      "admin.json": adminJsonBuffer,
-      "folders.json": foldersJsonBuffer,
-      "files.json": filesJsonBuffer,
-      [`extended_new_${today}.json`]: extendedMetadataJsonBuffer,
-      "extended_original.json": originalExtendedMetadataJsonBuffer,
-      "notes.txt": notesBuffer,
+      "admin.json": adminJsonStream,
+      "folders.json": foldersJsonStream,
+      "files.json": filesJsonStream,
+      [`extended_new_${today}.json`]: extendedMetadataJsonStream,
+      "extended_original.json": originalExtendedMetadataJsonStream,
+      "notes.txt": notesStream,
     },
   });
 
