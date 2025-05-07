@@ -1,5 +1,6 @@
 import { Box, Link, Modal, Stack, Typography } from "@mui/material";
 import { Close as XIcon } from "@mui/icons-material";
+import { useReleaseNotes } from "@/hooks";
 
 type Props = {
   open: boolean;
@@ -35,6 +36,8 @@ const contentStyle = {
 };
 
 export const HelpModal = ({ open, onClose }: Props) => {
+  const { appVersion } = useReleaseNotes();
+
   return (
     <Modal open={open} onClose={onClose} disableAutoFocus>
       <Stack gap={3} sx={modalStyle}>
@@ -91,6 +94,21 @@ export const HelpModal = ({ open, onClose }: Props) => {
                 target="_blank"
               >
                 GIM Learning page.
+              </Link>
+            </Typography>
+          </Stack>
+
+          <Stack>
+            <Typography sx={{ fontSize: "18px", fontWeight: 700 }}>
+              Provide feedback
+            </Typography>
+            <Typography>
+              Send us your feedback or issues, please email:{" "}
+              <Link
+                href={`mailto:gim@gov.bc.ca?subject=DATS Version ${appVersion} Feedback`}
+                target="_blank"
+              >
+                GIM@gov.bc.ca
               </Link>
             </Typography>
           </Stack>
