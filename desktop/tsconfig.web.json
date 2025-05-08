@@ -1,9 +1,9 @@
 {
 	"extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
 	"include": [
-		"src/renderer/src/env.d.ts",
-		"src/renderer/src/**/*",
-		"src/renderer/src/**/*.tsx",
+		"src/renderer/env.d.ts",
+		"src/renderer/**/*",
+		"src/renderer/**/*.tsx",
 		"src/preload/**/*",
 		"src/api/**/*",
 		"src/hooks/**/*",
@@ -13,13 +13,22 @@
 	"compilerOptions": {
 		"composite": true,
 		"jsx": "react-jsx",
-		"baseUrl": ".",
+		"baseUrl": "./",
 		"paths": {
-			"@renderer/*": ["src/renderer/src/*"],
-			"src/*": ["src/*"],
-			"@/*": ["src/*"],
-			"@hooks/*": ["src/hooks/*"],
-			"@preload/*": ["src/preload/*"],
+			"@/*": [
+				"src/*"
+			],
+			"@preload/*": [
+				"src/preload/*"
+			],
+			"@renderer/*": [
+				"src/renderer/*"
+			]
 		}
-	}
+	},
+	"exclude": [
+		"node_modules",
+		"dist",
+		"build"
+	]
 }
