@@ -19,6 +19,7 @@ import {
 } from "../utils";
 import type { Workbook } from "exceljs";
 import { TransferService } from "../services";
+import { Readable } from "node:stream";
 
 const { S3_BUCKET } = ENV;
 
@@ -46,7 +47,7 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   }
 
   // Process chunk upload and check if file is fully reconstructed
-  const contentZipBuffer = await handleTransferChunkUpload({
+  const contentZipStream = await handleTransferChunkUpload({
     accession,
     application,
     chunkIndex,
@@ -56,7 +57,7 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // If not all chunks received yet, return success response to continue upload
-  if (!contentZipBuffer) {
+  if (!contentZipStream) {
     const jsonResponse = getStandardResponse({
       message: `Chunk ${
         chunkIndex + 1
@@ -86,7 +87,7 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
     !dataportBuffer ||
     !fileListBuffer ||
     !transferFormBuffer ||
-    !contentZipBuffer
+    !contentZipStream
   )
     throw new HttpError(
       HTTP_STATUS_CODES.BAD_REQUEST,
@@ -145,7 +146,10 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // Create buffer
-  const digitalFileListBuffer = (await workbook.xlsx.writeBuffer()) as Buffer;
+  const digitalFileListStream = new Readable();
+  workbook.xlsx
+    .write(digitalFileListStream)
+    .then(() => digitalFileListStream.push(null));
 
   // Add submitted by info to admin metadata
   const updatedAdminMetadata = {
@@ -157,35 +161,34 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   };
 
   // Metadata files
-  const adminJsonBuffer = Buffer.from(
-    JSON.stringify(updatedAdminMetadata),
-    "utf-8"
+  const adminJsonStream = Readable.from(
+    JSON.stringify(updatedAdminMetadata, null, 2)
   );
-  const foldersJsonBuffer = Buffer.from(
-    JSON.stringify(metadata.folders),
-    "utf-8"
+  const foldersJsonStream = Readable.from(
+    JSON.stringify(metadata.folders, null, 2)
   );
-  const filesJsonBuffer = Buffer.from(JSON.stringify(metadata.files), "utf-8");
-  const extendedMetadataJsonBuffer = Buffer.from(
-    JSON.stringify(extendedMetadata),
-    "utf-8"
+  const filesJsonStream = Readable.from(
+    JSON.stringify(metadata.files, null, 2)
+  );
+  const extendedMetadataJsonStream = Readable.from(
+    JSON.stringify(extendedMetadata, null, 2)
   );
 
   // Put together zip buffer
   const standardTransferZipBuffer = await createStandardTransferZip({
-    contentZipBuffer,
+    contentZipStream,
     documentation: {
-      [digitalFilelistFilename]: digitalFileListBuffer,
+      [digitalFilelistFilename]: digitalFileListStream,
       [body.transferFormFilename]: transferFormBuffer,
       "Submission_Agreement.pdf": subAgreementBuffer,
       [body.fileListFilename]: fileListBuffer,
       [body.dataportFilename]: dataportBuffer,
     },
     metadata: {
-      "admin.json": adminJsonBuffer,
-      "folders.json": foldersJsonBuffer,
-      "files.json": filesJsonBuffer,
-      "extended.json": extendedMetadataJsonBuffer,
+      "admin.json": adminJsonStream,
+      "folders.json": foldersJsonStream,
+      "files.json": filesJsonStream,
+      "extended.json": extendedMetadataJsonStream,
     },
   });
 

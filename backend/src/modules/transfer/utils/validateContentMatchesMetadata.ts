@@ -1,79 +1,64 @@
-import type { Buffer } from "node:buffer";
-import yauzl from "yauzl";
-import { HttpError, HTTP_STATUS_CODES } from "@bcgov/citz-imb-express-utilities";
+import unzipper from "unzipper";
+import {
+  HttpError,
+  HTTP_STATUS_CODES,
+} from "@bcgov/citz-imb-express-utilities";
 import type { Metadata } from "./getMetadata";
+import type { Readable } from "node:stream";
+import { PassThrough } from "node:stream";
 
 type Props = {
-	buffer: Buffer;
-	metadata: Metadata;
+  stream: Readable;
+  metadata: Metadata;
 };
 
 export const validateContentMatchesMetadata = async ({
-	buffer,
-	metadata,
+  stream,
+  metadata,
 }: Props): Promise<void> => {
-	const foundContentEntries = new Set<string>();
-	const folderPaths = Object.keys(metadata.folders); // Get all folder paths from the metadata
-	const folderNames = folderPaths.map((folderPath) => {
-		const folderParts = folderPath.replaceAll("\\", "/").split("/");
-		return `content/${folderParts[folderParts.length - 1]}/`; // Get the folder name from the path
-	});
+  console.log("Validating content matches metadata...");
 
-	await new Promise<void>((resolve, reject) => {
-		yauzl.fromBuffer(buffer, { lazyEntries: true }, (err, zipFile) => {
-			if (err) {
-				return reject(
-					new HttpError(HTTP_STATUS_CODES.BAD_REQUEST, "Provided buffer is not a valid zip file."),
-				);
-			}
+  const foundContentEntries = new Set<string>();
+  const folderPaths = Object.keys(metadata.folders); // Get all folder paths from the metadata
+  const folderNames = folderPaths.map((folderPath) => {
+    const folderParts = folderPath.replaceAll("\\", "/").split("/");
+    return `content/${folderParts[folderParts.length - 1]}/`; // Get the folder name from the path
+  });
 
-			zipFile.readEntry();
+  try {
+    const zipEntries = stream.pipe(unzipper.Parse({ forceStream: true }));
 
-			// Event listener for each entry in the zip
-			zipFile.on("entry", (entry) => {
-				const parts = entry.fileName.split("/");
-				const parentDirectory = parts[0];
+    for await (const entry of zipEntries) {
+      const parts = entry.path.split("/");
+      const parentDirectory = parts[0];
 
-				// Check if this entry is in the 'content' directory and matches any folder from metadata
-				if (
-					parentDirectory === "content" &&
-					folderNames.some((folder) => entry.fileName.startsWith(folder))
-				) {
-					const folderMatch = folderNames.find((folder) => entry.fileName.startsWith(folder));
-					if (folderMatch) foundContentEntries.add(folderMatch);
-				}
+      // Check if this entry is in the 'content' directory and matches any folder from metadata
+      if (
+        parentDirectory === "content" &&
+        folderNames.some((folder) => entry.path.startsWith(folder))
+      ) {
+        const folderMatch = folderNames.find((folder) =>
+          entry.path.startsWith(folder)
+        );
+        if (folderMatch) foundContentEntries.add(folderMatch);
+      }
 
-				zipFile.readEntry();
-			});
+      entry.autodrain();
+    }
+  } catch (err) {
+    console.error("Error during stream processing:", err);
+    throw err;
+  }
 
-			// On end, validate the structure
-			zipFile.on("end", () => {
-				// Validate folders in the metadata exist in the zip file's content directory
-				const missingFolders = folderNames.filter((folderName) => {
-					const foundFolders = Array.from(foundContentEntries);
-					return !foundFolders.includes(folderName);
-				});
+  // Validate folders in the metadata exist in the zip file's content directory
+  const missingFolders = folderNames.filter((folderName) => {
+    const foundFolders = Array.from(foundContentEntries);
+    return !foundFolders.includes(folderName);
+  });
 
-				if (missingFolders.length > 0) {
-					return reject(
-						new HttpError(
-							HTTP_STATUS_CODES.BAD_REQUEST,
-							`The zip file is missing required folders: ${missingFolders.join(", ")}.`,
-						),
-					);
-				}
-
-				resolve();
-			});
-
-			zipFile.on("error", (zipErr) => {
-				reject(
-					new HttpError(
-						HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR,
-						`Error reading zip file: ${zipErr.message}`,
-					),
-				);
-			});
-		});
-	});
+  if (missingFolders.length > 0)
+    throw new HttpError(
+      HTTP_STATUS_CODES.BAD_REQUEST,
+      `The zip file is missing required folders: ${missingFolders.join(", ")}.`
+    );
 };

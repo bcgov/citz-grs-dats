@@ -5,4 +5,4 @@ export const convertArrayToObject = (array: FolderRow[]) => {
     acc[item.folder] = item;
     return acc;
   }, {});
-}
+};

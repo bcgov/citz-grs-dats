@@ -46,6 +46,8 @@ export const createAgreementPDF = async ({
       const bufferChunks: Buffer[] = [];
       doc.on("data", (chunk) => bufferChunks.push(chunk));
       doc.on("end", () => resolve(Buffer.concat(bufferChunks)));
+
+      // Handle errors
       doc.on("error", (err) => {
         console.error("PDF generation error:", err);
         reject(err);
