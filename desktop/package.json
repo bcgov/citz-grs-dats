@@ -3,7 +3,7 @@
   "version": "2.1.1",
   "description": "Digital Archives Transfer Service",
   "author": "CITZ IMB/CIRMO",
-  "main": "./out/main/index.js",
+  "main": "./out/main/main.js",
   "type": "module",
   "build": {
     "extraFiles": [
@@ -88,6 +88,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.3",
     "@electron-toolkit/tsconfig": "1.0.1",
+    "@testing-library/react": "16.3.0",
     "@types/archiver": "6.0.3",
     "@types/node": "20.14.8",
     "@types/react": "18.3.3",
@@ -96,6 +97,7 @@
     "electron": "31.0.2",
     "electron-builder": "24.13.3",
     "electron-vite": "2.3.0",
+    "jest": "29.7.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "typescript": "5.5.2",
