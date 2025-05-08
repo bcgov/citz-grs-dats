@@ -8,11 +8,11 @@ import { createTransferBodySchema } from "../schemas";
 import { TransferService } from "src/modules/transfer/services";
 import { download, upload } from "src/modules/s3/utils";
 import { ENV } from "src/config";
-import { streamToBuffer, logs, formatFileSize } from "src/utils";
+import { logs, formatFileSize, writeStreamToTempFile } from "src/utils";
 import { addToStandardTransferQueue } from "src/modules/rabbit/utils/queue/transfer";
 import {
-  addFileToZipBuffer,
-  getFileFromZipBuffer,
+  addFileToZipStream,
+  getFileFromZipStream,
   getFilenameByRegex,
   getMetadata,
   handleTransferChunkUpload,
@@ -21,10 +21,10 @@ import {
   validateMetadataFiles,
   validateMetadataFoldersMatchesFiles,
   validateStandardTransferStructure,
-  validateSubmissionAgreement,
 } from "../utils";
 import type { TransferMongoose } from "../entities";
 import { generateChecksum } from "@/utils/generateChecksum";
+import fs from "node:fs";
 
 const {
   TRANSFER: {
@@ -51,7 +51,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
   }
 
   // Process chunk upload and check if file is fully reconstructed
-  let contentZipBuffer = await handleTransferChunkUpload({
+  let contentZipStream = await handleTransferChunkUpload({
     accession,
     application,
     chunkIndex,
@@ -61,7 +61,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // If not all chunks received yet, return success response to continue upload
-  if (!contentZipBuffer) {
+  if (!contentZipStream) {
     const jsonResponse = getStandardResponse({
       message: `Chunk ${
         chunkIndex + 1
@@ -79,139 +79,161 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
 
   const jobID = `job-${Date.now()}`;
 
-  let subAgreementPath = await getFilenameByRegex({
-    buffer: contentZipBuffer,
-    directory: "documentation/",
-    regex: /^Submission_Agreement/,
-  });
+  const tempContentStreamPath = await writeStreamToTempFile(contentZipStream);
 
-  if (!subAgreementPath) {
-    let subAgreementStream = undefined;
+  try {
+    // Clone the content zip stream for validation
+    const contentStream1 = fs.createReadStream(tempContentStreamPath);
+    const contentStream2 = fs.createReadStream(tempContentStreamPath);
+    const contentStream3 = fs.createReadStream(tempContentStreamPath);
+    const contentStream4 = fs.createReadStream(tempContentStreamPath);
+    const contentStream5 = fs.createReadStream(tempContentStreamPath);
+    const contentStream6 = fs.createReadStream(tempContentStreamPath);
+    const contentStream7 = fs.createReadStream(tempContentStreamPath);
+    const contentStream8 = fs.createReadStream(tempContentStreamPath);
+    const contentStream9 = fs.createReadStream(tempContentStreamPath);
+    const contentStream10 = fs.createReadStream(tempContentStreamPath);
 
-    try {
-      subAgreementStream = await download({
-        bucketName: S3_BUCKET,
-        key: `submission-agreements/${accession}_${application}.pdf`,
-      });
-
-      if (!subAgreementStream) throw new Error("Missing submission agreement.");
-    } catch (error) {
-      throw new HttpError(
-        HTTP_STATUS_CODES.NOT_FOUND,
-        "Submission Agreement (beginning with 'Submission_Agreement') must be included and have a .pdf extension in the documentation directory."
-      );
-    }
-
-    console.log(SUB_AGREEMENT_NOT_FOUND(accession, application));
-
-    const s3SubAgreementBuffer = await streamToBuffer(subAgreementStream);
-
-    if (s3SubAgreementBuffer) {
-      console.log(USING_S3_SUB_AGREEMENT(accession, application));
-      usedSubmissionAgreementfromS3 = true;
-    }
-
-    const newSubAgreementName = `Submission_Agreement_${accession}_${application}.pdf`;
-    subAgreementPath = `documentation/${newSubAgreementName}`;
-
-    // Add agreement to zip buffer
-    contentZipBuffer = await addFileToZipBuffer({
-      zipBuffer: contentZipBuffer,
-      fileBuffer: s3SubAgreementBuffer,
-      filePath: subAgreementPath,
+    let subAgreementPath = await getFilenameByRegex({
+      stream: contentStream1,
+      directory: "documentation/",
+      regex: /^Submission_Agreement/,
     });
-  }
 
-  // Validate transfer buffer
-  await validateStandardTransferStructure({ buffer: contentZipBuffer });
-  await validateMetadataFiles({
-    buffer: contentZipBuffer,
-    accession,
-    application,
-  });
+    if (!subAgreementPath) {
+      let subAgreementStream = undefined;
 
-  const fileListPath = await getFilenameByRegex({
-    buffer: contentZipBuffer,
-    directory: "documentation/",
-    regex: /^(Digital_File_List|File\sList)/,
-  });
+      try {
+        subAgreementStream = await download({
+          bucketName: S3_BUCKET,
+          key: `submission-agreements/${accession}_${application}.pdf`,
+        });
 
-  if (!fileListPath)
-    throw new HttpError(
-      HTTP_STATUS_CODES.NOT_FOUND,
-      "File List could not be found in the documentation directory."
-    );
+        if (!subAgreementStream)
+          throw new Error("Missing submission agreement.");
+      } catch (error) {
+        throw new HttpError(
+          HTTP_STATUS_CODES.NOT_FOUND,
+          "Submission Agreement (beginning with 'Submission_Agreement') must be included and have a .pdf extension in the documentation directory."
+        );
+      }
 
-  const fileListBuffer = await getFileFromZipBuffer(
-    contentZipBuffer,
-    fileListPath
-  );
-  const submissionAgreementBuffer = await getFileFromZipBuffer(
-    contentZipBuffer,
-    subAgreementPath
-  );
+      console.log(SUB_AGREEMENT_NOT_FOUND(accession, application));
 
-  await validateDigitalFileList({
-    buffer: fileListBuffer,
-    accession,
-    application,
-  });
-  await validateSubmissionAgreement({
-    buffer: submissionAgreementBuffer,
-    accession,
-    application,
-  });
+      if (subAgreementStream) {
+        console.log(USING_S3_SUB_AGREEMENT(accession, application));
+        usedSubmissionAgreementfromS3 = true;
+      }
 
-  const metadata = await getMetadata(contentZipBuffer);
+      const newSubAgreementName = `Submission_Agreement_${accession}_${application}.pdf`;
+      subAgreementPath = `documentation/${newSubAgreementName}`;
 
-  await validateContentMatchesMetadata({ buffer: contentZipBuffer, metadata });
-  validateMetadataFoldersMatchesFiles({ metadata });
+      // Add agreement to zip stream
+      contentZipStream = await addFileToZipStream({
+        zipStream: contentStream2,
+        fileStream: subAgreementStream,
+        filePath: subAgreementPath,
+      });
+    }
 
-  // Create new checksum incase changes were made to buffer
-  const newChecksum = generateChecksum(contentZipBuffer);
-
-  // Save data for transfer to Mongo
-  await TransferService.createOrUpdateTransferEntry({
-    accession,
-    application,
-    jobID,
-    checksum: newChecksum,
-    status: "Transferring",
-    user,
-    folders: metadata.folders as unknown as NonNullable<
-      TransferMongoose["metadata"]
-    >["folders"],
-    files: metadata.files as unknown as NonNullable<
-      TransferMongoose["metadata"]
-    >["files"],
-  });
-
-  // Save to s3
-  const s3Location = await upload({
-    bucketName: S3_BUCKET,
-    key: `transfers/TR_${accession}_${application}.zip`,
-    content: contentZipBuffer,
-  });
-
-  // Add the job ID to the RabbitMQ queue
-  await addToStandardTransferQueue(jobID);
-
-  const result = getStandardResponse({
-    data: {
-      user: `${user?.first_name} ${user?.last_name}`,
-      jobID,
+    // Validate transfer
+    await validateStandardTransferStructure({ stream: contentStream3 });
+    await validateMetadataFiles({
+      stream: contentStream4,
       accession,
       application,
-      fileLocation: s3Location,
-      note: "",
-    },
-    message: "Job added to queue.",
-    success: true,
-  });
+    });
 
-  if (result.data && usedSubmissionAgreementfromS3)
-    result.data.note =
-      "Used submission agreement from s3 because one was not provided in the transfer input.";
+    const fileListPath = await getFilenameByRegex({
+      stream: contentStream5,
+      directory: "documentation/",
+      regex: /^(Digital_File_List|File\sList)/,
+    });
 
-  res.status(HTTP_STATUS_CODES.CREATED).json(result);
+    if (!fileListPath)
+      throw new HttpError(
+        HTTP_STATUS_CODES.NOT_FOUND,
+        "File List could not be found in the documentation directory."
+      );
+
+    const fileListStream = await getFileFromZipStream(
+      contentStream6,
+      fileListPath
+    );
+    if (!fileListStream)
+      throw new HttpError(
+        HTTP_STATUS_CODES.NOT_FOUND,
+        "File List could not be found in the documentation directory."
+      );
+
+    await validateDigitalFileList({
+      stream: fileListStream,
+      path: fileListPath,
+      accession,
+      application,
+    });
+
+    const metadata = await getMetadata(contentStream7);
+
+    await validateContentMatchesMetadata({ stream: contentStream8, metadata });
+    validateMetadataFoldersMatchesFiles({ metadata });
+
+    // Create new checksum incase changes were made
+    const newChecksum = await generateChecksum(contentStream9);
+
+    // Save data for transfer to Mongo
+    await TransferService.createOrUpdateTransferEntry({
+      accession,
+      application,
+      jobID,
+      checksum: newChecksum,
+      status: "Transferring",
+      user,
+      folders: metadata.folders as unknown as NonNullable<
+        TransferMongoose["metadata"]
+      >["folders"],
+      files: metadata.files as unknown as NonNullable<
+        TransferMongoose["metadata"]
+      >["files"],
+    });
+
+    // Save to s3
+    const s3Location = await upload({
+      bucketName: S3_BUCKET,
+      key: `transfers/TR_${accession}_${application}.zip`,
+      content: contentStream10,
+    });
+
+    // Add the job ID to the RabbitMQ queue
+    await addToStandardTransferQueue(jobID);
+
+    const result = getStandardResponse({
+      data: {
+        user: `${user?.first_name} ${user?.last_name}`,
+        jobID,
+        accession,
+        application,
+        fileLocation: s3Location,
+        note: "",
+      },
+      message: "Job added to queue.",
+      success: true,
+    });
+
+    if (result.data && usedSubmissionAgreementfromS3)
+      result.data.note =
+        "Used submission agreement from s3 because one was not provided in the transfer input.";
+
+    res.status(HTTP_STATUS_CODES.CREATED).json(result);
+  } finally {
+    // Clean up the temporary file
+    fs.unlink(tempContentStreamPath, (err) => {
+      if (err) {
+        console.error(
+          `Failed to delete temp file: ${tempContentStreamPath}`,
+          err
+        );
+      }
+    });
+  }
 });

@@ -9,7 +9,8 @@
 		"run-node": "tsx -r tsconfig-paths/register"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "3.677.0",
+		"@aws-sdk/client-s3": "3.799.0",
+		"@aws-sdk/lib-storage": "3.799.0",
 		"@aws-sdk/s3-request-presigner": "3.758.0",
 		"@bcgov/citz-imb-express-utilities": "1.0.1-beta3",
 		"@bcgov/citz-imb-sso-js-core": "1.0.1-beta",
@@ -30,8 +31,6 @@
 		"typescript": "5.6.2",
 		"unzipper": "0.12.3",
 		"xlsx": "0.18.5",
-		"yauzl": "3.2.0",
-		"yazl": "3.3.1",
 		"zod": "3.23.8"
 	},
 	"devDependencies": {
@@ -48,8 +47,6 @@
 		"@types/pdfkit": "0.13.6",
 		"@types/supertest": "6.0.2",
 		"@types/unzipper": "0.10.11",
-		"@types/yauzl": "2.10.3",
-		"@types/yazl": "2.4.5",
 		"nodemon": "3.1.7",
 		"supertest": "7.0.0",
 		"ts-jest": "29.2.5",

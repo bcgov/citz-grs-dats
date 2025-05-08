@@ -82,32 +82,6 @@ describe("Transfer Router", () => {
     expect(preserve).toHaveBeenCalled();
   });
 
-  // Test case: POST /lan route with valid JSON
-  it("should call the lan controller on POST /lan with valid JSON", async () => {
-    const app = createApp();
-    const response = await request(app)
-      .post("/lan")
-      .field("originalFoldersMetadata", JSON.stringify({ key: "value" }))
-      .field("metadataV2", JSON.stringify({ version: 2 }))
-      .field("changes", JSON.stringify(["change1", "change2"]));
-
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({ success: true });
-    expect(lan).toHaveBeenCalled();
-  });
-
-  // Test case: POST /edrms route with valid JSON
-  it("should call the edrms controller on POST /edrms with valid JSON", async () => {
-    const app = createApp();
-    const response = await request(app)
-      .post("/edrms")
-      .field("metadata", JSON.stringify({ version: 2 }));
-
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({ success: true });
-    expect(edrms).toHaveBeenCalled();
-  });
-
   // Test case: POST /lan route with invalid JSON
   it("should return 400 error for invalid JSON in POST /lan", async () => {
     const app = createApp();

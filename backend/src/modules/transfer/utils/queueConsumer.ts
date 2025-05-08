@@ -1,10 +1,15 @@
 import { TRANSFER_QUEUE_NAME as QUEUE_NAME } from "src/modules/rabbit/utils/queue/transfer";
 import type amqp from "amqplib";
 import { TransferService } from "../services";
-import { formatDate, streamToBuffer, logs } from "src/utils";
+import {
+  formatDate,
+  streamToBuffer,
+  logs,
+  writeStreamToTempFile,
+} from "src/utils";
 import { download, upload } from "src/modules/s3/utils";
 import { ENV } from "src/config";
-import { getFileFromZipBuffer } from "./getFileFromZipBuffer";
+import { getFileFromZipStream } from "./getFileFromZipStream";
 import { sendEmail } from "src/modules/ches/utils";
 import { transferEmail } from "./email";
 import { sortPSPContent } from "./sortPSPContent";
@@ -13,6 +18,9 @@ import { createPSP } from "./createPSP";
 import { getFilenameByRegex } from "./getFilenameByRegex";
 import { createFinalTransfer } from "./createFinalTransfer";
 import { isChecksumValid } from "./isChecksumValid";
+import type { Readable } from "node:stream";
+import fs from "node:fs";
+import { getBase64FromZipStream } from "./getBase64FromZipStream";
 
 const {
   RABBITMQ: { JOB_PROCESSED },
@@ -64,125 +72,162 @@ export const queueConsumer = async (
     bucketName: S3_BUCKET,
     key: `transfers/TR_${accession}_${application}.zip`,
   });
-  const buffer = await streamToBuffer(stream);
 
-  // Check to make sure record was not editted in s3
-  if (!isChecksumValid({ buffer, checksum: transfer.checksum! })) {
-    channel.ack(msg);
-    return console.error(MISMATCH_CHECKSUM(accession, application));
-  }
+  const tempContentStreamPath = await writeStreamToTempFile(stream);
 
-  // Process transfer
-  const pspContent = sortPSPContent(
-    metadata.folders as unknown as NonNullable<
-      TransferZod["metadata"]
-    >["folders"]
-  );
-  const pspBuffers: {
-    buffer: Buffer;
-    schedule: string;
-    classification: string;
-  }[] = [];
+  try {
+    // Clone the content zip stream for validation
+    const contentStream1 = fs.createReadStream(tempContentStreamPath);
+    const contentStream2 = fs.createReadStream(tempContentStreamPath);
+    const contentStream3 = fs.createReadStream(tempContentStreamPath);
+    const contentStream4 = fs.createReadStream(tempContentStreamPath);
+    const contentStream5 = fs.createReadStream(tempContentStreamPath);
 
-  for (const psp of pspContent) {
-    const pspBuffer = await createPSP({
-      folderContent: psp.content,
-      buffer,
-      metadata: metadata as unknown as {
-        admin: NonNullable<TransferZod["metadata"]>["admin"];
-        folders: NonNullable<TransferZod["metadata"]>["folders"];
-        files: NonNullable<TransferZod["metadata"]>["files"];
-      },
+    // Check to make sure record was not editted in s3
+    if (
+      !isChecksumValid({
+        stream: contentStream1,
+        checksum: transfer.checksum!,
+      })
+    ) {
+      channel.ack(msg);
+      return console.error(MISMATCH_CHECKSUM(accession, application));
+    }
+
+    // Process transfer
+    const pspContent = sortPSPContent(
+      metadata.folders as unknown as NonNullable<
+        TransferZod["metadata"]
+      >["folders"]
+    );
+    const pspStreams: {
+      stream: Readable;
+      schedule: string;
+      classification: string;
+    }[] = [];
+
+    for (const psp of pspContent) {
+      console.log(`Processing PSP: ${psp.schedule} - ${psp.classification}`);
+      const contentStream = fs.createReadStream(tempContentStreamPath);
+      const pspStream = await createPSP({
+        folderContent: psp.content,
+        stream: contentStream,
+        metadata: metadata as unknown as {
+          admin: NonNullable<TransferZod["metadata"]>["admin"];
+          folders: NonNullable<TransferZod["metadata"]>["folders"];
+          files: NonNullable<TransferZod["metadata"]>["files"];
+        },
+      });
+      pspStreams.push({
+        stream: pspStream,
+        schedule: psp.schedule,
+        classification: psp.classification,
+      });
+    }
+
+    const newTransferStream = await createFinalTransfer(pspStreams);
+
+    // Save to s3
+    await upload({
+      bucketName: S3_BUCKET,
+      key: `transfers/TR_${accession}_${application}.zip`,
+      content: newTransferStream,
     });
-    pspBuffers.push({
-      buffer: pspBuffer,
-      schedule: psp.schedule,
-      classification: psp.classification,
+
+    // Get transfer files for email attachment
+    const fileListPath = await getFilenameByRegex({
+      stream: contentStream2,
+      directory: "documentation/",
+      regex: /^(Digital_File_List|File\sList)/,
+    });
+
+    const subAgreementPath = await getFilenameByRegex({
+      stream: contentStream3,
+      directory: "documentation/",
+      regex: /^Submission_Agreement/,
+    });
+
+    if (!fileListPath) {
+      channel.ack(msg);
+      return console.error(FILELIST_NOT_FOUND(accession, application));
+    }
+
+    if (!subAgreementPath) {
+      channel.ack(msg);
+      return console.error(SUB_AGREEMENT_NOT_FOUND(accession, application));
+    }
+
+    const fileListBase64 = await getBase64FromZipStream(
+      contentStream4,
+      fileListPath
+    );
+    const submissionAgreementBase64 = await getBase64FromZipStream(
+      contentStream5,
+      subAgreementPath
+    );
+
+    if (!fileListBase64) {
+      channel.ack(msg);
+      return console.error(FILELIST_NOT_FOUND(accession, application));
+    }
+
+    if (!submissionAgreementBase64) {
+      channel.ack(msg);
+      return console.error(SUB_AGREEMENT_NOT_FOUND(accession, application));
+    }
+
+    const email = metadata.admin?.submittedBy?.email;
+    if (!email) {
+      channel.ack(msg);
+      return console.error(EMAIL_NOT_FOUND(accession, application));
+    }
+
+    const today = new Date().toISOString().split("T")[0].replaceAll("-", "/");
+
+    // Save data for transfer to Mongo
+    await TransferService.updateTransferEntry(accession, application, {
+      jobID,
+      status: "Transferred",
+      transferDate: today,
+    });
+
+    // Send completion email
+    sendEmail({
+      attachments: [
+        {
+          filename: file_list_filename,
+          content: fileListBase64,
+          contentType:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          encoding: "base64",
+        },
+        {
+          filename: submission_agreement_filename,
+          content: submissionAgreementBase64,
+          contentType: "application/pdf",
+          encoding: "base64",
+        },
+      ],
+      bodyType: "html",
+      body: transferEmail(accession, application),
+      to: [email],
+      subject: "DATS - Records Sent to Digital Archives",
+    });
+
+    console.log(COMPLETED_TRANSFER(accession, application));
+  } catch (error) {
+  } finally {
+    // Clean up the temporary file
+    fs.unlink(tempContentStreamPath, (err) => {
+      if (err) {
+        console.error(
+          `Failed to delete temp file: ${tempContentStreamPath}`,
+          err
+        );
+      }
     });
   }
 
-  const newTransferBuffer = await createFinalTransfer(pspBuffers);
-
-  // Save to s3
-  await upload({
-    bucketName: S3_BUCKET,
-    key: `transfers/TR_${accession}_${application}.zip`,
-    content: newTransferBuffer,
-  });
-
-  // Get transfer files for email attachment
-  const fileListPath = await getFilenameByRegex({
-    buffer,
-    directory: "documentation/",
-    regex: /^(Digital_File_List|File\sList)/,
-  });
-
-  const subAgreementPath = await getFilenameByRegex({
-    buffer,
-    directory: "documentation/",
-    regex: /^Submission_Agreement/,
-  });
-
-  if (!fileListPath) {
-    channel.ack(msg);
-    return console.error(FILELIST_NOT_FOUND(accession, application));
-  }
-
-  if (!subAgreementPath) {
-    channel.ack(msg);
-    return console.error(SUB_AGREEMENT_NOT_FOUND(accession, application));
-  }
-
-  const fileListBuffer = await getFileFromZipBuffer(buffer, fileListPath);
-  const submissionAgreementBuffer = await getFileFromZipBuffer(
-    buffer,
-    subAgreementPath
-  );
-
-  // Convert the buffer to Base64 for email attachment
-  const fileListBase64Buffer = Buffer.from(fileListBuffer).toString("base64");
-  const subAgreementBase64Buffer = Buffer.from(
-    submissionAgreementBuffer
-  ).toString("base64");
-
-  const email = metadata.admin?.submittedBy?.email;
-  if (!email) {
-    channel.ack(msg);
-    return console.error(EMAIL_NOT_FOUND(accession, application));
-  }
-
-  const today = new Date().toISOString().split("T")[0].replaceAll("-", "/");
-
-  // Save data for transfer to Mongo
-  await TransferService.updateTransferEntry(accession, application, {
-    jobID,
-    status: "Transferred",
-    transferDate: today,
-  });
-
-  // Send completion email
-  sendEmail({
-    attachments: [
-      {
-        filename: file_list_filename,
-        content: fileListBase64Buffer,
-        contentType:
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        encoding: "base64",
-      },
-      {
-        filename: submission_agreement_filename,
-        content: subAgreementBase64Buffer,
-        contentType: "application/pdf",
-        encoding: "base64",
-      },
-    ],
-    bodyType: "html",
-    body: transferEmail(accession, application),
-    to: [email],
-    subject: "DATS - Records Sent to Digital Archives",
-  });
-
-  console.log(COMPLETED_TRANSFER(accession, application));
-  return channel.ack(msg);
+  // Acknowledge the message
+  channel.ack(msg);
 };

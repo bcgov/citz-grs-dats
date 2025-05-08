@@ -1,12 +1,14 @@
 import archiver from "archiver";
-import { PassThrough } from "node:stream";
+import { PassThrough, type Readable } from "node:stream";
 import crypto from "node:crypto";
-
-const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 export const createFinalTransfer = async (
-  pspArray: { buffer: Buffer; schedule: string; classification: string }[]
-): Promise<Buffer> => {
+  pspArray: { stream: Readable; schedule: string; classification: string }[]
+): Promise<Readable> => {
+  console.log("Creating final transfer zip file...");
   const archive = archiver("zip", { zlib: { level: 9 } });
   const zipOutput = new PassThrough();
   archive.pipe(zipOutput);
@@ -14,57 +16,35 @@ export const createFinalTransfer = async (
   const manifestLines: string[] = [];
 
   // Append each PSP zip and add checksum
-  for (const { buffer, schedule, classification } of pspArray) {
+  for (const { stream, schedule, classification } of pspArray) {
     const zipFileName = `PSP_${schedule}_${classification}.zip`;
-    archive.append(buffer, { name: zipFileName });
+    const tempFilePath = path.join(os.tmpdir(), zipFileName);
+    const tempFileStream = fs.createWriteStream(tempFilePath);
 
-    const checksum = crypto.createHash("sha256").update(buffer).digest("hex");
-    manifestLines.push(`${checksum} ${zipFileName}`);
+    const hash = crypto.createHash("sha256");
+    stream.on("data", (chunk) => {
+      hash.update(chunk);
+      tempFileStream.write(chunk);
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      stream.on("end", () => {
+        tempFileStream.end(() => {
+          const checksum = hash.digest("hex");
+          manifestLines.push(`${checksum} ${zipFileName}`);
+          resolve();
+        });
+      });
+      stream.on("error", (err) => reject(err));
+      tempFileStream.on("error", (err) => reject(err));
+    });
+
+    archive.file(tempFilePath, { name: zipFileName });
   }
 
   // Add the manifest file
   archive.append(manifestLines.join("\n"), { name: "manifest-sha256.txt" });
   archive.finalize();
 
-  const chunkBuffers: Buffer[] = [];
-  const bufferQueue: Buffer[] = [];
-  let bufferedSize = 0;
-
-  return new Promise((resolve, reject) => {
-    zipOutput.on("data", (chunk: Buffer) => {
-      bufferQueue.push(chunk);
-      bufferedSize += chunk.length;
-
-      while (bufferedSize >= CHUNK_SIZE) {
-        let chunkSize = 0;
-        const buffersToConcat: Buffer[] = [];
-
-        while (bufferQueue.length && chunkSize < CHUNK_SIZE) {
-          const next = bufferQueue[0];
-          const remaining = CHUNK_SIZE - chunkSize;
-
-          if (next.length <= remaining) {
-            chunkSize += next.length;
-            buffersToConcat.push(bufferQueue.shift()!);
-          } else {
-            buffersToConcat.push(next.slice(0, remaining));
-            bufferQueue[0] = next.slice(remaining);
-            chunkSize += remaining;
-          }
-        }
-
-        chunkBuffers.push(Buffer.concat(buffersToConcat, chunkSize));
-        bufferedSize -= chunkSize;
-      }
-    });
-
-    zipOutput.on("end", () => {
-      if (bufferQueue.length > 0) {
-        chunkBuffers.push(Buffer.concat(bufferQueue, bufferedSize));
-      }
-      resolve(Buffer.concat(chunkBuffers));
-    });
-
-    zipOutput.on("error", (err) => reject(err));
-  });
+  return zipOutput;
 };

@@ -1,108 +1,140 @@
 import archiver from "archiver";
 import unzipper from "unzipper";
-import { PassThrough } from "node:stream";
+import { PassThrough, type Readable } from "node:stream";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { promises as fsPromises } from "node:fs";
+import { createWriteStream, promises as fsPromises } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { pipeline } from "node:stream/promises";
 
-// Define the Props type
 type Props = {
-  contentZipBuffer: Buffer;
-  documentation: Record<string, Buffer | null>;
-  metadata: Record<string, Buffer | null>;
+  contentZipStream: Readable;
+  documentation: Record<string, Buffer | Readable | null>;
+  metadata: Record<string, Buffer | Readable | null>;
 };
 
 // Extract zip contents using unzipper and re-add to archive
 const extractZipToArchive = async (
-  zipBuffer: Buffer,
+  zipStream: Readable,
   archive: archiver.Archiver
 ) => {
-  const directory = await unzipper.Open.buffer(zipBuffer);
+  const tempDir = await fsPromises.mkdtemp(join(tmpdir(), "zip-extract-"));
+  const extractedFiles: string[] = [];
 
-  for (const file of directory.files) {
-    if (file.type === "File") {
-      const stream = file.stream();
-      archive.append(stream, { name: `content/${file.path}` });
+  try {
+    const directory = zipStream.pipe(unzipper.Parse({ forceStream: true }));
+
+    for await (const entry of directory) {
+      if (entry.type === "File") {
+        const tempFilePath = join(tempDir, entry.path);
+
+        // Ensure the directory structure exists
+        await fsPromises.mkdir(join(tempFilePath, ".."), { recursive: true });
+
+        // Write the file to the temporary directory
+        const writeStream = createWriteStream(tempFilePath);
+        await pipeline(entry, writeStream);
+
+        // Keep track of the extracted file
+        extractedFiles.push(tempFilePath);
+
+        // Append the file to the archive
+        archive.file(tempFilePath, { name: `content/${entry.path}` });
+      }
+      entry.autodrain();
     }
+  } catch (err) {
+    console.error("Error during zip extraction:", err);
+    throw err;
+  } finally {
+    // Delay cleanup until the archive is finalized
+    archive.on("end", async () => {
+      await fsPromises.rm(tempDir, { recursive: true, force: true });
+    });
   }
 };
 
 // Create archive in-memory using chunked streaming
 export const createStandardTransferZip = async ({
-  contentZipBuffer,
+  contentZipStream,
   documentation,
   metadata,
 }: Props): Promise<Buffer> => {
-  console.log("Starting createStandardTransferZip...");
+  console.log("Creating standard transfer zip...");
   const archive = archiver("zip", { zlib: { level: 9 } });
   const zipOutput = new PassThrough();
   archive.pipe(zipOutput);
 
-  console.log("Extracting content zip entries...");
-  await extractZipToArchive(contentZipBuffer, archive);
+  try {
+    await extractZipToArchive(contentZipStream, archive);
 
-  console.log("Adding documentation files...");
-  for (const [filename, buffer] of Object.entries(documentation)) {
-    if (buffer) archive.append(buffer, { name: `documentation/${filename}` });
-  }
+    for (const [filename, file] of Object.entries(documentation)) {
+      if (file) {
+        archive.append(file, { name: `documentation/${filename}` });
+      }
+    }
 
-  console.log("Adding metadata files...");
-  for (const [filename, buffer] of Object.entries(metadata)) {
-    if (buffer) archive.append(buffer, { name: `metadata/${filename}` });
-  }
+    for (const [filename, file] of Object.entries(metadata)) {
+      if (file) {
+        archive.append(file, { name: `metadata/${filename}` });
+      }
+    }
 
-  console.log("Finalizing archive...");
-  archive.finalize();
+    archive.finalize();
 
-  const tempFilePath = path.join(os.tmpdir(), `temp-zip-${Date.now()}.zip`);
-  console.log(`Temporary file path: ${tempFilePath}`);
-  const writeStream = fs.createWriteStream(tempFilePath);
+    const tempFilePath = path.join(os.tmpdir(), `temp-zip-${Date.now()}.zip`);
+    const writeStream = fs.createWriteStream(tempFilePath);
 
-  return new Promise((resolve, reject) => {
-    console.log("Piping zip output to write stream...");
-    zipOutput.pipe(writeStream);
+    return new Promise((resolve, reject) => {
+      zipOutput.on("data", (chunk) => {
+        if (!writeStream.write(chunk)) {
+          zipOutput.pause();
+        }
+      });
 
-    writeStream.on("finish", async () => {
-      console.log("Write stream finished. Reading temp file...");
-      try {
-        const data = await fsPromises.readFile(tempFilePath);
-        console.log("Temp file read successfully. Cleaning up temp file...");
-        await fsPromises.unlink(tempFilePath); // Clean up temp file
-        console.log("Temp file deleted. Resolving promise...");
-        resolve(data);
-      } catch (err) {
-        console.error("Error during write stream finish handling:", err);
+      writeStream.on("drain", () => {
+        zipOutput.resume();
+      });
+
+      writeStream.on("finish", async () => {
+        try {
+          console.log("Zip file creation complete. Reading file...");
+          const data = await fsPromises.readFile(tempFilePath);
+          await fsPromises.unlink(tempFilePath); // Clean up temp file
+          resolve(data);
+        } catch (err) {
+          reject(err);
+        }
+      });
+
+      writeStream.on("error", async (err) => {
+        try {
+          await fsPromises.unlink(tempFilePath); // Clean up temp file on error
+        } catch (cleanupErr) {
+          // Handle cleanup error
+          reject(cleanupErr);
+        }
         reject(err);
-      }
-    });
+      });
 
-    writeStream.on("error", async (err) => {
-      console.error("Error in write stream:", err);
-      try {
-        await fsPromises.unlink(tempFilePath); // Clean up temp file on error
-        console.log("Temp file deleted after write stream error.");
-      } catch (cleanupErr) {
-        console.error(
-          "Error during temp file cleanup after write stream error:",
-          cleanupErr
-        );
-      }
-      reject(err);
-    });
+      zipOutput.on("error", async (err) => {
+        try {
+          await fsPromises.unlink(tempFilePath); // Clean up temp file on error
+        } catch (cleanupErr) {
+          // Handle cleanup error
+          reject(cleanupErr);
+        }
+        reject(err);
+      });
 
-    zipOutput.on("error", async (err) => {
-      console.error("Error in zip output:", err);
-      try {
-        await fsPromises.unlink(tempFilePath); // Clean up temp file on error
-        console.log("Temp file deleted after zip output error.");
-      } catch (cleanupErr) {
-        console.error(
-          "Error during temp file cleanup after zip output error:",
-          cleanupErr
-        );
-      }
-      reject(err);
+      zipOutput.on("end", () => {
+        writeStream.end();
+      });
     });
-  });
+  } catch (err) {
+    console.error("Error during zip creation:", err);
+    throw err;
+  }
 };

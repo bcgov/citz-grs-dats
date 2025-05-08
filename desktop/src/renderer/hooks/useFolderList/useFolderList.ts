@@ -24,11 +24,11 @@ export const useFolderList = () => {
         prevFolderList.map((folder) =>
           folder.folder === source
             ? { ...folder, progress: progressPercentage }
-            : folder,
-        ),
+            : folder
+        )
       );
     },
-    [setFolders],
+    [setFolders]
   );
 
   const handleCompletion = useCallback(
@@ -39,7 +39,7 @@ export const useFolderList = () => {
         metadata?: Record<string, unknown>;
         extendedMetadata?: Record<string, unknown>;
         error?: unknown;
-      }>,
+      }>
     ) => {
       const {
         source,
@@ -59,7 +59,7 @@ export const useFolderList = () => {
         console.error(`Failed to process folder: ${source}`);
       }
     },
-    [setMetaData, setExtendedMetaData],
+    [setMetaData, setExtendedMetaData]
   );
 
   const getFolderMetadata = useCallback(
@@ -195,25 +195,24 @@ export const useFolderList = () => {
   useEffect(() => {
     window.addEventListener(
       "folder-metadata-progress",
-      handleProgress as EventListener,
+      handleProgress as EventListener
     );
     window.addEventListener(
       "folder-metadata-completion",
-      handleCompletion as EventListener,
+      handleCompletion as EventListener
     );
 
     return () => {
       window.removeEventListener(
         "folder-metadata-progress",
-        handleProgress as EventListener,
+        handleProgress as EventListener
       );
       window.removeEventListener(
         "folder-metadata-completion",
-        handleCompletion as EventListener,
+        handleCompletion as EventListener
       );
-    }
-  }, [handleProgress])
-
+    };
+  }, [handleProgress]);
 
   useEffect(() => {
     // Process pending paths for metadata
