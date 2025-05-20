@@ -185,7 +185,8 @@ export const useFolderList = () => {
       setMetaData({});
       setExtendedMetaData({});
 
-      notify.log(`finish submit: ${{ error, data, folders, metaData }}`);
+      notify.log("finish submit2:", { error, data, folders, metaData });
+
     },
     [fetchProtectedRoute, folders, metaData]
   );
