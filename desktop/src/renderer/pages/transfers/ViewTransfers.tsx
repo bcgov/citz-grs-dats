@@ -1,14 +1,13 @@
+import { useAuth, useNotification } from "@/renderer/hooks";
 import { Button, Switch } from "@bcgov/design-system-react-components";
 import { Grid2 as Grid, Stack, TextField, Typography } from "@mui/material";
-import { LoginRequiredModal, Toast } from "@renderer/components";
+import { LoginRequiredModal } from "@renderer/components";
 import {
 	ConfirmDeletionModal,
 	ConfirmReDownloadModal,
 	TransfersGrid,
 } from "@renderer/components/view-transfers";
-import { useAuth } from "@/renderer/hooks";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 
 type Transfer = {
 	id: number;
@@ -24,6 +23,8 @@ export const ViewTransfersPage = () => {
 	const [api] = useState(window.api); // Preload scripts
 
 	const { accessToken } = useAuth();
+
+	const { notify } = useNotification();
 
 	/**
 	 * transfers is the original unfiltered state. We use filteredState to track the filtered
@@ -86,12 +87,10 @@ export const ViewTransfersPage = () => {
 	useEffect(() => {
 		if (loadTransfersSuccess === false) {
 			// Failed to load transfers
-			toast.error(Toast, {
-				data: {
-					success: false,
-					title: "Failed to load transfers",
-					message: "We were unable to load transfers. Please log out and try again.",
-				},
+			notify.error({
+				success: false,
+				title: "Failed to load transfers",
+				message: "We were unable to load transfers. Please log out and try again.",
 			});
 		}
 	}, [loadTransfersSuccess]);
@@ -99,23 +98,19 @@ export const ViewTransfersPage = () => {
 	useEffect(() => {
 		if (deleteSuccess === true) {
 			// Success
-			toast.success(Toast, {
-				data: {
-					success: true,
-					title: "File deleted",
-					message:
-						"The file has been deleted successfully. A stub will remain in DATS to prevent duplicate transfers. See ARIS for the official status.",
-				},
+			notify.success({
+				success: true,
+				title: "File deleted",
+				message:
+					"The file has been deleted successfully. A stub will remain in DATS to prevent duplicate transfers. See ARIS for the official status.",
 			});
 		} else if (deleteSuccess === false) {
 			// Failed to delete transfer
-			toast.error(Toast, {
-				data: {
-					success: false,
-					title: "Deletion unsuccessful",
-					message:
-						"Deletion failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
-				},
+			notify.error({
+				success: false,
+				title: "Deletion unsuccessful",
+				message:
+					"Deletion failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
 			});
 		}
 	}, [deleteSuccess]);
@@ -123,22 +118,18 @@ export const ViewTransfersPage = () => {
 	useEffect(() => {
 		if (downloadSuccess === true) {
 			// Success
-			toast.success(Toast, {
-				data: {
-					success: true,
-					title: "Download complete!",
-					message: `The file has been downloaded successfully to ${recentDownloadFilePath}`,
-				},
+			notify.success({
+				success: true,
+				title: "Download complete!",
+				message: `The file has been downloaded successfully to ${recentDownloadFilePath}`,
 			});
 		} else if (downloadSuccess === false) {
 			// Failed to download transfer
-			toast.error(Toast, {
-				data: {
-					success: false,
-					title: "Download unsuccessful",
-					message:
-						"Download failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
-				},
+			notify.error({
+				success: false,
+				title: "Download unsuccessful",
+				message:
+					"Download failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
 			});
 		}
 	}, [downloadSuccess]);
@@ -146,22 +137,18 @@ export const ViewTransfersPage = () => {
 	useEffect(() => {
 		if (preserveSuccess === true) {
 			// Success
-			toast.success(Toast, {
-				data: {
-					success: true,
-					title: "Preserve complete!",
-					message: "The file has been preserved to LibSafe successfully.",
-				},
+			notify.success({
+				success: true,
+				title: "Preserve complete!",
+				message: "The file has been preserved to LibSafe successfully.",
 			});
 		} else if (preserveSuccess === false) {
 			// Failed to preserve transfer
-			toast.error(Toast, {
-				data: {
-					success: false,
-					title: "Preserve unsuccessful",
-					message:
-						"Preserve failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
-				},
+			notify.error({
+				success: false,
+				title: "Preserve unsuccessful",
+				message:
+					"Preserve failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
 			});
 		}
 	}, [preserveSuccess]);
@@ -312,12 +299,10 @@ export const ViewTransfersPage = () => {
 		if (!accessToken) return;
 		setPreserveSuccess(null);
 
-		toast.success(Toast, {
-			data: {
-				success: true,
-				title: "Starting preserve",
-				message: "Wait a few moments while we start the preservation process...",
-			},
+		notify.success({
+			success: true,
+			title: "Starting preserve",
+			message: "Wait a few moments while we start the preservation process...",
 		});
 
 		// Request url
@@ -326,7 +311,7 @@ export const ViewTransfersPage = () => {
 
 		// Make request
 		try {
-			console.log("Making preserve transfer request.");
+			notify.log("Making preserve transfer request.");
 			const response = await fetch(requestUrl, {
 				method: "POST",
 				headers: {

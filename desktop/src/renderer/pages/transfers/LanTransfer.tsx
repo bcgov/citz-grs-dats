@@ -1,6 +1,6 @@
-import { useAuth, useNavigate } from "@/renderer/hooks";
+import { useAuth, useNavigate, useNotification, type NotifyProps } from "@/renderer/hooks";
 import { Grid2 as Grid, Stack, Typography } from "@mui/material";
-import { LoginRequiredModal, Stepper, Toast } from "@renderer/components";
+import { LoginRequiredModal, Stepper } from "@renderer/components";
 import {
 	JustifyChangesModal,
 	TransferAlreadyProcessedModal,
@@ -14,8 +14,7 @@ import {
 	LanUploadTransferFormView,
 } from "@renderer/components/transfer/lan-views";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { getXlsxFileListToastData, parseJsonFile, type ToastData } from "./utils";
+import { parseJsonFile } from "./utils";
 
 type Folder = {
 	id: number;
@@ -48,6 +47,7 @@ export const LanTransferPage = () => {
 
 	const { navigate, setCanLoseProgress } = useNavigate();
 	const { idToken, accessToken, refresh } = useAuth();
+	const { notify } = useNotification();
 
 	const handleLogout = async () => await api.sso.logout(idToken);
 
@@ -360,13 +360,11 @@ export const LanTransferPage = () => {
 
 		// Folder already exists in file list.
 		if (folders.some((row) => row.folder === selectedFolderPath)) {
-			toast.error(Toast, {
-				data: {
-					success: false,
-					title: "Folder edit unsuccessful",
-					message:
-						"The folder path you selected is already used in the file list. Please select a different folder path.",
-				},
+			notify.error({
+				success: false,
+				title: "Folder edit unsuccessful",
+				message:
+					"The folder path you selected is already used in the file list. Please select a different folder path.",
 			});
 			return;
 		}
@@ -417,18 +415,13 @@ export const LanTransferPage = () => {
 			} catch (error) {
 				setFileList(null);
 				if (error instanceof Error) {
-					const toastData = getXlsxFileListToastData(error.message);
-
-					// Create a toast message
-					return toast.error(Toast, { data: toastData });
+					return notify.excelError(error.message);
 				}
 				// Unexpected error
-				return toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Unexpected error",
-						message: `Encountered an unexpected error while parsing your file list (ARS 662). Please contact someone from the DATS team for assistance. Error: ${error}`,
-					},
+				return notify.error({
+					success: false,
+					title: "Unexpected error",
+					message: `Encountered an unexpected error while parsing your file list (ARS 662). Please contact someone from the DATS team for assistance. Error: ${error}`,
 				});
 			}
 		} else if (fileName.endsWith(".json")) {
@@ -439,17 +432,15 @@ export const LanTransferPage = () => {
 			};
 			const json = (await parseJsonFile(fileList)) as JsonFileList | null;
 
-			let toastData: ToastData | undefined = undefined;
+			let notificationData: NotifyProps | undefined = undefined;
 
 			if (!json) {
 				// Invalid JSON
-				return toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Invalid json",
-						message:
-							"Your file list (ARS 662) could not be parsed. Please make sure it is formatted correctly and save it, then try uploading the file again.",
-					},
+				return notify.error({
+					success: false,
+					title: "Invalid json",
+					message:
+						"Your file list (ARS 662) could not be parsed. Please make sure it is formatted correctly and save it, then try uploading the file again.",
 				});
 			}
 
@@ -475,7 +466,7 @@ export const LanTransferPage = () => {
 
 			if (!accAndAppExist)
 				// Missing accession and/or application numbers.
-				toastData = {
+				notificationData = {
 					success: false,
 					title: "Missing accession and/or application number",
 					message:
@@ -484,7 +475,7 @@ export const LanTransferPage = () => {
 
 			if (hasDuplicates) {
 				// File list has duplicate folders
-				toastData = {
+				notificationData = {
 					success: false,
 					title: "Duplicate folder",
 					message:
@@ -494,7 +485,7 @@ export const LanTransferPage = () => {
 
 			if (foldersMissingScheduleOrClassification) {
 				// Folder is missing schedule and/or classification value.
-				toastData = {
+				notificationData = {
 					success: false,
 					title: "Missing schedule and/or classification value",
 					message:
@@ -504,7 +495,7 @@ export const LanTransferPage = () => {
 
 			if (accAndAppExist && !accAndAppAreValid)
 				// Invalid accession and/or application numbers.
-				toastData = {
+				notificationData = {
 					success: false,
 					title: "Invalid accession and/or application number",
 					message:
@@ -513,17 +504,17 @@ export const LanTransferPage = () => {
 
 			if (!folders || Object.keys(folders).length === 0)
 				// Missing folders property.
-				toastData = {
+				notificationData = {
 					success: false,
 					title: "Missing folders",
 					message:
 						"Your file list (ARS 662) is missing the ‘folders’ property. Please add this information to the file list and save it, then try uploading the file again.",
 				};
 
-			if (toastData) {
+			if (notificationData) {
 				// Create a toast message
 				setFileList(null);
-				return toast.error(Toast, { data: toastData });
+				return notify.error(notificationData);
 			}
 
 			// Save results
@@ -541,13 +532,11 @@ export const LanTransferPage = () => {
 			const regex = /^(Digital_File_List|File\sList)/;
 			if (!regex.test(filename)) {
 				// Filename doesnt match regex
-				toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Invalid filename",
-						message:
-							"Your Digital File List file name must begin with 'Digital_File_List' or 'File List'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
-					},
+				notify.error({
+					success: false,
+					title: "Invalid filename",
+					message:
+						"Your Digital File List file name must begin with 'Digital_File_List' or 'File List'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
 				});
 				setFileList(null);
 			}
@@ -571,13 +560,11 @@ export const LanTransferPage = () => {
 			const regex = /^(Transfer_Form|617)/;
 			if (!regex.test(filename)) {
 				// Filename doesnt match regex
-				toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Invalid filename",
-						message:
-							"Your Transfer Form ARS 617 file name must begin with 'Transfer_Form' or '617'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
-					},
+				notify.error({
+					success: false,
+					title: "Invalid filename",
+					message:
+						"Your Transfer Form ARS 617 file name must begin with 'Transfer_Form' or '617'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
 				});
 				setTransferForm(null);
 			}
@@ -587,23 +574,19 @@ export const LanTransferPage = () => {
 	useEffect(() => {
 		if (uploadSuccess === true) {
 			// Success
-			toast.success(Toast, {
-				data: {
-					success: true,
-					title: "Folder upload successful",
-					message:
-						"Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
-				},
+			notify.success({
+				success: true,
+				title: "Folder upload successful",
+				message:
+					"Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
 			});
 		} else if (uploadSuccess === false) {
 			// Failed to download transfer
-			toast.error(Toast, {
-				data: {
-					success: false,
-					title: "Folder upload unsuccessful",
-					message:
-						"One or more of your folders was not successfully uploaded due to an invalid folder path or empty folder. Update the folder path(s) by clicking the corresponding Edit icon or remove the folder by clicking the Delete icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
-				},
+			notify.error({
+				success: false,
+				title: "Folder upload unsuccessful",
+				message:
+					"One or more of your folders was not successfully uploaded due to an invalid folder path or empty folder. Update the folder path(s) by clicking the corresponding Edit icon or remove the folder by clicking the Delete icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
 			});
 		}
 	}, [uploadSuccess]);

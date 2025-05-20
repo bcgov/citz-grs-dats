@@ -8,12 +8,10 @@ import {
 	AnimatedProgress,
 	ContinueButton,
 	FinalizeFilelistModal,
-	Toast,
 } from "@renderer/components";
-import { useFolderList } from "@/renderer/hooks";
+import { useFolderList, useNotification } from "@/renderer/hooks";
 import type { FolderRow } from "@/renderer/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "react-toastify";
 import { SelectFolderButton } from "./SelectFolderButton";
 
 export type FolderDisplayGridProps = {
@@ -32,6 +30,8 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 
 	const { addPathArrayToFolders, apiRef, folders, removeFolder, setFolders, submit } =
 		useFolderList();
+
+	const { notify } = useNotification();
 
 	const columns = useMemo(() => {
 		return [
@@ -84,13 +84,11 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 			} catch (error) {
 				console.error(error);
 				setFinalizeModalIsOpen(false);
-				toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Submission failed",
-						message:
-							"We were unable to fulfill your request to create a file list. Please try again.",
-					},
+				notify.error({
+					success: false,
+					title: "Submission failed",
+					message:
+						"We were unable to fulfill your request to create a file list. Please try again.",
 				});
 			}
 		},
