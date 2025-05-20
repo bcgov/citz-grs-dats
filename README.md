@@ -28,6 +28,8 @@ The DATS project will be transferring inactive Full Retention (FR) government di
 - [Worker Scripts](#worker-scripts)
 - [VPN/BC Gov Network Requirement](#vpnbc-gov-network-requirement)
 - [Architecture Diagram](#architecture-diagram)
+- [Tech Stack](#tech-stack)
+- [Key Files and Directories](#key-files-and-directories)
 
 <br />
 
@@ -56,15 +58,11 @@ npm run build:macos-latest
 npm run build:ubuntu-latest
 ```
 
-3. **Uninstall Previous Version**: Remove existing installation
-    - Windows: in `C:\Users\<username>\AppData\Local\Programs\DATS.exe`.
-    - Mac: `/Applications/DATS.app`.
+3. **Locate Build**: In VSCode, right-click `desktop/dist/` and select `Reveal in Finder/File Explorer`. Run the setup executable.
 
-4. **Locate Build**: In VSCode, right-click `desktop/dist/` and select `Reveal in Finder/File Explorer`. Run the setup executable.
+4. **Test App Launch**: Ensure the desktop app opens correctly, then close it.
 
-5. **Test App Launch**: Ensure the desktop app opens correctly, then close it.
-
-6. **Run in Console**:
+5. **Run in Console**:
     a. Windows: Open Command Prompt and run `<file-location>/DATS.exe`
         e.g., `C:\Users\<username>\AppData\Local\Programs\DATS\DATS.exe`
     b. Mac: Open Terminal and run `<file location>`
@@ -84,7 +82,7 @@ To create a new release, run the `Build and Publish Electron App` workflow under
 
 The desktop application utilizes worker scripts to collect metadata and copy files from the user's machine. They run on their own threads outside of the main application.
 
-IMPORTANT: Every time changes are made to these workers, the app must be re-built.
+**IMPORTANT**: Every time changes are made to these workers, the app must be re-built.
 
 The workers are found under `desktop\src\main\fileProcessing\workers`.
 
@@ -125,3 +123,48 @@ graph TD
 
     %% Define external connections
     C -->|Process Queue| B
+```
+
+## Tech Stack
+
+The Digital Archive Transfer Service (DATS) is built using the following technologies:
+
+### Backend
+- **Node.js**: The runtime environment for executing JavaScript code on the server.
+- **Express.js**: A web application framework used to build the API.
+- **MongoDB**: A NoSQL database used to store metadata and transfer records.
+- **RabbitMQ**: A message broker used for queuing and processing transfer jobs.
+- **Mongoose**: An Object Data Modeling (ODM) library for MongoDB, used to define schemas and interact with the database.
+- **Zod**: A TypeScript-first schema validation library used for validating API request bodies.
+- **PDFKit**: A library for generating PDF documents, used for creating submission agreements.
+- **Unzipper**: A library for extracting zip files, used for processing transfer files.
+- **Archiver**: A library for creating zip files, used for packaging transfer data.
+- **ExcelJS**: A library for creating and manipulating Excel files, used for generating digital file lists.
+
+### Frontend (Desktop Application)
+- **Electron**: A framework for building cross-platform desktop applications using web technologies.
+- **React**: A JavaScript library for building user interfaces.
+- **Material-UI (MUI)**: A React component library for implementing consistent and accessible UI designs.
+- **TypeScript**: A strongly typed programming language that builds on JavaScript, used across the project for type safety.
+
+
+## Key Files and Directories
+
+### Backend
+- **`src/`**: Contains the source code for the backend services.
+  - **`config/`**: Configuration files for environment variables, CORS, and rate limiting.
+  - **`modules/`**: Contains modules for various backend functionalities, such as file list management, transfer handling, and authentication.
+  - **`utils/`**: Utility functions for common tasks like logging, checksum generation, and date formatting.
+- **`docker/`**: Docker configuration files for containerizing the backend.
+
+### Desktop
+- **`src/`**: Contains the source code for the desktop application.
+  - **`main/`**: Main process scripts, including worker scripts for file processing.
+  - **`preload/`**: Preload scripts for secure communication between the renderer and main processes.
+  - **`renderer/`**: Frontend code for the Electron app, built with React and Material-UI.
+- **`resources/`**: Contains static resources like icons and release notes.
+- **`add-release-notes.js`**: Script for updating release notes.
+- **`bump-version.js`**: Script for incrementing the app version.
+- **`electron.vite.config.ts`**: Configuration for building the Electron app.
+- **`cjs.workers.vite.config.ts`**: Configuration for building CommonJS worker scripts.
+- **`es.workers.vite.config.ts`**: Configuration for building ESModule worker scripts.
