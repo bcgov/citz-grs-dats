@@ -1,7 +1,7 @@
+import { useAuth, useNavigate, useNotification } from "@/renderer/hooks";
 import { Button, Radio, RadioGroup } from "@bcgov/design-system-react-components";
 import { Box, Stack, Typography } from "@mui/material";
 import { SubAgreementScrollBox } from "@renderer/components";
-import { useAuth, useNavigate } from "@/renderer/hooks";
 import { useState } from "react";
 import { DeclineSubAgreementModal } from "../DeclineSubAgreementModal";
 
@@ -25,6 +25,7 @@ export const EdrmsSubmissionAgreementView = ({
 
 	const { navigate } = useNavigate();
 	const { accessToken } = useAuth();
+	const { notify } = useNotification();
 
 	const AgreementBox = () => {
 		return (
@@ -99,9 +100,9 @@ export const EdrmsSubmissionAgreementView = ({
 			});
 
 			const jsonResponse = await response.json();
-			console.log("Submission agreement decline response:", jsonResponse);
+			notify.log(`Submission agreement decline response: ${jsonResponse}`);
 		} catch (error) {
-			console.error(error);
+			notify.error(error as string);
 		}
 
 		navigate("/");

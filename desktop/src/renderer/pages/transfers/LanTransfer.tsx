@@ -94,7 +94,7 @@ export const LanTransferPage = () => {
 	useEffect(() => {
 		const handleProgress = (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
 			const { source, progressPercentage } = event.detail;
-			console.log(`${source} metadata progress ${progressPercentage}`);
+			notify.log(`${source} metadata progress ${progressPercentage}`);
 			// Update folder progress
 			const currentProgress = folders.find((row) => row.folder === source)?.metadataProgress ?? 0;
 
@@ -108,7 +108,7 @@ export const LanTransferPage = () => {
 
 		const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
-			console.log("[Metadata] Missing", path);
+			notify.log(`[Metadata] Missing: ${path}`);
 			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
@@ -117,7 +117,7 @@ export const LanTransferPage = () => {
 
 		const handleEmptyFolder = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
-			console.log("[Metadata] Empty folder", path);
+			notify.log(`[Metadata] Empty folder: ${path}`);
 			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
@@ -154,13 +154,15 @@ export const LanTransferPage = () => {
 					prev.filter((worker) => !(worker.folder === source && worker.type === "metadata")),
 				);
 
-				console.log(`Successfully processed folder metadata: ${source}`);
+				notify.log(`Successfully processed folder metadata: ${source}`);
 			} else {
-				console.error(`Failed to process folder metadata: ${source}`, {
-					success,
-					metadata: newMetadata,
-					error,
-				});
+				notify.error(
+					`Failed to process folder metadata: ${source}, ${{
+						success,
+						metadata: newMetadata,
+						error,
+					}}`,
+				);
 			}
 		};
 
@@ -187,7 +189,7 @@ export const LanTransferPage = () => {
 	useEffect(() => {
 		const handleProgress = (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
 			const { source, progressPercentage } = event.detail;
-			console.log(`${source} buffer progress ${progressPercentage}`);
+			notify.log(`${source} buffer progress ${progressPercentage}`);
 			// Update folder progress
 			const currentProgress = folders.find((row) => row.folder === source)?.bufferProgress ?? 0;
 
@@ -201,7 +203,7 @@ export const LanTransferPage = () => {
 
 		const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
-			console.log("[Buffers] Missing", path);
+			notify.log(`[Buffers] Missing: ${path}`);
 			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
@@ -210,7 +212,7 @@ export const LanTransferPage = () => {
 
 		const handleEmptyFolder = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
-			console.log("[Buffers] Empty folder", path);
+			notify.log(`[Buffers] Empty folder: ${path}`);
 			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
@@ -241,12 +243,14 @@ export const LanTransferPage = () => {
 					prev.filter((worker) => !(worker.folder === parentFolder && worker.type === "buffer")),
 				);
 
-				console.log(`Successfully processed folder buffer: ${source}`);
+				notify.log(`Successfully processed folder buffer: ${source}`);
 			} else {
-				console.error(`Failed to process folder buffer: ${source}`, {
-					success,
-					error,
-				});
+				notify.error(
+					`Failed to process folder buffer: ${source}, ${{
+						success,
+						error,
+					}}`,
+				);
 			}
 		};
 
@@ -291,10 +295,10 @@ export const LanTransferPage = () => {
 
 			pathsToProcess.forEach((filePath) => {
 				getFolderMetadata(filePath).catch((error) =>
-					console.error(`Failed to fetch metadata for folder ${filePath}:`, error),
+					notify.error(`Failed to fetch metadata for folder ${filePath}: ${error}`),
 				);
 				getFolderBuffer(filePath).catch((error) =>
-					console.error(`Failed to fetch buffers for folder ${filePath}:`, error),
+					notify.error(`Failed to fetch buffers for folder ${filePath}: ${error}`),
 				);
 			});
 		}
@@ -314,7 +318,7 @@ export const LanTransferPage = () => {
 				]);
 			}
 		} catch (error) {
-			console.error(`Failed to fetch metadata for folder ${filePath}:`, error);
+			notify.error(`Failed to fetch metadata for folder ${filePath}: ${error}`);
 		}
 	};
 
@@ -329,7 +333,7 @@ export const LanTransferPage = () => {
 				setRunningWorkers((prev) => [...prev, { id: workerId, type: "buffer", folder: filePath }]);
 			}
 		} catch (error) {
-			console.error(`Failed to fetch buffers for folder ${filePath}:`, error);
+			notify.error(`Failed to fetch buffers for folder ${filePath}: ${error}`);
 		}
 	};
 
@@ -625,7 +629,7 @@ export const LanTransferPage = () => {
 
 		// Make request
 		try {
-			console.log("Making get transfers request.");
+			notify.log("Making get transfers request.");
 			const response = await fetch(requestUrl, {
 				method: "GET",
 				headers: {
@@ -665,7 +669,7 @@ export const LanTransferPage = () => {
 				}
 			} else return;
 		} catch (error) {
-			console.error(error);
+			notify.error(error as string);
 		}
 	};
 
@@ -761,7 +765,7 @@ export const LanTransferPage = () => {
 
 			try {
 				const tokens = await refresh(); // Get new tokens before request
-				console.log(`Uploading chunk ${i + 1} of ${totalChunks}`);
+				notify.log(`Uploading chunk ${i + 1} of ${totalChunks}`);
 				const response = await fetch(requestUrl, {
 					method: "POST",
 					headers: { Authorization: `Bearer ${tokens?.accessToken}` },
@@ -769,25 +773,25 @@ export const LanTransferPage = () => {
 				});
 
 				if (!response.ok) {
-					console.error(`Upload failed for chunk ${i + 1}`);
+					notify.error(`Upload failed for chunk ${i + 1}`);
 					setRequestSuccessful(false);
 					return;
 				}
 
 				const jsonResponse = await response.json();
-				console.log("Lan transfer response:", jsonResponse);
+				notify.log(`Lan transfer response: ${jsonResponse}`);
 
 				if (jsonResponse.success && i === totalChunks - 1) {
 					setRequestSuccessful(true);
 				}
 			} catch (error) {
-				console.error("Lan transfer error:", error);
+				notify.error(`Lan transfer error: ${error}`);
 				setRequestSuccessful(false);
 				return;
 			}
 		}
 
-		console.log("All chunks uploaded successfully.");
+		notify.log("All chunks uploaded successfully.");
 	};
 
 	// Send to home on completion
