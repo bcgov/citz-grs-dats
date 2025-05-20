@@ -163,7 +163,7 @@ export const ViewTransfersPage = () => {
 
 		// Make request
 		try {
-			console.log("Making get transfers request.");
+			notify.log("Making get transfers request.");
 			const response = await fetch(requestUrl, {
 				method: "GET",
 				headers: {
@@ -190,7 +190,7 @@ export const ViewTransfersPage = () => {
 				setTransfers(fetchedTransfers);
 			} else return setLoadTransfersSuccess(false);
 		} catch (error) {
-			console.error(error);
+			notify.error(error as string);
 			setLoadTransfersSuccess(false);
 		}
 	};
@@ -205,7 +205,7 @@ export const ViewTransfersPage = () => {
 
 		// Make request
 		try {
-			console.log("Making delete transfer request.");
+			notify.log("Making delete transfer request.");
 			const response = await fetch(requestUrl, {
 				method: "DELETE",
 				headers: {
@@ -236,7 +236,7 @@ export const ViewTransfersPage = () => {
 				});
 			} else return setDeleteSuccess(false);
 		} catch (error) {
-			console.error(error);
+			notify.error(error as string);
 			setDeleteSuccess(false);
 		}
 	};
@@ -251,7 +251,7 @@ export const ViewTransfersPage = () => {
 
 		// Make request
 		try {
-			console.log("Making download transfer request.");
+			notify.log("Making download transfer request.");
 			const response = await fetch(requestUrl, {
 				method: "POST",
 				headers: {
@@ -290,7 +290,7 @@ export const ViewTransfersPage = () => {
 				window.electron.ipcRenderer.send("download-transfer", downloadURL);
 			} else return setDownloadSuccess(false);
 		} catch (error) {
-			console.error(error);
+			notify.error(error as string);
 			setDownloadSuccess(false);
 		}
 	};
@@ -347,7 +347,7 @@ export const ViewTransfersPage = () => {
 				});
 			} else return setPreserveSuccess(false);
 		} catch (error) {
-			console.error(error);
+			notify.error(error as string);
 			setPreserveSuccess(false);
 		}
 	};

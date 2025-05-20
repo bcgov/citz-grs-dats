@@ -4,8 +4,35 @@ import { PageLayout } from "@/renderer/layouts";
 import { HowDatsWorks } from "./HowDatsWorks";
 import pageLinkData from "./pageLinkData";
 
+import { useEffect } from "react";
+import { useNotification } from "@/renderer/hooks";
+
 export const HomePage = () => {
 	const theme = useTheme();
+
+	const { notify } = useNotification();
+
+	useEffect(() => {
+		notify.log("HomePage mounted");
+		// notify.success({
+		// 	success: true,
+		// 	title: "Welcome to DATS",
+		// 	message: "This is a success message",
+		// });
+		// notify.error({
+		// 	success: false,
+		// 	title: "Error",
+		// 	message: "This is an error message",
+		// 	error: new Error("This is an error"),
+		// });
+		// notify.error(new Error("This is an error"));
+		// notify.excelError("Missing accession and/or application.");
+
+		return () => {
+
+		}
+	}, [])
+
 
 	return (
 		<PageLayout>

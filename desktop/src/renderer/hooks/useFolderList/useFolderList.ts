@@ -1,6 +1,6 @@
-import { useNavigate } from "@/renderer/hooks";
-import { useGridApiRef } from "@mui/x-data-grid";
+import { useNavigate, useNotification } from "@/renderer/hooks";
 import type { FolderRow } from "@/renderer/types";
+import { useGridApiRef } from "@mui/x-data-grid";
 import { useCallback, useEffect, useState } from "react";
 import { convertArrayToObject } from "./convertArrayToObject";
 
@@ -16,6 +16,7 @@ export const useFolderList = () => {
   const [pendingPaths, setPendingPaths] = useState<string[]>([]);
   const [workers] = useState(window.api.workers);
   const { fetchProtectedRoute, refreshTokens } = window.api.sso;
+  const { notify } = useNotification();
 
   const handleProgress = useCallback(
     (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
@@ -54,9 +55,9 @@ export const useFolderList = () => {
           [source]: newMetadata[source],
         }));
         if (newExtendedMetadata) setExtendedMetaData(newExtendedMetadata);
-        console.info(`Successfully processed folder: ${source}`);
+        notify.log(`Successfully processed folder: ${source}`);
       } else {
-        console.error(`Failed to process folder: ${source}`);
+        notify.error(`Failed to process folder: ${source}`);
       }
     },
     [setMetaData, setExtendedMetaData]
@@ -69,10 +70,7 @@ export const useFolderList = () => {
           filePath,
         });
       } catch (error) {
-        console.error(
-          `Failed to fetch metadata for folder ${filePath}:`,
-          error
-        );
+        notify.error(`Failed to fetch metadata for folder: ${filePath}, ${error}`);
       }
     },
     [workers]
@@ -128,7 +126,7 @@ export const useFolderList = () => {
         }
       } catch (error) {
         setFolders(folders);
-        console.error("Error adding folders:", error);
+        notify.error(`Failed to add folders: ${error}`);
       }
     },
     [folders]
@@ -187,7 +185,7 @@ export const useFolderList = () => {
       setMetaData({});
       setExtendedMetaData({});
 
-      console.log("finish submit", { error, data, folders, metaData });
+      notify.log(`finish submit: ${{ error, data, folders, metaData }}`);
     },
     [fetchProtectedRoute, folders, metaData]
   );
@@ -222,10 +220,7 @@ export const useFolderList = () => {
 
       pathsToProcess.forEach((filePath) => {
         getFolderMetadata(filePath).catch((error) =>
-          console.error(
-            `Failed to fetch metadata for folder ${filePath}:`,
-            error
-          )
+          notify.error(`Failed to fetch metadata for folder ${filePath}: ${error}`)
         );
       });
     }
