@@ -36,8 +36,12 @@ export const useNotification = () => {
 				data: notificationProps,
 			});
 		},
-		log: (message: string) => {
-			console.info(message);
+		log: (message: string, args?: Record<string, unknown>) => {
+			if (args) {
+				console.info(message, args);
+			} else {
+				console.info(message);
+			}
 		},
 		success: (props: NotifyProps) => {
 			toast.success(Toast, { data: props });
