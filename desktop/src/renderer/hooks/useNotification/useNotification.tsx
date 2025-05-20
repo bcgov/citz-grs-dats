@@ -11,7 +11,7 @@ export interface NotifyProps {
 
 const toastConfig: ToastContainerProps = {
 	position: "bottom-left",
-	autoClose: 10000, // 10 seconds
+	autoClose: 5000, // 5 seconds
 	hideProgressBar: true,
 	pauseOnHover: true,
 	stacked: true,
@@ -23,7 +23,10 @@ export const useNotification = () => {
 			if (typeof props === "string") {
 				console.error(new Error(props));
 			} else {
-				toast.error(Toast, { data: props });
+				toast.error(Toast, {
+					data: props,
+					autoClose: 10000, // 10 seconds
+				});
 				console.error(new Error(props.error));
 			}
 		},
