@@ -6,7 +6,7 @@ export interface NotifyProps {
 	success: boolean;
 	title: string;
 	message: string;
-	error?: Error;
+	error?: string;
 }
 
 const toastConfig: ToastContainerProps = {
@@ -19,9 +19,13 @@ const toastConfig: ToastContainerProps = {
 
 export const useNotification = () => {
 	const notify = {
-		error: (props: NotifyProps) => {
-			console.error(props.error || `${props.title}: ${props.message}`);
-			toast.error(Toast, { data: props });
+		error: (props: NotifyProps | string) => {
+			if (typeof props === "string") {
+				console.error(new Error(props));
+			} else {
+				toast.error(Toast, { data: props });
+				console.error(new Error(props.error));
+			}
 		},
 		excelError: (msg: string) => {
 			const notificationProps = getXlsxFileListNotificationData(msg);
@@ -30,7 +34,7 @@ export const useNotification = () => {
 			});
 		},
 		log: (message: string) => {
-			console.log(message);
+			console.info(message);
 		},
 		success: (props: NotifyProps) => {
 			toast.success(Toast, { data: props });
