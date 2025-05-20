@@ -1,38 +1,11 @@
+import { PageLayout } from "@/renderer/layouts";
 import { Box, Link, Stack, Typography, useTheme } from "@mui/material";
 import { PageLinkCard } from "@renderer/components";
-import { PageLayout } from "@/renderer/layouts";
 import { HowDatsWorks } from "./HowDatsWorks";
 import pageLinkData from "./pageLinkData";
 
-import { useEffect } from "react";
-import { useNotification } from "@/renderer/hooks";
-
 export const HomePage = () => {
 	const theme = useTheme();
-
-	const { notify } = useNotification();
-
-	useEffect(() => {
-		notify.log("HomePage mounted");
-		// notify.success({
-		// 	success: true,
-		// 	title: "Welcome to DATS",
-		// 	message: "This is a success message",
-		// });
-		// notify.error({
-		// 	success: false,
-		// 	title: "Error",
-		// 	message: "This is an error message",
-		// 	error: new Error("This is an error"),
-		// });
-		// notify.error(new Error("This is an error"));
-		// notify.excelError("Missing accession and/or application.");
-
-		return () => {
-
-		}
-	}, [])
-
 
 	return (
 		<PageLayout>
@@ -46,42 +19,29 @@ export const HomePage = () => {
 				}}
 				gap={3}
 			>
-				<Typography
-					variant="h1"
-					sx={{ fontWeight: 600, color: "#474543" }}
-				>
+				<Typography variant="h1" sx={{ fontWeight: 600, color: "#474543" }}>
 					Welcome to DATS
 				</Typography>
 				<Typography variant="h3">Digital Archives Transfer Service</Typography>
 
 				<Box>
 					<Typography>
-						The Digital Archives Transfer Service (DATS) is a secure, evidence
-						handling application that helps you:
+						The Digital Archives Transfer Service (DATS) is a secure, evidence handling application
+						that helps you:
 					</Typography>
 					<ul>
-						<li>
-							send your Full Retention (FR) archival records to the Digital
-							Archives; and
-						</li>
-						<li>
-							create digital file lists that include checksums and metadata.
-						</li>
+						<li>send your Full Retention (FR) archival records to the Digital Archives; and</li>
+						<li>create digital file lists that include checksums and metadata.</li>
 					</ul>
 				</Box>
 
 				<Typography sx={{ fontStyle: "italic" }}>
-					To use DATS you must be connected to the network via VPN and logged
-					into the DATS Application.
+					To use DATS you must be connected to the network via VPN and logged into the DATS
+					Application.
 				</Typography>
 
 				{pageLinkData.map((card) => {
-					return (
-						<PageLinkCard
-							key={card.title}
-							{...card}
-						/>
-					);
+					return <PageLinkCard key={card.title} {...card} />;
 				})}
 
 				<HowDatsWorks />
