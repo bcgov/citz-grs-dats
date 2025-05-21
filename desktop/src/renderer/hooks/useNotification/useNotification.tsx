@@ -1,7 +1,11 @@
-import { toast, ToastContainer, type ToastContainerProps } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { getXlsxFileListNotificationData } from "./getXlsxFileListNotificationData";
 import { Toast } from "@renderer/components";
+import { toast, ToastContainer, type ToastContainerProps } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+import { getXlsxFileListNotificationData } from "./getXlsxFileListNotificationData";
+
+/**
+ * Props for notification messages.
+ */
 export interface NotifyProps {
 	success: boolean;
 	title: string;
@@ -9,6 +13,9 @@ export interface NotifyProps {
 	error?: string;
 }
 
+/**
+ * Default configuration for the ToastContainer.
+ */
 const toastConfig: ToastContainerProps = {
 	position: "bottom-left",
 	autoClose: 5000, // 5 seconds
@@ -17,37 +24,68 @@ const toastConfig: ToastContainerProps = {
 	stacked: true,
 };
 
+const consoleStylesInfo = "color: #4caf50; font-weight: bold;";
+const consoleStylesError = "color: #f44336; font-weight: bold;";
+/**
+ * Custom hook for showing notifications and logging.
+ * Provides error, excelError, log, and success notification methods,
+ * and a NotificationContainer component for rendering toasts.
+ *
+ * @returns {{ notify: object, NotificationContainer: React.FC }}
+ *   notify: notification methods (error, excelError, log, success)
+ *   NotificationContainer: component to render toast notifications
+ */
 export const useNotification = () => {
+	const toastError = (data: NotifyProps) => {
+		toast.error(Toast, {
+			data,
+			autoClose: 10000, // 10 seconds
+		});
+	};
+
 	const notify = {
+		/**
+		 * Show an error notification or log an error.
+		 * @param {NotifyProps | string} props - Notification props or error message.
+		 */
 		error: (props: NotifyProps | string) => {
 			if (typeof props === "string") {
-				console.error(new Error(props));
+				console.info(`%c ${props}`, consoleStylesError);
 			} else {
-				toast.error(Toast, {
-					data: props,
-					autoClose: 10000, // 10 seconds
-				});
-				console.error(new Error(props.error));
+				toastError(props);
+				console.info(`%c ${props.error} %o`, consoleStylesError, props);
 			}
 		},
-		excelError: (msg: string) => {
-			const notificationProps = getXlsxFileListNotificationData(msg);
-			toast.error(Toast, {
-				data: notificationProps,
-			});
+		/**
+		 * Show an Excel-specific error notification.
+		 * @param {string} message - Error message.
+		 */
+		excelError: (message: string) => {
+			const notificationProps = getXlsxFileListNotificationData(message);
+			toastError(notificationProps);
 		},
+		/**
+		 * Log a message to the console.
+		 * @param {string} message - Log message.
+		 * @param {Record<string, unknown>} [args] - Optional additional arguments.
+		 */
 		log: (message: string, args?: Record<string, unknown>) => {
-			if (args) {
-				console.info(message, args);
-			} else {
-				console.info(message);
-			}
+			console.info(`%c ${message}`, consoleStylesInfo);
+			if (args) console.info({ ...args });
 		},
+		/**
+		 * Show a success notification.
+		 * @param {NotifyProps} props - Notification props.
+		 */
 		success: (props: NotifyProps) => {
 			toast.success(Toast, { data: props });
 		},
 	};
 
+	/**
+	 * Toast notification container component.
+	 * Place this in your component tree to render notifications.
+	 */
 	const NotificationContainer = () => <ToastContainer {...toastConfig} />;
 
 	return { notify, NotificationContainer };
