@@ -8,11 +8,13 @@
 		"src/api/**/*",
 		"src/hooks/**/*",
 		"src/global.d.ts",
-		"src/**/*"
+		"src/**/*",
+		"jest.config.js"
 	],
 	"compilerOptions": {
 		"composite": true,
-		"jsx": "react-jsx",
+		"jsx": "react-jsx", // For React 17+ (recommended)
+		// or "jsx": "react" for React 16 and below
 		"baseUrl": "./",
 		"paths": {
 			"@/*": [
