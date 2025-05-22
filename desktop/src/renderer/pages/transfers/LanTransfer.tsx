@@ -1,6 +1,6 @@
-import { useAuth, useNavigate } from "@/renderer/hooks";
+import { useAuth, useNavigate, useNotification, type NotifyProps } from "@/renderer/hooks";
 import { Grid2 as Grid, Stack, Typography } from "@mui/material";
-import { LoginRequiredModal, Stepper, Toast } from "@renderer/components";
+import { LoginRequiredModal, Stepper } from "@renderer/components";
 import {
 	JustifyChangesModal,
 	TransferAlreadyProcessedModal,
@@ -14,8 +14,7 @@ import {
 	LanUploadTransferFormView,
 } from "@renderer/components/transfer/lan-views";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { getXlsxFileListToastData, parseJsonFile, type ToastData } from "./utils";
+import { parseJsonFile } from "./utils";
 
 type Folder = {
 	id: number;
@@ -48,6 +47,7 @@ export const LanTransferPage = () => {
 
 	const { navigate, setCanLoseProgress } = useNavigate();
 	const { idToken, accessToken, refresh } = useAuth();
+	const { notify } = useNotification();
 
 	const handleLogout = async () => await api.sso.logout(idToken);
 
@@ -94,7 +94,7 @@ export const LanTransferPage = () => {
 	useEffect(() => {
 		const handleProgress = (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
 			const { source, progressPercentage } = event.detail;
-			console.log(`${source} metadata progress ${progressPercentage}`);
+			notify.log(`${source} metadata progress ${progressPercentage}`);
 			// Update folder progress
 			const currentProgress = folders.find((row) => row.folder === source)?.metadataProgress ?? 0;
 
@@ -108,7 +108,7 @@ export const LanTransferPage = () => {
 
 		const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
-			console.log("[Metadata] Missing", path);
+			notify.log(`[Metadata] Missing: ${path}`);
 			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
@@ -117,7 +117,7 @@ export const LanTransferPage = () => {
 
 		const handleEmptyFolder = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
-			console.log("[Metadata] Empty folder", path);
+			notify.log(`[Metadata] Empty folder: ${path}`);
 			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
@@ -154,13 +154,15 @@ export const LanTransferPage = () => {
 					prev.filter((worker) => !(worker.folder === source && worker.type === "metadata")),
 				);
 
-				console.log(`Successfully processed folder metadata: ${source}`);
+				notify.log(`Successfully processed folder metadata: ${source}`);
 			} else {
-				console.error(`Failed to process folder metadata: ${source}`, {
-					success,
-					metadata: newMetadata,
-					error,
-				});
+				notify.error(
+					`Failed to process folder metadata: ${source}, ${{
+						success,
+						metadata: newMetadata,
+						error,
+					}}`,
+				);
 			}
 		};
 
@@ -187,7 +189,7 @@ export const LanTransferPage = () => {
 	useEffect(() => {
 		const handleProgress = (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
 			const { source, progressPercentage } = event.detail;
-			console.log(`${source} buffer progress ${progressPercentage}`);
+			notify.log(`${source} buffer progress ${progressPercentage}`);
 			// Update folder progress
 			const currentProgress = folders.find((row) => row.folder === source)?.bufferProgress ?? 0;
 
@@ -201,7 +203,7 @@ export const LanTransferPage = () => {
 
 		const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
-			console.log("[Buffers] Missing", path);
+			notify.log(`[Buffers] Missing: ${path}`);
 			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
@@ -210,7 +212,7 @@ export const LanTransferPage = () => {
 
 		const handleEmptyFolder = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
-			console.log("[Buffers] Empty folder", path);
+			notify.log(`[Buffers] Empty folder: ${path}`);
 			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
@@ -241,12 +243,14 @@ export const LanTransferPage = () => {
 					prev.filter((worker) => !(worker.folder === parentFolder && worker.type === "buffer")),
 				);
 
-				console.log(`Successfully processed folder buffer: ${source}`);
+				notify.log(`Successfully processed folder buffer: ${source}`);
 			} else {
-				console.error(`Failed to process folder buffer: ${source}`, {
-					success,
-					error,
-				});
+				notify.error(
+					`Failed to process folder buffer: ${source}, ${{
+						success,
+						error,
+					}}`,
+				);
 			}
 		};
 
@@ -291,10 +295,10 @@ export const LanTransferPage = () => {
 
 			pathsToProcess.forEach((filePath) => {
 				getFolderMetadata(filePath).catch((error) =>
-					console.error(`Failed to fetch metadata for folder ${filePath}:`, error),
+					notify.error(`Failed to fetch metadata for folder ${filePath}: ${error}`),
 				);
 				getFolderBuffer(filePath).catch((error) =>
-					console.error(`Failed to fetch buffers for folder ${filePath}:`, error),
+					notify.error(`Failed to fetch buffers for folder ${filePath}: ${error}`),
 				);
 			});
 		}
@@ -314,7 +318,7 @@ export const LanTransferPage = () => {
 				]);
 			}
 		} catch (error) {
-			console.error(`Failed to fetch metadata for folder ${filePath}:`, error);
+			notify.error(`Failed to fetch metadata for folder ${filePath}: ${error}`);
 		}
 	};
 
@@ -329,7 +333,7 @@ export const LanTransferPage = () => {
 				setRunningWorkers((prev) => [...prev, { id: workerId, type: "buffer", folder: filePath }]);
 			}
 		} catch (error) {
-			console.error(`Failed to fetch buffers for folder ${filePath}:`, error);
+			notify.error(`Failed to fetch buffers for folder ${filePath}: ${error}`);
 		}
 	};
 
@@ -360,13 +364,10 @@ export const LanTransferPage = () => {
 
 		// Folder already exists in file list.
 		if (folders.some((row) => row.folder === selectedFolderPath)) {
-			toast.error(Toast, {
-				data: {
-					success: false,
-					title: "Folder edit unsuccessful",
-					message:
-						"The folder path you selected is already used in the file list. Please select a different folder path.",
-				},
+			notify.error({
+				title: "Folder edit unsuccessful",
+				message:
+					"The folder path you selected is already used in the file list. Please select a different folder path.",
 			});
 			return;
 		}
@@ -417,18 +418,12 @@ export const LanTransferPage = () => {
 			} catch (error) {
 				setFileList(null);
 				if (error instanceof Error) {
-					const toastData = getXlsxFileListToastData(error.message);
-
-					// Create a toast message
-					return toast.error(Toast, { data: toastData });
+					return notify.excelError(error.message);
 				}
 				// Unexpected error
-				return toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Unexpected error",
-						message: `Encountered an unexpected error while parsing your file list (ARS 662). Please contact someone from the DATS team for assistance. Error: ${error}`,
-					},
+				return notify.error({
+					title: "Unexpected error",
+					message: `Encountered an unexpected error while parsing your file list (ARS 662). Please contact someone from the DATS team for assistance. Error: ${error}`,
 				});
 			}
 		} else if (fileName.endsWith(".json")) {
@@ -439,17 +434,14 @@ export const LanTransferPage = () => {
 			};
 			const json = (await parseJsonFile(fileList)) as JsonFileList | null;
 
-			let toastData: ToastData | undefined = undefined;
+			let notificationData: NotifyProps | undefined = undefined;
 
 			if (!json) {
 				// Invalid JSON
-				return toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Invalid json",
-						message:
-							"Your file list (ARS 662) could not be parsed. Please make sure it is formatted correctly and save it, then try uploading the file again.",
-					},
+				return notify.error({
+					title: "Invalid json",
+					message:
+						"Your file list (ARS 662) could not be parsed. Please make sure it is formatted correctly and save it, then try uploading the file again.",
 				});
 			}
 
@@ -475,8 +467,7 @@ export const LanTransferPage = () => {
 
 			if (!accAndAppExist)
 				// Missing accession and/or application numbers.
-				toastData = {
-					success: false,
+				notificationData = {
 					title: "Missing accession and/or application number",
 					message:
 						"Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘admin’ property in the file list and save it, then try uploading the file again.",
@@ -484,8 +475,7 @@ export const LanTransferPage = () => {
 
 			if (hasDuplicates) {
 				// File list has duplicate folders
-				toastData = {
-					success: false,
+				notificationData = {
 					title: "Duplicate folder",
 					message:
 						"Your file list (ARS 662) includes duplicate folders. Please remove duplicate folders from the ‘File List’ tab in the file list and save it, then try uploading the file again.",
@@ -494,8 +484,7 @@ export const LanTransferPage = () => {
 
 			if (foldersMissingScheduleOrClassification) {
 				// Folder is missing schedule and/or classification value.
-				toastData = {
-					success: false,
+				notificationData = {
 					title: "Missing schedule and/or classification value",
 					message:
 						"Your file list (ARS 662) is missing a schedule and/or classification value. Please review this information in the ‘File list’ tab of your file list and save it, then try uploading the file again.",
@@ -504,8 +493,7 @@ export const LanTransferPage = () => {
 
 			if (accAndAppExist && !accAndAppAreValid)
 				// Invalid accession and/or application numbers.
-				toastData = {
-					success: false,
+				notificationData = {
 					title: "Invalid accession and/or application number",
 					message:
 						"Your file list (ARS 662) has an invalid accession and/or application number. Please make sure to only use numbers (with the exception of a dash in the accession number). Please update this information and save it, then try uploading the file again.",
@@ -513,17 +501,16 @@ export const LanTransferPage = () => {
 
 			if (!folders || Object.keys(folders).length === 0)
 				// Missing folders property.
-				toastData = {
-					success: false,
+				notificationData = {
 					title: "Missing folders",
 					message:
 						"Your file list (ARS 662) is missing the ‘folders’ property. Please add this information to the file list and save it, then try uploading the file again.",
 				};
 
-			if (toastData) {
+			if (notificationData) {
 				// Create a toast message
 				setFileList(null);
-				return toast.error(Toast, { data: toastData });
+				return notify.error(notificationData);
 			}
 
 			// Save results
@@ -541,13 +528,10 @@ export const LanTransferPage = () => {
 			const regex = /^(Digital_File_List|File\sList)/;
 			if (!regex.test(filename)) {
 				// Filename doesnt match regex
-				toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Invalid filename",
-						message:
-							"Your Digital File List file name must begin with 'Digital_File_List' or 'File List'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
-					},
+				notify.error({
+					title: "Invalid filename",
+					message:
+						"Your Digital File List file name must begin with 'Digital_File_List' or 'File List'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
 				});
 				setFileList(null);
 			}
@@ -571,13 +555,10 @@ export const LanTransferPage = () => {
 			const regex = /^(Transfer_Form|617)/;
 			if (!regex.test(filename)) {
 				// Filename doesnt match regex
-				toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Invalid filename",
-						message:
-							"Your Transfer Form ARS 617 file name must begin with 'Transfer_Form' or '617'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
-					},
+				notify.error({
+					title: "Invalid filename",
+					message:
+						"Your Transfer Form ARS 617 file name must begin with 'Transfer_Form' or '617'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
 				});
 				setTransferForm(null);
 			}
@@ -587,23 +568,17 @@ export const LanTransferPage = () => {
 	useEffect(() => {
 		if (uploadSuccess === true) {
 			// Success
-			toast.success(Toast, {
-				data: {
-					success: true,
-					title: "Folder upload successful",
-					message:
-						"Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
-				},
+			notify.success({
+				title: "Folder upload successful",
+				message:
+					"Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
 			});
 		} else if (uploadSuccess === false) {
 			// Failed to download transfer
-			toast.error(Toast, {
-				data: {
-					success: false,
-					title: "Folder upload unsuccessful",
-					message:
-						"One or more of your folders was not successfully uploaded due to an invalid folder path or empty folder. Update the folder path(s) by clicking the corresponding Edit icon or remove the folder by clicking the Delete icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
-				},
+			notify.error({
+				title: "Folder upload unsuccessful",
+				message:
+					"One or more of your folders was not successfully uploaded due to an invalid folder path or empty folder. Update the folder path(s) by clicking the corresponding Edit icon or remove the folder by clicking the Delete icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
 			});
 		}
 	}, [uploadSuccess]);
@@ -642,7 +617,7 @@ export const LanTransferPage = () => {
 
 		// Make request
 		try {
-			console.log("Making get transfers request.");
+			notify.log("Making get transfers request.");
 			const response = await fetch(requestUrl, {
 				method: "GET",
 				headers: {
@@ -682,7 +657,7 @@ export const LanTransferPage = () => {
 				}
 			} else return;
 		} catch (error) {
-			console.error(error);
+			notify.error(error as string);
 		}
 	};
 
@@ -778,7 +753,7 @@ export const LanTransferPage = () => {
 
 			try {
 				const tokens = await refresh(); // Get new tokens before request
-				console.log(`Uploading chunk ${i + 1} of ${totalChunks}`);
+				notify.log(`Uploading chunk ${i + 1} of ${totalChunks}`);
 				const response = await fetch(requestUrl, {
 					method: "POST",
 					headers: { Authorization: `Bearer ${tokens?.accessToken}` },
@@ -786,25 +761,25 @@ export const LanTransferPage = () => {
 				});
 
 				if (!response.ok) {
-					console.error(`Upload failed for chunk ${i + 1}`);
+					notify.error(`Upload failed for chunk ${i + 1}`);
 					setRequestSuccessful(false);
 					return;
 				}
 
 				const jsonResponse = await response.json();
-				console.log("Lan transfer response:", jsonResponse);
+				notify.log(`Lan transfer response: ${jsonResponse}`);
 
 				if (jsonResponse.success && i === totalChunks - 1) {
 					setRequestSuccessful(true);
 				}
 			} catch (error) {
-				console.error("Lan transfer error:", error);
+				notify.error(`Lan transfer error: ${error}`);
 				setRequestSuccessful(false);
 				return;
 			}
 		}
 
-		console.log("All chunks uploaded successfully.");
+		notify.log("All chunks uploaded successfully.");
 	};
 
 	// Send to home on completion

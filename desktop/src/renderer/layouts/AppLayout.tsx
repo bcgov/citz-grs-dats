@@ -1,11 +1,12 @@
 import { useNavigate } from "@/renderer/hooks";
 import { Header } from "@bcgov/design-system-react-components";
 import { Button, Grid2 as Grid } from "@mui/material";
-import { ToastContainer } from "react-toastify";
+import { useNotification } from "@renderer/hooks";
 import { SideNav } from "../components/SideNav";
 
 export const AppLayout = ({ children }) => {
 	const { navigate } = useNavigate();
+	const { NotificationContainer } = useNotification();
 
 	return (
 		<Grid container sx={{ height: "100vh" }}>
@@ -18,13 +19,7 @@ export const AppLayout = ({ children }) => {
 					logoLinkElement={<Button onClick={() => navigate("/")} />}
 				/>
 				{children}
-				<ToastContainer
-					position="bottom-left"
-					autoClose={4000}
-					hideProgressBar
-					pauseOnHover
-					stacked
-				/>
+				<NotificationContainer />
 			</Grid>
 		</Grid>
 	);
