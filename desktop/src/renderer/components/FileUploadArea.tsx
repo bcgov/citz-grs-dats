@@ -99,7 +99,6 @@ export const FileUploadArea = ({ file, accept, onChange, onDrop, onDelete }: Pro
 				const fileTypes =
 					accept.length > 1 ? fileExtensions.replace(/, (?=[^,]*$)/, ", or ") : fileExtensions;
 				notify.error({
-					success: false,
 					title: "Wrong file type",
 					message: `File type not accepted. Please upload an ${fileTypes} file.`,
 				});
@@ -144,7 +143,6 @@ export const FileUploadArea = ({ file, accept, onChange, onDrop, onDelete }: Pro
 
 			// Show an error message if the file type is not accepted
 			notify.error({
-				success: false,
 				title: "Wrong file type",
 				message: `File type not accepted. Please upload an ${fileTypes} file.`,
 			});

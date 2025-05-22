@@ -88,7 +88,6 @@ export const ViewTransfersPage = () => {
 		if (loadTransfersSuccess === false) {
 			// Failed to load transfers
 			notify.error({
-				success: false,
 				title: "Failed to load transfers",
 				message: "We were unable to load transfers. Please log out and try again.",
 			});
@@ -99,7 +98,6 @@ export const ViewTransfersPage = () => {
 		if (deleteSuccess === true) {
 			// Success
 			notify.success({
-				success: true,
 				title: "File deleted",
 				message:
 					"The file has been deleted successfully. A stub will remain in DATS to prevent duplicate transfers. See ARIS for the official status.",
@@ -107,7 +105,6 @@ export const ViewTransfersPage = () => {
 		} else if (deleteSuccess === false) {
 			// Failed to delete transfer
 			notify.error({
-				success: false,
 				title: "Deletion unsuccessful",
 				message:
 					"Deletion failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
@@ -119,14 +116,12 @@ export const ViewTransfersPage = () => {
 		if (downloadSuccess === true) {
 			// Success
 			notify.success({
-				success: true,
 				title: "Download complete!",
 				message: `The file has been downloaded successfully to ${recentDownloadFilePath}`,
 			});
 		} else if (downloadSuccess === false) {
 			// Failed to download transfer
 			notify.error({
-				success: false,
 				title: "Download unsuccessful",
 				message:
 					"Download failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
@@ -138,14 +133,12 @@ export const ViewTransfersPage = () => {
 		if (preserveSuccess === true) {
 			// Success
 			notify.success({
-				success: true,
 				title: "Preserve complete!",
 				message: "The file has been preserved to LibSafe successfully.",
 			});
 		} else if (preserveSuccess === false) {
 			// Failed to preserve transfer
 			notify.error({
-				success: false,
 				title: "Preserve unsuccessful",
 				message:
 					"Preserve failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
@@ -300,7 +293,6 @@ export const ViewTransfersPage = () => {
 		setPreserveSuccess(null);
 
 		notify.success({
-			success: true,
 			title: "Starting preserve",
 			message: "Wait a few moments while we start the preservation process...",
 		});

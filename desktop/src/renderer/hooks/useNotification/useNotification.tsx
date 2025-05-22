@@ -7,7 +7,6 @@ import { getXlsxFileListNotificationData } from "./getXlsxFileListNotificationDa
  * Props for notification messages.
  */
 export interface NotifyProps {
-	success: boolean;
 	title: string;
 	message: string;
 	error?: string;
@@ -38,7 +37,7 @@ const consoleStylesError = "color: #f44336; font-weight: bold;";
 export const useNotification = () => {
 	const toastError = (data: NotifyProps) => {
 		toast.error(Toast, {
-			data,
+			data:{success: false, ...data},
 			autoClose: 10000, // 10 seconds
 		});
 	};
@@ -78,7 +77,7 @@ export const useNotification = () => {
 		 * @param {NotifyProps} props - Notification props.
 		 */
 		success: (props: NotifyProps) => {
-			toast.success(Toast, { data: props });
+			toast.success(Toast, { data: {success: true, ...props} });
 		},
 	};
 

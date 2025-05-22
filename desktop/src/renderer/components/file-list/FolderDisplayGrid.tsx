@@ -84,7 +84,6 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 			} catch (error) {
 				setFinalizeModalIsOpen(false);
 				notify.error({
-					success: false,
 					title: "Submission failed",
 					message:
 						"We were unable to fulfill your request to create a file list. Please try again.",

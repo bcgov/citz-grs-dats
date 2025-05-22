@@ -35,7 +35,6 @@ describe("useNotification", () => {
 					type="button"
 					onClick={() =>
 						notify.error({
-							success: false,
 							title: "Error",
 							message: "Something went wrong",
 							error: "Error details",
@@ -48,7 +47,6 @@ describe("useNotification", () => {
 					type="button"
 					onClick={() =>
 						notify.success({
-							success: true,
 							title: "Success",
 							message: "Operation successful",
 						})

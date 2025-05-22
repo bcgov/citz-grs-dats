@@ -45,7 +45,6 @@ export const FolderUploadArea = ({ folderPath, onChange, onDelete }: Props) => {
 				onChange(e.dataTransfer.files[0].path);
 			} else {
 				notify.error({
-					success: false,
 					title: "Wrong file type",
 					message: "File type not accepted. Please upload a non-empty folder.",
 				});
@@ -66,7 +65,6 @@ export const FolderUploadArea = ({ folderPath, onChange, onDelete }: Props) => {
 			if (isEmptyFolder) {
 				onDelete();
 				notify.error({
-					success: false,
 					title: "Wrong file type",
 					message: "File type not accepted. Please upload a non-empty folder.",
 				});
