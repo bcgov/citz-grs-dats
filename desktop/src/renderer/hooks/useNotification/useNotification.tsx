@@ -49,10 +49,10 @@ export const useNotification = () => {
 		 */
 		error: (props: NotifyProps | string) => {
 			if (typeof props === "string") {
-				console.info(`%c ${props}`, consoleStylesError);
+				console.trace(`%c ${props}`, consoleStylesError);
 			} else {
 				toastError(props);
-				console.info(`%c ${props.error} %o`, consoleStylesError, props);
+				console.trace(`%c ${props.error} %o`, consoleStylesError, props);
 			}
 		},
 		/**
