@@ -146,7 +146,7 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // Create buffer
-  const digitalFileListBuffer = await workbook.xlsx.writeBuffer();
+  const digitalFileListBuffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
   // Add submitted by info to admin metadata
   const updatedAdminMetadata = {
@@ -175,8 +175,7 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   const standardTransferZipBuffer = await createStandardTransferZip({
     contentZipStream,
     documentation: {
-      [digitalFilelistFilename]:
-        digitalFileListBuffer as unknown as Buffer<ArrayBufferLike>,
+      [digitalFilelistFilename]: digitalFileListBuffer,
       [body.transferFormFilename]: transferFormBuffer,
       "Submission_Agreement.pdf": subAgreementBuffer,
       [body.fileListFilename]: fileListBuffer,
