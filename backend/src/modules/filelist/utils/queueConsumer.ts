@@ -52,10 +52,16 @@ export const queueConsumer = async (
 
   const date = formatDate(new Date().toISOString());
 
+  const accession = filelist.metadata.admin?.accession;
+  const application = filelist.metadata.admin?.application;
+
   // Handle output file type
   switch (filelist.outputFileType) {
     case "excel": {
-      const filename = `Digital_File_List_${date}.xlsx`;
+      const filename =
+        accession && application
+          ? `Digital_File_List_${accession}-${application}_${date}.xlsx`
+          : `Digital_File_List_${date}.xlsx`;
 
       // Create Excel workbook
       const workbook: Workbook = createExcelWorkbook({
