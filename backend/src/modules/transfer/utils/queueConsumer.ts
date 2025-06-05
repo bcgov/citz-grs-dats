@@ -64,8 +64,8 @@ export const queueConsumer = async (
   const application = metadata.admin?.application ?? "";
   const date = formatDate(new Date().toISOString());
 
-  const file_list_filename = `Digital_File_List_${date}_${accession}_${application}.xlsx`;
-  const submission_agreement_filename = `Submission_Agreement_${date}_${accession}_${application}.pdf`;
+  const file_list_filename = `Digital_File_List_${accession}-${application}_${date}.xlsx`;
+  const submission_agreement_filename = `Submission_Agreement_${accession}-${application}_${date}.pdf`;
 
   // Get transfer from s3
   const stream = await download({
