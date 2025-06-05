@@ -135,7 +135,7 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   // Create Digital File List
   // Based on metadata from dataport file, EDRMS file list is different.
   const date = formatDate(new Date().toISOString());
-  const digitalFilelistFilename = `Digital_File_List_${date}.xlsx`;
+  const digitalFilelistFilename = `Digital_File_List_${accession}-${application}_${date}.xlsx`;
 
   // Create workbook
   const workbook: Workbook = createExcelWorkbook({
