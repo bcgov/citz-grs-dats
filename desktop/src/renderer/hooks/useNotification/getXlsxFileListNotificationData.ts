@@ -1,18 +1,14 @@
-export type ToastData = {
-  success: boolean;
-  title: string;
-  message: string;
-};
+import type { NotifyProps } from "./useNotification";
 
-export const getXlsxFileListToastData = (msg: string): ToastData => {
-  let toastData = {
+export const getXlsxFileListNotificationData = (msg: string): NotifyProps => {
+  let notificationProps = {
     success: false,
     title: "An unexpected error occurred",
     message: msg,
   };
 
   if (msg === "Missing accession and/or application.")
-    toastData = {
+    notificationProps = {
       success: false,
       title: "Missing accession and/or application number",
       message:
@@ -20,7 +16,7 @@ export const getXlsxFileListToastData = (msg: string): ToastData => {
     };
 
   if (msg === "Duplicate folder in file list.")
-    toastData = {
+    notificationProps = {
       success: false,
       title: "Duplicate folder",
       message:
@@ -28,7 +24,7 @@ export const getXlsxFileListToastData = (msg: string): ToastData => {
     };
 
   if (msg === "Folders is missing schedule and/or classification.")
-    toastData = {
+    notificationProps = {
       success: false,
       title: "Missing schedule and/or classification value",
       message:
@@ -36,7 +32,7 @@ export const getXlsxFileListToastData = (msg: string): ToastData => {
     };
 
   if (msg === "Invalid accession and/or application.")
-    toastData = {
+    notificationProps = {
       success: false,
       title: "Invalid accession and/or application number",
       message:
@@ -44,7 +40,7 @@ export const getXlsxFileListToastData = (msg: string): ToastData => {
     };
 
   if (msg === 'Missing on or more of ["COVER PAGE", "FILE LIST"].')
-    toastData = {
+    notificationProps = {
       success: false,
       title: "File List is malformed",
       message:
@@ -52,12 +48,12 @@ export const getXlsxFileListToastData = (msg: string): ToastData => {
     };
 
   if (msg === "Folders is empty.")
-    toastData = {
+    notificationProps = {
       success: false,
       title: "Missing File List data",
       message:
         "Your file list (ARS 662) is missing folder data. Please add this information to the ‘File List’ tab in the file list and save it, then try uploading the file again.",
     };
 
-  return toastData;
+  return notificationProps;
 };

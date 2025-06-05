@@ -18,7 +18,13 @@
       "@renderer/*": [
         "src/renderer/*"
       ]
-    }
+    },
+    "types": [
+      "node",
+      "jest",
+    ],
+    "jsx": "react-jsx" // For React 17+ (recommended)
+    // or "jsx": "react" for React 16 and below
   },
   "files": [],
   "references": [
