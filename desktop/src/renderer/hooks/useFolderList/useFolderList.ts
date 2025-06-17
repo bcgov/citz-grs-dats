@@ -99,7 +99,7 @@ export const useFolderList = () => {
             schedule: "",
             classification: "",
             file: "",
-            opr: false,
+            opr: true,
             startDate: null,
             endDate: null,
             soDate: null,
