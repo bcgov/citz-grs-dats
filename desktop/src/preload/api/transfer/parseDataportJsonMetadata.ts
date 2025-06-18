@@ -66,7 +66,7 @@ export const parseDataportJsonMetadata = async (
     const container = item["Container (Folder/Box)"];
     const expandedNumber = item["Expanded Number"];
 
-    if (!container) {
+    if (!container || !container.includes("/")) {
       const expandedNumberParts = expandedNumber.split("/");
       const folderName = `${
         expandedNumberParts[0]
