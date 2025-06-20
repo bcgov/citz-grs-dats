@@ -14,5 +14,6 @@
   "2.1.1": "Removed unused fields from file list excel file.,Updated build for potential software center fix.",
   "2.1.2": "Fixes issues with manually entered date strings in the digital file list.",
   "2.1.3": "Updated the help popup.",
-  "2.1.4": "test,update"
+  "2.1.4": "test,update",
+  "2.1.5": "test"
 }
