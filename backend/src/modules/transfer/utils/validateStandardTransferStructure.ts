@@ -18,40 +18,40 @@ type FileCheck = {
 
 const fileChecks: FileCheck[] = [
   {
-    regex: /^(Digital_File_List|File\sList)/,
+    regex: /^(digital_file_list|file\slist)/i,
     allowedExtensions: ["xlsx", "json"],
     parentDirectory: "documentation",
     errorMessage:
       "Digital File List (beginning with 'Digital_File_List' or 'File List') must be included and have a .xlsx or .json extension in the documentation directory.",
   },
   {
-    regex: /^(Transfer_Form|617)/,
+    regex: /^(transfer_form|617)/i,
     allowedExtensions: ["pdf"],
     parentDirectory: "documentation",
     errorMessage:
       "Transfer Form ARS 617 (beginning with 'Transfer_Form' or '617') must be included and have a .pdf extension in the documentation directory.",
   },
   {
-    regex: /^Submission_Agreement/,
+    regex: /^submission_agreement/i,
     allowedExtensions: ["pdf"],
     parentDirectory: "documentation",
     errorMessage:
       "Submission Agreement (beginning with 'Submission_Agreement') must be included and have a .pdf extension in the documentation directory.",
   },
   {
-    regex: /^admin/,
+    regex: /^admin/i,
     allowedExtensions: ["json"],
     parentDirectory: "metadata",
     errorMessage: "admin.json must be included in the metadata directory.",
   },
   {
-    regex: /^files/,
+    regex: /^files/i,
     allowedExtensions: ["json"],
     parentDirectory: "metadata",
     errorMessage: "files.json must be included in the metadata directory.",
   },
   {
-    regex: /^folders/,
+    regex: /^folders/i,
     allowedExtensions: ["json"],
     parentDirectory: "metadata",
     errorMessage: "folders.json must be included in the metadata directory.",
