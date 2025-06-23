@@ -1,6 +1,6 @@
 {
   "name": "dats",
-  "version": "2.1.7",
+  "version": "2.1.8",
   "description": "Digital Archives Transfer Service",
   "author": "CITZ IMB/CIRMO",
   "main": "./out/main/main.js",

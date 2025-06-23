@@ -17,5 +17,6 @@
   "2.1.4": "test,update",
   "2.1.5": "test",
   "2.1.6": "Fix issue where editing the date fields in the File List excel sheet caused the validation to fail.",
-  "2.1.7": "Fix parsing issue in DataPort files for the EDRMS transfer."
+  "2.1.7": "Fix parsing issue in DataPort files for the EDRMS transfer.",
+  "2.1.8": "Fix parsing issue in DataPort files for the EDRMS transfer."
 }
