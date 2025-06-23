@@ -138,13 +138,13 @@ export const queueConsumer = async (
     const fileListPath = await getFilenameByRegex({
       stream: contentStream2,
       directory: "documentation/",
-      regex: /^(Digital_File_List|File\sList)/,
+      regex: /^(digital_file_list|file\slist)/i,
     });
 
     const subAgreementPath = await getFilenameByRegex({
       stream: contentStream3,
       directory: "documentation/",
-      regex: /^Submission_Agreement/,
+      regex: /^submission_agreement/i,
     });
 
     if (!fileListPath) {

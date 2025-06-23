@@ -97,7 +97,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
     let subAgreementPath = await getFilenameByRegex({
       stream: contentStream1,
       directory: "documentation/",
-      regex: /^Submission_Agreement/,
+      regex: /^submission_agreement/i,
     });
 
     if (!subAgreementPath) {
@@ -147,7 +147,7 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
     const fileListPath = await getFilenameByRegex({
       stream: contentStream5,
       directory: "documentation/",
-      regex: /^(Digital_File_List|File\sList)/,
+      regex: /^(digital_file_list|file\slist)/i,
     });
 
     if (!fileListPath)
