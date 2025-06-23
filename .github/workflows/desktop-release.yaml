@@ -121,6 +121,11 @@ jobs:
           npm install
         working-directory: desktop
 
+      # Raise file descriptor limit
+      # This is necessary for macOS builds to prevent "EMFILE: too many open files" errors
+      - name: Raise file descriptor limit
+        run: ulimit -n 8192
+
       # Build for the platform
       - name: Build Electron App for ${{ matrix.os }}
         run: npm run build:${{ matrix.os }}
