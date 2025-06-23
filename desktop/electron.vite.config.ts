@@ -18,5 +18,11 @@ export default defineConfig({
       },
     },
     plugins: [react()],
+    build: {
+      rollupOptions: {
+        // keep well under Windows handle limit
+        maxParallelFileOps: 20, // 10-40 is usually safe
+      },
+    },
   },
 });
