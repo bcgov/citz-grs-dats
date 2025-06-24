@@ -249,7 +249,7 @@ export const EdrmsTransferPage = () => {
 	useEffect(() => {
 		if (transferForm) {
 			const filename = transferForm.name;
-			const regex = /^(Transfer_Form|617)/;
+			const regex = /^(Transfer_Form|617)/i;
 			if (!regex.test(filename)) {
 				// Filename doesnt match regex
 				toast.error(Toast, {
