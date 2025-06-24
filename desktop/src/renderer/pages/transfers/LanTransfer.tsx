@@ -538,7 +538,7 @@ export const LanTransferPage = () => {
 		setCanLoseProgress(!!fileList);
 		if (fileList) {
 			const filename = fileList.name;
-			const regex = /^(Digital_File_List|File\sList)/;
+			const regex = /^(Digital_File_List|File\sList)/i;
 			if (!regex.test(filename)) {
 				// Filename doesnt match regex
 				toast.error(Toast, {
@@ -568,7 +568,7 @@ export const LanTransferPage = () => {
 	useEffect(() => {
 		if (transferForm) {
 			const filename = transferForm.name;
-			const regex = /^(Transfer_Form|617)/;
+			const regex = /^(Transfer_Form|617)/i;
 			if (!regex.test(filename)) {
 				// Filename doesnt match regex
 				toast.error(Toast, {
