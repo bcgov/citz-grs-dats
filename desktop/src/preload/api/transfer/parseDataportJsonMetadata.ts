@@ -45,8 +45,7 @@ const getFileSizeAndChecksum = async (filePath: string) => {
 
     return { size, checksum: hash };
   } catch (error) {
-    console.error(`Error reading file ${filePath}:`, error);
-    return { size: "0 B", checksum: "" };
+    throw new Error(`Failed to read file ${filePath}`);
   }
 };
 
@@ -92,6 +91,8 @@ export const parseDataportJsonMetadata = async (
         /^0+/,
         ""
       )}`;
+
+      console.log(`Processing file: ${filePath}`);
 
       const { size, checksum } = await getFileSizeAndChecksum(filePath);
 
