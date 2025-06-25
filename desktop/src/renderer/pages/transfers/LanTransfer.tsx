@@ -834,6 +834,8 @@ export const LanTransferPage = () => {
 							file={fileList}
 							setFile={setFileList}
 							accession={accession}
+							setAccession={setAccession}
+							setApplication={setApplication}
 							application={application}
 							confirmChecked={confirmAccAppChecked}
 							setConfirmChecked={setConfirmAccAppChecked}

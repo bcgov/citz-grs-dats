@@ -4,19 +4,23 @@ import { FileUploadArea } from "@renderer/components";
 import { AccAppConfirmation } from "../AccAppConfirmation";
 
 type Props = {
-  file?: File | null;
-  setFile: React.Dispatch<React.SetStateAction<File | null | undefined>>;
-  accession?: string | null;
-  application?: string | null;
-  confirmChecked: boolean;
-  setConfirmChecked: React.Dispatch<React.SetStateAction<boolean>>;
-  onNextPress: () => void;
+	file?: File | null;
+	setFile: React.Dispatch<React.SetStateAction<File | null | undefined>>;
+	accession?: string | null;
+	application?: string | null;
+	confirmChecked: boolean;
+	setAccession: React.Dispatch<React.SetStateAction<string | null | undefined>>;
+	setApplication: React.Dispatch<React.SetStateAction<string | null | undefined>>;
+	setConfirmChecked: React.Dispatch<React.SetStateAction<boolean>>;
+	onNextPress: () => void;
 };
 
 export const LanUploadFileListView = ({
   file,
   setFile,
   accession,
+  setAccession,
+  setApplication,
   application,
   confirmChecked,
   setConfirmChecked,
@@ -48,6 +52,8 @@ export const LanUploadFileListView = ({
         <AccAppConfirmation
           message="Based on the file list you provided:"
           accession={accession}
+          setAccession={setAccession}
+          setApplication={setApplication}
           application={application}
           checked={confirmChecked}
           setChecked={setConfirmChecked}
