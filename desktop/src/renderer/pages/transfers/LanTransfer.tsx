@@ -58,6 +58,7 @@ export const LanTransferPage = () => {
 	const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
 	const [showTransferAlreadyProcessedModal, setShowTransferAlreadyProcessedModal] = useState(false);
 	const [showTransferAlreadySentModal, setShowTransferAlreadySentModal] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
 	// Request to send transfer
 	const [requestSuccessful, setRequestSuccessful] = useState<boolean | null>(null);
@@ -747,6 +748,8 @@ export const LanTransferPage = () => {
 		const apiUrl = await api.getCurrentApiUrl();
 		const requestUrl = `${apiUrl}/transfer/lan`;
 
+    setLoadingMessage("Preparing transfer request...");
+
 		// Get updated folder metadata
 		const updatedFolderList: Record<string, unknown> = {};
 		for (const [key, value] of Object.entries(originalFolderList)) {
@@ -787,6 +790,8 @@ export const LanTransferPage = () => {
 			});
 		}
 
+    setLoadingMessage("Packaging transfer request...");
+
 		// Generate zipped chunks and checksum
 		const { chunks: zipChunks, checksum: contentChecksum } =
 			await api.transfer.createZippedChunks(reconstructedBuffers);
@@ -812,6 +817,14 @@ export const LanTransferPage = () => {
 			try {
 				const tokens = await refresh(); // Get new tokens before request
 				console.log(`Uploading chunk ${i + 1} of ${totalChunks}`);
+
+        if (i === totalChunks - 1) {
+          // Last chunk
+          setLoadingMessage("Processing your request. For large uploads, this may take a while...");
+        } else {
+          setLoadingMessage(`Sending part ${i + 1} of ${totalChunks}...`);
+        }
+
 				const response = await fetch(requestUrl, {
 					method: "POST",
 					headers: { Authorization: `Bearer ${tokens?.accessToken}` },
@@ -821,6 +834,7 @@ export const LanTransferPage = () => {
 				if (!response.ok) {
 					console.error(`Upload failed for chunk ${i + 1}`);
 					setRequestSuccessful(false);
+          setLoadingMessage(null);
 					return;
 				}
 
@@ -828,11 +842,13 @@ export const LanTransferPage = () => {
 				console.log("Lan transfer response:", jsonResponse);
 
 				if (jsonResponse.success && i === totalChunks - 1) {
+          setLoadingMessage(null);
 					setRequestSuccessful(true);
 				}
 			} catch (error) {
 				console.error("Lan transfer error:", error);
 				setRequestSuccessful(false);
+        setLoadingMessage(null);
 				return;
 			}
 		}
@@ -912,6 +928,7 @@ export const LanTransferPage = () => {
 							onNextPress={handleCompletion}
 							handleRetrySubmission={handleRetrySubmission}
 							isLan={true}
+              loadingMessage={loadingMessage}
 						/>
 					)}
 					<JustifyChangesModal

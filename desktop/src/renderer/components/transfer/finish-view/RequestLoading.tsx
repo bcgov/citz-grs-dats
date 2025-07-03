@@ -1,9 +1,14 @@
 import { LinearProgress, Stack, Typography } from "@mui/material";
 
-export const RequestLoading = () => {
+type Props = {
+  loadingMessage: string | null;
+};
+
+export const RequestLoading = ({ loadingMessage }: Props) => {
   return (
     <Stack gap={3}>
       <Typography variant="h3">Sending your records</Typography>
+      {loadingMessage && <Typography sx={{ color: '' }}>{loadingMessage}</Typography>}
       <LinearProgress
         sx={{
           "& .MuiLinearProgress-bar": {
