@@ -4,6 +4,8 @@ import { Box, FormControlLabel, Stack, TextField, Typography } from "@mui/materi
 type Props = {
 	message: string;
 	accession?: string | null;
+	allowAccessionChange: boolean;
+	allowApplicationChange: boolean;
 	application?: string | null;
 	checked: boolean;
 	setAccession: React.Dispatch<React.SetStateAction<string | null | undefined>>;
@@ -15,8 +17,10 @@ export const AccAppConfirmation = ({
 	message,
 	accession,
 	setAccession,
+	allowAccessionChange,
 	application,
 	setApplication,
+	allowApplicationChange,
 	checked,
 	setChecked,
 }: Props) => {
@@ -58,6 +62,7 @@ export const AccAppConfirmation = ({
 
 					<TextField
 						name="accessionNumber"
+						disabled={!allowAccessionChange}
 						value={accession}
 						onChange={handleAccessionChange}
 					/>
@@ -66,6 +71,7 @@ export const AccAppConfirmation = ({
 					<b>Application:</b>
 					<TextField
 						name="applicationNumber"
+						disabled={!allowApplicationChange}
 						value={application}
 						onChange={handleApplicationChange}
 					/>

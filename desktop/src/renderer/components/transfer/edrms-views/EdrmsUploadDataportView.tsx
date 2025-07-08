@@ -51,6 +51,8 @@ export const EdrmsUploadDataportView = ({
           application={application}
           checked={confirmChecked}
           setChecked={setConfirmChecked}
+          setAccession={() => {}}
+          setApplication={() => {}}
         />
       </Stack>
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>

@@ -7,6 +7,8 @@ type Props = {
 	file?: File | null;
 	setFile: React.Dispatch<React.SetStateAction<File | null | undefined>>;
 	accession?: string | null;
+  allowAccessionChange: boolean;
+  allowApplicationChange: boolean;
 	application?: string | null;
 	confirmChecked: boolean;
 	setAccession: React.Dispatch<React.SetStateAction<string | null | undefined>>;
@@ -20,6 +22,8 @@ export const LanUploadFileListView = ({
   setFile,
   accession,
   setAccession,
+  allowAccessionChange,
+  allowApplicationChange,
   setApplication,
   application,
   confirmChecked,
@@ -27,10 +31,12 @@ export const LanUploadFileListView = ({
   onNextPress,
 }: Props) => {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("File input changed:", e.target.files);
     if (e.target.files?.[0]) setFile(e.target.files[0]);
   };
 
   const onDrop = (file: File | null | undefined) => {
+    console.log("File dropped:", file);
     if (file) setFile(file);
   };
 
@@ -53,6 +59,8 @@ export const LanUploadFileListView = ({
           message="Based on the file list you provided:"
           accession={accession}
           setAccession={setAccession}
+          allowAccessionChange={allowAccessionChange}
+          allowApplicationChange={allowApplicationChange}
           setApplication={setApplication}
           application={application}
           checked={confirmChecked}
