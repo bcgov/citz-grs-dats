@@ -78,8 +78,8 @@ export const LanTransferPage = () => {
 	const [changesJustification, setChangesJustification] = useState("");
 
 	// Accession & application pulled from fileList
-	const [accession, setAccession] = useState<string | undefined | null>(null);
-	const [application, setApplication] = useState<string | undefined | null>(null);
+	const [accession, setAccession] = useState<string | undefined | null>("");
+	const [application, setApplication] = useState<string | undefined | null>("");
 	// User confirms if accession & application are correct
 	const [confirmAccAppChecked, setConfirmAccAppChecked] = useState<boolean>(false);
 
@@ -144,7 +144,7 @@ export const LanTransferPage = () => {
 
 			if (success && newMetadata) {
         // Check for zip files
-        const hasZipFiles = newMetadata[source] && (newMetadata[source] as { filename: string }[]).some((file) => 
+        const hasZipFiles = newMetadata[source] && (newMetadata[source] as { filename: string }[]).some((file) =>
           file.filename.endsWith(".zip")
         );
         if (hasZipFiles) {
