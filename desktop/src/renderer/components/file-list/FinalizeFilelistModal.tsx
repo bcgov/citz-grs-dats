@@ -1,9 +1,5 @@
-import {
-	Button,
-	Form,
-	Select,
-	TextField,
-} from "@bcgov/design-system-react-components";
+import { validateAccessionNumber, validateApplicationNumber } from "@/renderer/utilities";
+import { Button, Form, Select, TextField } from "@bcgov/design-system-react-components";
 import { Box, Modal, Stack, Typography, useTheme } from "@mui/material";
 
 type Props = {
@@ -57,11 +53,10 @@ const NoteBlock = () => {
 		>
 			<Typography sx={{ fontSize: "16px", fontWeight: 700 }}>Note</Typography>
 			<Typography sx={{ fontSize: "16px", color: "var(--text-secondary)" }}>
-				DATS will record the above details and they will also appear in the file
-				list. If you are transferring Full Retention (FR) records to the digital
-				archives, you must add the accession and application numbers to the file
-				list. We recommend you do that here in the app but you can also add it
-				later in Excel.
+				DATS will record the above details and they will also appear in the file list. If you are
+				transferring Full Retention (FR) records to the digital archives, you must add the accession
+				and application numbers to the file list. We recommend you do that here in the app but you
+				can also add it later in Excel.
 			</Typography>
 		</Stack>
 	);
@@ -82,8 +77,7 @@ export const FinalizeFilelistModal = ({
 		bgcolor: "background.paper",
 		border: "1px solid var(--modal-border)",
 		borderRadius: "4px",
-		boxShadow:
-			"0px 25.6px 57.6px 0px #00000038, 0px 4.8px 14.4px 0px #0000002E",
+		boxShadow: "0px 25.6px 57.6px 0px #00000038, 0px 4.8px 14.4px 0px #0000002E",
 	};
 
 	const submitForm = (event) => {
@@ -93,20 +87,10 @@ export const FinalizeFilelistModal = ({
 	};
 
 	return (
-		<Modal
-			open={open}
-			onClose={onClose}
-			disableAutoFocus
-		>
-			<Stack
-				gap={3}
-				sx={modalStyle}
-			>
+		<Modal open={open} onClose={onClose} disableAutoFocus>
+			<Stack gap={3} sx={modalStyle}>
 				<Box sx={headerStyle}>
-					<Typography
-						variant="h3"
-						sx={{ color: "var(--text)" }}
-					>
+					<Typography variant="h3" sx={{ color: "var(--text)" }}>
 						Finalize file list
 					</Typography>
 				</Box>
@@ -130,11 +114,13 @@ export const FinalizeFilelistModal = ({
 									}}
 								>
 									<TextField
+										validate={validateAccessionNumber}
 										name="accessionNumber"
 										label="Accession"
 										style={{ width: "50%" }}
 									/>
 									<TextField
+										validate={validateApplicationNumber}
 										name="applicationNumber"
 										label="Application"
 										style={{ width: "50%" }}
@@ -142,8 +128,8 @@ export const FinalizeFilelistModal = ({
 								</Box>
 
 								<Typography sx={{ fontSize: "16px" }}>
-									You can find your accession and application number on your
-									Transfer form (ARS 617).
+									You can find your accession and application number on your Transfer form (ARS
+									617).
 								</Typography>
 
 								<NoteBlock />
@@ -166,18 +152,10 @@ export const FinalizeFilelistModal = ({
 					</Box>
 
 					<Box sx={buttonBoxStyle}>
-						<Button
-							variant="tertiary"
-							style={innerButtonStyle}
-							onPress={onClose}
-						>
+						<Button variant="tertiary" style={innerButtonStyle} onPress={onClose}>
 							Cancel
 						</Button>
-						<Button
-							variant="primary"
-							style={innerButtonStyle}
-							type="submit"
-						>
+						<Button variant="primary" style={innerButtonStyle} type="submit">
 							Submit
 						</Button>
 					</Box>
