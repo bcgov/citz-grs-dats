@@ -34,8 +34,8 @@ export const EdrmsTransferPage = () => {
 	const [metadata, setMetadata] = useState<Record<string, unknown>>({});
 
 	// Pulled from dataport file
-	const [accession, setAccession] = useState<string | undefined | null>(null);
-	const [application, setApplication] = useState<string | undefined | null>(null);
+	const [accession, setAccession] = useState<string>("");
+	const [application, setApplication] = useState<string>("");
 
 	// User confirms if accession & application are correct
 	const [confirmAccAppChecked, setConfirmAccAppChecked] = useState<boolean>(false);
@@ -220,7 +220,7 @@ export const EdrmsTransferPage = () => {
 				},
 			});
       }
-			
+
 			setDataportFile(null);
       setDataportFoundInEdrms(false);
 		}
@@ -272,8 +272,8 @@ export const EdrmsTransferPage = () => {
 			metadataRef.current = {};
 			setFolderBuffers({});
 			setDataportJson(null);
-			setAccession(null);
-			setApplication(null);
+			setAccession("");
+			setApplication("");
 			setConfirmAccAppChecked(false);
 		}
 	}, [dataportFile]);
