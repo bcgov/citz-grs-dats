@@ -23,8 +23,6 @@ import {
 	parseFileList,
 } from "./helpers";
 import type { FileBufferObj, Folder, FolderUploadChange, RunningWorker } from "./types";
-import { r } from "react-router/dist/development/fog-of-war-CGNKxM4z";
-import { f } from "react-router/dist/development/route-data-CGHGzi13";
 
 export const LanTransferPage = () => {
 	const [api] = useState(window.api); // Preload scripts
@@ -62,8 +60,8 @@ export const LanTransferPage = () => {
 	const [changesJustification, setChangesJustification] = useState("");
 
 	// Accession & application pulled from fileList
-	const [accession, setAccession] = useState<string | undefined | null>("");
-	const [application, setApplication] = useState<string | undefined | null>("");
+	const [accession, setAccession] = useState<string>("");
+	const [application, setApplication] = useState<string>("");
 	const [allowAccessionChange, setAllowAccessionChange] = useState<boolean>(true);
 	const [allowApplicationChange, setAllowApplicationChange] = useState<boolean>(true);
 	// User confirms if accession & application are correct
@@ -217,15 +215,7 @@ export const LanTransferPage = () => {
 							},
 						});
 					}
-					// Reset state
-					setFileList(null);
-					setAccession(null);
-					setApplication(null);
-					setConfirmAccAppChecked(false);
-					setFolders([]);
-					setMetadata({});
-					setExtendedMetadata({});
-					setUploadSuccess(null);
+					resetStates();
 
 					console.log(`Folder ${source} contains zip files and will not be processed.`);
 					return;

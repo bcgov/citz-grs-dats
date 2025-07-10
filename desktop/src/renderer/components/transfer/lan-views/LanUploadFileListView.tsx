@@ -6,13 +6,13 @@ import { AccAppConfirmation } from "../AccAppConfirmation";
 type Props = {
 	file?: File | null;
 	setFile: React.Dispatch<React.SetStateAction<File | null | undefined>>;
-	accession?: string | null;
+	accession?: string;
   allowAccessionChange: boolean;
   allowApplicationChange: boolean;
-	application?: string | null;
+	application?: string;
 	confirmChecked: boolean;
-	setAccession: React.Dispatch<React.SetStateAction<string | null | undefined>>;
-	setApplication: React.Dispatch<React.SetStateAction<string | null | undefined>>;
+	setAccession: React.Dispatch<React.SetStateAction<string>>;
+	setApplication: React.Dispatch<React.SetStateAction<string>>;
 	setConfirmChecked: React.Dispatch<React.SetStateAction<boolean>>;
 	onNextPress: () => void;
 };
