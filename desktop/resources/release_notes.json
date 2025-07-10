@@ -19,5 +19,6 @@
   "2.1.6": "Fix issue where editing the date fields in the File List excel sheet caused the validation to fail.",
   "2.1.7": "Fix parsing issue in DataPort files for the EDRMS transfer.",
   "2.1.8": "Fix parsing issue in DataPort files for the EDRMS transfer.",
-  "2.1.9": "Made file name checks case-insensitive for Send Records process.,Added better error messages when a file is missing on EDRMS upload."
+  "2.1.9": "Made file name checks case-insensitive for Send Records process.,Added better error messages when a file is missing on EDRMS upload.",
+  "2.1.10": "Allow Application / Accession Numbers to be added during LAN Transfer, enforce Accession Number format to be ##-####"
 }
