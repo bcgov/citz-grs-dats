@@ -1,15 +1,16 @@
-import { Checkbox } from "@bcgov/design-system-react-components";
-import { Box, FormControlLabel, Stack, TextField, Typography } from "@mui/material";
+import { validateAccessionNumber } from "@/renderer/utilities";
+import { Checkbox, TextField } from "@bcgov/design-system-react-components";
+import { Box, FormControlLabel, Stack, Typography } from "@mui/material";
 
 type Props = {
 	message: string;
-	accession?: string | null;
+	accession?: string;
 	allowAccessionChange: boolean;
 	allowApplicationChange: boolean;
-	application?: string | null;
+	application?: string;
 	checked: boolean;
-	setAccession: React.Dispatch<React.SetStateAction<string | null | undefined>>;
-	setApplication: React.Dispatch<React.SetStateAction<string | null | undefined>>;
+	setAccession: React.Dispatch<React.SetStateAction<string>>;
+	setApplication: React.Dispatch<React.SetStateAction<string>>;
 	setChecked: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
@@ -29,14 +30,6 @@ export const AccAppConfirmation = ({
 	const textStyles = {
 		fontSize: "16px",
 		color: !disabled ? "var(--text)" : "var(--text-disabled)",
-	};
-
-	const handleAccessionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setAccession(e.target.value);
-	};
-
-	const handleApplicationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setApplication(e.target.value);
 	};
 
 	return (
@@ -61,19 +54,21 @@ export const AccAppConfirmation = ({
 					<b>Accession:</b>
 
 					<TextField
+						validate={validateAccessionNumber}
 						name="accessionNumber"
-						disabled={!allowAccessionChange}
+						isDisabled={!allowAccessionChange}
 						value={accession}
-						onChange={handleAccessionChange}
+						onChange={setAccession}
 					/>
 				</Stack>
 				<Stack>
 					<b>Application:</b>
 					<TextField
+						validate={validateAccessionNumber}
 						name="applicationNumber"
-						disabled={!allowApplicationChange}
+						isDisabled={!allowApplicationChange}
 						value={application}
-						onChange={handleApplicationChange}
+						onChange={setApplication}
 					/>
 				</Stack>
 			</Box>

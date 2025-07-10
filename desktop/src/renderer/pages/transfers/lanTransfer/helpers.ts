@@ -1,5 +1,5 @@
+import { parseJsonFile } from "../utils";
 import type { RunningWorker } from "./types";
-import { getXlsxFileListToastData, parseJsonFile, type ToastData } from "../utils";
 
 const api = window.api;
 
