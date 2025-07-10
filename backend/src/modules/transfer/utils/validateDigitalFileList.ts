@@ -50,12 +50,13 @@ export const validateDigitalFileList = async ({
         "The Digital File List is missing the Last Revised Date."
       );
     }
-
-    if (cellB3 !== accession || cellB4 !== application) {
-      throw new HttpError(
-        HTTP_STATUS_CODES.BAD_REQUEST,
-        "The Digital File List has a missing or incorrect accession and/or application number."
-      );
+    if (cellB3 && cellB4) {
+      if (cellB3 !== accession || cellB4 !== application) {
+        throw new HttpError(
+          HTTP_STATUS_CODES.BAD_REQUEST,
+          "The Digital File List has incorrect accession and/or application number.",
+        );
+      }
     }
   } else if (fileType === "json") {
     // Handle JSON validation

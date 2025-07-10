@@ -13,35 +13,18 @@ import {
 	LanUploadFileListView,
 	LanUploadTransferFormView,
 } from "@renderer/components/transfer/lan-views";
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { getXlsxFileListToastData, parseJsonFile, type ToastData } from "./utils";
-
-type Folder = {
-	id: number;
-	folder: string;
-	invalidPath: boolean;
-	bufferProgress: number;
-	metadataProgress: number;
-};
-
-type FolderUploadChange = {
-	originalFolderPath: string;
-	newFolderPath?: string;
-	deleted: boolean;
-};
-
-type FileBufferObj = {
-	filename: string;
-	path: string;
-	buffer: Buffer;
-};
-
-type RunningWorker = {
-	id?: string | null;
-	type: "metadata" | "buffer";
-	folder: string;
-};
+import { getXlsxFileListToastData } from "../utils";
+import {
+	checkForExistingTransfer,
+	getFolderBuffer,
+	getFolderMetadata,
+	parseFileList,
+} from "./helpers";
+import type { FileBufferObj, Folder, FolderUploadChange, RunningWorker } from "./types";
+import { r } from "react-router/dist/development/fog-of-war-CGNKxM4z";
+import { f } from "react-router/dist/development/route-data-CGHGzi13";
 
 export const LanTransferPage = () => {
 	const [api] = useState(window.api); // Preload scripts
@@ -78,10 +61,26 @@ export const LanTransferPage = () => {
 	const [changesJustification, setChangesJustification] = useState("");
 
 	// Accession & application pulled from fileList
-	const [accession, setAccession] = useState<string | undefined | null>(null);
-	const [application, setApplication] = useState<string | undefined | null>(null);
+	const [accession, setAccession] = useState<string | undefined | null>("");
+	const [application, setApplication] = useState<string | undefined | null>("");
+	const [allowAccessionChange, setAllowAccessionChange] = useState<boolean>(true);
+	const [allowApplicationChange, setAllowApplicationChange] = useState<boolean>(true);
 	// User confirms if accession & application are correct
 	const [confirmAccAppChecked, setConfirmAccAppChecked] = useState<boolean>(false);
+
+	const resetStates = useCallback(async () => {
+		setAccession("");
+		setAllowAccessionChange(true);
+		setApplication("");
+		setAllowApplicationChange(true);
+		setFolders([]);
+		setFoldersToProcess([]);
+		setMetadata({});
+		setExtendedMetadata({});
+		setUploadSuccess(null);
+		setConfirmAccAppChecked(false);
+		await api.workers.shutdown();
+	}, []);
 
 	const onNextPress = () => {
 		setCurrentViewIndex((prev) => prev + 1);
@@ -89,6 +88,62 @@ export const LanTransferPage = () => {
 
 	const onBackPress = () => {
 		setCurrentViewIndex((prev) => prev - 1);
+	};
+
+	const handleShutdownWorker = async (folder: string) => {
+		const workersToShutdown = runningWorkers.filter((worker) => worker.folder === folder);
+
+		for (const worker of workersToShutdown) {
+			if (worker.id) {
+				await api.workers.shutdownById(worker.id);
+			}
+		}
+
+		// Remove workers from the running list
+		setRunningWorkers((prev) => prev.filter((worker) => worker.folder !== folder));
+	};
+
+	const handleRowUpdate = (newFolder: Folder) => {
+		// Update the row in the state
+		setFolders((prevRows) => prevRows.map((row) => (row.id === newFolder.id ? newFolder : row)));
+		return newFolder;
+	};
+
+	const handleEditClick = async (folderPath: string): Promise<void> => {
+		const result = await api.selectDirectory({ singleSelection: true });
+		const selectedFolderPath = result[0];
+
+		if (!selectedFolderPath) return;
+
+		// Folder already exists in file list.
+		if (folders.some((row) => row.folder === selectedFolderPath)) {
+			toast.error(Toast, {
+				data: {
+					success: false,
+					title: "Folder edit unsuccessful",
+					message:
+						"The folder path you selected is already used in the file list. Please select a different folder path.",
+				},
+			});
+			return;
+		}
+
+		setFolders((prev) =>
+			prev.map((row) => {
+				if (row.folder === folderPath)
+					return { ...row, folder: selectedFolderPath, invalidPath: false };
+				return row;
+			}),
+		);
+		setChanges((prev) => [
+			...prev,
+			{
+				originalFolderPath: folderPath,
+				newFolderPath: selectedFolderPath,
+				deleted: false,
+			},
+		]);
+		setFoldersToProcess((prev) => [...prev, selectedFolderPath]);
 	};
 
 	// Handle metadata progress and completion events
@@ -143,37 +198,37 @@ export const LanTransferPage = () => {
 			} = event.detail;
 
 			if (success && newMetadata) {
-        // Check for zip files
-        const hasZipFiles = newMetadata[source] && (newMetadata[source] as { filename: string }[]).some((file) => 
-          file.filename.endsWith(".zip")
-        );
-        if (hasZipFiles) {
-          // Only show toast once
-          if (!zipToastShownRef.current) {
-            zipToastShownRef.current = true;
-            toast.error(Toast, {
-              data: {
-                success: false,
-                title: "Upload failed",
-                message: `DATS cannot archive .zip files. Folder ${source} contains at least one .zip file. Please remove it and try again.`,
-              },
-            });
-          }
-          // Reset state
-          setFileList(null);
-          setAccession(null);
-          setApplication(null);
-          setConfirmAccAppChecked(false);
-          setFolders([]);
-          setMetadata({});
-          setExtendedMetadata({});
-          setUploadSuccess(null);
+				// Check for zip files
+				const hasZipFiles =
+					newMetadata[source] &&
+					(newMetadata[source] as { filename: string }[]).some((file) =>
+						file.filename.endsWith(".zip"),
+					);
+				if (hasZipFiles) {
+					// Only show toast once
+					if (!zipToastShownRef.current) {
+						zipToastShownRef.current = true;
+						toast.error(Toast, {
+							data: {
+								success: false,
+								title: "Upload failed",
+								message: `DATS cannot archive .zip files. Folder ${source} contains at least one .zip file. Please remove it and try again.`,
+							},
+						});
+					}
+					// Reset state
+					setFileList(null);
+					setAccession(null);
+					setApplication(null);
+					setConfirmAccAppChecked(false);
+					setFolders([]);
+					setMetadata({});
+					setExtendedMetadata({});
+					setUploadSuccess(null);
 
-          console.log(
-                `Folder ${source} contains zip files and will not be processed.`
-              );
-          return;
-        }
+					console.log(`Folder ${source} contains zip files and will not be processed.`);
+					return;
+				}
 
 				// Store metadata state
 				setMetadata((prev) => ({
@@ -323,251 +378,18 @@ export const LanTransferPage = () => {
 			setFolders((prev) => [...prev, ...foldersToAdd]);
 
 			pathsToProcess.forEach((filePath) => {
-				getFolderMetadata(filePath).catch((error) =>
+				getFolderMetadata(filePath, setRunningWorkers).catch((error) =>
 					console.error(`Failed to fetch metadata for folder ${filePath}:`, error),
 				);
-				getFolderBuffer(filePath).catch((error) =>
+				getFolderBuffer(filePath, setRunningWorkers).catch((error) =>
 					console.error(`Failed to fetch buffers for folder ${filePath}:`, error),
 				);
 			});
 		}
 	}, [foldersToProcess]);
 
-	const getFolderMetadata = async (filePath: string) => {
-		try {
-			const response = await api.workers.getFolderMetadata({ filePath });
-
-			if (response.success) {
-				const workerId = response.workerId;
-
-				// Add to runningWorkers
-				setRunningWorkers((prev) => [
-					...prev,
-					{ id: workerId, type: "metadata", folder: filePath },
-				]);
-			}
-		} catch (error) {
-			console.error(`Failed to fetch metadata for folder ${filePath}:`, error);
-		}
-	};
-
-	const getFolderBuffer = async (filePath: string) => {
-		try {
-			const response = await api.workers.getFolderBuffer({ filePath });
-
-			if (response.success) {
-				const workerId = response.workerId;
-
-				// Add to runningWorkers
-				setRunningWorkers((prev) => [...prev, { id: workerId, type: "buffer", folder: filePath }]);
-			}
-		} catch (error) {
-			console.error(`Failed to fetch buffers for folder ${filePath}:`, error);
-		}
-	};
-
-	const handleShutdownWorker = async (folder: string) => {
-		const workersToShutdown = runningWorkers.filter((worker) => worker.folder === folder);
-
-		for (const worker of workersToShutdown) {
-			if (worker.id) {
-				await api.workers.shutdownById(worker.id);
-			}
-		}
-
-		// Remove workers from the running list
-		setRunningWorkers((prev) => prev.filter((worker) => worker.folder !== folder));
-	};
-
-	const processRowUpdate = (newFolder: Folder) => {
-		// Update the row in the state
-		setFolders((prevRows) => prevRows.map((row) => (row.id === newFolder.id ? newFolder : row)));
-		return newFolder;
-	};
-
-	const handleEditClick = async (folderPath: string): Promise<void> => {
-		const result = await api.selectDirectory({ singleSelection: true });
-		const selectedFolderPath = result[0];
-
-		if (!selectedFolderPath) return;
-
-		// Folder already exists in file list.
-		if (folders.some((row) => row.folder === selectedFolderPath)) {
-			toast.error(Toast, {
-				data: {
-					success: false,
-					title: "Folder edit unsuccessful",
-					message:
-						"The folder path you selected is already used in the file list. Please select a different folder path.",
-				},
-			});
-			return;
-		}
-
-		setFolders((prev) =>
-			prev.map((row) => {
-				if (row.folder === folderPath)
-					return { ...row, folder: selectedFolderPath, invalidPath: false };
-				return row;
-			}),
-		);
-		setChanges((prev) => [
-			...prev,
-			{
-				originalFolderPath: folderPath,
-				newFolderPath: selectedFolderPath,
-				deleted: false,
-			},
-		]);
-		setFoldersToProcess((prev) => [...prev, selectedFolderPath]);
-	};
-
-	const parseFileList = async () => {
-		if (!fileList) {
-			// Reset when file removed
-			setAccession(null);
-			setApplication(null);
-			setFoldersToProcess([]);
-			setConfirmAccAppChecked(false);
-			await api.workers.shutdown();
-			return;
-		}
-
-		// Pull accession nad application numbers from xlsx or json file.
-		const fileName = fileList.name.toLowerCase();
-
-		if (fileName.endsWith(".xlsx")) {
-			// Xlsx file
-			try {
-				const result = await api.transfer.parseXlsxFileList(fileList);
-
-				// Save results
-				const { accession, application, folders, foldersMetadata } = result;
-				setAccession(accession);
-				setApplication(application);
-				setFoldersToProcess(folders);
-				setOriginalFolderList(foldersMetadata);
-			} catch (error) {
-				setFileList(null);
-				if (error instanceof Error) {
-					const toastData = getXlsxFileListToastData(error.message);
-
-					// Create a toast message
-					return toast.error(Toast, { data: toastData });
-				}
-				// Unexpected error
-				return toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Unexpected error",
-						message: `Encountered an unexpected error while parsing your file list (ARS 662). Please contact someone from the DATS team for assistance. Error: ${error}`,
-					},
-				});
-			}
-		} else if (fileName.endsWith(".json")) {
-			// Json file
-			type JsonFileList = {
-				admin: { accession: string; application: string };
-				folderList: Record<string, unknown>;
-			};
-			const json = (await parseJsonFile(fileList)) as JsonFileList | null;
-
-			let toastData: ToastData | undefined = undefined;
-
-			if (!json) {
-				// Invalid JSON
-				return toast.error(Toast, {
-					data: {
-						success: false,
-						title: "Invalid json",
-						message:
-							"Your file list (ARS 662) could not be parsed. Please make sure it is formatted correctly and save it, then try uploading the file again.",
-					},
-				});
-			}
-
-			const accession = json.admin.accession;
-			const application = json.admin.application;
-			const folders = json.folderList;
-
-			const folderKeys = Object.keys(folders);
-			const hasDuplicates = new Set(folderKeys).size !== folderKeys.length;
-
-			const foldersMissingScheduleOrClassification = Object.values(folders).some((f) => {
-				const folder = f as unknown as {
-					schedule: string;
-					classification: string;
-				};
-				return folder.schedule === "" || folder.classification === "";
-			});
-
-			const accAndAppExist =
-				api.transfer.accessionExists(accession) && api.transfer.applicationExists(application);
-			const accAndAppAreValid =
-				api.transfer.isAccessionValid(accession) && api.transfer.isApplicationValid(application);
-
-			if (!accAndAppExist)
-				// Missing accession and/or application numbers.
-				toastData = {
-					success: false,
-					title: "Missing accession and/or application number",
-					message:
-						"Your file list (ARS 662) is missing an accession and/or application number. Please add this information to the ‘admin’ property in the file list and save it, then try uploading the file again.",
-				};
-
-			if (hasDuplicates) {
-				// File list has duplicate folders
-				toastData = {
-					success: false,
-					title: "Duplicate folder",
-					message:
-						"Your file list (ARS 662) includes duplicate folders. Please remove duplicate folders from the ‘File List’ tab in the file list and save it, then try uploading the file again.",
-				};
-			}
-
-			if (foldersMissingScheduleOrClassification) {
-				// Folder is missing schedule and/or classification value.
-				toastData = {
-					success: false,
-					title: "Missing schedule and/or classification value",
-					message:
-						"Your file list (ARS 662) is missing a schedule and/or classification value. Please review this information in the ‘File list’ tab of your file list and save it, then try uploading the file again.",
-				};
-			}
-
-			if (accAndAppExist && !accAndAppAreValid)
-				// Invalid accession and/or application numbers.
-				toastData = {
-					success: false,
-					title: "Invalid accession and/or application number",
-					message:
-						"Your file list (ARS 662) has an invalid accession and/or application number. Please make sure to only use numbers (with the exception of a dash in the accession number). Please update this information and save it, then try uploading the file again.",
-				};
-
-			if (!folders || Object.keys(folders).length === 0)
-				// Missing folders property.
-				toastData = {
-					success: false,
-					title: "Missing folders",
-					message:
-						"Your file list (ARS 662) is missing the ‘folders’ property. Please add this information to the file list and save it, then try uploading the file again.",
-				};
-
-			if (toastData) {
-				// Create a toast message
-				setFileList(null);
-				return toast.error(Toast, { data: toastData });
-			}
-
-			// Save results
-			setAccession(accession);
-			setApplication(application);
-			setFoldersToProcess(Object.keys(folders).filter((folder) => folder.trim() !== ""));
-		}
-		return; // Return so linting doesnt complain about some paths not returning.
-	};
-
 	useEffect(() => {
+		console.log("File list changed:", fileList);
 		setCanLoseProgress(!!fileList);
 		if (fileList) {
 			const filename = fileList.name;
@@ -585,17 +407,40 @@ export const LanTransferPage = () => {
 				setFileList(null);
 			}
 		} else {
-			// Clear state.
-			setAccession(null);
-			setApplication(null);
-			setConfirmAccAppChecked(false);
-			setFolders([]);
-			setMetadata({});
-			setExtendedMetadata({});
-			setUploadSuccess(null);
+			resetStates();
 			return;
 		}
-		parseFileList();
+
+		parseFileList(fileList)
+			.then((results) => {
+				if (results.accession) {
+					setAllowAccessionChange(false);
+				}
+				if (results.application) {
+					setAllowApplicationChange(false);
+				}
+
+				setAccession(results.accession);
+				setApplication(results.application);
+				setFoldersToProcess(results.folders);
+				setOriginalFolderList(results.foldersMetadata);
+			})
+			.catch((error) => {
+				if (error instanceof Error) {
+					const toastData = getXlsxFileListToastData(error.message);
+
+					// Create a toast message
+					return toast.error(Toast, { data: toastData });
+				}
+				// Unexpected error
+				return toast.error(Toast, {
+					data: {
+						success: false,
+						title: "Unexpected error",
+						message: `Encountered an unexpected error while parsing your file list (ARS 662). Please contact someone from the DATS team for assistance. Error: ${error}`,
+					},
+				});
+			});
 	}, [fileList]);
 
 	useEffect(() => {
@@ -666,59 +511,6 @@ export const LanTransferPage = () => {
 		}
 	}, [currentViewIndex]);
 
-	const checkForExistingTransfer = async () => {
-		if (!accessToken) return;
-
-		// Request url
-		const apiUrl = await api.getCurrentApiUrl();
-		const requestUrl = `${apiUrl}/transfer`;
-
-		// Make request
-		try {
-			console.log("Making get transfers request.");
-			const response = await fetch(requestUrl, {
-				method: "GET",
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-				},
-			});
-
-			if (!response.ok) return;
-			const jsonResponse = await response.json();
-
-			if (jsonResponse.success) {
-				const transfers = jsonResponse.data.transfers;
-				const transferExists = transfers.some(
-					(t) =>
-						t.metadata.admin.accession === accession &&
-						t.metadata.admin.application === application,
-				);
-
-				if (transferExists) {
-					const existingTransfer = transfers.find(
-						(t) =>
-							t.metadata.admin.accession === accession &&
-							t.metadata.admin.application === application,
-					);
-
-					if (existingTransfer.status === "Transfer deleted") {
-						// User cannot continue
-						setShowTransferAlreadyProcessedModal(true);
-						setConfirmAccAppChecked(false);
-					} else {
-						// User can re-submit transfer
-						setShowTransferAlreadySentModal(true);
-						setConfirmAccAppChecked(false);
-					}
-				} else {
-					onNextPress();
-				}
-			} else return;
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
 	// Ask for justification of changes if any folder paths changed or deleted
 	const handleLanUploadNextPress = () => {
 		if (changes.length > 0) {
@@ -735,9 +527,34 @@ export const LanTransferPage = () => {
 		if (!accessToken) {
 			// Prompt use to login
 			setShowLoginRequiredModal(true);
-		} else {
-			checkForExistingTransfer();
 		}
+
+		checkForExistingTransfer({ accessToken, accession, application })
+			.then((results) => {
+				if (results.exists) {
+					if (results.processed) {
+						// Transfer already processed
+						setShowTransferAlreadyProcessedModal(true);
+					} else {
+						// Transfer already sent
+						setShowTransferAlreadySentModal(true);
+					}
+					setConfirmAccAppChecked(false);
+				} else {
+					// No existing transfer, proceed to next step
+					onNextPress();
+				}
+			})
+			.catch((error) => {
+				console.error("Error checking for existing transfer:", error);
+				toast.error(Toast, {
+					data: {
+						success: false,
+						title: "Error checking transfer",
+						message: "An error occurred while checking for existing transfers. Please try again.",
+					},
+				});
+			});
 	};
 
 	const handleSendRequest = async () => {
@@ -867,7 +684,11 @@ export const LanTransferPage = () => {
 							file={fileList}
 							setFile={setFileList}
 							accession={accession}
+							setAccession={setAccession}
+							allowAccessionChange={allowAccessionChange}
+							setApplication={setApplication}
 							application={application}
+							allowApplicationChange={allowApplicationChange}
 							confirmChecked={confirmAccAppChecked}
 							setConfirmChecked={setConfirmAccAppChecked}
 							onNextPress={handleFileListUploadNextPress}
@@ -895,7 +716,7 @@ export const LanTransferPage = () => {
 							application={application!}
 							folders={folders}
 							setFolders={setFolders}
-							processRowUpdate={processRowUpdate}
+							processRowUpdate={handleRowUpdate}
 							setMetadata={setMetadata}
 							setChanges={setChanges}
 							onFolderEdit={handleEditClick}

@@ -19,8 +19,8 @@ const fileListSchema = new Schema({
   metadata: {
     type: new Schema({
       admin: {
-        application: { type: String, default: "N/A" },
-        accession: { type: String, default: "N/A" },
+        application: { type: String, default: "" },
+        accession: { type: String, default: "" },
         submittedBy: {
           name: { type: String, required: true },
           email: { type: String, required: true },

@@ -50,8 +50,8 @@ export const FileListService = {
             application,
             accession,
             submittedBy: {
-              name: user?.display_name ?? "N/A",
-              email: user?.email ?? "N/A",
+              name: user?.display_name ?? "",
+              email: user?.email ?? "",
             },
           },
           folders: encodeKeysBase64(folders),
