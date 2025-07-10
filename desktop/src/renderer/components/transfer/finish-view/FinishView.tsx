@@ -9,7 +9,7 @@ type Props = {
   onNextPress: () => void;
   handleRetrySubmission: () => void;
   isLan: boolean;
-  loadingMessage: string | null;
+  loadingMessage?: string | null;
 };
 
 export const FinishView = ({
@@ -19,7 +19,7 @@ export const FinishView = ({
   onNextPress,
   handleRetrySubmission,
   isLan,
-  loadingMessage
+  loadingMessage = null
 }: Props) => {
   return (
     <>
