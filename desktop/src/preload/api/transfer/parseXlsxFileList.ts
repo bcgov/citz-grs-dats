@@ -1,6 +1,4 @@
 import * as XLSX from "xlsx";
-import { accessionExists, isAccessionValid } from "./accessionUtils";
-import { applicationExists, isApplicationValid } from "./applicationUtils";
 
 export const parseXlsxFileList = (
   file: File | null | undefined
@@ -20,28 +18,24 @@ export const parseXlsxFileList = (
         if (event.target?.result) {
           const data = new Uint8Array(event.target.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: "array" });
+
           const coverPage = workbook.Sheets["COVER PAGE"];
+
+          if (!coverPage)
+            return reject(new Error('Missing "COVER PAGE" sheet.'));
 
           const fileListSheetName = workbook.SheetNames.find((name) =>
             name.startsWith("FILE LIST")
           );
 
-          if (!coverPage || !fileListSheetName)
-            return reject(
-              new Error('Missing on or more of ["COVER PAGE", "FILE LIST"].')
-            );
+          if (!fileListSheetName)
+            return reject(new Error('Missing "FILE LIST" sheet.'));
 
           const fileList = workbook.Sheets[fileListSheetName];
 
           // Access cells
           const accession = coverPage?.B3?.v?.toString();
           const application = coverPage?.B4?.v?.toString();
-
-          if (!(accessionExists(accession) && applicationExists(application)))
-            return reject(new Error("Missing accession and/or application."));
-
-          if (!(isAccessionValid(accession) && isApplicationValid(application)))
-            return reject(new Error("Invalid accession and/or application."));
 
           // Extract folder names from column A starting at A2
           const folders: string[] = [];

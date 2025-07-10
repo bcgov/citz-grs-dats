@@ -19,8 +19,8 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
   await FileListService.createFileListEntry({
     jobID,
     user,
-    application: body.metadata?.admin?.application ?? "N/A",
-    accession: body.metadata?.admin?.accession ?? "N/A",
+    application: body.metadata?.admin?.application ?? "",
+    accession: body.metadata?.admin?.accession ?? "",
     outputFileType: body.outputFileType,
     folders: body.metadata.folders,
     files: body.metadata.files,
