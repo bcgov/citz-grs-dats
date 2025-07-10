@@ -32,11 +32,13 @@ export const LanUploadFileListView = ({
 }: Props) => {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("File input changed:", e.target.files);
+    setConfirmChecked(false);
     if (e.target.files?.[0]) setFile(e.target.files[0]);
   };
 
   const onDrop = (file: File | null | undefined) => {
     console.log("File dropped:", file);
+    setConfirmChecked(false);
     if (file) setFile(file);
   };
 
