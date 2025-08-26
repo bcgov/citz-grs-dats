@@ -144,6 +144,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ needs.prepare_release.outputs.BRANCH_NAME }}
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
