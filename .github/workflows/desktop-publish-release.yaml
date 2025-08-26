@@ -1,0 +1,78 @@
+name: Publish Desktop Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+    paths:
+      - 'desktop/package.json'
+      - 'desktop/resources/release_notes.json'
+
+jobs:
+  publish_release:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'release') && contains(github.event.pull_request.labels.*.name, 'desktop')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Get version from package.json
+        id: package_version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        working-directory: desktop
+
+      - name: Extract release notes from PR
+        id: release_notes
+        run: |
+          # Extract release notes from PR body
+          PR_BODY="${{ github.event.pull_request.body }}"
+          RELEASE_NOTES=$(echo "$PR_BODY" | sed -n '/### Release Notes/,/###/p' | sed '1d;$d' | sed '/^$/d')
+          
+          # Format release notes
+          FORMATTED_NOTES=$(echo "$RELEASE_NOTES" | sed 's/^/- /' | sed 's/,/\n- /g')
+          
+          echo "FORMATTED_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$FORMATTED_NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Download release artifacts
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: desktop-prepare-release.yaml
+          name_is_regexp: true
+          name: desktop-release-${{ steps.package_version.outputs.VERSION }}-.*
+          path: ./desktop/dist/
+          search_artifacts: true
+
+      - name: Flatten artifact directories
+        run: |
+          cd ./desktop/dist/
+          find . -mindepth 2 -type f -exec mv {} . \;
+          find . -mindepth 1 -type d -empty -delete
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            ./desktop/dist/*
+          tag_name: v${{ steps.package_version.outputs.VERSION }}
+          name: Desktop Release v${{ steps.package_version.outputs.VERSION }}
+          body: |
+            Desktop Application Release v${{ steps.package_version.outputs.VERSION }}
+            
+            **Changelog:**
+            ${{ env.FORMATTED_NOTES }}
+            
+            ---
+            *This release was automatically generated from PR #${{ github.event.pull_request.number }}*
+          prerelease: false
+          make_latest: true

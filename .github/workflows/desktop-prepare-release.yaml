@@ -1,0 +1,174 @@
+name: Prepare Desktop Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionChange:
+        description: 'Version Change'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      releaseNotes:
+        description: 'Release Notes (comma separated ex: "A,B,C")'
+        required: true
+        type: string
+
+jobs:
+  check_typescript_errors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            desktop
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        working-directory: desktop
+        run: npm i
+
+      - name: Check for TypeScript errors
+        working-directory: desktop
+        run: npm run typecheck
+
+  prepare_release:
+    runs-on: ubuntu-latest
+    needs: check_typescript_errors
+    outputs:
+      VERSION: ${{ steps.package_version.outputs.VERSION }}
+      BRANCH_NAME: ${{ steps.branch_info.outputs.BRANCH_NAME }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        working-directory: desktop
+        run: npm i
+
+      - name: Create release branch
+        id: branch_info
+        run: |
+          BRANCH_NAME="release/desktop-v$(date +%Y%m%d-%H%M%S)"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          git checkout -b $BRANCH_NAME
+
+      - name: Bump version in package.json
+        run: npm run bump:${{ github.event.inputs.versionChange }}
+        working-directory: desktop
+
+      - name: Get the version from package.json
+        id: package_version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        working-directory: desktop
+
+      - name: Update release notes
+        run: node add-release-notes ${{ steps.package_version.outputs.VERSION }} "${{ github.event.inputs.releaseNotes }}"
+        working-directory: desktop
+
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add desktop/package.json desktop/resources/release_notes.json
+          git commit -m "Prepare release v${{ steps.package_version.outputs.VERSION }}"
+          git push origin ${{ steps.branch_info.outputs.BRANCH_NAME }}
+
+  build_app:
+    runs-on: ${{ matrix.os }}
+    needs: prepare_release
+    strategy:
+      matrix:
+        os: [windows-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare_release.outputs.BRANCH_NAME }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        working-directory: desktop
+        run: npm install
+
+      - name: Build Electron App for ${{ matrix.os }}
+        run: npm run build:${{ matrix.os }}
+        working-directory: desktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rename build artifacts
+        shell: bash
+        run: |
+          cd desktop/dist
+          for file in *; do
+            if [ -f "$file" ]; then
+              new_name=$(echo "$file" | tr ' ' '-')
+              if [ "$file" != "$new_name" ]; then
+                mv "$file" "$new_name"
+              fi
+            fi
+          done
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-release-${{ needs.prepare_release.outputs.VERSION }}-${{ matrix.os }}
+          path: desktop/dist/
+          retention-days: 30
+
+  create_pull_request:
+    runs-on: ubuntu-latest
+    needs: [prepare_release, build_app]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ needs.prepare_release.outputs.BRANCH_NAME }}
+          title: "Release Desktop App v${{ needs.prepare_release.outputs.VERSION }}"
+          body: |
+            ## Desktop Release v${{ needs.prepare_release.outputs.VERSION }}
+            
+            This PR prepares the desktop application for release with the following changes:
+            
+            ### Changes
+            - Version bumped to ${{ needs.prepare_release.outputs.VERSION }}
+            - Release notes updated
+            
+            ### Release Notes
+            ${{ github.event.inputs.releaseNotes }}
+            
+            ### Build Artifacts
+            Build artifacts have been generated and stored for this release. Upon merge, the release will be automatically published.
+            
+            **Note:** Merging this PR will trigger the automatic publication of the desktop release.
+          labels: |
+            release
+            desktop
+          reviewers: |
+            ${{ github.actor }}
