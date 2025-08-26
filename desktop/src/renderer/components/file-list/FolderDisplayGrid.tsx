@@ -138,7 +138,22 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 		[setFolders],
 	);
 
-	const handleContinueButtonClick = () => setFinalizeModalIsOpen(true);
+	const handleContinueButtonClick = () => {
+		// Stop any active row edits and commit changes before continuing
+		folders.forEach((folder) => {
+			try {
+				const isRowInEditMode = apiRef.current.getRowMode(folder.id) === "edit";
+				if (isRowInEditMode) {
+					apiRef.current.stopRowEditMode({ id: folder.id });
+				}
+			} catch (error) {
+				console.error("Error stopping row edit mode:", error);
+				// Continue anyway - don't block the user from proceeding
+			}
+		});
+		
+		setFinalizeModalIsOpen(true);
+	};
 
 	useEffect(() => {
 		if (folders.length === 0) {
