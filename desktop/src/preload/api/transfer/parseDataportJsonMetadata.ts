@@ -92,14 +92,23 @@ export const parseDataportJsonMetadata = async (
         ""
       )}`;
 
-      console.log(`Processing file: ${filePath}`);
+      let useAlternative = false;
+      try {
+        await fs.stat(filePath);
+      } catch (error) {
+        console.error(`Error processing file ${filePath}:`, error);
+        useAlternative = true;
+      }
 
-      const { size, checksum } = await getFileSizeAndChecksum(filePath);
+      const alternativeFilename = filename.substring(filename.indexOf("_") + 1);
+      const alternativeFilepath = path.join(folderPath, alternativeFilename);
+
+      const { size, checksum } = await getFileSizeAndChecksum(useAlternative ? alternativeFilepath : filePath);
 
       if (!files[folderName]) files[folderName] = [];
       files[folderName].push({
-        filepath: `${folderName}/${filename}`,
-        filename,
+        filepath: `${folderName}/${useAlternative ? alternativeFilename : filename}`,
+        filename: useAlternative ? alternativeFilename : filename,
         size,
         checksum,
         birthtime: parseDate(item["Date Created (Opened)"]),
