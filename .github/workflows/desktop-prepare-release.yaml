@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           sparse-checkout: |
             desktop
@@ -97,7 +97,7 @@ jobs:
         os: [windows-latest]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ needs.prepare_release.outputs.BRANCH_NAME }}
 
@@ -141,36 +141,32 @@ jobs:
     needs: [prepare_release, build_app]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ needs.prepare_release.outputs.BRANCH_NAME }}
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: main
-          branch: ${{ needs.prepare_release.outputs.BRANCH_NAME }}
-          title: "Release Desktop App v${{ needs.prepare_release.outputs.VERSION }}"
-          body: |
-            ## Desktop Release v${{ needs.prepare_release.outputs.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head ${{ needs.prepare_release.outputs.BRANCH_NAME }} \
+            --title "Release Desktop App v${{ needs.prepare_release.outputs.VERSION }}" \
+            --body "## Desktop Release v${{ needs.prepare_release.outputs.VERSION }}
 
-            This PR prepares the desktop application for release with the following changes:
+          This PR prepares the desktop application for release with the following changes:
 
-            ### Changes
-            - Version bumped to ${{ needs.prepare_release.outputs.VERSION }}
-            - Release notes updated
+          ### Changes
+          - Version bumped to ${{ needs.prepare_release.outputs.VERSION }}
+          - Release notes updated
 
-            ### Release Notes
-            ${{ github.event.inputs.releaseNotes }}
+          ### Release Notes
+          ${{ github.event.inputs.releaseNotes }}
 
-            ### Build Artifacts
-            Build artifacts have been generated and stored for this release. Upon merge, the release will be automatically published.
+          ### Build Artifacts
+          Build artifacts have been generated and stored for this release. Upon merge, the release will be automatically published.
 
-            **Note:** Merging this PR will trigger the automatic publication of the desktop release.
-          labels: |
-            release
-            desktop
-          reviewers: |
-            ${{ github.actor }}
+          **Note:** Merging this PR will trigger the automatic publication of the desktop release." \
+            --label "release,desktop" \
+            --reviewer ${{ github.actor }}
