@@ -150,23 +150,24 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
           branch: ${{ needs.prepare_release.outputs.BRANCH_NAME }}
           title: "Release Desktop App v${{ needs.prepare_release.outputs.VERSION }}"
           body: |
             ## Desktop Release v${{ needs.prepare_release.outputs.VERSION }}
-            
+
             This PR prepares the desktop application for release with the following changes:
-            
+
             ### Changes
             - Version bumped to ${{ needs.prepare_release.outputs.VERSION }}
             - Release notes updated
-            
+
             ### Release Notes
             ${{ github.event.inputs.releaseNotes }}
-            
+
             ### Build Artifacts
             Build artifacts have been generated and stored for this release. Upon merge, the release will be automatically published.
-            
+
             **Note:** Merging this PR will trigger the automatic publication of the desktop release.
           labels: |
             release
