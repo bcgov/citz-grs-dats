@@ -3,8 +3,6 @@ import { useGridApiRef } from "@mui/x-data-grid";
 import type { FolderRow } from "@/renderer/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { convertArrayToObject } from "./convertArrayToObject";
-import { toast } from "react-toastify";
-import { Toast } from "@/renderer/components";
 
 export const useFolderList = () => {
   const apiRef = useGridApiRef();
@@ -18,8 +16,6 @@ export const useFolderList = () => {
   const [pendingPaths, setPendingPaths] = useState<string[]>([]);
   const [workers] = useState(window.api.workers);
   const { fetchProtectedRoute, refreshTokens } = window.api.sso;
-
-  const zipToastShownRef = useRef<Set<string>>(new Set());
 
   const handleProgress = useCallback(
     (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
