@@ -1,7 +1,7 @@
 import { useNavigate } from "@/renderer/hooks";
 import { useGridApiRef } from "@mui/x-data-grid";
 import type { FolderRow } from "@/renderer/types";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { convertArrayToObject } from "./convertArrayToObject";
 
 export const useFolderList = () => {
