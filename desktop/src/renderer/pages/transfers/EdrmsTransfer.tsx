@@ -15,7 +15,6 @@ import { toast } from "react-toastify";
 
 export const EdrmsTransferPage = () => {
 	const [api] = useState(window.api); // Preload scripts
-	const zipToastShownRef = useRef(false);
 
 	const { navigate, setCanLoseProgress } = useNavigate();
 	const { idToken, accessToken, refresh } = useAuth();
@@ -157,43 +156,6 @@ export const EdrmsTransferPage = () => {
 
 			// Parse json into admin, folders, and files metadata
 			const metadata = await api.transfer.parseDataportJsonMetadata(dataportJson, folderPath);
-
-      // Check for zip files
-      const hasZipFiles = metadata.files && Object.entries(metadata.files).some(([_folder, files]) =>
-        files.some((file) => (file as { filename: string }).filename.endsWith(".zip"))
-      );
-      if (hasZipFiles) {
-        const foldersWithZipFiles = Object.entries(metadata.files)
-          .filter(([_folder, files]) =>
-            files.some((file) => (file as { filename: string }).filename.endsWith(".zip"))
-          )
-          .map(([folder]) => folder);
-
-        if (!zipToastShownRef.current) {
-          zipToastShownRef.current = true;
-          toast.error(Toast, {
-            data: {
-              success: false,
-              title: "Upload failed",
-              message: `DATS cannot archive .zip files. Folder ${foldersWithZipFiles[0]} contains at least one .zip file. Please remove it and try again.`,
-            },
-          });
-        }
-        // Reset state
-        setFolderPath(null);
-        setDataportFile(null);
-        setFileList(null);
-        setTransferForm(null);
-        setDataportFoundInEdrms(false);
-        setFileListFoundInEdrms(false);
-        setTransferFormFoundInEdrms(false);
-        setMetadata({});
-
-        console.log(
-              `Folder ${foldersWithZipFiles[0]} contains zip files and will not be processed.`
-            );
-        return;
-      }
 
 			setMetadata(metadata);
 			setAccession(metadata.admin.accession);

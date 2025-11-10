@@ -53,31 +53,6 @@ export const useFolderList = () => {
       } = event.detail;
 
       if (success && newMetadata) {
-        // Check for zip files
-        if (
-          (newMetadata[source] as Record<string, unknown>[]).some((file) =>
-            (file?.filename as string)?.endsWith(".zip")
-          )
-        ) {
-          setFolders((prevFolderList) =>
-            prevFolderList.filter((folder) => folder.folder !== source)
-          );
-          if (!zipToastShownRef.current.has(source)) {
-            zipToastShownRef.current.add(source);
-            console.log(
-              `Folder ${source} contains zip files and will not be processed.`
-            );
-            toast.error(Toast, {
-              data: {
-                success: false,
-                title: "Upload failed",
-                message: `DATS cannot archive .zip files. Folder ${source} contains at least one .zip file. Please remove it and try again.`,
-              },
-            });
-          }
-          return;
-        }
-
         setMetaData((prev) => ({
           ...prev,
           [source]: newMetadata[source],

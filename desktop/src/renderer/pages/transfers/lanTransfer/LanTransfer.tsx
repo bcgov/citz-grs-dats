@@ -13,7 +13,7 @@ import {
 	LanUploadFileListView,
 	LanUploadTransferFormView,
 } from "@renderer/components/transfer/lan-views";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { getXlsxFileListToastData } from "../utils";
 import {
@@ -26,7 +26,6 @@ import type { FileBufferObj, Folder, FolderUploadChange, RunningWorker } from ".
 
 export const LanTransferPage = () => {
 	const [api] = useState(window.api); // Preload scripts
-	const zipToastShownRef = useRef(false);
 
 	const { navigate, setCanLoseProgress } = useNavigate();
 	const { idToken, accessToken, refresh } = useAuth();
@@ -197,30 +196,6 @@ export const LanTransferPage = () => {
 			} = event.detail;
 
 			if (success && newMetadata) {
-				// Check for zip files
-				const hasZipFiles =
-					newMetadata[source] &&
-					(newMetadata[source] as { filename: string }[]).some((file) =>
-						file.filename.endsWith(".zip"),
-					);
-				if (hasZipFiles) {
-					// Only show toast once
-					if (!zipToastShownRef.current) {
-						zipToastShownRef.current = true;
-						toast.error(Toast, {
-							data: {
-								success: false,
-								title: "Upload failed",
-								message: `DATS cannot archive .zip files. Folder ${source} contains at least one .zip file. Please remove it and try again.`,
-							},
-						});
-					}
-					resetStates();
-
-					console.log(`Folder ${source} contains zip files and will not be processed.`);
-					return;
-				}
-
 				// Store metadata state
 				setMetadata((prev) => ({
 					...prev,
