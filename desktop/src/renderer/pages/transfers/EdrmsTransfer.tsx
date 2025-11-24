@@ -169,10 +169,19 @@ export const EdrmsTransferPage = () => {
 					success: false,
 					title: "Failed to read file",
 					message:
-						`${error.message}. Please ensure the file is included in your EDRMS folder upload.`,
+						`${error.message}. Please review the file.`,
 				},
 			});
-      } else {
+      } else if (error instanceof Error && error.message.startsWith("A file mentioned in your Dataport file could not be found on your system.")) {
+		toast.error(Toast, {
+				data: {
+					success: false,
+					title: "File not found",
+					message:
+						`${error.message}. Please ensure the file is included in your EDRMS folder upload. See "View > Toggle Developer Tools" for more details.`,
+				},
+			});
+	  } else {
         toast.error(Toast, {
 				data: {
 					success: false,

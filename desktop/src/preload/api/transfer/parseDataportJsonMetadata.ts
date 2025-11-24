@@ -84,31 +84,65 @@ export const parseDataportJsonMetadata = async (
         fdDate: "-",
       };
     } else {
-      const filename = item["DOS file"].split(/\\+/).pop() || "";
-      const filePath = path.join(folderPath, filename.replaceAll('"', ""));
+      const filename = item["DOS file"].split(/\\+/).pop()?.replaceAll('"', "")?.trim() || "";
+      const normalizedFilename = filename.replaceAll('"', "").replace(/\s+/g, " ").trim();
       const containerParts = container.split("/");
       const folderName = `${containerParts[0]}_${containerParts[1].replace(
         /^0+/,
         ""
       )}`;
 
-      let useAlternative = false;
+      // Try multiple filepath variations
+      let resolvedFilePath: string | null = null;
+      
+      // First try the normalized filename (quotes removed, extra spaces trimmed)
+      const normalizedFilePath = path.join(folderPath, normalizedFilename);
       try {
-        await fs.stat(filePath);
+        await fs.stat(normalizedFilePath);
+        resolvedFilePath = normalizedFilePath;
       } catch (error) {
-        console.error(`Error processing file ${filePath}:`, error);
-        useAlternative = true;
+        // If not found, try the filename without normalization
+        const unnormalizedFilePath = path.join(folderPath, filename);
+        try {
+          await fs.stat(unnormalizedFilePath);
+          resolvedFilePath = unnormalizedFilePath;
+        } catch (err2) {
+          // If still not found, try removing the prefix before the first underscore
+          const alternativeFilename = normalizedFilename.substring(normalizedFilename.indexOf("_") + 1);
+          const alternativeFilepath = path.join(folderPath, alternativeFilename);
+          
+          try {
+            await fs.stat(alternativeFilepath);
+            resolvedFilePath = alternativeFilepath;
+          } catch (err3) {
+            // If still not found, try the alternative filename with the unnormalized prefix path
+            const unnormalizedAlternativeFilename = filename.substring(filename.indexOf("_") + 1);
+            const unnormalizedAlternativeFilepath = path.join(folderPath, unnormalizedAlternativeFilename);
+            
+            try {
+              await fs.stat(unnormalizedAlternativeFilepath);
+              resolvedFilePath = unnormalizedAlternativeFilepath;
+            } catch (altError) {
+              console.error(`Checked: \n` +
+                `"${normalizedFilePath}"\n` +
+                `"${unnormalizedFilePath}"\n` +
+                `"${alternativeFilepath}"\n` +
+                `"${unnormalizedAlternativeFilepath}"`)
+              throw new Error(
+                `A file mentioned in your Dataport file could not be found on your system. File: "${filename}"`
+              );
+            }
+          }
+        }
       }
 
-      const alternativeFilename = filename.substring(filename.indexOf("_") + 1);
-      const alternativeFilepath = path.join(folderPath, alternativeFilename);
-
-      const { size, checksum } = await getFileSizeAndChecksum(useAlternative ? alternativeFilepath : filePath);
+      const { size, checksum } = await getFileSizeAndChecksum(resolvedFilePath);
 
       if (!files[folderName]) files[folderName] = [];
+      const outputFilename = path.basename(resolvedFilePath);
       files[folderName].push({
-        filepath: `${folderName}/${useAlternative ? alternativeFilename : filename}`,
-        filename: useAlternative ? alternativeFilename : filename,
+        filepath: `${folderName}/${outputFilename}`,
+        filename: outputFilename,
         size,
         checksum,
         birthtime: parseDate(item["Date Created (Opened)"]),
