@@ -22,5 +22,6 @@
   "2.1.9": "Made file name checks case-insensitive for Send Records process.,Added better error messages when a file is missing on EDRMS upload.",
   "2.1.10": "Allow Application / Accession Numbers to be added during LAN Transfer, enforce Accession Number format to be ##-####",
   "2.1.11": "Fixed issues uploading .msg files in EDRMS transfer.,Fixed issues with Create File List that resulted in empty folder properties in the output file.",
-  "2.1.12": "Re-allow zip file uploads"
+  "2.1.12": "Re-allow zip file uploads",
+  "2.1.13": "Updated EDRMS file upload error messages"
 }
