@@ -349,6 +349,15 @@ export const EdrmsTransferPage = () => {
 			});
 		}
 
+		const finalMetadata = {
+			...metadata,
+			admin: {
+				...(metadata.admin as Record<string, unknown>),
+				accession,
+				application,
+			},
+		};
+
 		// Generate zipped chunks and checksum
 		const { chunks: zipChunks, checksum: contentChecksum } =
 			await api.transfer.createZippedChunks(reconstructedBuffers);
@@ -369,7 +378,7 @@ export const EdrmsTransferPage = () => {
 			formData.append("chunkIndex", index.toString());
 			formData.append("totalChunks", totalChunks.toString());
 			formData.append("contentChecksum", contentChecksum);
-			formData.append("metadata", JSON.stringify(metadata));
+			formData.append("metadata", JSON.stringify(finalMetadata));
 			formData.append("extendedMetadata", JSON.stringify({ folders: dataportJson }));
 
 			try {
@@ -450,6 +459,8 @@ export const EdrmsTransferPage = () => {
 							application={application}
 							confirmChecked={confirmAccAppChecked}
 							setConfirmChecked={setConfirmAccAppChecked}
+							setAccession={setAccession}
+							setApplication={setApplication}
 							onNextPress={onNextPress}
 							onBackPress={onBackPress}
 						/>
