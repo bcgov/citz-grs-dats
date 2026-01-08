@@ -10,6 +10,8 @@ type Props = {
 	application?: string;
 	confirmChecked: boolean;
 	setConfirmChecked: React.Dispatch<React.SetStateAction<boolean>>;
+	setAccession: React.Dispatch<React.SetStateAction<string>>;
+	setApplication: React.Dispatch<React.SetStateAction<string>>;
 	onNextPress: () => void;
 	onBackPress: () => void;
 };
@@ -21,6 +23,8 @@ export const EdrmsUploadDataportView = ({
 	application,
 	confirmChecked,
 	setConfirmChecked,
+	setAccession,
+	setApplication,
 	onNextPress,
 	onBackPress,
 }: Props) => {
@@ -51,10 +55,10 @@ export const EdrmsUploadDataportView = ({
 					application={application}
 					checked={confirmChecked}
 					setChecked={setConfirmChecked}
-					setAccession={() => {}}
-					setApplication={() => {}}
-					allowAccessionChange={false}
-					allowApplicationChange={false}
+					setAccession={setAccession}
+					setApplication={setApplication}
+					allowAccessionChange={true}
+					allowApplicationChange={true}
 				/>
 			</Stack>
 			<Box sx={{ display: "flex", justifyContent: "space-between" }}>
