@@ -1,4 +1,4 @@
-import { validateAccessionNumber } from "@/renderer/utilities";
+import { validateAccessionNumber, validateApplicationNumber } from "@/renderer/utilities";
 import { Checkbox, TextField } from "@bcgov/design-system-react-components";
 import { Box, FormControlLabel, Stack, Typography } from "@mui/material";
 
@@ -64,7 +64,7 @@ export const AccAppConfirmation = ({
 				<Stack>
 					<b>Application:</b>
 					<TextField
-						validate={validateAccessionNumber}
+						validate={validateApplicationNumber}
 						name="applicationNumber"
 						isDisabled={!allowApplicationChange}
 						value={application}

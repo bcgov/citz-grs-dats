@@ -1,7 +1,7 @@
 export const validateAccessionNumber = (value: string) => {
   if (!value) return "Accession number is required";
-  if (!/^\d{2}-\d{4}$/.test(value))
-    return "Format must be ##-#### (e.g., 12-3456)";
+  if (!/^\d{2}-?\d{4}$/.test(value))
+    return "Format must be ##-#### or ###### (e.g., 12-3456 or 123456)";
   return null;
 }
 

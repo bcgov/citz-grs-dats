@@ -8,6 +8,14 @@ type Props = {
 
 export const RequestFailed = ({ handleRetrySubmission }: Props) => {
 	const { navigate } = useNavigate();
+	const dateString = new Date().toLocaleString("en-CA", {
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+	});
 
 	return (
 		<Stack gap={3}>
@@ -30,6 +38,7 @@ export const RequestFailed = ({ handleRetrySubmission }: Props) => {
 				</Link>{" "}
 				for assistance.
 			</Typography>
+			<Typography>{dateString}</Typography>
 		</Stack>
 	);
 };
