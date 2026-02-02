@@ -21,7 +21,6 @@ services:
     environment:
       - MONGO_HOST=mongo
       - BACKEND_URL=http://localhost:${BACKEND_PORT:-3200}
-      - RABBITMQ_URL=amqp://${RABBITMQ_DEFAULT_USER:-admin}:${RABBITMQ_DEFAULT_PASS:-pass}@rabbitmq:5672
     ports:
       - ${BACKEND_PORT:-3200}:3200
     volumes:
@@ -40,7 +39,7 @@ services:
     image: mongo:${MONGO_IMAGE_TAG:-8.0}
     restart: unless-stopped
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER:-admin}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME:-admin}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-password}
     volumes:
       - mongo_data:/data/db
@@ -61,9 +60,12 @@ services:
     container_name: rabbitmq
     restart: always
     ports:
-      - ${RABBITMQ_EXTERNAL_PORT:-3400}:5672    # RabbitMQ default port for clients
-      - '15672:15672'                           # RabbitMQ Management UI port
+      - ${RABBITMQ_EXTERNAL_PORT:-3500}:5672    # RabbitMQ default port for clients
+      - '15673:15672'                           # RabbitMQ Management UI port
     env_file: .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME:-admin}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-password}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     command: ["bash", "-c", "chmod 400 /var/lib/rabbitmq/.erlang.cookie; rabbitmq-server"]

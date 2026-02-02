@@ -2,7 +2,7 @@ import amqp from "amqplib";
 import { ENV } from "src/config";
 import { logs } from "src/utils";
 
-const { RABBITMQ_URL } = ENV;
+const { RABBITMQ_USERNAME, RABBITMQ_PASSWORD, RABBITMQ_HOSTNAME, RABBITMQ_PORT, RABBITMQ_PROTOCOL, RABBITMQ_VHOST, RABBITMQ_FRAME_MAX, RABBITMQ_HEARTBEAT } = ENV;
 
 const {
   RABBITMQ: {
@@ -15,6 +15,18 @@ const {
   },
 } = logs;
 
+const connectionOptions = {
+  protocol: RABBITMQ_PROTOCOL,
+  hostname: RABBITMQ_HOSTNAME,
+  port: RABBITMQ_PORT,
+  username: RABBITMQ_USERNAME,
+  password: RABBITMQ_PASSWORD,
+  locale: 'en_US',
+  frameMax: RABBITMQ_FRAME_MAX,
+  heartbeat: RABBITMQ_HEARTBEAT,
+  vhost: RABBITMQ_VHOST
+};
+
 let connection: amqp.Connection | null = null;
 let isConnected = false;
 const channelPromises: Map<string, Promise<amqp.Channel>> = new Map();
@@ -22,10 +34,10 @@ const channelPromises: Map<string, Promise<amqp.Channel>> = new Map();
 // Connect to RabbitMQ and create a channel for a specific queue
 const connectToRabbitMQ = async (queue: string): Promise<void> => {
   try {
-    if (!RABBITMQ_URL)
-      throw new Error("RABBITMQ_URL env variable is undefined.");
+    if (!RABBITMQ_USERNAME || !RABBITMQ_PASSWORD || !RABBITMQ_HOSTNAME)
+      throw new Error("RabbitMQ connection environment variables are undefined.");
     if (!connection) {
-      connection = await amqp.connect(RABBITMQ_URL);
+      connection = await amqp.connect(connectionOptions);
       isConnected = true;
       console.log(`${CONNECTION_SUCCESS} ${queue}`);
     }
