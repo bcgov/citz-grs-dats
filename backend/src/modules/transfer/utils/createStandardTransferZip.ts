@@ -1,13 +1,11 @@
 import archiver from "archiver";
 import unzipper from "unzipper";
 import { PassThrough, type Readable } from "node:stream";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 import { createWriteStream, promises as fsPromises } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pipeline } from "node:stream/promises";
+import { randomUUID } from "node:crypto";
 
 type Props = {
   contentZipStream: Readable;
@@ -61,7 +59,7 @@ export const createStandardTransferZip = async ({
   contentZipStream,
   documentation,
   metadata,
-}: Props): Promise<Buffer> => {
+}: Props): Promise<string> => {
   console.log("Creating standard transfer zip...");
   const archive = archiver("zip", { zlib: { level: 9 } });
   const zipOutput = new PassThrough();
@@ -84,8 +82,8 @@ export const createStandardTransferZip = async ({
 
     archive.finalize();
 
-    const tempFilePath = path.join(os.tmpdir(), `temp-zip-${Date.now()}.zip`);
-    const writeStream = fs.createWriteStream(tempFilePath);
+    const tempFilePath = join(tmpdir(), `temp-zip-${randomUUID()}.zip`);
+    const writeStream = createWriteStream(tempFilePath);
 
     return new Promise((resolve, reject) => {
       zipOutput.on("data", (chunk) => {
@@ -98,33 +96,25 @@ export const createStandardTransferZip = async ({
         zipOutput.resume();
       });
 
-      writeStream.on("finish", async () => {
-        try {
-          console.log("Zip file creation complete. Reading file...");
-          const data = await fsPromises.readFile(tempFilePath);
-          await fsPromises.unlink(tempFilePath); // Clean up temp file
-          resolve(data);
-        } catch (err) {
-          reject(err);
-        }
+      writeStream.on("finish", () => {
+        console.log("Zip file creation complete.");
+        resolve(tempFilePath);
       });
 
       writeStream.on("error", async (err) => {
         try {
-          await fsPromises.unlink(tempFilePath); // Clean up temp file on error
-        } catch (cleanupErr) {
-          // Handle cleanup error
-          reject(cleanupErr);
+          await fsPromises.unlink(tempFilePath);
+        } catch {
+          // ignore cleanup error
         }
         reject(err);
       });
 
       zipOutput.on("error", async (err) => {
         try {
-          await fsPromises.unlink(tempFilePath); // Clean up temp file on error
-        } catch (cleanupErr) {
-          // Handle cleanup error
-          reject(cleanupErr);
+          await fsPromises.unlink(tempFilePath);
+        } catch {
+          // ignore cleanup error
         }
         reject(err);
       });
