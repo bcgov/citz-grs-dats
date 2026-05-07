@@ -171,8 +171,8 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
     JSON.stringify(extendedMetadata, null, 2)
   );
 
-  // Put together zip buffer
-  const standardTransferZipBuffer = await createStandardTransferZip({
+  // Put together zip
+  const standardTransferZipPath = await createStandardTransferZip({
     contentZipStream,
     documentation: {
       [digitalFilelistFilename]: digitalFileListBuffer,
@@ -196,7 +196,7 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
     success: transferResSuccess,
   } = await callTransferEndpoint({
     token,
-    standardTransferZipBuffer,
+    tempFilePath: standardTransferZipPath,
     accession,
     application,
   });

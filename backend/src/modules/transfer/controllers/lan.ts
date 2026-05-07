@@ -157,8 +157,8 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
 
   const today = new Date().toISOString().split("T")[0];
 
-  // Put together zip buffer
-  const standardTransferZipBuffer = await createStandardTransferZip({
+  // Put together zip
+  const standardTransferZipPath = await createStandardTransferZip({
     contentZipStream,
     documentation: {
       [body.fileListFilename]: fileListStream,
@@ -182,7 +182,7 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
     success: transferResSuccess,
   } = await callTransferEndpoint({
     token,
-    standardTransferZipBuffer,
+    tempFilePath: standardTransferZipPath,
     accession,
     application,
   });
