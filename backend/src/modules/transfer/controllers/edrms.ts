@@ -94,6 +94,20 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
       "Missing one or many of dataportBuffer, fileListBuffer, transferFormBuffer, contentZipBuffer."
     );
 
+  // All chunks received — respond immediately so the gateway doesn't time out
+  // while the heavy processing (zip creation + internal transfer) runs async.
+  res.status(HTTP_STATUS_CODES.ACCEPTED).json(
+    getStandardResponse({
+      message: "All chunks received. Processing transfer in background.",
+      success: true,
+      data: { chunkIndex, totalChunks },
+    })
+  );
+
+  // Fire-and-forget: process asynchronously after the response is sent
+  setImmediate(async () => {
+  try {
+
   // Save data for transfer
   await TransferService.createOrUpdateTransferEntry({
     user,
@@ -190,29 +204,16 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
   });
 
   // Make request to standard transfer
-  const {
-    message: transferResMessage,
-    data: transferResData,
-    success: transferResSuccess,
-  } = await callTransferEndpoint({
+  await callTransferEndpoint({
     token,
     tempFilePath: standardTransferZipPath,
     accession,
     application,
   });
 
-  // Standardizes the response format
-  const result = getStandardResponse({
-    data: transferResData,
-    message: transferResMessage,
-    success: transferResSuccess,
-  });
-
-  res
-    .status(
-      transferResSuccess
-        ? HTTP_STATUS_CODES.CREATED
-        : HTTP_STATUS_CODES.BAD_REQUEST
-    )
-    .json(result);
+  console.log(`EDRMS transfer completed: ${accession} / ${application}`);
+  } catch (err) {
+    console.error(`EDRMS background transfer failed (${accession}/${application}):`, err);
+  }
+  }); // end setImmediate
 });
