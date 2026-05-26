@@ -11,6 +11,10 @@ export const createFinalTransfer = async (
   console.log("Creating final transfer zip file...");
   const archive = archiver("zip", { zlib: { level: 9 } });
   const zipOutput = new PassThrough();
+  archive.on("error", (err) => {
+    console.error("Final transfer archiver error:", err);
+    zipOutput.destroy(err);
+  });
   archive.pipe(zipOutput);
 
   const manifestLines: string[] = [];

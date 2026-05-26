@@ -93,6 +93,7 @@ export const ViewTransfersPage = () => {
 					message: "We were unable to load transfers. Please log out and try again.",
 				},
 			});
+			console.log("Failed to load transfers.");
 		}
 	}, [loadTransfersSuccess]);
 
@@ -107,6 +108,7 @@ export const ViewTransfersPage = () => {
 						"The file has been deleted successfully. A stub will remain in DATS to prevent duplicate transfers. See ARIS for the official status.",
 				},
 			});
+			console.log("File deleted successfully.");
 		} else if (deleteSuccess === false) {
 			// Failed to delete transfer
 			toast.error(Toast, {
@@ -117,6 +119,7 @@ export const ViewTransfersPage = () => {
 						"Deletion failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
 				},
 			});
+			console.log("Failed to delete transfer.");
 		}
 	}, [deleteSuccess]);
 
@@ -130,6 +133,7 @@ export const ViewTransfersPage = () => {
 					message: `The file has been downloaded successfully to ${recentDownloadFilePath}`,
 				},
 			});
+			console.log("File downloaded successfully to:", recentDownloadFilePath);
 		} else if (downloadSuccess === false) {
 			// Failed to download transfer
 			toast.error(Toast, {
@@ -140,6 +144,7 @@ export const ViewTransfersPage = () => {
 						"Download failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
 				},
 			});
+			console.log("Failed to download transfer.");
 		}
 	}, [downloadSuccess]);
 
@@ -153,6 +158,7 @@ export const ViewTransfersPage = () => {
 					message: "The file has been preserved to LibSafe successfully.",
 				},
 			});
+			console.log("File preserved successfully.");
 		} else if (preserveSuccess === false) {
 			// Failed to preserve transfer
 			toast.error(Toast, {
@@ -163,6 +169,7 @@ export const ViewTransfersPage = () => {
 						"Preserve failed. Please re-log and try again or contact the GIM Branch at GIM@gov.bc.ca.",
 				},
 			});
+			console.log("Failed to preserve transfer.");
 		}
 	}, [preserveSuccess]);
 
@@ -319,6 +326,7 @@ export const ViewTransfersPage = () => {
 				message: "Wait a few moments while we start the preservation process...",
 			},
 		});
+		console.log("Starting preserve transfer request.");
 
 		// Request url
 		const apiUrl = await api.getCurrentApiUrl();

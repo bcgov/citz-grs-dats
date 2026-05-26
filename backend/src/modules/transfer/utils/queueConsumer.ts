@@ -46,36 +46,37 @@ export const queueConsumer = async (
   const jobID = msg.content.toString();
   console.log(JOB_PROCESSED(QUEUE_NAME, jobID));
 
-  // Get database record
-  const transfer = await TransferService.getTransferWhere({ jobID: jobID });
-  if (!transfer) {
-    channel.ack(msg);
-    return console.error(TRANSFER_NOT_FOUND(jobID));
-  }
-
-  if (!transfer.metadata) {
-    channel.ack(msg);
-    return console.error(METADATA_NOT_FOUND(jobID));
-  }
-
-  const metadata = JSON.parse(JSON.stringify(transfer.metadata));
-
-  const accession = metadata.admin?.accession ?? "";
-  const application = metadata.admin?.application ?? "";
-  const date = formatDate(new Date().toISOString());
-
-  const file_list_filename = `Digital_File_List_${accession}-${application}_${date}.xlsx`;
-  const submission_agreement_filename = `Submission_Agreement_${accession}-${application}_${date}.pdf`;
-
-  // Get transfer from s3
-  const stream = await download({
-    bucketName: S3_BUCKET,
-    key: `transfers/TR_${accession}_${application}.zip`,
-  });
-
-  const tempContentStreamPath = await writeStreamToTempFile(stream);
+  let tempContentStreamPath: string | undefined;
 
   try {
+    // Get database record
+    const transfer = await TransferService.getTransferWhere({ jobID: jobID });
+    if (!transfer) {
+      channel.ack(msg);
+      return console.error(TRANSFER_NOT_FOUND(jobID));
+    }
+
+    if (!transfer.metadata) {
+      channel.ack(msg);
+      return console.error(METADATA_NOT_FOUND(jobID));
+    }
+
+    const metadata = JSON.parse(JSON.stringify(transfer.metadata));
+
+    const accession = metadata.admin?.accession ?? "";
+    const application = metadata.admin?.application ?? "";
+    const date = formatDate(new Date().toISOString());
+
+    const file_list_filename = `Digital_File_List_${accession}-${application}_${date}.xlsx`;
+    const submission_agreement_filename = `Submission_Agreement_${accession}-${application}_${date}.pdf`;
+
+    // Get transfer from s3
+    const stream = await download({
+      bucketName: S3_BUCKET,
+      key: `transfers/TR_${accession}_${application}.zip`,
+    });
+
+    tempContentStreamPath = await writeStreamToTempFile(stream);
     // Clone the content zip stream for validation
     const contentStream1 = fs.createReadStream(tempContentStreamPath);
     const contentStream2 = fs.createReadStream(tempContentStreamPath);
@@ -85,10 +86,10 @@ export const queueConsumer = async (
 
     // Check to make sure record was not editted in s3
     if (
-      !isChecksumValid({
+      !(await isChecksumValid({
         stream: contentStream1,
         checksum: transfer.checksum!,
-      })
+      }))
     ) {
       channel.ack(msg);
       return console.error(MISMATCH_CHECKSUM(accession, application));
@@ -216,16 +217,19 @@ export const queueConsumer = async (
 
     console.log(COMPLETED_TRANSFER(accession, application));
   } catch (error) {
+    console.error("Error in queueConsumer:", error);
   } finally {
     // Clean up the temporary file
-    fs.unlink(tempContentStreamPath, (err) => {
-      if (err) {
-        console.error(
-          `Failed to delete temp file: ${tempContentStreamPath}`,
-          err
-        );
-      }
-    });
+    if (tempContentStreamPath) {
+      fs.unlink(tempContentStreamPath, (err) => {
+        if (err) {
+          console.error(
+            `Failed to delete temp file: ${tempContentStreamPath}`,
+            err
+          );
+        }
+      });
+    }
   }
 
   // Acknowledge the message

@@ -27,7 +27,9 @@ const startQueueConsumer = async (): Promise<void> => {
       QUEUE_NAME,
       (msg) => {
         if (msg) {
-          queueConsumer(msg, channel);
+          queueConsumer(msg, channel).catch((err) => {
+            console.error("Unhandled error in transfer queueConsumer:", err);
+          });
         }
       },
       { noAck: false }

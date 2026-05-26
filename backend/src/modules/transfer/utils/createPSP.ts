@@ -25,6 +25,10 @@ export const createPSP = async ({
   console.log("Creating PSP zip file...");
   const zip = archiver("zip", { zlib: { level: 9 } });
   const zipOutput = new PassThrough();
+  zip.on("error", (err) => {
+    console.error("PSP archiver error:", err);
+    zipOutput.destroy(err);
+  });
   zip.pipe(zipOutput);
 
   try {

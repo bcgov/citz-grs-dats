@@ -117,6 +117,7 @@ export const FileUploadArea = ({
             message: `File type not accepted. Please upload an ${fileTypes} file.`,
           },
         });
+        console.log("Invalid file type dropped:", droppedFile.type);
         onDrop(null); // Notify parent that an invalid file was dropped
       }
     }
@@ -164,6 +165,7 @@ export const FileUploadArea = ({
           message: `File type not accepted. Please upload an ${fileTypes} file.`,
         },
       });
+      console.log("Invalid file type selected:", selectedFile.type);
 
       // Clear the input field to prevent an invalid file from being uploaded
       e.target.value = "";

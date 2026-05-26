@@ -92,6 +92,7 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 							"We were unable to fulfill your request to create a file list. Please try again.",
 					},
 				});
+				console.log("Submission failed:", error);
 			}
 		},
 		[submit],

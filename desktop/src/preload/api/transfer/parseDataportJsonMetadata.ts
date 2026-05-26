@@ -4,16 +4,16 @@ import crypto from "node:crypto";
 
 const parseDate = (dateStr: string): string => {
   if (!dateStr) return "";
+  // Handle plain YYYYMMDD (8 digits)
   if (/^\d{8}$/.test(dateStr)) {
-    return `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(
-      6,
-      8
-    )}`;
+    return `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}`;
   }
-  const timestamp = Number(dateStr);
-  if (Number.isNaN(timestamp) || timestamp < 1e12) return "";
-  const parsedDate = new Date(timestamp / 1000).toISOString().split("T")[0];
-  return parsedDate;
+  // Handle scientific notation (e.g. "2.00702E+13") or plain YYYYMMDDHHmmss numbers
+  const num = Number(dateStr);
+  if (Number.isNaN(num) || num <= 0) return "";
+  const numStr = Math.round(num).toString();
+  if (numStr.length < 8) return "";
+  return `${numStr.slice(0, 4)}-${numStr.slice(4, 6)}-${numStr.slice(6, 8)}`;
 };
 
 const parseClassification = (
