@@ -48,8 +48,10 @@ const extractZipToArchive = async (
     throw err;
   } finally {
     // Delay cleanup until the archive is finalized
-    archive.on("end", async () => {
-      await fsPromises.rm(tempDir, { recursive: true, force: true });
+    archive.on("end", () => {
+      fsPromises.rm(tempDir, { recursive: true, force: true }).catch((err) => {
+        console.error("Error cleaning up zip-extract temp dir:", err);
+      });
     });
   }
 };
@@ -63,6 +65,10 @@ export const createStandardTransferZip = async ({
   console.log("Creating standard transfer zip...");
   const archive = archiver("zip", { zlib: { level: 9 } });
   const zipOutput = new PassThrough();
+  archive.on("error", (err) => {
+    console.error("Archiver error:", err);
+    zipOutput.destroy(err);
+  });
   archive.pipe(zipOutput);
 
   try {

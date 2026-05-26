@@ -54,6 +54,7 @@ export const FolderUploadArea = ({ folderPath, onChange, onDelete }: Props) => {
               "File type not accepted. Please upload a non-empty folder.",
           },
         });
+        console.log("Invalid file type dropped:", item.type);
       }
     }
   };
@@ -78,6 +79,7 @@ export const FolderUploadArea = ({ folderPath, onChange, onDelete }: Props) => {
               "File type not accepted. Please upload a non-empty folder.",
           },
         });
+        console.log("Selected folder is empty:", folderPath);
       }
     }
   }, [folderPath]);

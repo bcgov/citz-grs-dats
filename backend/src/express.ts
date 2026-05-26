@@ -30,6 +30,10 @@ const { ENVIRONMENT } = ENV;
 // Define Express App
 const app = express();
 
+// Trust the first proxy in front of the app (e.g. nginx, OpenShift router).
+// Required so that express-rate-limit can correctly identify clients via X-Forwarded-For.
+app.set("trust proxy", 1);
+
 // Middleware
 app.use(express.urlencoded({ extended: false, limit: "10gb" }));
 app.use(express.json({ limit: "10gb" }));

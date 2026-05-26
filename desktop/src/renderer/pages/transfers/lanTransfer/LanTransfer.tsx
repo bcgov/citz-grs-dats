@@ -123,6 +123,7 @@ export const LanTransferPage = () => {
 						"The folder path you selected is already used in the file list. Please select a different folder path.",
 				},
 			});
+			console.log("Folder edit unsuccessful: Folder path already used.");
 			return;
 		}
 
@@ -370,6 +371,7 @@ export const LanTransferPage = () => {
 							"Your Digital File List file name must begin with 'Digital_File_List' or 'File List'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
 					},
 				});
+				console.log("Invalid file list filename:", filename);
 				setFileList(null);
 			}
 		} else {
@@ -396,9 +398,11 @@ export const LanTransferPage = () => {
 					const toastData = getXlsxFileListToastData(error.message);
 
 					// Create a toast message
+					console.log("Error parsing file list:", error.message);
 					return toast.error(Toast, { data: toastData });
 				}
 				// Unexpected error
+				console.error("Unexpected error parsing file list:", error);
 				return toast.error(Toast, {
 					data: {
 						success: false,
@@ -423,6 +427,7 @@ export const LanTransferPage = () => {
 							"Your Transfer Form ARS 617 file name must begin with 'Transfer_Form' or '617'. Please review that you have selected the correct file, or rename the file, then try uploading the file again.",
 					},
 				});
+				console.log("Invalid transfer form filename:", filename);
 				setTransferForm(null);
 			}
 		}
@@ -439,6 +444,7 @@ export const LanTransferPage = () => {
 						"Please verify all loaded folders should be sent to records, delete those that shouldn't be, then proceed to the next step.",
 				},
 			});
+			console.log("Folder upload successful.");
 		} else if (uploadSuccess === false) {
 			// Failed to download transfer
 			toast.error(Toast, {
@@ -449,6 +455,7 @@ export const LanTransferPage = () => {
 						"One or more of your folders was not successfully uploaded due to an invalid folder path or empty folder. Update the folder path(s) by clicking the corresponding Edit icon or remove the folder by clicking the Delete icon. You may need to scroll within the table to locate the folders that have not loaded properly.",
 				},
 			});
+			console.log("Folder upload unsuccessful.");
 		}
 	}, [uploadSuccess]);
 
