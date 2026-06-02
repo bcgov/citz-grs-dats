@@ -5,16 +5,16 @@ export const filelistEmail = `<body style="font-family: Arial, sans-serif; line-
       </div>
       <div style="font-size: 16px;">
         <p style="margin: 0 0 10px;">
-          Please find your digital file list (ARS 662) attached to this email.
+          Please find your digital file list attached to this email.
+        </p>
+        <p style="margin: 0 0 10px;">
+          If you are ready to send these records to the digital archives, your next step is to <b>Submit a <a href="https://submit.digital.gov.bc.ca/app/form/submit?f=ec0d97d4-fde6-468b-98d8-de577384af78" target="_blank">Request Form</a></b>.
         </p>
         <p style="margin: 0 0 10px;">
           If you have questions please contact 
           <a href="mailto:GIM@gov.bc.ca?subject=Records%20Transfer%20Question">
             GIM@gov.bc.ca
-          </a> or your 
-          <a href="https://www2.gov.bc.ca/gov/content/governments/services-for-government/information-management-technology/records-management/records-contacts/ministries" target="_blank">
-            Government Information Management (GIM) Specialists.
-          </a>
+          </a> or your Government Information Management (GIM) Specialists. Or, for self-guided help, check out: <a href="https://learning.im.gov.bc.ca/im/DATS/Transferring/" target="_blank">Transferring Information to the Digital Archives (CITZ Pilot) course</a>.
         </p>
         <p style="margin: 0;">
           Thank you for using the Digital Archives Transfer Service (DATS)!
