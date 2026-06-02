@@ -160,11 +160,11 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 		if (folders.length === 0) {
 			setHasAccessionApplication(null);
 			setContinueButtonIsEnabled(false);
-		} else {
-			// Enable Continue Button if all folders have been processed
+		} else if (hasAccessionApplication !== null) {
+			// Enable Continue Button if all folders have been processed and user has answered the Accession/Application question
 			setContinueButtonIsEnabled(folders.every((folder) => folder.progress === 100));
 		}
-	}, [folders]);
+	}, [folders, hasAccessionApplication]);
 
 	return (
 		<>
