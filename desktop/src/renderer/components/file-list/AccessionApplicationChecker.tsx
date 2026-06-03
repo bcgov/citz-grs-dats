@@ -27,7 +27,7 @@ export const AccessionApplicationChecker = ({
 		>
 			<Typography sx={textStyles}>
 				<b>Do you have an Accession and Application number for this list?</b>{" "}
-				(required)
+				<span style={{ color: "red" }}>*</span>
 			</Typography>
 			<RadioGroup
 				value={

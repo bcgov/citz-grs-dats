@@ -69,10 +69,10 @@ export const HomePage = () => {
 					</Link>{" "}
 					or check out{" "}
 					<Link
-						href="https://intranet.gov.bc.ca/thehub/ocio/cirmo/grs/grs-learning"
+						href="https://learning.im.gov.bc.ca/im/DATS/Transferring"
 						target="_blank"
 					>
-						GIM Learning
+						Transferring Information to the Digital Archives (CITZ Pilot) course
 					</Link>
 					.
 				</Typography>
