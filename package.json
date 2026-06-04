@@ -2,14 +2,16 @@
 	"name": "@bcgov/citz-grs-dats",
 	"license": "Apache-2.0",
 	"scripts": {
-		"authenticate": "node --env-file=.env -e \"const { execSync } = require('child_process'); const username = process.env.GITHUB_USERNAME; const token = process.env.CITZ_IMB_IMAGE_PULL_TOKEN; execSync(`echo ${token} | podman login ghcr.io -u ${username} --password-stdin`, { stdio: 'inherit' }); execSync(`echo ${token} | docker login ghcr.io -u ${username} --password-stdin`, { stdio: 'inherit' });\"",
-		"up": "podman compose up -d",
-		"down": "podman compose down -v --remove-orphans",
-		"prune": "podman compose down --rmi all --volumes && npm run clear-podman-cache",
-		"prune:api": "podman rm -f citz-grs-dats-express-api && podman rmi citz-grs-dats-express-api && npm run clear-docker-cache",
-		"rebuild": "npm run prune && npm run up -- --force-recreate",
-		"rebuild:api": "npm run prune:api && npm run up -- express-api",
-		"clear-podman-cache": "podman builder prune -f",
-		"shell:mongo": "podman exec -it mongo bash"
+		"up": "tsx scripts/container.ts up",
+		"down": "tsx scripts/container.ts down",
+		"rebuild": "tsx scripts/container.ts rebuild"
+	},
+	"dependencies": {
+		"dotenv": "17.4.2"
+	},
+	"devDependencies": {
+		"@types/node": "25.9.1",
+		"tsx": "4.22.4",
+		"typescript": "6.0.3"
 	}
 }

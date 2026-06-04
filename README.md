@@ -33,6 +33,25 @@ The DATS project will be transferring inactive Full Retention (FR) government di
 
 <br />
 
+## Development Environment
+
+## Running locally
+
+Use the provided npm scripts to control the compose environment. The runner reads `CONTAINER_CLIENT` and `WSL` env vars, so set those before running.
+
+- **npm run up** — start services.
+- **npm run down** — stop and remove containers, images, and orphans.
+- **npm run rebuild** — rebuild images (no-cache) then bring services up.
+
+Example `.env` values (project root):
+
+```
+CONTAINER_CLIENT=docker   # or podman
+WSL=true                  # set to "true" on Windows when using WSL to run the container CLI
+```
+
+<br />
+
 ## Change API URL
 
 To switch API environments:
