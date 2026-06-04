@@ -16,7 +16,9 @@ import {
   callTransferEndpoint,
   createStandardTransferZip,
   handleTransferChunkUpload,
+  transferFailEmail,
 } from "../utils";
+import { sendEmail } from "@/modules/ches/utils";
 import type { Workbook } from "exceljs";
 import { TransferService } from "../services";
 import { Readable } from "node:stream";
@@ -213,7 +215,21 @@ export const edrms = errorWrapper(async (req: Request, res: Response) => {
 
   console.log(`EDRMS transfer completed: ${accession} / ${application}`);
   } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
     console.error(`EDRMS background transfer failed (${accession}/${application}):`, err);
+
+    sendEmail({
+      bodyType: "html",
+      body: transferFailEmail(
+        "EDRMS Transfer Process",
+        user?.email ?? "Unknown",
+        accession,
+        application,
+        errorMessage,
+      ),
+      to: ["GIM@gov.bc.ca"],
+      subject: "DATS - EDRMS Transfer Failed",
+    });
   }
   }); // end setImmediate
 });
