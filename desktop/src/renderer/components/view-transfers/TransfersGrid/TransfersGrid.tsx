@@ -140,11 +140,7 @@ export const TransfersGrid = ({
       renderCell: (params) => (
         <DeleteCell
           params={params}
-          disable={
-            !["Downloaded", "Downloaded & Preserved", "Preserved"].includes(
-              params.row.status
-            ) || params.row.status === "Transfer deleted"
-          }
+          disable={false}
           onTransferDelete={onTransferDelete}
         />
       ),
