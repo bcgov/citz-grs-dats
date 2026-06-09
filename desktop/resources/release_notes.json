@@ -27,5 +27,6 @@
   "2.1.14": "Ability to manually enter accession/application numbers in EDRMS transfer",
   "2.1.15": "Added debug date time text to transfer failure screen.",
   "2.1.16": "Added log messages for debugging,Fix for EDRMS date processing from Dataport file",
-  "2.1.17": "Copy edits to home page"
+  "2.1.17": "Copy edits to home page",
+  "2.2.0": "Updated EDRMS transfer to wait for reading of Dataport file,Added notes section to View status page,Made download button always available on View status page"
 }
