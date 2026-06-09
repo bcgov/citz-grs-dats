@@ -1,5 +1,6 @@
 import { Button, Switch } from "@bcgov/design-system-react-components";
 import { Grid2 as Grid, Stack, TextField, Typography } from "@mui/material";
+import truckIcon from "@renderer/assets/DATS-TruckV1.png";
 import {
   Accordion,
   AccordionDetails,
@@ -515,6 +516,7 @@ export const ViewTransfersPage = () => {
 									</Typography>
 									<Typography sx={{ fontSize: "16px" }}>
 										For the official status of a transfer see ARIS. DATS is used to send records like a digital truck.
+										<img src={truckIcon} alt="DATS truck" style={{ height: "1.5em", verticalAlign: "middle", marginLeft: 4 }} />
 									</Typography>
 								</Stack>
 							</Stack>
