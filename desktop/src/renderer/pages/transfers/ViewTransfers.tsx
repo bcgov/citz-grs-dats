@@ -1,13 +1,20 @@
 import { Button, Switch } from "@bcgov/design-system-react-components";
 import { Grid2 as Grid, Stack, TextField, Typography } from "@mui/material";
-import { LoginRequiredModal, Toast } from "@renderer/components";
+import truckIcon from "@renderer/assets/DATS-TruckV1.png";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  LoginRequiredModal,
+  Toast,
+} from "@renderer/components";
 import {
 	ConfirmDeletionModal,
 	ConfirmReDownloadModal,
 	TransfersGrid,
 } from "@renderer/components/view-transfers";
 import { useAuth } from "@/renderer/hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type SyntheticEvent } from "react";
 import { toast } from "react-toastify";
 
 type Transfer = {
@@ -46,6 +53,12 @@ export const ViewTransfersPage = () => {
 	const [deleteApplication, setDeleteApplication] = useState<string | null>(null);
 	const [preserveAccession, setPreserveAccession] = useState<string | null>(null);
 	const [preserveApplication, setPreserveApplication] = useState<string | null>(null);
+
+	const [notesExpanded, setNotesExpanded] = useState(false);
+
+	const handleNotesChange = (_event: SyntheticEvent, newExpanded: boolean) => {
+		setNotesExpanded(newExpanded);
+	};
 
 	const [loadTransfersSuccess, setLoadTransfersSuccess] = useState<boolean | null>(null);
 	const [downloadSuccess, setDownloadSuccess] = useState<boolean | null>(null);
@@ -105,7 +118,7 @@ export const ViewTransfersPage = () => {
 					success: true,
 					title: "File deleted",
 					message:
-						"The file has been deleted successfully. A stub will remain in DATS to prevent duplicate transfers. See ARIS for the official status.",
+						"The file has been deleted successfully. See Deletions in the Notes section below to learn more.",
 				},
 			});
 			console.log("File deleted successfully.");
@@ -418,7 +431,7 @@ export const ViewTransfersPage = () => {
 			<Grid size={2} />
 			<Grid size={8} sx={{ paddingTop: 3 }}>
 				<Stack gap={2}>
-					<Typography variant="h2">View transfer status</Typography>
+					<Typography variant="h2">View status</Typography>
 					<div
 						style={{
 							display: "flex",
@@ -475,6 +488,40 @@ export const ViewTransfersPage = () => {
 							api.sso.startLoginProcess();
 						}}
 					/>
+					<Accordion
+						expanded={notesExpanded}
+						onChange={handleNotesChange}
+					>
+						<AccordionSummary
+							aria-controls="notes-accordion"
+							id="notes-header"
+						>
+							<Typography component="span" variant="h3">
+								Notes
+							</Typography>
+						</AccordionSummary>
+						<AccordionDetails>
+							<Stack gap={2}>
+								<Stack gap={0.5}>
+									<Typography sx={{ fontSize: "16px" }}>
+										<b>Deletions</b>
+									</Typography>
+									<Typography sx={{ fontSize: "16px" }}>
+										Clients can resend transfers if they haven't been preserved. A pop up will remind them the transfer was sent previously. DATS will prevent a client from re-sending a preserved transfer until an archivist deletes the transfer on this page.
+									</Typography>
+								</Stack>
+								<Stack gap={0.5}>
+									<Typography sx={{ fontSize: "16px" }}>
+										<b>ARIS</b>
+									</Typography>
+									<Typography sx={{ fontSize: "16px" }}>
+										For the official status of a transfer see ARIS. DATS is used to send records like a digital truck.
+										<img src={truckIcon} alt="DATS truck" style={{ height: "1.5em", verticalAlign: "middle", marginLeft: 4 }} />
+									</Typography>
+								</Stack>
+							</Stack>
+						</AccordionDetails>
+					</Accordion>
 				</Stack>
 			</Grid>
 			<Grid size={2} />
