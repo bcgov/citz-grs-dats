@@ -39,6 +39,9 @@ export const EdrmsTransferPage = () => {
 	// User confirms if accession & application are correct
 	const [confirmAccAppChecked, setConfirmAccAppChecked] = useState<boolean>(false);
 
+	// Dataport reading state
+	const [isReadingDataport, setIsReadingDataport] = useState(false);
+
 	// Buffer progress
 	const [bufferProgress, setBufferProgress] = useState<number>(0);
 	const [folderBuffers, setFolderBuffers] = useState<Record<string, FileBufferObj[]>>({});
@@ -147,6 +150,8 @@ export const EdrmsTransferPage = () => {
 	};
 
 	const parseDataport = async (dataportFile: File) => {
+		setIsReadingDataport(true);
+
 		// Parse file to json
 		try {
 			const dataportJson = await api.transfer.parseTabDelimitedTxt(dataportFile);
@@ -197,6 +202,8 @@ export const EdrmsTransferPage = () => {
 
 			setDataportFile(null);
       setDataportFoundInEdrms(false);
+		} finally {
+			setIsReadingDataport(false);
 		}
 	};
 
@@ -241,6 +248,7 @@ export const EdrmsTransferPage = () => {
 			parseDataport(dataportFile);
 		} else {
 			// Reset
+			setIsReadingDataport(false);
 			setDataportFoundInEdrms(false);
 			setMetadata({});
 			metadataRef.current = {};
@@ -468,6 +476,7 @@ export const EdrmsTransferPage = () => {
 							setConfirmChecked={setConfirmAccAppChecked}
 							setAccession={setAccession}
 							setApplication={setApplication}
+							isReadingDataport={isReadingDataport}
 							onNextPress={onNextPress}
 							onBackPress={onBackPress}
 						/>
