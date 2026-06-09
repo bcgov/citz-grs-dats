@@ -1,5 +1,5 @@
 import { Button } from "@bcgov/design-system-react-components";
-import { Box, Stack, Typography } from "@mui/material";
+import { Alert, Box, Stack, Typography } from "@mui/material";
 import { FileUploadArea } from "@renderer/components";
 import { AccAppConfirmation } from "../AccAppConfirmation";
 
@@ -12,6 +12,7 @@ type Props = {
 	setConfirmChecked: React.Dispatch<React.SetStateAction<boolean>>;
 	setAccession: React.Dispatch<React.SetStateAction<string>>;
 	setApplication: React.Dispatch<React.SetStateAction<string>>;
+	isReadingDataport: boolean;
 	onNextPress: () => void;
 	onBackPress: () => void;
 };
@@ -25,6 +26,7 @@ export const EdrmsUploadDataportView = ({
 	setConfirmChecked,
 	setAccession,
 	setApplication,
+	isReadingDataport,
 	onNextPress,
 	onBackPress,
 }: Props) => {
@@ -49,17 +51,23 @@ export const EdrmsUploadDataportView = ({
 					onDelete={onDelete}
 					accept="text/plain"
 				/>
-				<AccAppConfirmation
-					message="Based on the dataport file you provided:"
-					accession={accession}
-					application={application}
-					checked={confirmChecked}
-					setChecked={setConfirmChecked}
-					setAccession={setAccession}
-					setApplication={setApplication}
-					allowAccessionChange={true}
-					allowApplicationChange={true}
-				/>
+				{isReadingDataport ? (
+					<Alert severity="warning" sx={{ backgroundColor: "#fff3cd", color: "#856404" }}>
+						Reading the DataPort file in the upload. This may take a moment.
+					</Alert>
+				) : (
+					<AccAppConfirmation
+						message="Based on the dataport file you provided:"
+						accession={accession}
+						application={application}
+						checked={confirmChecked}
+						setChecked={setConfirmChecked}
+						setAccession={setAccession}
+						setApplication={setApplication}
+						allowAccessionChange={true}
+						allowApplicationChange={true}
+					/>
+				)}
 			</Stack>
 			<Box sx={{ display: "flex", justifyContent: "space-between" }}>
 				<Button variant="secondary" onPress={onBackPress} style={{ width: "fit-content" }}>
@@ -67,7 +75,7 @@ export const EdrmsUploadDataportView = ({
 				</Button>
 				<Button
 					onPress={onNextPress}
-					isDisabled={!file || !confirmChecked}
+					isDisabled={!file || !confirmChecked || isReadingDataport}
 					style={{ width: "fit-content" }}
 				>
 					Next
