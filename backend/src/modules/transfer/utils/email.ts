@@ -34,3 +34,53 @@ export const transferEmail = (
       </div>
     </div>
   </body>`;
+
+export const transferFailEmail = (
+	processName: string,
+	userEmail: string,
+	accession: string,
+	application: string,
+	errorMessage: string,
+) => `<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333; margin: 0; padding: 0;">
+    <div style="width: 100%; max-width: 700px; margin: 10px auto; padding: 20px; border: 1px solid #dddddd; border-radius: 5px; background-color: #f9f9f9;">
+      <div style="font-size: 18px; font-weight: bold; color: #cc0000; margin-bottom: 10px;">
+        DATS - Transfer Failed
+      </div>
+      <div style="font-size: 16px;">
+        <p style="margin: 0 0 10px;">
+          A transfer in the Digital Archive Transfer Service (DATS) has failed.
+        </p>
+        <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
+          <tr>
+            <td style="padding: 8px; border: 1px solid #dddddd; font-weight: bold; width: 180px;">Process</td>
+            <td style="padding: 8px; border: 1px solid #dddddd;">${processName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #dddddd; font-weight: bold; width: 180px;">Client Email</td>
+            <td style="padding: 8px; border: 1px solid #dddddd;">${userEmail}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #dddddd; font-weight: bold;">Accession #</td>
+            <td style="padding: 8px; border: 1px solid #dddddd;">${accession}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #dddddd; font-weight: bold;">Application #</td>
+            <td style="padding: 8px; border: 1px solid #dddddd;">${application}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #dddddd; font-weight: bold;">Time of Failure</td>
+            <td style="padding: 8px; border: 1px solid #dddddd;">${new Date().toLocaleString("en-CA", { timeZone: "America/Vancouver" })}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #dddddd; font-weight: bold;">Reason</td>
+            <td style="padding: 8px; border: 1px solid #dddddd;">${errorMessage}</td>
+          </tr>
+        </table>
+      </div>
+      <div style="font-size: 12px; color: #888888; margin-top: 20px;">
+        <p style="margin: 0;">
+          This is an automated message. Please do not reply to this email.
+        </p>
+      </div>
+    </div>
+  </body>`;

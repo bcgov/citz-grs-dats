@@ -16,7 +16,9 @@ import {
   callTransferEndpoint,
   createStandardTransferZip,
   handleTransferChunkUpload,
+  transferFailEmail,
 } from "../utils";
+import { sendEmail } from "@/modules/ches/utils";
 import { TransferService } from "../services";
 import { Readable } from "node:stream";
 
@@ -199,7 +201,21 @@ export const lan = errorWrapper(async (req: Request, res: Response) => {
 
   console.log(`LAN transfer completed: ${accession} / ${application}`);
   } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
     console.error(`LAN background transfer failed (${accession}/${application}):`, err);
+
+    sendEmail({
+      bodyType: "html",
+      body: transferFailEmail(
+        "LAN Transfer Process",
+        user?.email ?? "Unknown",
+        accession,
+        application,
+        errorMessage,
+      ),
+      to: ["GIM@gov.bc.ca"],
+      subject: "DATS - LAN Transfer Failed",
+    });
   }
   }); // end setImmediate
 });

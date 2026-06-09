@@ -16,12 +16,14 @@ import {
   getFilenameByRegex,
   getMetadata,
   handleTransferChunkUpload,
+  transferFailEmail,
   validateContentMatchesMetadata,
   validateDigitalFileList,
   validateMetadataFiles,
   validateMetadataFoldersMatchesFiles,
   validateStandardTransferStructure,
 } from "../utils";
+import { sendEmail } from "@/modules/ches/utils";
 import type { TransferMongoose } from "../entities";
 import { generateChecksum } from "@/utils/generateChecksum";
 import fs from "node:fs";
@@ -225,6 +227,24 @@ export const create = errorWrapper(async (req: Request, res: Response) => {
         "Used submission agreement from s3 because one was not provided in the transfer input.";
 
     res.status(HTTP_STATUS_CODES.CREATED).json(result);
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error(`Standard transfer failed (${accession}/${application}):`, err);
+
+    sendEmail({
+      bodyType: "html",
+      body: transferFailEmail(
+        "Standard Transfer Process",
+        user?.email ?? "Unknown",
+        accession,
+        application,
+        errorMessage,
+      ),
+      to: ["GIM@gov.bc.ca"],
+      subject: "DATS - Standard Transfer Failed",
+    });
+
+    throw err;
   } finally {
     // Clean up the temporary file
     fs.unlink(tempContentStreamPath, (err) => {
