@@ -13,9 +13,19 @@ type Props = {
 
 const getStatusDetails = ({ params }: Props) => {
   const invalidPath = params.row.invalidPath;
+  const metadataFailed = params.row.metadataFailed;
   const progress = Math.floor(
     (params.row.metadataProgress + params.row.bufferProgress) / 2
   );
+
+  // Metadata or buffer processing failed
+  if (metadataFailed || params.row.bufferFailed)
+    return {
+      tooltip:
+        "Metadata or buffer processing failed. Delete or edit the folder to retry.",
+      iconColor: "var(--progress-cancelled)",
+      progress: null,
+    };
 
   // Upload complete
   if (progress === 100 && !invalidPath)

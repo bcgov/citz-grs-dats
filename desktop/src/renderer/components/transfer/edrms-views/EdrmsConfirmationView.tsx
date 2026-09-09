@@ -1,12 +1,14 @@
 import { Button } from "@bcgov/design-system-react-components";
 import { Box, Stack, Typography } from "@mui/material";
 import { ConfirmationTable } from "./ConfirmationTable/ConfirmationTable";
+import { ProcessingAlert } from "@renderer/components";
 
 type Props = {
   accession: string;
   application: string;
   bufferProgress: number;
   folderPath: string;
+  processingMessage: string | null;
   onNextPress: () => void;
   onBackPress: () => void;
 };
@@ -16,6 +18,7 @@ export const EdrmsConfirmationView = ({
   application,
   bufferProgress,
   folderPath,
+  processingMessage,
   onNextPress,
   onBackPress,
 }: Props) => {
@@ -40,6 +43,9 @@ export const EdrmsConfirmationView = ({
             <b>Application #:</b> {application}
           </Typography>
         </Stack>
+        {bufferProgress < 100 && processingMessage && (
+          <ProcessingAlert message={processingMessage} />
+        )}
         <ConfirmationTable
           bufferProgress={bufferProgress}
           folderPath={folderPath}

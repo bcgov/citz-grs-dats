@@ -8,11 +8,13 @@ import {
 	AnimatedProgress,
 	ContinueButton,
 	FinalizeFilelistModal,
+	ProcessingAlert,
+	ResumeSessionModal,
 	Toast,
 } from "@renderer/components";
-import { useFolderList } from "@/renderer/hooks";
+import { useAuth, useFolderList, useMetadataCache } from "@/renderer/hooks";
 import type { FolderRow } from "@/renderer/types";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { 	useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { SelectFolderButton } from "./SelectFolderButton";
 
@@ -30,8 +32,16 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 
 	const [hasAccessionApplication, setHasAccessionApplication] = useState<boolean | null>(null);
 
-	const { addPathArrayToFolders, apiRef, folders, removeFolder, setFolders, submit } =
+	const { addPathArrayToFolders, apiRef, folders, processingMessage, removeFolder, setFolders, submit } =
 		useFolderList();
+
+	const { accessToken } = useAuth();
+
+	const { cachedFolders, clearAll, refresh } = useMetadataCache();
+
+	const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
+	const [dismissedResumeModal, setDismissedResumeModal] = useState<boolean>(false);
+	const resumeModalOfferedRef = useRef(false);
 
 	const columns = useMemo(() => {
 		return [
@@ -156,6 +166,40 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 		setFinalizeModalIsOpen(true);
 	};
 
+	const handleResumeContinue = () => {
+		if (!accessToken) {
+			window.api.sso.startLoginProcess();
+			return;
+		}
+		addPathArrayToFolders(cachedFolders.map((folder) => folder.sourcePath));
+		setShowResumeModal(false);
+	};
+
+	const handleResumeStartFresh = async () => {
+		await clearAll();
+		setShowResumeModal(false);
+		setDismissedResumeModal(true);
+	};
+
+	const handleResumeClose = () => {
+		setShowResumeModal(false);
+		setDismissedResumeModal(true);
+	};
+
+	useEffect(() => {
+		if (folders.length === 0) refresh();
+	}, [folders.length, refresh]);
+
+	useEffect(() => {
+		if (folders.length === 0 && cachedFolders.length > 0 && !dismissedResumeModal && !resumeModalOfferedRef.current) {
+			setShowResumeModal(true);
+			resumeModalOfferedRef.current = true;
+		} else if (folders.length > 0) {
+			resumeModalOfferedRef.current = true;
+			setShowResumeModal(false);
+		}
+	}, [folders, cachedFolders, dismissedResumeModal]);
+
 	useEffect(() => {
 		if (folders.length === 0) {
 			setHasAccessionApplication(null);
@@ -171,6 +215,9 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 			<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
 				<SelectFolderButton onRowChange={(inputPaths) => addPathArrayToFolders(inputPaths)} />
 			</Box>
+			{processingMessage && (
+				<ProcessingAlert message={processingMessage} />
+			)}
 			<LocalizationProvider dateAdapter={AdapterDayjs}>
 				<Box sx={{ width: "100%" }}>
 					<DataGrid
@@ -206,6 +253,14 @@ export const FolderDisplayGrid = (props: FolderDisplayGridProps) => {
 				onClose={handleFinalizeModalClose}
 				onSubmit={handleFormSubmit}
 				hasAccessionApplication={hasAccessionApplication}
+			/>
+			<ResumeSessionModal
+				open={showResumeModal}
+				cachedFolders={cachedFolders}
+				isAuthenticated={!!accessToken}
+				onContinue={handleResumeContinue}
+				onStartFresh={handleResumeStartFresh}
+				onClose={handleResumeClose}
 			/>
 		</>
 	);

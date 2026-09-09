@@ -1,19 +1,27 @@
+import "./utilities/workerLog";
 import { parentPort, workerData } from "node:worker_threads";
 import {
   countFiles,
   doesDirectoryExist,
   generateBuffersInBatches,
+  isNetworkError,
+  WorkerMetricsTracker,
 } from "./utilities";
+import type { CopyStateFile } from "./utilities/copyState";
+import { loadCopyState } from "./utilities/copyState";
 
 type WorkerData = {
   source: string;
-  batchSize?: number;
+  stateFilePath?: string;
 };
 
 (async () => {
   console.log("[Copy worker] Starting with data:", workerData);
   if (!workerData) return;
-  const { source, batchSize } = workerData as WorkerData;
+  const { source, stateFilePath } = workerData as WorkerData;
+
+  const metrics = new WorkerMetricsTracker();
+  let tempDir: string | undefined;
 
   try {
     const directoryExists = await doesDirectoryExist(source);
@@ -23,27 +31,75 @@ type WorkerData = {
         type: "missingPath",
         path: source,
       });
+      return;
     }
 
     const totalFileCount = await countFiles(source);
+    metrics.checkpoint();
 
-    const buffers = await generateBuffersInBatches(
+    // Load existing state for resume
+    let existingState: CopyStateFile | null = null;
+    if (stateFilePath) {
+      existingState = await loadCopyState(stateFilePath);
+      if (existingState) {
+        console.log(
+          `[Copy worker] Resuming from state: ${existingState.processedCount}/${existingState.totalFileCount} files processed`
+        );
+      }
+    }
+
+    const { files, tempDir: td } = await generateBuffersInBatches(
       source,
       source,
       totalFileCount,
-      batchSize
+      0,
+      metrics,
+      stateFilePath,
+      existingState
     );
+    tempDir = td;
 
-    if (!buffers || buffers.length === 0)
+    if (!files || files.length === 0)
       throw new Error("Generated without buffers.");
 
+    parentPort?.postMessage({
+      type: "metrics",
+      metrics: metrics.snapshot(),
+    });
     parentPort?.postMessage({
       type: "completion",
       source,
       success: true,
-      buffers,
+      buffers: files,
+      tempDir,
     });
   } catch (error) {
+    if (tempDir) {
+      const { rm } = await import("node:fs/promises");
+      await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+    }
+    if (isNetworkError(error)) {
+      console.warn(
+        `[Copy worker] Network error, pausing: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      metrics.pause();
+      parentPort?.postMessage({
+        type: "metrics",
+        metrics: metrics.snapshot(),
+      });
+      parentPort?.postMessage({
+        type: "networkPaused",
+        source,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return;
+    }
+    parentPort?.postMessage({
+      type: "metrics",
+      metrics: metrics.snapshot(),
+    });
     parentPort?.postMessage({
       type: "completion",
       success: false,

@@ -2,12 +2,14 @@ import { Button, Radio, RadioGroup } from "@bcgov/design-system-react-components
 import { Box, Stack, Typography } from "@mui/material";
 import { SubAgreementScrollBox } from "@renderer/components";
 import { useAuth, useNavigate } from "@/renderer/hooks";
-import { useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 import { DeclineSubAgreementModal } from "../DeclineSubAgreementModal";
 
 type Props = {
 	accession: string;
 	application: string;
+	accept: boolean | null;
+	setAccept: Dispatch<SetStateAction<boolean>>;
 	onNextPress: () => void;
 	onBackPress: () => void;
 };
@@ -15,11 +17,12 @@ type Props = {
 export const LanSubmissionAgreementView = ({
 	accession,
 	application,
+	accept,
+	setAccept,
 	onNextPress,
 	onBackPress,
 }: Props) => {
 	const [api] = useState(window.api);
-	const [accept, setAccept] = useState<boolean | null>(null);
 	const [showDeclineModal, setShowDeclineModal] = useState<boolean>(false);
 
 	const { navigate } = useNavigate();

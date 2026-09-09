@@ -1,12 +1,14 @@
+import { createReadStream } from "node:fs";
 import archiver from "archiver";
 import path from "node:path";
-import { PassThrough, Readable } from "node:stream";
+import { PassThrough } from "node:stream";
 import { createChecksumHasher } from "./createChecksumHasher";
 
 type FileBufferObj = {
   filename: string;
   path: string;
-  buffer: Buffer;
+  filePath: string;
+  size: number;
 };
 
 const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
@@ -19,15 +21,9 @@ export const createZippedChunks = async (
   archive.pipe(zipOutput);
 
   for (const [folder, files] of Object.entries(folders)) {
-    for (const { path: filePath, buffer } of files) {
+    for (const { path: filePath, filePath: diskPath } of files) {
       const zipPath = `${folder}${path.posix.normalize(filePath)}`;
-      const stream = new Readable({
-        read() {
-          this.push(buffer);
-          this.push(null);
-        },
-      });
-
+      const stream = createReadStream(diskPath);
       archive.append(stream, { name: zipPath });
     }
   }
