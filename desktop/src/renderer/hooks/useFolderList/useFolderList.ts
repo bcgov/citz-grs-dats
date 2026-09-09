@@ -15,11 +15,28 @@ export const useFolderList = () => {
   >({});
   const [pendingPaths, setPendingPaths] = useState<string[]>([]);
   const [workers] = useState(window.api.workers);
+  const [processingMessage, setProcessingMessage] = useState<string | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
   const { fetchProtectedRoute, refreshTokens } = window.api.sso;
 
   const handleProgress = useCallback(
-    (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
-      const { source, progressPercentage } = event.detail;
+    (event: CustomEvent<{ source: string; progressPercentage: number; fileProcessed?: string; currentFileIndex?: number; totalFiles?: number }>) => {
+      const { source, progressPercentage, fileProcessed, currentFileIndex: fileIdx, totalFiles: total } = event.detail;
+      const folderName = source.split("\\").pop() ?? source;
+      console.log(`[${folderName}] Processing ${fileProcessed}... (${fileIdx}/${total}) - ${progressPercentage}%`);
+
+      // Determine phase from fileProcessed value
+      const isExtendedPhase = fileProcessed === "Getting extended metadata...";
+      const isOwnerPhase = fileProcessed === "Checking owners...";
+
+      if (isExtendedPhase || isOwnerPhase) {
+        setProcessingMessage(`Finalizing extended metadata for ${folderName}`);
+      } else if (fileProcessed) {
+        setProcessingMessage(`Gathering metadata for ${fileProcessed} (${fileIdx}/${total}) of ${folderName}`);
+      } else {
+        setProcessingMessage(`Gathering metadata for ${folderName}`);
+      }
+
       setFolders((prevFolderList) =>
         prevFolderList.map((folder) =>
           folder.folder === source
@@ -38,6 +55,7 @@ export const useFolderList = () => {
         success: boolean;
         metadata?: Record<string, unknown>;
         extendedMetadata?: Record<string, unknown>;
+        fileCount?: number;
         error?: unknown;
       }>
     ) => {
@@ -55,8 +73,21 @@ export const useFolderList = () => {
         }));
         if (newExtendedMetadata) setExtendedMetaData(newExtendedMetadata);
         console.info(`Successfully processed folder: ${source}`);
+        setProcessingMessage(null);
+        setFolders((prevFolderList) =>
+          prevFolderList.map((folder) =>
+            folder.folder === source
+              ? { ...folder, progress: 100 }
+              : folder
+          )
+        );
+        setIsPaused(false);
       } else {
         console.error(`Failed to process folder: ${source}`);
+        setProcessingMessage(
+          `Metadata processing failed for ${source}. Delete or edit the folder to retry.`
+        );
+        setIsPaused(false);
       }
     },
     [setMetaData, setExtendedMetaData]
@@ -115,6 +146,12 @@ export const useFolderList = () => {
         setFolders(newFolderList); // Update rows first
         setPendingPaths((prev) => [...prev, ...pathsToProcess]); // Add paths to pendingPaths
 
+        // Set initial processing message for newly added folders
+        if (pathsToProcess.length > 0) {
+          const folderName = pathsToProcess[0].split("\\").pop() ?? pathsToProcess[0];
+          setProcessingMessage(`Gathering metadata for ${folderName}`);
+        }
+
         // Set all newly added rows to edit mode
         if (apiRef.current && newFolderList.length > 0) {
           setTimeout(() => {
@@ -135,9 +172,11 @@ export const useFolderList = () => {
   );
 
   const removeFolder = useCallback((folder: string) => {
+    window.api.deleteMetadataState(folder);
     setFolders((prevFolderList) =>
       prevFolderList.filter((row) => row.folder !== folder)
     );
+    setProcessingMessage(null);
     setMetaData((prevMetadata) => {
       const { [folder]: _, ...remainingMetadata } = prevMetadata; // Remove the deleted folder
       return remainingMetadata;
@@ -183,6 +222,10 @@ export const useFolderList = () => {
       if (result && !result.success)
         throw new Error(`Failed create file list request: ${result.message}`);
 
+      await Promise.all(
+        folders.map((folder) => window.api.deleteMetadataState(folder.folder))
+      );
+
       setFolders([]);
       setMetaData({});
       setExtendedMetaData({});
@@ -190,6 +233,37 @@ export const useFolderList = () => {
       console.log("finish submit", { error, data, folders, metaData });
     },
     [fetchProtectedRoute, folders, metaData]
+  );
+
+  const handlePaused = useCallback(
+    (event: CustomEvent<{ source: string; error?: string }>) => {
+      const { source } = event.detail;
+      const folderName = source.split("\\").pop() ?? source;
+      console.log(`[${folderName}] Metadata collection paused — waiting for network...`);
+      setProcessingMessage(`Paused — waiting for network reconnect`);
+      setIsPaused(true);
+    },
+    []
+  );
+
+  const handleResumed = useCallback(
+    (event: CustomEvent<{ source: string }>) => {
+      const { source } = event.detail;
+      const folderName = source.split("\\").pop() ?? source;
+      console.log(`[${folderName}] Network recovered, resuming metadata collection...`);
+      setProcessingMessage(`Network reconnected, resuming`);
+      setIsPaused(false);
+    },
+    []
+  );
+
+  const handleStatus = useCallback(
+    (event: CustomEvent<{ source: string; message: string }>) => {
+      const { message } = event.detail;
+      console.log(`[Metadata] ${message}`);
+      setProcessingMessage(message);
+    },
+    []
   );
 
   useEffect(() => {
@@ -201,6 +275,18 @@ export const useFolderList = () => {
       "folder-metadata-completion",
       handleCompletion as EventListener
     );
+    window.addEventListener(
+      "folder-metadata-paused",
+      handlePaused as EventListener
+    );
+    window.addEventListener(
+      "folder-metadata-resumed",
+      handleResumed as EventListener
+    );
+    window.addEventListener(
+      "folder-metadata-status",
+      handleStatus as EventListener
+    );
 
     return () => {
       window.removeEventListener(
@@ -211,8 +297,20 @@ export const useFolderList = () => {
         "folder-metadata-completion",
         handleCompletion as EventListener
       );
+      window.removeEventListener(
+        "folder-metadata-paused",
+        handlePaused as EventListener
+      );
+      window.removeEventListener(
+        "folder-metadata-resumed",
+        handleResumed as EventListener
+      );
+      window.removeEventListener(
+        "folder-metadata-status",
+        handleStatus as EventListener
+      );
     };
-  }, [handleProgress]);
+  }, [handleProgress, handlePaused, handleResumed]);
 
   useEffect(() => {
     // Process pending paths for metadata
@@ -242,8 +340,10 @@ export const useFolderList = () => {
     folders,
     extendedMetaData,
     getFolderMetadata,
+    isPaused,
     metaData,
     pendingPaths,
+    processingMessage,
     removeFolder,
     setExtendedMetaData,
     setFolders,

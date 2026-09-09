@@ -24,6 +24,10 @@
         "to": "resources/scripts/getExtendedMetadata.ps1"
       },
       {
+        "from": "out/es-workers/scripts/getOwnerBatch.ps1",
+        "to": "resources/scripts/getOwnerBatch.ps1"
+      },
+      {
         "from": "out/es-workers/resources/release_notes.json",
         "to": "resources/release_notes.json"
       }

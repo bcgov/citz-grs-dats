@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
 	AuthProvider,
 	NavigateProvider,
@@ -5,15 +6,35 @@ import {
 	useReleaseNotes,
 } from "@/renderer/hooks";
 import { HashRouter } from "react-router";
-import { CloseApplicationModal } from "./components";
+import { CloseApplicationModal, ConfigureProcessingModal } from "./components";
 import { AppLayout } from "./layouts";
 import { Routes } from "./routes";
 import { VPNMonitor } from "./utilities";
 
+const AppClosePrompt = () => {
+	const { showClosePrompt, confirmClose, cancelClose } = useAppCloseHandler();
+
+	return (
+		<CloseApplicationModal
+			open={showClosePrompt}
+			onClose={cancelClose}
+			onConfirm={confirmClose}
+		/>
+	);
+};
+
 function App(): JSX.Element {
 	const { ReleaseNotesModal } = useReleaseNotes();
 
-	const { showClosePrompt, confirmClose, cancelClose } = useAppCloseHandler();
+	const [showConfigureProcessing, setShowConfigureProcessing] = useState(false);
+
+	useEffect(() => {
+		const handler = () => setShowConfigureProcessing(true);
+		window.api.onOpenConfigureProcessing(handler);
+		return () => {
+			window.removeEventListener("open-configure-processing", handler);
+		};
+	}, []);
 
 	return (
 		<>
@@ -25,14 +46,14 @@ function App(): JSX.Element {
 								<Routes />
 							</AppLayout>
 							<ReleaseNotesModal />
+							<AppClosePrompt />
 						</NavigateProvider>
 					</HashRouter>
 				</AuthProvider>
 			</VPNMonitor>
-			<CloseApplicationModal
-				open={showClosePrompt}
-				onClose={cancelClose}
-				onConfirm={confirmClose}
+			<ConfigureProcessingModal
+				open={showConfigureProcessing}
+				onClose={() => setShowConfigureProcessing(false)}
 			/>
 		</>
 	);
