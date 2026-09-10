@@ -31,19 +31,18 @@ const formatFileSize = (size: number) => {
   return `${(size / 1024 ** i).toFixed(2)} ${sizes[i]}`;
 };
 
-const getFileSizeAndChecksum = async (filePath: string) => {
+const getFileSizeAndChecksums = async (filePath: string) => {
   try {
     const stats = await fs.stat(filePath);
     const size = formatFileSize(stats.size);
 
-    // Read file content for checksum
     const fileBuffer = await fs.readFile(filePath);
-    const hash = crypto
-      .createHash("sha256")
-      .update(new Uint8Array(fileBuffer))
-      .digest("hex");
+    const data = new Uint8Array(fileBuffer);
 
-    return { size, checksum: hash };
+    const sha256 = crypto.createHash("sha256").update(data).digest("hex");
+    const md5 = crypto.createHash("md5").update(data).digest("hex");
+
+    return { size, checksum: { sha256, md5 } };
   } catch (error) {
     throw new Error(`Failed to read file ${filePath}`);
   }
@@ -136,7 +135,7 @@ export const parseDataportJsonMetadata = async (
         }
       }
 
-      const { size, checksum } = await getFileSizeAndChecksum(resolvedFilePath);
+      const { size, checksum } = await getFileSizeAndChecksums(resolvedFilePath);
 
       if (!files[folderName]) files[folderName] = [];
       const outputFilename = path.basename(resolvedFilePath);

@@ -4,6 +4,8 @@ export type Folder = {
   invalidPath: boolean;
   bufferProgress: number;
   metadataProgress: number;
+  metadataFailed: boolean;
+  bufferFailed: boolean;
 };
 
 export type FolderUploadChange = {
@@ -15,7 +17,8 @@ export type FolderUploadChange = {
 export type FileBufferObj = {
   filename: string;
   path: string;
-  buffer: Buffer;
+  filePath: string;
+  size: number;
 };
 
 export type RunningWorker = {

@@ -7,6 +7,7 @@ import {
   clipboard,
   type MenuItemConstructorOptions,
   dialog,
+  powerMonitor,
 } from "electron";
 import path, { join } from "node:path";
 import { is } from "@electron-toolkit/utils";
@@ -15,13 +16,32 @@ import { createWorkerPool } from "./fileProcessing";
 import {
   getFolderBuffer,
   getFolderMetadata,
+  getProcessingConfig,
+  setProcessingConfig,
   selectDirectory,
 } from "./fileProcessing/actions";
+import {
+  getStateFilePath,
+  deleteMetadataState,
+  loadMetadataState,
+} from "./fileProcessing/workers/utilities/metadataState";
+import {
+  getCopyStateFilePath,
+  deleteCopyState,
+} from "./fileProcessing/workers/utilities/copyState";
+import {
+  saveTransferSession,
+  loadTransferSession,
+  deleteTransferSession,
+  readFileFromPath,
+  type TransferType,
+} from "./fileProcessing/sessionState";
 import EventEmitter from "node:events";
 import { pipeline } from "node:stream";
 import { promisify } from "node:util";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+import { initLogFile, getLogFilePath } from "./logFile";
 
 const appVersion = app.getVersion();
 console.log(`App Version: ${appVersion}`);
@@ -327,6 +347,96 @@ ipcMain.handle(
   }
 );
 
+ipcMain.handle("get-processing-config", () => {
+  return getProcessingConfig();
+});
+
+ipcMain.handle(
+  "set-processing-config",
+  (_, config: Partial<import("./fileProcessing/workers/utilities/progressReporter").ProcessingConfig>) => {
+    setProcessingConfig(config);
+    return getProcessingConfig();
+  }
+);
+
+ipcMain.handle("open-configure-processing", () => {
+  mainWindow.webContents.send("open-configure-processing");
+});
+
+ipcMain.handle("delete-metadata-state", (_, folderPath: string) => {
+  const cacheDir = join(app.getPath("userData"), "dats-metadata-cache");
+  const stateFile = getStateFilePath(folderPath, cacheDir);
+  return deleteMetadataState(stateFile);
+});
+
+ipcMain.handle("delete-copy-state", (_, folderPath: string) => {
+  const cacheDir = join(app.getPath("userData"), "dats-copy-cache");
+  const stateFile = getCopyStateFilePath(folderPath, cacheDir);
+  return deleteCopyState(stateFile);
+});
+
+ipcMain.handle("delete-temp-dir", async (_event, tempDir: string) => {
+  try {
+    await fsPromises.rm(tempDir, { recursive: true, force: true });
+    return true;
+  } catch {
+    return false;
+  }
+});
+
+const sessionDir = join(app.getPath("userData"), "dats-transfer-sessions");
+
+ipcMain.handle(
+  "save-transfer-session",
+  async (_event, { type, data }: { type: TransferType; data: Record<string, unknown> }) => {
+    await saveTransferSession(sessionDir, { type, ...data } as never);
+  }
+);
+
+ipcMain.handle("load-transfer-session", async (_event, type: TransferType) => {
+  return loadTransferSession(sessionDir, type);
+});
+
+ipcMain.handle("delete-transfer-session", async (_event, type: TransferType) => {
+  await deleteTransferSession(sessionDir, type);
+});
+
+ipcMain.handle("read-file-from-path", async (_event, filePath: string) => {
+  return readFileFromPath(filePath);
+});
+
+ipcMain.handle("get-metadata-cache-entries", async () => {
+  const cacheDir = join(app.getPath("userData"), "dats-metadata-cache");
+  let files: string[];
+  try {
+    files = await fsPromises.readdir(cacheDir);
+  } catch {
+    return [];
+  }
+
+  const entries: Array<{
+    sourcePath: string;
+    originalSource?: string;
+    totalFileCount?: number;
+    processedCount?: number;
+  }> = [];
+
+  for (const file of files) {
+    if (!file.endsWith(".json")) continue;
+    const state = await loadMetadataState(join(cacheDir, file));
+    if (state && state.sourcePath) {
+      entries.push({
+        sourcePath: state.sourcePath,
+        originalSource: state.originalSource,
+        totalFileCount: state.totalFileCount,
+        processedCount: state.processedCount,
+      });
+    }
+  }
+
+  return entries;
+});
+
 const clearAuthState = () => {
   debug("Clearing authentication state.");
 
@@ -402,29 +512,34 @@ const refreshTokens = async () => {
     authWindow?.loadURL(`${currentApiUrl}/auth/token`);
 
     setTimeout(async () => {
-      const cookies = await authWindow?.webContents.session.cookies.get({
-        url: currentApiUrl,
-      });
+      try {
+        const cookies = await authWindow?.webContents.session.cookies.get({
+          url: currentApiUrl,
+        });
 
-      if (!cookies || cookies.length === 0) {
-        throw new Error("No cookies found for the session.");
-      }
+        if (!cookies || cookies.length === 0) {
+          throw new Error("No cookies found for the session.");
+        }
 
-      // Update token values
-      cookies.forEach((cookie) => {
-        if (cookie.name === "access_token") tokens.accessToken = cookie.value;
-        if (cookie.name === "refresh_token") tokens.refreshToken = cookie.value;
-        if (cookie.name === "expires_in") tokens.accessExpiresIn = cookie.value;
-        if (cookie.name === "refresh_expires_in")
-          tokens.refreshExpiresIn = cookie.value;
-      });
+        // Update token values
+        cookies.forEach((cookie) => {
+          if (cookie.name === "access_token") tokens.accessToken = cookie.value;
+          if (cookie.name === "refresh_token") tokens.refreshToken = cookie.value;
+          if (cookie.name === "expires_in") tokens.accessExpiresIn = cookie.value;
+          if (cookie.name === "refresh_expires_in")
+            tokens.refreshExpiresIn = cookie.value;
+        });
 
-      if (tokens.refreshToken) {
-        debug("Successfully refreshed tokens.");
-        scheduleRefreshTokens(); // Reschedule with the new refresh token expiration
-        mainWindow.webContents.send("token-refresh-success", tokens);
-      } else {
-        throw new Error("Failed to retrieve new refresh token.");
+        if (tokens.refreshToken) {
+          debug("Successfully refreshed tokens.");
+          scheduleRefreshTokens(); // Reschedule with the new refresh token expiration
+          mainWindow.webContents.send("token-refresh-success", tokens);
+        } else {
+          throw new Error("Failed to retrieve new refresh token.");
+        }
+      } catch (error) {
+        console.error("Error refreshing tokens:", error);
+        clearAuthState();
       }
     }, 1000);
   } catch (error) {
@@ -521,6 +636,163 @@ const menuTemplate = [
           }
         },
       },
+      {
+        label: "Configure Processing",
+        click: () => {
+          mainWindow.webContents.send("open-configure-processing");
+        },
+      },
+      {
+        label: "Download Saved Metadata",
+        click: async () => {
+          const cacheDir = join(
+            app.getPath("userData"),
+            "dats-metadata-cache"
+          );
+          console.log(`[Menu] Download Saved Metadata: checking ${cacheDir}`);
+          let files: string[];
+          try {
+            files = await fsPromises.readdir(cacheDir);
+            console.log(`[Menu] Found files: ${files.join(", ") || "(empty)"}`);
+          } catch (err) {
+            console.log(`[Menu] Cache directory not found: ${err}`);
+            dialog.showMessageBox(mainWindow, {
+              type: "info",
+              title: "Metadata State",
+              message: "No saved metadata found. State files are created during metadata collection and cleared on app startup.",
+            });
+            return;
+          }
+          const jsonFiles = files.filter((f) => f.endsWith(".json"));
+          console.log(`[Menu] JSON files: ${jsonFiles.join(", ") || "(none)"}`);
+          if (jsonFiles.length === 0) {
+            dialog.showMessageBox(mainWindow, {
+              type: "info",
+              title: "Metadata State",
+              message: "No saved metadata found. State files are created during metadata collection and cleared on app startup.",
+            });
+            return;
+          }
+          const result = await dialog.showSaveDialog(mainWindow, {
+            title: "Save Metadata State",
+            defaultPath: `dats-metadata-${new Date().toISOString().slice(0, 10)}.json`,
+            filters: [{ name: "JSON files", extensions: ["json"] }],
+          });
+          if (!result.canceled && result.filePath) {
+            if (jsonFiles.length === 1) {
+              await fsPromises.copyFile(
+                join(cacheDir, jsonFiles[0]),
+                result.filePath
+              );
+            } else {
+              const combined: Record<string, unknown> = {};
+              for (const file of jsonFiles) {
+                const data = await fsPromises.readFile(
+                  join(cacheDir, file),
+                  "utf-8"
+                );
+                combined[file] = JSON.parse(data);
+              }
+              await fsPromises.writeFile(
+                result.filePath,
+                JSON.stringify(combined, null, 2),
+                "utf-8"
+              );
+            }
+          }
+        },
+      },
+      {
+        label: "Download Saved Metrics",
+        click: async () => {
+          const cacheDir = join(
+            app.getPath("userData"),
+            "dats-metrics-cache"
+          );
+          console.log(`[Menu] Download Saved Metrics: checking ${cacheDir}`);
+          let files: string[];
+          try {
+            files = await fsPromises.readdir(cacheDir);
+            console.log(`[Menu] Found files: ${files.join(", ") || "(empty)"}`);
+          } catch (err) {
+            console.log(`[Menu] Metrics directory not found: ${err}`);
+            dialog.showMessageBox(mainWindow, {
+              type: "info",
+              title: "Metrics",
+              message: "No saved metrics found. Metrics are recorded when folders are processed.",
+            });
+            return;
+          }
+          const jsonFiles = files.filter((f) => f.endsWith(".json"));
+          if (jsonFiles.length === 0) {
+            dialog.showMessageBox(mainWindow, {
+              type: "info",
+              title: "Metrics",
+              message: "No saved metrics found. Metrics are recorded when folders are processed.",
+            });
+            return;
+          }
+          const result = await dialog.showSaveDialog(mainWindow, {
+            title: "Save Metrics",
+            defaultPath: `dats-metrics-${new Date().toISOString().slice(0, 10)}.json`,
+            filters: [{ name: "JSON files", extensions: ["json"] }],
+          });
+          if (!result.canceled && result.filePath) {
+            if (jsonFiles.length === 1) {
+              await fsPromises.copyFile(
+                join(cacheDir, jsonFiles[0]),
+                result.filePath
+              );
+            } else {
+              const combined: Record<string, unknown> = {};
+              for (const file of jsonFiles) {
+                const data = await fsPromises.readFile(
+                  join(cacheDir, file),
+                  "utf-8"
+                );
+                combined[file] = JSON.parse(data);
+              }
+              await fsPromises.writeFile(
+                result.filePath,
+                JSON.stringify(combined, null, 2),
+                "utf-8"
+              );
+            }
+          }
+        },
+      },
+      {
+        label: "Download Logs",
+        click: async () => {
+          const logPath = getLogFilePath();
+          if (!logPath) {
+            dialog.showMessageBox(mainWindow, {
+              type: "info",
+              title: "Logs",
+              message: "No log file available.",
+            });
+            return;
+          }
+          try {
+            await fsPromises.access(logPath);
+          } catch {
+            dialog.showMessageBox(mainWindow, {
+              type: "info",
+              title: "Logs",
+              message: "No log file found.",
+            });
+            return;
+          }
+          const result = await dialog.showSaveDialog(mainWindow, {
+            title: "Save Logs",
+            defaultPath: `dats-logs-${new Date().toISOString().slice(0, 10)}.log`,
+            filters: [{ name: "Log files", extensions: ["log"] }],
+          });
+          if (!result.canceled && result.filePath) {
+            await fsPromises.copyFile(logPath, result.filePath);
+          }
+        },
+      },
     ],
   },
 ];
@@ -532,8 +804,32 @@ export function getAutoUpdater(): AppUpdater {
   return autoUpdater;
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  initLogFile();
+
+  // Clear stale metadata state from previous sessions
+  const metadataCacheDir = join(
+    app.getPath("userData"),
+    "dats-metadata-cache"
+  );
+  try {
+    await fsPromises.rm(metadataCacheDir, { recursive: true, force: true });
+    console.log("Cleared metadata cache directory on startup.");
+  } catch {
+    // Ignore — directory may not exist yet
+  }
+
   createWindow();
+
+  // Refresh tokens immediately on wake from sleep/lock
+  powerMonitor.on("resume", () => {
+    debug("System resumed from sleep. Refreshing tokens...");
+    if (tokens.refreshToken) {
+      refreshTokens().catch((err) =>
+        console.error("Token refresh on resume failed:", err)
+      );
+    }
+  });
 
   // Start checking for updates after the window is ready
   const autoUpdater = getAutoUpdater();

@@ -1,6 +1,6 @@
-import { useAuth, useNavigate } from "@/renderer/hooks";
+import { useAuth, useMetadataCache, useNavigate } from "@/renderer/hooks";
 import { Grid2 as Grid, Stack, Typography } from "@mui/material";
-import { LoginRequiredModal, Stepper, Toast } from "@renderer/components";
+import { LoginRequiredModal, ResumeSessionModal, Stepper, Toast } from "@renderer/components";
 import {
 	JustifyChangesModal,
 	TransferAlreadyProcessedModal,
@@ -13,7 +13,7 @@ import {
 	LanUploadFileListView,
 	LanUploadTransferFormView,
 } from "@renderer/components/transfer/lan-views";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { getXlsxFileListToastData } from "../utils";
 import {
@@ -24,15 +24,22 @@ import {
 } from "./helpers";
 import type { FileBufferObj, Folder, FolderUploadChange, RunningWorker } from "./types";
 
+	type FolderMessage = { metadata: string | null; copy: string | null };
+
 export const LanTransferPage = () => {
 	const [api] = useState(window.api); // Preload scripts
 
-	const { navigate, setCanLoseProgress } = useNavigate();
+  const { navigate, setCanLoseProgress } = useNavigate();
 	const { idToken, accessToken, refresh } = useAuth();
+
+	const { cachedFolders, clearAll } = useMetadataCache();
 
 	const handleLogout = async () => await api.sso.logout(idToken);
 
 	const [currentViewIndex, setCurrentViewIndex] = useState(0);
+	const [showResumeModal, setShowResumeModal] = useState(false);
+	const [dismissedResumeModal, setDismissedResumeModal] = useState(false);
+	const [hasLanSession, setHasLanSession] = useState(false);
 	const [fileList, setFileList] = useState<File | null | undefined>(undefined);
 	const [transferForm, setTransferForm] = useState<File | null | undefined>(undefined);
 	const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
@@ -50,9 +57,12 @@ export const LanTransferPage = () => {
 	const [extendedMetadata, setExtendedMetadata] = useState<Record<string, unknown>>({});
 	const [originalFolderList, setOriginalFolderList] = useState<Record<string, unknown>>({});
 	const [folderBuffers, setFolderBuffers] = useState<Record<string, FileBufferObj[]>>({});
+	const [tempDirs, setTempDirs] = useState<string[]>([]);
 	const [foldersToProcess, setFoldersToProcess] = useState<string[]>([]);
 	const [folders, setFolders] = useState<Folder[]>([]);
 	const [changes, setChanges] = useState<FolderUploadChange[]>([]);
+	const [folderMessages, setFolderMessages] = useState<Record<string, FolderMessage>>({});
+	const [globalMessage, setGlobalMessage] = useState<string | null>(null);
 
 	// Justify changes
 	const [showJustifyChangesModal, setShowJustifyChangesModal] = useState(false);
@@ -65,6 +75,10 @@ export const LanTransferPage = () => {
 	const [allowApplicationChange, setAllowApplicationChange] = useState<boolean>(true);
 	// User confirms if accession & application are correct
 	const [confirmAccAppChecked, setConfirmAccAppChecked] = useState<boolean>(false);
+	const [submissionAgreementAccepted, setSubmissionAgreementAccepted] = useState<boolean>(false);
+
+	// Track cached folder progress for resume
+	const cachedFoldersRef = useRef(cachedFolders);
 
 	const resetStates = useCallback(async () => {
 		setAccession("");
@@ -77,6 +91,10 @@ export const LanTransferPage = () => {
 		setExtendedMetadata({});
 		setUploadSuccess(null);
 		setConfirmAccAppChecked(false);
+		setSubmissionAgreementAccepted(false);
+		setFolderMessages({});
+		setGlobalMessage(null);
+		await api.deleteTransferSession("lan");
 		await api.workers.shutdown();
 	}, []);
 
@@ -147,24 +165,46 @@ export const LanTransferPage = () => {
 
 	// Handle metadata progress and completion events
 	useEffect(() => {
-		const handleProgress = (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
-			const { source, progressPercentage } = event.detail;
-			console.log(`${source} metadata progress ${progressPercentage}`);
-			// Update folder progress
-			const currentProgress = folders.find((row) => row.folder === source)?.metadataProgress ?? 0;
+		const handleProgress = (event: CustomEvent<{ source: string; progressPercentage: number; fileProcessed?: string; currentFileIndex?: number; totalFiles?: number }>) => {
+			const { source, progressPercentage, fileProcessed, currentFileIndex: fileIdx, totalFiles: total } = event.detail;
+			const folderName = source.split("\\").pop() ?? source;
+			console.log(`[${folderName}] Processing metadata for ${fileProcessed}... (${fileIdx}/${total}) - ${progressPercentage}%`);
 
-			if (currentProgress !== 100)
-				setFolders((prevRows) =>
-					prevRows.map((row) =>
-						row.folder === source ? { ...row, metadataProgress: progressPercentage } : row,
-					),
-				);
+			const isExtendedPhase = fileProcessed === "Getting extended metadata...";
+			const isOwnerPhase = fileProcessed === "Checking owners...";
+
+			setFolderMessages((prev) => {
+				let metadata: string;
+
+				if (isExtendedPhase || isOwnerPhase) {
+					metadata = `Finalizing extended metadata for ${folderName}`;
+				} else if (fileProcessed) {
+					metadata = `Gathering metadata ${fileProcessed} (${fileIdx}/${total}) for ${folderName}`;
+				} else {
+					metadata = `Processing ${folderName}`;
+				}
+
+				return {
+					...prev,
+					[source]: {
+						...(prev[source] ?? {}),
+						metadata,
+					},
+				};
+			});
+			// Update folder progress
+			setFolders((prevRows) =>
+				prevRows.map((row) =>
+					row.folder === source && row.metadataProgress !== 100
+						? { ...row, metadataProgress: progressPercentage }
+						: row,
+				),
+			);
 		};
 
 		const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
 			console.log("[Metadata] Missing", path);
-			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
 			);
@@ -173,10 +213,29 @@ export const LanTransferPage = () => {
 		const handleEmptyFolder = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
 			console.log("[Metadata] Empty folder", path);
-			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
 			);
+		};
+
+		const handleNetworkPaused = (event: CustomEvent<{ source: string; error?: string }>) => {
+			const { source } = event.detail;
+			const folderName = source.split("\\").pop() ?? source;
+			console.log(`[${folderName}] Metadata collection paused — waiting for network...`);
+			setGlobalMessage(`Paused — waiting for network reconnect`);
+		};
+
+		const handleNetworkResumed = (event: CustomEvent<{ source: string }>) => {
+			const { source } = event.detail;
+			const folderName = source.split("\\").pop() ?? source;
+			console.log(`[${folderName}] Network recovered, resuming metadata collection...`);
+			setGlobalMessage(`Network reconnected, resuming`);
+		};
+
+		const handleStatus = (event: CustomEvent<{ source: string; message: string }>) => {
+			const { message } = event.detail;
+			console.log(`[Metadata] ${message}`);
+			setGlobalMessage(message);
 		};
 
 		const handleCompletion = (
@@ -185,6 +244,7 @@ export const LanTransferPage = () => {
 				success: boolean;
 				metadata?: Record<string, unknown>;
 				extendedMetadata?: Record<string, unknown>;
+				fileCount?: number;
 				error?: unknown;
 			}>,
 		) => {
@@ -197,14 +257,24 @@ export const LanTransferPage = () => {
 			} = event.detail;
 
 			if (success && newMetadata) {
-				// Store metadata state
 				setMetadata((prev) => ({
 					...prev,
 					[source]: newMetadata[source],
 				}));
 				if (newExtendedMetadata) setExtendedMetadata(newExtendedMetadata);
 
-				// Remove the completed worker
+				setFolders((prevRows) =>
+					prevRows.map((row) =>
+						row.folder === source
+							? { ...row, metadataProgress: 100, metadataFailed: false }
+							: row,
+					),
+				);
+				setFolderMessages((prev) => ({
+					...prev,
+					[source]: { ...(prev[source] ?? {}), metadata: null },
+				}));
+
 				setRunningWorkers((prev) =>
 					prev.filter((worker) => !(worker.folder === source && worker.type === "metadata")),
 				);
@@ -216,12 +286,28 @@ export const LanTransferPage = () => {
 					metadata: newMetadata,
 					error,
 				});
+
+				setRunningWorkers((prev) =>
+					prev.filter((worker) => !(worker.folder === source && worker.type === "metadata")),
+				);
+				setFolderMessages((prev) => ({
+					...prev,
+					[source]: { ...(prev[source] ?? {}), metadata: "Metadata failed" },
+				}));
+				setFolders((prevRows) =>
+					prevRows.map((row) =>
+						row.folder === source ? { ...row, metadataFailed: true } : row,
+					),
+				);
 			}
 		};
 
 		window.addEventListener("folder-metadata-progress", handleProgress as EventListener);
 		window.addEventListener("folder-metadata-missing-path", handleMissingPath as EventListener);
 		window.addEventListener("folder-metadata-empty-folder", handleEmptyFolder as EventListener);
+		window.addEventListener("folder-metadata-paused", handleNetworkPaused as EventListener);
+		window.addEventListener("folder-metadata-resumed", handleNetworkResumed as EventListener);
+		window.addEventListener("folder-metadata-status", handleStatus as EventListener);
 		window.addEventListener("folder-metadata-completion", handleCompletion as EventListener);
 
 		return () => {
@@ -234,30 +320,44 @@ export const LanTransferPage = () => {
 				"folder-metadata-empty-folder",
 				handleEmptyFolder as EventListener,
 			);
+			window.removeEventListener("folder-metadata-paused", handleNetworkPaused as EventListener);
+			window.removeEventListener("folder-metadata-resumed", handleNetworkResumed as EventListener);
+			window.removeEventListener("folder-metadata-status", handleStatus as EventListener);
 			window.removeEventListener("folder-metadata-completion", handleCompletion as EventListener);
 		};
 	}, []);
 
 	// Handle buffer progress and completion events
 	useEffect(() => {
-		const handleProgress = (event: CustomEvent<{ source: string; progressPercentage: number }>) => {
-			const { source, progressPercentage } = event.detail;
-			console.log(`${source} buffer progress ${progressPercentage}`);
+		const handleProgress = (event: CustomEvent<{ source: string; progressPercentage: number; fileProcessed?: string; currentFileIndex?: number; totalFiles?: number }>) => {
+			const { source, progressPercentage, fileProcessed, currentFileIndex: fileIdx, totalFiles: total } = event.detail;
+			const folderName = source.split("\\").pop() ?? source;
+			console.log(`[${folderName}] Processing ${fileProcessed}... (${fileIdx}/${total}) - ${progressPercentage}%`);
+			setFolderMessages((prev) => {
+				const copy = fileProcessed
+					? `Copying ${fileProcessed} (${fileIdx}/${total})`
+					: "Copying";
+				return {
+					...prev,
+					[source]: {
+						...(prev[source] ?? {}),
+						copy,
+					},
+				};
+			});
 			// Update folder progress
-			const currentProgress = folders.find((row) => row.folder === source)?.bufferProgress ?? 0;
-
-			if (currentProgress !== 100)
-				setFolders((prevRows) =>
-					prevRows.map((row) =>
-						row.folder === source ? { ...row, bufferProgress: progressPercentage } : row,
-					),
-				);
+			setFolders((prevRows) =>
+				prevRows.map((row) =>
+					row.folder === source && row.bufferProgress !== 100
+						? { ...row, bufferProgress: progressPercentage }
+						: row,
+				),
+			);
 		};
 
 		const handleMissingPath = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
 			console.log("[Buffers] Missing", path);
-			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
 			);
@@ -266,7 +366,6 @@ export const LanTransferPage = () => {
 		const handleEmptyFolder = (event: CustomEvent<{ path: string }>) => {
 			const { path } = event.detail;
 			console.log("[Buffers] Empty folder", path);
-			// Update folder invalidPath
 			setFolders((prevRows) =>
 				prevRows.map((row) => (row.folder === path ? { ...row, invalidPath: true } : row)),
 			);
@@ -277,10 +376,11 @@ export const LanTransferPage = () => {
 				source: string;
 				success: boolean;
 				buffers?: FileBufferObj[];
+				tempDir?: string;
 				error?: unknown;
 			}>,
 		) => {
-			const { source, success, buffers, error } = event.detail;
+			const { source, success, buffers, tempDir, error } = event.detail;
 
 			if (success && buffers && buffers.length > 0) {
 				const sourceParts = source?.split("\\");
@@ -291,9 +391,22 @@ export const LanTransferPage = () => {
 					[parentFolder ?? source]: buffers,
 				}));
 
-				// Remove the completed worker
+				if (tempDir) {
+					setTempDirs((prev) => [...prev, tempDir]);
+				}
+
+				setFolders((prevRows) =>
+					prevRows.map((row) =>
+						row.folder === source ? { ...row, bufferProgress: 100, bufferFailed: false } : row,
+					),
+				);
+				setFolderMessages((prev) => ({
+					...prev,
+					[source]: { ...(prev[source] ?? {}), copy: null },
+				}));
+
 				setRunningWorkers((prev) =>
-					prev.filter((worker) => !(worker.folder === parentFolder && worker.type === "buffer")),
+					prev.filter((worker) => !(worker.folder === source && worker.type === "buffer")),
 				);
 
 				console.log(`Successfully processed folder buffer: ${source}`);
@@ -302,18 +415,65 @@ export const LanTransferPage = () => {
 					success,
 					error,
 				});
+
+				setRunningWorkers((prev) =>
+					prev.filter((worker) => !(worker.folder === source && worker.type === "buffer")),
+				);
+				setFolderMessages((prev) => ({
+					...prev,
+					[source]: { ...(prev[source] ?? {}), copy: "Copy failed" },
+				}));
+				setFolders((prevRows) =>
+					prevRows.map((row) =>
+						row.folder === source ? { ...row, bufferFailed: true } : row,
+					),
+				);
 			}
+		};
+
+		const handleStatus = (event: CustomEvent<{ source: string; message: string }>) => {
+			const { message } = event.detail;
+			console.log(`[Buffers] ${message}`);
+			setGlobalMessage(message);
+		};
+
+		const handleNetworkPaused = (event: CustomEvent<{ source: string; error?: string }>) => {
+			const { source } = event.detail;
+			const folderName = source.split("\\").pop() ?? source;
+			console.log(`[${folderName}] Copy paused — waiting for network...`);
+			setGlobalMessage(`Paused — waiting for network reconnect`);
+			setFolderMessages((prev) => ({
+				...prev,
+				[source]: { ...(prev[source] ?? {}), copy: "Copy: Paused - waiting for network" },
+			}));
+		};
+
+		const handleNetworkResumed = (event: CustomEvent<{ source: string }>) => {
+			const { source } = event.detail;
+			const folderName = source.split("\\").pop() ?? source;
+			console.log(`[${folderName}] Network recovered, resuming copy...`);
+			setGlobalMessage(`Network reconnected, resuming`);
+			setFolderMessages((prev) => ({
+				...prev,
+				[source]: { ...(prev[source] ?? {}), copy: "Copy: Resuming" },
+			}));
 		};
 
 		window.addEventListener("folder-buffer-progress", handleProgress as EventListener);
 		window.addEventListener("folder-buffer-missing-path", handleMissingPath as EventListener);
 		window.addEventListener("folder-buffer-empty-folder", handleEmptyFolder as EventListener);
+		window.addEventListener("folder-buffer-status", handleStatus as EventListener);
+		window.addEventListener("folder-buffer-paused", handleNetworkPaused as EventListener);
+		window.addEventListener("folder-buffer-resumed", handleNetworkResumed as EventListener);
 		window.addEventListener("folder-buffer-completion", handleCompletion as EventListener);
 
 		return () => {
 			window.removeEventListener("folder-buffer-progress", handleProgress as EventListener);
 			window.removeEventListener("folder-buffer-missing-path", handleMissingPath as EventListener);
 			window.removeEventListener("folder-buffer-empty-folder", handleEmptyFolder as EventListener);
+			window.removeEventListener("folder-buffer-status", handleStatus as EventListener);
+			window.removeEventListener("folder-buffer-paused", handleNetworkPaused as EventListener);
+			window.removeEventListener("folder-buffer-resumed", handleNetworkResumed as EventListener);
 			window.removeEventListener("folder-buffer-completion", handleCompletion as EventListener);
 		};
 	}, []);
@@ -333,12 +493,23 @@ export const LanTransferPage = () => {
 
 					while (existingIDs.has(uniqueID)) uniqueID++;
 
+					// Initialize progress from cache if available
+					const cached = cachedFoldersRef.current.find((c) => c.sourcePath === path);
+					const metaProgress =
+						cached && cached.totalFileCount && cached.processedCount !== undefined
+							? cached.processedCount >= cached.totalFileCount
+								? 100
+								: Math.floor((cached.processedCount / cached.totalFileCount) * 100)
+							: 0;
+
 					return {
 						id: uniqueID,
 						folder: path,
 						invalidPath: false,
-						metadataProgress: 0,
+						metadataProgress: metaProgress,
 						bufferProgress: 0,
+						metadataFailed: false,
+						bufferFailed: false,
 					};
 				})
 				.filter((row) => row !== undefined);
@@ -413,6 +584,21 @@ export const LanTransferPage = () => {
 			});
 	}, [fileList]);
 
+	// Check for existing LAN transfer session on mount
+	useEffect(() => {
+		api.loadTransferSession("lan").then((session) => {
+			setHasLanSession(!!session);
+		});
+	}, []);
+
+	useEffect(() => {
+		if (currentViewIndex === 0 && !fileList && cachedFolders.length > 0 && hasLanSession && !dismissedResumeModal) {
+			setShowResumeModal(true);
+		} else if (fileList || currentViewIndex > 0) {
+			setShowResumeModal(false);
+		}
+	}, [currentViewIndex, fileList, cachedFolders, hasLanSession, dismissedResumeModal]);
+
 	useEffect(() => {
 		if (transferForm) {
 			const filename = transferForm.name;
@@ -468,6 +654,7 @@ export const LanTransferPage = () => {
 			uploadSuccess !== true
 		) {
 			setUploadSuccess(true);
+			setGlobalMessage(null);
 		}
 	}, [folders, currentViewIndex]);
 
@@ -484,6 +671,30 @@ export const LanTransferPage = () => {
 		}
 	}, [currentViewIndex]);
 
+	// Save transfer session on state changes
+	useEffect(() => {
+		if (currentViewIndex === 0 && !fileList) return; // Don't save before file list is selected
+		if (currentViewIndex === 4) return; // Don't save on finish view
+
+		const fileListPath = (fileList as File & { path?: string })?.path ?? null;
+		const transferFormPath = (transferForm as File & { path?: string })?.path ?? null;
+
+		api.saveTransferSession("lan", {
+			currentViewIndex,
+			accession,
+			application,
+			confirmAccAppChecked,
+			submissionAgreementAccepted,
+			fileListPath,
+			fileListFilename: fileList?.name ?? null,
+			transferFormPath,
+			transferFormFilename: transferForm?.name ?? null,
+			changes,
+			changesJustification,
+			foldersMetadata: originalFolderList,
+		});
+	}, [currentViewIndex, accession, application, confirmAccAppChecked, submissionAgreementAccepted, changes, changesJustification]);
+
 	// Ask for justification of changes if any folder paths changed or deleted
 	const handleLanUploadNextPress = () => {
 		if (changes.length > 0) {
@@ -493,6 +704,86 @@ export const LanTransferPage = () => {
 			// Prompt use to login
 			setShowLoginRequiredModal(true);
 		} else onNextPress();
+	};
+
+	const handleResumeContinue = async () => {
+		if (!accessToken) {
+			api.sso.startLoginProcess();
+			return;
+		}
+
+		setDismissedResumeModal(true);
+
+		// Try to restore session state
+		const session = await api.loadTransferSession("lan") as LanTransferSession | null;
+		if (session) {
+			setAccession(session.accession);
+			setApplication(session.application);
+			setConfirmAccAppChecked(session.confirmAccAppChecked);
+			setSubmissionAgreementAccepted(session.submissionAgreementAccepted ?? false);
+			setChanges(session.changes ?? []);
+			setChangesJustification(session.changesJustification ?? "");
+			setOriginalFolderList(session.foldersMetadata ?? {});
+
+			// Rehydrate file list from saved path
+			if (session.fileListPath) {
+				try {
+					const { data, filename } = await api.readFileFromPath(session.fileListPath);
+					const file = new File([data], filename);
+					Object.defineProperty(file, 'path', { value: session.fileListPath, writable: false });
+					setFileList(file);
+				} catch {
+					console.warn("Could not rehydrate file list from saved path:", session.fileListPath);
+					toast.error(Toast, {
+						data: {
+							success: false,
+							title: "File not found",
+							message: `Could not find the file list at "${session.fileListPath}". Please re-select it.`,
+						},
+					});
+				}
+			}
+
+			// Rehydrate transfer form from saved path
+			if (session.transferFormPath) {
+				try {
+					const { data, filename } = await api.readFileFromPath(session.transferFormPath);
+					const file = new File([data], filename);
+					Object.defineProperty(file, 'path', { value: session.transferFormPath, writable: false });
+					setTransferForm(file);
+				} catch {
+					console.warn("Could not rehydrate transfer form from saved path:", session.transferFormPath);
+					toast.error(Toast, {
+						data: {
+							success: false,
+							title: "File not found",
+							message: `Could not find the transfer form at "${session.transferFormPath}". Please re-select it.`,
+						},
+					});
+				}
+			}
+
+			// Jump to the saved step or at least past the file list step
+			if (session.currentViewIndex > 0) {
+				setCurrentViewIndex(Math.min(session.currentViewIndex, 3));
+			}
+		}
+
+		// Process cached folders
+		setFoldersToProcess((prev) => [...prev, ...cachedFolders.map((folder) => folder.sourcePath)]);
+		setShowResumeModal(false);
+	};
+
+	const handleResumeStartFresh = async () => {
+		await api.deleteTransferSession("lan");
+		await clearAll();
+		setShowResumeModal(false);
+		setDismissedResumeModal(true);
+	};
+
+	const handleResumeClose = () => {
+		setShowResumeModal(false);
+		setDismissedResumeModal(true);
 	};
 
 	// Check if transfer exists
@@ -567,16 +858,12 @@ export const LanTransferPage = () => {
 		// Normalize and reconstruct buffer structure
 		const reconstructedBuffers: typeof folderBuffers = {};
 		for (const [folder, files] of Object.entries(folderBuffers)) {
-			reconstructedBuffers[folder] = files.map((file) => {
-				const bufferUtils = api.transfer.createBufferUtils();
-				const buffer = bufferUtils.normalize(file.buffer);
-
-				return {
-					filename: file.filename,
-					path: file.path,
-					buffer,
-				};
-			});
+			reconstructedBuffers[folder] = files.map((file) => ({
+				filename: file.filename,
+				path: file.path,
+				filePath: file.filePath,
+				size: file.size,
+			}));
 		}
 
     setLoadingMessage("Packaging transfer request...");
@@ -633,6 +920,13 @@ export const LanTransferPage = () => {
 				if (jsonResponse.success && i === totalChunks - 1) {
           setLoadingMessage(null);
 					setRequestSuccessful(true);
+					folders.forEach((folder) => {
+						window.api.deleteMetadataState(folder.folder);
+						window.api.deleteCopyState(folder.folder);
+					});
+					tempDirs.forEach((dir) => window.api.deleteTempDir(dir));
+					setTempDirs([]);
+					api.deleteTransferSession("lan");
 				}
 			} catch (error) {
 				console.error("Lan transfer error:", error);
@@ -690,29 +984,34 @@ export const LanTransferPage = () => {
 							onBackPress={onBackPress}
 						/>
 					)}
-					{currentViewIndex === 2 && (
-						<LanSubmissionAgreementView
-							accession={accession!}
-							application={application!}
-							onNextPress={onNextPress}
-							onBackPress={onBackPress}
-						/>
-					)}
-					{currentViewIndex === 3 && (
-						<LanConfirmationView
-							accession={accession!}
-							application={application!}
-							folders={folders}
-							setFolders={setFolders}
-							processRowUpdate={handleRowUpdate}
-							setMetadata={setMetadata}
-							setChanges={setChanges}
-							onFolderEdit={handleEditClick}
-							onNextPress={handleLanUploadNextPress}
-							onBackPress={onBackPress}
-							handleShutdownWorker={handleShutdownWorker}
-						/>
-					)}
+				{currentViewIndex === 2 && (
+					<LanSubmissionAgreementView
+						accession={accession!}
+						application={application!}
+						accept={submissionAgreementAccepted}
+						setAccept={setSubmissionAgreementAccepted}
+						onNextPress={onNextPress}
+						onBackPress={onBackPress}
+					/>
+				)}
+				{currentViewIndex === 3 && (
+				<LanConfirmationView
+					accession={accession!}
+					application={application!}
+					folders={folders}
+					setFolders={setFolders}
+					processRowUpdate={handleRowUpdate}
+					setMetadata={setMetadata}
+					setChanges={setChanges}
+					folderMessages={folderMessages}
+					globalMessage={globalMessage}
+					setFolderMessages={setFolderMessages}
+					onFolderEdit={handleEditClick}
+					onNextPress={handleLanUploadNextPress}
+					onBackPress={onBackPress}
+					handleShutdownWorker={handleShutdownWorker}
+				/>
+				)}
 					{currentViewIndex === 4 && (
 						<FinishView
 							accession={accession!}
@@ -760,6 +1059,14 @@ export const LanTransferPage = () => {
 							setShowTransferAlreadySentModal(false);
 							onNextPress();
 						}}
+					/>
+					<ResumeSessionModal
+						open={showResumeModal}
+						cachedFolders={cachedFolders}
+						isAuthenticated={!!accessToken}
+						onContinue={handleResumeContinue}
+						onStartFresh={handleResumeStartFresh}
+						onClose={handleResumeClose}
 					/>
 				</Stack>
 			</Grid>

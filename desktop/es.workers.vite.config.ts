@@ -65,6 +65,10 @@ export default defineConfig({
           dest: "scripts",
         },
         {
+          src: "src/main/fileProcessing/workers/utilities/scripts/getOwnerBatch.ps1",
+          dest: "scripts",
+        },
+        {
           src: "resources/release_notes.json",
           dest: "resources",
         },

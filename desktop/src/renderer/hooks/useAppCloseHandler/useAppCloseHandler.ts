@@ -1,14 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "../useNavigate";
 
 export const useAppCloseHandler = () => {
   const [api] = useState(window.api);
   const [showClosePrompt, setShowClosePrompt] = useState(false);
 
+  const { canLoseProgress } = useNavigate();
+
+  const canLoseProgressRef = useRef(canLoseProgress);
+  canLoseProgressRef.current = canLoseProgress;
+
   useEffect(() => {
     api.onAppCloseRequested(() => {
-      setShowClosePrompt(true);
+      if (canLoseProgressRef.current) {
+        setShowClosePrompt(true);
+      } else {
+        api.forceQuitApp();
+      }
     });
-  }, []);
+  }, [api]);
 
   const confirmClose = () => {
     api.forceQuitApp();

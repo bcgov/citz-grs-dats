@@ -18,7 +18,10 @@ export const VPNMonitor = ({ children }) => {
 		};
 	}, []);
 
-	if (showVPNPopup) return <VPNPopup open={true} />;
-
-	return children;
+	return (
+		<>
+			{children}
+			<VPNPopup open={showVPNPopup} />
+		</>
+	);
 };

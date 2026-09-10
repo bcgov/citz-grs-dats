@@ -41,7 +41,7 @@ export const NavigateProvider = ({ children }) => {
 	};
 
 	return (
-		<NavigateContext.Provider value={{ location, navigate, setCanLoseProgress }}>
+		<NavigateContext.Provider value={{ location, navigate, setCanLoseProgress, canLoseProgress }}>
 			{children}
 			<NavigateAwayModal open={isModalOpen} onClose={handleClose} onConfirm={handleConfirm} />
 		</NavigateContext.Provider>

@@ -3,7 +3,8 @@ import { ipcRenderer } from "electron";
 type FileBufferObj = {
   filename: string;
   path: string;
-  buffer: Buffer;
+  filePath: string;
+  size: number;
 };
 
 export const getFolderBuffer = async ({
@@ -31,7 +32,7 @@ export const getFolderBuffer = async ({
     // Continue listening to events
     ipcRenderer.on(
       "folder-buffer-progress",
-      (_, data: { progressPercentage: number; source: string }) => {
+      (_, data: { progressPercentage: number; source: string; fileProcessed?: string; currentFileIndex?: number; totalFiles?: number }) => {
         window.dispatchEvent(
           new CustomEvent("folder-buffer-progress", { detail: data })
         );
@@ -57,12 +58,40 @@ export const getFolderBuffer = async ({
     );
 
     ipcRenderer.on(
+      "folder-buffer-status",
+      (_, data: { source: string; message: string }) => {
+        window.dispatchEvent(
+          new CustomEvent("folder-buffer-status", { detail: data })
+        );
+      }
+    );
+
+    ipcRenderer.on(
+      "folder-buffer-paused",
+      (_, data: { source: string; error?: string }) => {
+        window.dispatchEvent(
+          new CustomEvent("folder-buffer-paused", { detail: data })
+        );
+      }
+    );
+
+    ipcRenderer.on(
+      "folder-buffer-resumed",
+      (_, data: { source: string }) => {
+        window.dispatchEvent(
+          new CustomEvent("folder-buffer-resumed", { detail: data })
+        );
+      }
+    );
+
+    ipcRenderer.on(
       "folder-buffer-completion",
       (
         _,
         data: {
           success: boolean;
           buffers?: FileBufferObj[];
+          tempDir?: string;
           source: string;
           error?: unknown;
         }

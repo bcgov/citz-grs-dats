@@ -14,6 +14,8 @@ export type Row = {
   invalidPath: boolean;
   bufferProgress: number;
   metadataProgress: number;
+  metadataFailed: boolean;
+  bufferFailed: boolean;
 };
 
 type Props = {

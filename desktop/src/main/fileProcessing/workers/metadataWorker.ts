@@ -1,20 +1,35 @@
+import "./utilities/workerLog";
 import { parentPort, workerData } from "node:worker_threads";
 import {
-  countFiles,
+  type ProcessingConfig,
+  DEFAULT_PROCESSING_CONFIG,
+  NetworkError,
+  isNetworkError,
   doesDirectoryExist,
   generateMetadataInBatches,
+  WorkerMetricsTracker,
 } from "./utilities";
 
 type WorkerData = {
   source: string;
   extendedMetadataPowerShellScript: string;
-  batchSize?: number;
+  ownerPowerShellScript: string;
+  stateFilePath?: string;
+  config?: ProcessingConfig;
 };
 
 (async () => {
   console.log("[Metadata worker] Starting with data:", workerData);
   if (!workerData) return;
-  const { source, batchSize, extendedMetadataPowerShellScript } = workerData as WorkerData;
+  const {
+    source,
+    extendedMetadataPowerShellScript,
+    ownerPowerShellScript,
+    stateFilePath,
+    config = DEFAULT_PROCESSING_CONFIG,
+  } = workerData as WorkerData;
+
+  const metrics = new WorkerMetricsTracker();
 
   try {
     const directoryExists = await doesDirectoryExist(source);
@@ -24,22 +39,26 @@ type WorkerData = {
         type: "missingPath",
         path: source,
       });
+      return;
     }
 
-    const totalFileCount = await countFiles(source);
-
-    const { metadata, extendedMetadata, fileCount, totalSize } = await generateMetadataInBatches(
-      source,
-      source,
-      totalFileCount,
-      extendedMetadataPowerShellScript,
-      batchSize
-    );
+    const { metadata, extendedMetadata, fileCount, totalSize } =
+      await generateMetadataInBatches(
+        source,
+        source,
+        extendedMetadataPowerShellScript,
+        stateFilePath,
+        ownerPowerShellScript,
+        config,
+        metrics
+      );
 
     if (!metadata) throw Error("Generated without metadata.");
 
-
-
+    parentPort?.postMessage({
+      type: "metrics",
+      metrics: metrics.snapshot(),
+    });
     parentPort?.postMessage({
       type: "completion",
       success: true,
@@ -50,6 +69,31 @@ type WorkerData = {
       totalSize,
     });
   } catch (error) {
+    if (error instanceof NetworkError || isNetworkError(error)) {
+      console.warn(
+        `[Metadata worker] Network error, pausing: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      metrics.pause();
+      parentPort?.postMessage({
+        type: "metrics",
+        metrics: metrics.snapshot(),
+      });
+      parentPort?.postMessage({
+        type: "networkPaused",
+        source,
+        error: error instanceof Error ? error.message : String(error),
+        processedFileCount: 0,
+        totalFileCount: 0,
+      });
+      return;
+    }
+
+    parentPort?.postMessage({
+      type: "metrics",
+      metrics: metrics.snapshot(),
+    });
     parentPort?.postMessage({
       type: "completion",
       success: false,

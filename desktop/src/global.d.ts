@@ -1,7 +1,8 @@
 type FileBufferObj = {
   filename: string;
   path: string;
-  buffer: Buffer;
+  filePath: string;
+  size: number;
 };
 
 type EdrmsFiles = {
@@ -9,6 +10,51 @@ type EdrmsFiles = {
   fileList?: File;
   transferForm?: File;
 };
+
+type MetadataCacheEntry = {
+  sourcePath: string;
+  originalSource?: string;
+  totalFileCount?: number;
+  processedCount?: number;
+};
+
+type LanTransferSession = {
+  type: "lan";
+  currentViewIndex: number;
+  accession: string;
+  application: string;
+  confirmAccAppChecked: boolean;
+  submissionAgreementAccepted: boolean;
+  fileListPath: string | null;
+  fileListFilename: string | null;
+  transferFormPath: string | null;
+  transferFormFilename: string | null;
+  changes: Array<{
+    originalFolderPath: string;
+    newFolderPath?: string;
+    deleted: boolean;
+  }>;
+  changesJustification: string;
+  foldersMetadata: Record<string, unknown>;
+};
+
+type EdrmsTransferSession = {
+  type: "edrms";
+  currentViewIndex: number;
+  accession: string;
+  application: string;
+  confirmAccAppChecked: boolean;
+  submissionAgreementAccepted: boolean;
+  folderPath: string | null;
+  dataportPath: string | null;
+  dataportFilename: string | null;
+  fileListPath: string | null;
+  fileListFilename: string | null;
+  transferFormPath: string | null;
+  transferFormFilename: string | null;
+};
+
+type TransferSession = LanTransferSession | EdrmsTransferSession;
 
 interface Window {
   electron: ElectronAPI;
@@ -109,5 +155,28 @@ interface Window {
     getReleaseNotes: () => Promise<Record<string, string>>;
     getCurrentAppVersion: () => Promise<string>;
     updateViewedReleaseVersion: () => Promise<void>;
+    getProcessingConfig: () => Promise<{
+      highWaterMark: number;
+      concurrency: number;
+      hashAlgorithms: string[];
+      checksumMode: string;
+      fingerprintSize: number;
+    }>;
+    setProcessingConfig: (config: Record<string, unknown>) => Promise<{
+      highWaterMark: number;
+      concurrency: number;
+      hashAlgorithms: string[];
+      checksumMode: string;
+      fingerprintSize: number;
+    }>;
+    deleteMetadataState: (folderPath: string) => Promise<void>;
+    deleteCopyState: (folderPath: string) => Promise<void>;
+    deleteTempDir: (tempDir: string) => Promise<boolean>;
+    saveTransferSession: (type: string, data: Record<string, unknown>) => Promise<void>;
+    loadTransferSession: (type: string) => Promise<TransferSession | null>;
+    deleteTransferSession: (type: string) => Promise<void>;
+    readFileFromPath: (filePath: string) => Promise<{ data: Uint8Array; filename: string }>;
+    getMetadataCacheEntries: () => Promise<MetadataCacheEntry[]>;
+    onOpenConfigureProcessing: (callback: () => void) => void;
   };
 }
